@@ -1,5 +1,7 @@
 
 #include "face.h"
+#include "gloabls.h"
+
 static char * solution[] = {
 /* 0:  */ "adfecb",
 /* 1: a */ "abed",
