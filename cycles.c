@@ -8,6 +8,12 @@ void addToSet(uint32_t cycleId, CYCLESET cycleSet)
     cycleSet[cycleId / BITS_PER_WORD] |= 1ul << (cycleId % BITS_PER_WORD);
 }
 
+bool memberOfSet(uint32_t cycleId, CYCLESET cycleSet)
+{
+    assert(cycleId < NCYCLES);
+    return (cycleSet[cycleId / BITS_PER_WORD] >> (cycleId % BITS_PER_WORD)) & 1ul;
+}
+
 bool contains2(CYCLE cycle, uint32_t i, uint32_t j)
 {
     uint64_t ix;

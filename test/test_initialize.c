@@ -116,6 +116,21 @@ void test_cycleset(void)
     }
 }
 
+void test_same_and_opposite_directions(void)
+{
+    uint32_t cycleId, j;
+    CYCLE cycle;
+    initialize();
+    for (cycleId = 0, cycle = cycles; cycleId < NCYCLES; cycleId++, cycle++)
+    {
+        for (j = 0; j < cycle->length; j++)
+        {
+            TEST_ASSERT_TRUE(memberOfSet(cycleId, cycle->sameDirection[j]));
+            TEST_ASSERT_FALSE(memberOfSet(cycleId, cycle->oppositeDirection[j]));
+        }
+    }
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -125,6 +140,7 @@ int main(void)
     RUN_TEST(test_cycleset);
     RUN_TEST(test_sizeOfSet);
     RUN_TEST(test_first_cycles);
+    RUN_TEST(test_same_and_opposite_directions);
 
     return UNITY_END();
 }

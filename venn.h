@@ -74,12 +74,12 @@ struct face {
       This is a pointer to an array of length length.
       sameDirection[i] refers to curves[i] and curves[i+1]
     */
-    CYCLESET sameDirection;
+    CYCLESET * sameDirection;
     /*
        This is a pointer to an array of length length.
        oppositeDirection[i] refers to curves[i-1] curves[i] and curves[i+1]
     */
-    CYCLESET oppositeDirection;
+    CYCLESET * oppositeDirection;
  };
 
  /* When we create the point we have all four faces and all four edges 
@@ -161,8 +161,9 @@ struct trail {
 extern int trailTop;
 
 
-extern void initialize();
+extern void initialize(void);
 extern void addToSet(uint32_t cycleId, CYCLESET cycleSet);
+extern bool memberOfSet(uint32_t cycleId, CYCLESET cycleSet);
 extern u_int32_t sizeOfSet(CYCLESET cycleSet);
 extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
 extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
