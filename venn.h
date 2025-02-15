@@ -13,6 +13,7 @@ We use just one header file:
 
 #define ASSUMPTION ( sizeof(uint64_t) == sizeof(void*) ) // we cast pointers to uint64_t in the trail.
 typedef uint64_t uint_trail; // Any non-pointer value that might go on the trail, should be of this type, using a union.
+#define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 #define FACTORIAL0 1
 #define FACTORIAL1 1
 #define FACTORIAL2 2
@@ -23,6 +24,7 @@ typedef uint64_t uint_trail; // Any non-pointer value that might go on the trail
 #define CHOOSE_6_1 6
 #define CHOOSE_6_2 15
 #define CHOOSE_6_3 20
+/* The curves are _colored_ from 0 to 5. */
 #define NCURVES 6
 #define NFACES (1<<NCURVES)
 #define NPOINTS (NFACES - 2)
@@ -41,8 +43,9 @@ typedef struct face * FACE;
 typedef struct facial_cycle * CYCLE;
 typedef struct edge * EDGE;
 typedef struct point * POINT;
-// The ith bit is set if the ith CYCLE is in the set.
-typedef uint64_t CYCLESET[CYCLESET_LENGTH];
+// The ith bit is set if the i-th CYCLE is in the set.
+typedef uint64_t *CYCLESET;
+typedef uint64_t CYCLESET_DECLARE[CYCLESET_LENGTH];
 
 
 struct face {
@@ -50,7 +53,7 @@ struct face {
     DYNAMIC struct facial_cycle * cycle;
     STATIC struct face * adjacentFaces[NCURVES];
     STATIC struct edge * edges[NCURVES];
-    DYNAMIC CYCLESET possibleCycles;
+    DYNAMIC CYCLESET_DECLARE possibleCycles;
     union {
         struct {
             STATIC unsigned int id: 6; // holds up to NFACES
@@ -67,12 +70,12 @@ struct face {
       This is a pointer to an array of length length.
       sameDirection[i] refers to curves[i] and curves[i+1]
     */
-    CYCLESET * sameDirection;
+    CYCLESET sameDirection;
     /*
        This is a pointer to an array of length length.
        oppositeDirection[i] refers to curves[i-1] curves[i] and curves[i+1]
     */
-    CYCLESET * oppositeDirection;
+    CYCLESET oppositeDirection;
  };
 
  /* When we create the point we have all four faces and all four edges 
@@ -131,16 +134,20 @@ struct face {
     DYNAMIC uint_trail nextPoint;
     /*
     These cycles are accessed from faces, with the pointers set up dynamically.
+    The faces use the id of the cycle to find it in this list.
     */
-    STATIC CYCLE cycles[NCYCLES];
-    /*
-    These cycleSets are accessed from cycles, with the pointers set up during initialization.
-     */
-    STATIC CYCLESET cycleSets[NCYCLE_ENTRIES];
+    STATIC struct facial_cycle cycles[NCYCLES];
  };
  
 
 extern struct global globals;
+
+#define faces globals.faces
+#define points globals.points
+#define edges globals.edges
+#define nextPoint globals.nextPoint
+#define cycles globals.cycles
+// #define cycleSets globals.cycleSets
 
 struct trail {
     void * ptr;
@@ -148,11 +155,11 @@ struct trail {
 } trail[TRAIL_SIZE];
 
 extern int trailTop;
-/*
-This list of cyclesets is only used during initialization,
-and we do not use these pointers in the trail.
-*/
-extern CYCLESET cyclesByLength[];
 
+
+extern void initialize();
+extern void addToSet(uint32_t cycleId, CYCLESET cycleSet);
+extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
+extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
 
 #endif
