@@ -1,5 +1,5 @@
-#ifndef _GLOBALS_H
-#define _GLOBALS_H
+#ifndef _VENN_H
+#define _VENN_H
 
 /*
 We use just one header file:
@@ -10,6 +10,8 @@ We use just one header file:
 #include <stdbool.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
+#include <string.h>
 
 #define ASSUMPTION ( sizeof(uint64_t) == sizeof(void*) ) // we cast pointers to uint64_t in the trail.
 typedef uint64_t uint_trail; // Any non-pointer value that might go on the trail, should be of this type, using a union.
@@ -31,6 +33,8 @@ typedef uint64_t uint_trail; // Any non-pointer value that might go on the trail
 #define NCYCLES (CHOOSE_6_0 * FACTORIAL5 + CHOOSE_6_1 * FACTORIAL4 + CHOOSE_6_2 * FACTORIAL3 + CHOOSE_6_3  * FACTORIAL2)
 #define CYCLESET_LENGTH ((NCYCLES-1) / sizeof(uint64_t) + 1)
 #define NCYCLE_ENTRIES (CHOOSE_6_0 * FACTORIAL5 * 6 + CHOOSE_6_1 * FACTORIAL4 * 5 + CHOOSE_6_2 * FACTORIAL3 * 4 + CHOOSE_6_3  * FACTORIAL2 * 3)
+
+#define BITS_PER_WORD (sizeof(uint64_t) * 8)
 /* TODO: improve this number, 10^6 looks very safe, but we should aim for less. */
 #define TRAIL_SIZE 1000000
 
@@ -159,6 +163,7 @@ extern int trailTop;
 
 extern void initialize();
 extern void addToSet(uint32_t cycleId, CYCLESET cycleSet);
+extern u_int32_t sizeOfSet(CYCLESET cycleSet);
 extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
 extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
 

@@ -3,6 +3,6 @@
 
 struct global globals;
 
-void clear() {
+void clearGlobals() {
     memset(&globals, 0, sizeof(globals));
 }

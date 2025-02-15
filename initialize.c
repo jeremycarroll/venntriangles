@@ -15,14 +15,22 @@ static int nextEdge = 0;
 /*
 These cycleSets are accessed from cycles, with the pointers set up during initialization.
  */
-CYCLESET pairs2cycleSets[NCURVES][NCURVES];
-CYCLESET triples2cycleSets[NCURVES][NCURVES][NCURVES];
+CYCLESET_DECLARE pairs2cycleSets[NCURVES][NCURVES];
+CYCLESET_DECLARE triples2cycleSets[NCURVES][NCURVES][NCURVES];
 
 static void initializeCycles();
 static void initializeCycleSets();
 static void initializeSameDirection();
 static void initializeOppositeDirection();
 static void initializeFacesAndEdges();
+
+void clearInitialize()
+{
+    memset(pairs2cycleSets, 0, sizeof(pairs2cycleSets));
+    memset(triples2cycleSets, 0, sizeof(triples2cycleSets));
+    nextCycle = 0;
+    nextEdge = 0;
+}
 
 void initialize()
 {
@@ -35,7 +43,7 @@ void initialize()
 
     // initializeFacesAndEdges();
     /* The FISC is simple, so there are four edges for each point, and two points for each edge. */
-    //assert(nextEdge == ARRAY_LEN(edges));
+    // assert(nextEdge == ARRAY_LEN(edges));
 }
 
 static void addCycle(int length, ...)
@@ -94,31 +102,40 @@ static void initializeCycles()
     }
 }
 
-void initializeCycleSets() {
+void initializeCycleSets()
+{
     uint32_t i, j, k, cycleId;
-    for (i=0; i<NCURVES; i++) {
-        for (j=0; j<NCURVES; j++) {
-            if (i == j) {
+    for (i = 0; i < NCURVES; i++)
+    {
+        for (j = 0; j < NCURVES; j++)
+        {
+            if (i == j)
+            {
                 continue;
             }
-            for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-                if (contains2(&cycles[cycleId], i, j)) {
-                    addToSet(cycleId, &pairs2cycleSets[i][j]);
+            for (cycleId = 0; cycleId < NCYCLES; cycleId++)
+            {
+                if (contains2(&cycles[cycleId], i, j))
+                {
+                    addToSet(cycleId, pairs2cycleSets[i][j]);
                 }
             }
-            for (k=0; k<NCURVES; k++) {
-                if (i == k || j == k) {
+            for (k = 0; k < NCURVES; k++)
+            {
+                if (i == k || j == k)
+                {
                     continue;
                 }
-                for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-                    if (contains3(&cycles[cycleId], i, j, k)) {
-                        addToSet(cycleId, &triples2cycleSets[i][j][k]);
+                for (cycleId = 0; cycleId < NCYCLES; cycleId++)
+                {
+                    if (contains3(&cycles[cycleId], i, j, k))
+                    {
+                        addToSet(cycleId, triples2cycleSets[i][j][k]);
                     }
                 }
             }
         }
     }
-
 }
 
 /* Hmmm

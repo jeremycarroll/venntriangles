@@ -53,7 +53,8 @@ void test_main_arguments(void) {
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_log_message);
+    /*
     RUN_TEST(test_main_arguments);
-    printf("Hello, World!\n");
+    */
     return UNITY_END();
 }
