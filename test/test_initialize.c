@@ -131,6 +131,37 @@ void test_same_and_opposite_directions(void)
     }
 }
 
+void test_opposite_directions(void)
+{
+    uint32_t cycleId, j, k, oppositeCycleId;
+    CYCLE cycle;
+    CYCLE oppositeCycle;
+    initialize();
+    for (cycleId = 0, cycle = g_cycles; cycleId < NCYCLES; cycleId++, cycle++)
+    {
+        for (j = 0; j < cycle->length; j++)
+        {
+            for (oppositeCycleId = 0, oppositeCycle = g_cycles; 
+                oppositeCycleId < NCYCLES; 
+                oppositeCycleId++, oppositeCycle++)
+            {
+                if (memberOfSet(oppositeCycleId, cycle->oppositeDirection[j]))
+                {  for (k = 0; k < oppositeCycle->length; k++)
+                    {
+                        if (oppositeCycle->curves[k] == cycle->curves[j])
+                        {
+                            TEST_ASSERT_TRUE(memberOfSet(cycleId, oppositeCycle->oppositeDirection[k]));
+                            goto ok;
+                        }
+                    }
+                    TEST_FAIL_MESSAGE("opposite direction not found");
+                ok:
+                    continue;
+                }
+            }
+        }
+    }
+}
 
 void test_face_choice_count(void)
 {
@@ -157,6 +188,7 @@ int main(void)
     RUN_TEST(test_first_cycles);
     RUN_TEST(test_same_and_opposite_directions);
     RUN_TEST(test_face_choice_count);
+    RUN_TEST(test_opposite_directions);
 
     printf("CYCLESET_LENGTH = %lu\nNCYCLE_ENTRIES = %u\nNCYCLES = %u\n", 
         CYCLESET_LENGTH, NCYCLE_ENTRIES, NCYCLES);
