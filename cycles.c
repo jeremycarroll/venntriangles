@@ -14,6 +14,12 @@ bool memberOfSet(uint32_t cycleId, CYCLESET cycleSet)
     return (cycleSet[cycleId / BITS_PER_WORD] >> (cycleId % BITS_PER_WORD)) & 1ul;
 }
 
+void removeFromSet(uint32_t cycleId, CYCLESET cycleSet)
+{
+    assert(cycleId < NCYCLES);
+    cycleSet[cycleId / BITS_PER_WORD] &= ~(1ul << (cycleId % BITS_PER_WORD));
+}
+
 bool contains2(CYCLE cycle, uint32_t i, uint32_t j)
 {
     uint64_t ix;
@@ -78,7 +84,7 @@ bool printCycleSet(CYCLESET cycleSet)
                 if (cycleSet[i] & (1ul << j))
                 {
                     putchar(' ');
-                    printCycle(cycles + i);
+                    printCycle(g_cycles + i);
                     putchar(',');
                 }
             }

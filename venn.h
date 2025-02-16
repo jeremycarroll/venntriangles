@@ -16,25 +16,26 @@ We use just one header file:
 #define ASSUMPTION ( sizeof(uint64_t) == sizeof(void*) ) // we cast pointers to uint64_t in the trail.
 typedef uint64_t uint_trail; // Any non-pointer value that might go on the trail, should be of this type, using a union.
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
-#define FACTORIAL0 1
-#define FACTORIAL1 1
-#define FACTORIAL2 2
-#define FACTORIAL3 6
-#define FACTORIAL4 24
-#define FACTORIAL5 120
-#define CHOOSE_6_0 1
-#define CHOOSE_6_1 6
-#define CHOOSE_6_2 15
-#define CHOOSE_6_3 20
+#define BITS_PER_WORD (sizeof(uint64_t) * 8)
+#define FACTORIAL0 1u
+#define FACTORIAL1 1u
+#define FACTORIAL2 2u
+#define FACTORIAL3 6u
+#define FACTORIAL4 24u
+#define FACTORIAL5 120u
+#define CHOOSE_6_0 1u
+#define CHOOSE_6_1 6u
+#define CHOOSE_6_2 15u
+#define CHOOSE_6_3 20u
 /* The curves are _colored_ from 0 to 5. */
 #define NCURVES 6
 #define NFACES (1<<NCURVES)
 #define NPOINTS (NFACES - 2)
 #define NCYCLES (CHOOSE_6_0 * FACTORIAL5 + CHOOSE_6_1 * FACTORIAL4 + CHOOSE_6_2 * FACTORIAL3 + CHOOSE_6_3  * FACTORIAL2)
-#define CYCLESET_LENGTH ((NCYCLES-1) / sizeof(uint64_t) + 1)
+#define CYCLESET_LENGTH ((NCYCLES-1) / BITS_PER_WORD + 1)
+#define FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET ((1ul << (NCYCLES % BITS_PER_WORD)) - 1ul)
 #define NCYCLE_ENTRIES (CHOOSE_6_0 * FACTORIAL5 * 6 + CHOOSE_6_1 * FACTORIAL4 * 5 + CHOOSE_6_2 * FACTORIAL3 * 4 + CHOOSE_6_3  * FACTORIAL2 * 3)
 
-#define BITS_PER_WORD (sizeof(uint64_t) * 8)
 /* TODO: improve this number, 10^6 looks very safe, but we should aim for less. */
 #define TRAIL_SIZE 1000000
 
@@ -58,18 +59,14 @@ struct face {
     STATIC struct face * adjacentFaces[NCURVES];
     STATIC struct edge * edges[NCURVES];
     DYNAMIC CYCLESET_DECLARE possibleCycles;
-    union {
-        struct {
-            STATIC unsigned int id: 6; // holds up to NFACES
-            DYNAMIC unsigned int cycleSetSize: 9; // holds up to NCYCLES
-        } p;
-        DYNAMIC uint_trail value;
-    } u;
+    STATIC unsigned int colors; // holds up to NFACES
+    DYNAMIC uint_trail cycleSetSize; // holds up to NCYCLES
  };
 
  STATIC struct facial_cycle {
     uint32_t length;
     uint32_t curves[NCURVES+1];
+    uint32_t colors;
     /* 
       This is a pointer to an array of length length.
       sameDirection[i] refers to curves[i] and curves[i+1]
@@ -114,7 +111,7 @@ struct face {
    */
    DYNAMIC POINT from;
    DYNAMIC POINT to;
-   STATIC unsigned int color: 3;
+   STATIC unsigned int color;
  };
 
 
@@ -146,12 +143,11 @@ struct face {
 
 extern struct global globals;
 
-#define faces globals.faces
-#define points globals.points
-#define edges globals.edges
-#define nextPoint globals.nextPoint
-#define cycles globals.cycles
-// #define cycleSets globals.cycleSets
+#define g_faces globals.faces
+#define g_points globals.points
+#define g_edges globals.edges
+#define g_nextPoint globals.nextPoint
+#define g_cycles globals.cycles
 
 struct trail {
     void * ptr;
@@ -163,6 +159,7 @@ extern int trailTop;
 
 extern void initialize(void);
 extern void addToSet(uint32_t cycleId, CYCLESET cycleSet);
+extern void removeFromSet(uint32_t cycleId, CYCLESET cycleSet);
 extern bool memberOfSet(uint32_t cycleId, CYCLESET cycleSet);
 extern u_int32_t sizeOfSet(CYCLESET cycleSet);
 extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);

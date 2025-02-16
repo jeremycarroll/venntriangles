@@ -25,6 +25,10 @@ static void initializeCycleSets(void);
 static void initializeSameDirection(void);
 static void initializeOppositeDirection(void);
 static void initializeFacesAndEdges(void);
+static void applyMonotonicity(void);
+static void recomputeCountOfChoices(FACE face);
+/* face is truncated to 6 bits, higher bits may be set, and will be ignored. */
+static void setCycleLength(uint32_t faceColors, uint32_t length);
 
 void clearInitialize()
 {
@@ -40,27 +44,34 @@ void initialize()
 {
     assert(ASSUMPTION);
     initializeCycles();
-    assert(nextCycle == ARRAY_LEN(cycles));
+    assert(nextCycle == ARRAY_LEN(g_cycles));
     initializeCycleSets();
     initializeSameDirection();
     assert(nextSetOfCycleSets == NCYCLE_ENTRIES);
     initializeOppositeDirection();
     assert(nextSetOfCycleSets == 2 * NCYCLE_ENTRIES);
 
-    // initializeFacesAndEdges();
+    initializeFacesAndEdges();
     /* The FISC is simple, so there are four edges for each point, and two points for each edge. */
-    // assert(nextEdge == ARRAY_LEN(edges));
+    assert(nextEdge == ARRAY_LEN(g_edges));
+    applyMonotonicity();
 }
 
 static void addCycle(int length, ...)
 {
+    uint32_t color;
     va_list ap;
-    CYCLE cycle = &cycles[nextCycle++];
+    CYCLE cycle = &g_cycles[nextCycle++];
     int ix = 0;
+    cycle->colors = 0;
     cycle->length = length;
-    va_start(ap, length); // Requires the last fixed parameter (to get the address)
+    va_start(ap, length);
     for (ix = 0; ix < length; ix++)
-        cycle->curves[ix] = va_arg(ap, uint32_t); // Requires the type to cast to. Increments ap to the next argument.
+    {
+        color = va_arg(ap, uint32_t);
+        cycle->curves[ix] = color;
+        cycle->colors |= 1u << color;
+    }
     va_end(ap);
     cycle->curves[ix] = NO_COLOR;
 }
@@ -108,7 +119,7 @@ static void initializeCycles(void)
     }
 }
 
-void initializeCycleSets(void)
+static void initializeCycleSets(void)
 {
     uint32_t i, j, k, cycleId;
     for (i = 0; i < NCURVES; i++)
@@ -121,7 +132,7 @@ void initializeCycleSets(void)
             }
             for (cycleId = 0; cycleId < NCYCLES; cycleId++)
             {
-                if (contains2(&cycles[cycleId], i, j))
+                if (contains2(&g_cycles[cycleId], i, j))
                 {
                     addToSet(cycleId, pairs2cycleSets[i][j]);
                 }
@@ -134,7 +145,7 @@ void initializeCycleSets(void)
                 }
                 for (cycleId = 0; cycleId < NCYCLES; cycleId++)
                 {
-                    if (contains3(&cycles[cycleId], i, j, k))
+                    if (contains3(&g_cycles[cycleId], i, j, k))
                     {
                         addToSet(cycleId, triples2cycleSets[i][j][k]);
                     }
@@ -148,7 +159,7 @@ static void initializeSameDirection(void)
 {
     uint32_t i, j;
     CYCLE cycle;
-    for (i = 0, cycle = cycles; i < NCYCLES; i++, cycle++)
+    for (i = 0, cycle = g_cycles; i < NCYCLES; i++, cycle++)
     {
         cycle->sameDirection = &setsOfCycleSets[nextSetOfCycleSets];
         nextSetOfCycleSets += cycle->length;
@@ -163,7 +174,7 @@ static void initializeOppositeDirection(void)
 {
     uint32_t i, j;
     CYCLE cycle;
-    for (i = 0, cycle = cycles; i < NCYCLES; i++, cycle++)
+    for (i = 0, cycle = g_cycles; i < NCYCLES; i++, cycle++)
     {
         cycle->oppositeDirection = &setsOfCycleSets[nextSetOfCycleSets];
         nextSetOfCycleSets += cycle->length;
@@ -176,6 +187,95 @@ static void initializeOppositeDirection(void)
     }
 }
 
+static void initializeFacesAndEdges(void)
+{
+    uint32_t facecolors, color, j;
+    FACE face, adjacent;
+    for (facecolors = 0, face = g_faces; facecolors < NFACES; facecolors++, face++)
+    {
+        face->colors = facecolors;
+        for (j = 0; j < CYCLESET_LENGTH - 1; j++)
+        {
+            face->possibleCycles[j] = ~0;
+        }
+        face->possibleCycles[j] = FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET;
+
+        for (color = 0; color < NCURVES; color++)
+        {
+            uint32_t colorbit = (1 << color);
+            adjacent = g_faces + (facecolors ^ (colorbit));
+            face->adjacentFaces[color] = adjacent;
+            if (adjacent->edges[color] == NULL)
+            {
+                EDGE edge = g_edges + nextEdge++;
+                edge->inner = (facecolors & colorbit) ? face : adjacent;
+                edge->outer = (facecolors & colorbit) ? adjacent : face;
+                edge->color = j;
+                face->edges[color] = edge;
+            }
+            else
+            {
+                face->edges[color] = adjacent->edges[color];
+            }
+        }
+    }
+}
+/*
+A FISC is isomorphic to a convex FISC if and only if it is monotone.
+A FISC is monotone if its dual has a unique source (no incoming edges) and a unique
+sink (no out-going edges).
+*/
+static void applyMonotonicity(void)
+{
+    uint32_t colors, cycleId;
+    FACE face;
+    CYCLE cycle;
+    /* The inner face is NFACES-1, with all the colors; the outer face is 0, with no colors.
+     */
+    for (colors = 1, face = g_faces + 1; colors < NFACES - 1; colors++, face++)
+    {
+        // oldCount = sizeOfSet(face->possibleCycles);
+        for (cycleId = 0, cycle = g_cycles; cycleId < NCYCLES; cycleId++, cycle++)
+        {
+            if ((cycle->colors & colors) == 0 || (cycle->colors & ~colors) == 0)
+            {
+                removeFromSet(cycleId, face->possibleCycles);
+            }
+        }
+        recomputeCountOfChoices(face);
+        // faceColors = colors;
+        // printf("%c%c%c%c%c%c: %x %x %d => %d\n", 
+        //     (faceColors & 1) ? 'a' : '-', 
+        //     ((faceColors >> 1) & 1) ? 'b' : '-', 
+        //     ((faceColors >> 2) & 1) ? 'c' : '-', 
+        //     ((faceColors >> 3) & 1) ? 'd' : '-', 
+        //     ((faceColors >> 4) & 1) ? 'e' : '-', 
+        //     ((faceColors >> 5) & 1) ? 'f' : '-',
+        //        faceColors, face->colors, oldCount, face->cycleSetSize);
+    }
+    setCycleLength(0, NCURVES);
+    setCycleLength(~0, NCURVES);
+}
+
+static void recomputeCountOfChoices(FACE face)
+{
+    face->cycleSetSize = sizeOfSet(face->possibleCycles);
+}
+
+static void setCycleLength(uint32_t faceColors, uint32_t length)
+{
+    FACE face = g_faces + (faceColors & (NFACES - 1));
+    CYCLE cycle;
+    uint32_t cycleId;
+    for (cycleId = 0, cycle = g_cycles; cycleId < NCYCLES; cycleId++, cycle++)
+    {
+        if (cycle->length != length)
+        {
+            removeFromSet(cycleId, face->possibleCycles);
+        }
+    }
+    recomputeCountOfChoices(face);
+}
 /* Hmmm
 static void addCycle(int length, int i1, int i2, int i3, int i4, int i5, int i6)
 {

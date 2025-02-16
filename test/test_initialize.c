@@ -18,12 +18,12 @@ void test_initialize(void)
     initialize();
     for (j = 0; j < NCYCLES; j++)
     {
-        TEST_ASSERT_NOT_EQUAL(0, cycles[j].length);
-        for (i = 0; i < cycles[j].length; i++)
+        TEST_ASSERT_NOT_EQUAL(0, g_cycles[j].length);
+        for (i = 0; i < g_cycles[j].length; i++)
         {
-            TEST_ASSERT_NOT_EQUAL(NO_COLOR, cycles[j].curves[i]);
+            TEST_ASSERT_NOT_EQUAL(NO_COLOR, g_cycles[j].curves[i]);
         }
-        TEST_ASSERT_EQUAL(NO_COLOR, cycles[j].curves[cycles[j].length]);
+        TEST_ASSERT_EQUAL(NO_COLOR, g_cycles[j].curves[g_cycles[j].length]);
     }
 }
 
@@ -31,12 +31,12 @@ void test_initialize(void)
 void test_first_cycles(void)
 {
     initialize();
-    TEST_ASSERT_EQUAL(0, bcmp(cycles[0].curves, (uint32_t[]){0, 1, 2, NO_COLOR}, 4 * sizeof(uint32_t)));
+    TEST_ASSERT_EQUAL(0, bcmp(g_cycles[0].curves, (uint32_t[]){0, 1, 2, NO_COLOR}, 4 * sizeof(uint32_t)));
 }
 
 void test_contains2(void)
 {
-    CYCLE cycle = &cycles[0];
+    CYCLE cycle = &g_cycles[0];
     cycle->length = 3;
     cycle->curves[0] = 0;
     cycle->curves[1] = 1;
@@ -51,7 +51,7 @@ void test_contains2(void)
 
 void test_contains3(void)
 {
-    CYCLE cycle = &cycles[0];
+    CYCLE cycle = &g_cycles[0];
     cycle->length = 3;
     cycle->curves[0] = 3;
     cycle->curves[1] = 4;
@@ -121,13 +121,28 @@ void test_same_and_opposite_directions(void)
     uint32_t cycleId, j;
     CYCLE cycle;
     initialize();
-    for (cycleId = 0, cycle = cycles; cycleId < NCYCLES; cycleId++, cycle++)
+    for (cycleId = 0, cycle = g_cycles; cycleId < NCYCLES; cycleId++, cycle++)
     {
         for (j = 0; j < cycle->length; j++)
         {
             TEST_ASSERT_TRUE(memberOfSet(cycleId, cycle->sameDirection[j]));
             TEST_ASSERT_FALSE(memberOfSet(cycleId, cycle->oppositeDirection[j]));
         }
+    }
+}
+
+
+void test_face_choice_count(void)
+{
+    uint32_t faceColors;
+    FACE face;
+    uint32_t expected[] = {120, 320, 380, 390, 380, 320, 120, -1};
+    initialize();
+    for (faceColors = 0, face = g_faces; faceColors < NFACES; faceColors++, face++)
+    {
+        // printf("%c%c%c%c%c%c: %x %x (%d) %d\n",  (faceColors & 1)?'a':'-', ((faceColors >> 1) & 1)?'b':'-', ((faceColors >> 2) & 1)?'c':'-', ((faceColors >> 3) & 1)?'d':'-', ((faceColors >> 4) & 1)?'e':'-', ((faceColors >> 5) & 1)?'f':'-',
+        //   faceColors, face->colors, (faceColors), face->cycleSetSize);
+        TEST_ASSERT_EQUAL(expected[__builtin_popcount(faceColors)], face->cycleSetSize);
     }
 }
 
@@ -141,6 +156,9 @@ int main(void)
     RUN_TEST(test_sizeOfSet);
     RUN_TEST(test_first_cycles);
     RUN_TEST(test_same_and_opposite_directions);
+    RUN_TEST(test_face_choice_count);
 
+    printf("CYCLESET_LENGTH = %lu\nNCYCLE_ENTRIES = %u\nNCYCLES = %u\n", 
+        CYCLESET_LENGTH, NCYCLE_ENTRIES, NCYCLES);
     return UNITY_END();
 }
