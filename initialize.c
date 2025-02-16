@@ -1,4 +1,3 @@
-
 /**
  * This file sets up complex data structures:
  * - each of the cycles
@@ -234,7 +233,6 @@ static void applyMonotonicity(void)
      */
     for (colors = 1, face = g_faces + 1; colors < NFACES - 1; colors++, face++)
     {
-        // oldCount = sizeOfSet(face->possibleCycles);
         for (cycleId = 0, cycle = g_cycles; cycleId < NCYCLES; cycleId++, cycle++)
         {
             if ((cycle->colors & colors) == 0 || (cycle->colors & ~colors) == 0)
@@ -243,15 +241,6 @@ static void applyMonotonicity(void)
             }
         }
         recomputeCountOfChoices(face);
-        // faceColors = colors;
-        // printf("%c%c%c%c%c%c: %x %x %d => %d\n", 
-        //     (faceColors & 1) ? 'a' : '-', 
-        //     ((faceColors >> 1) & 1) ? 'b' : '-', 
-        //     ((faceColors >> 2) & 1) ? 'c' : '-', 
-        //     ((faceColors >> 3) & 1) ? 'd' : '-', 
-        //     ((faceColors >> 4) & 1) ? 'e' : '-', 
-        //     ((faceColors >> 5) & 1) ? 'f' : '-',
-        //        faceColors, face->colors, oldCount, face->cycleSetSize);
     }
     setCycleLength(0, NCURVES);
     setCycleLength(~0, NCURVES);
@@ -276,89 +265,3 @@ static void setCycleLength(uint32_t faceColors, uint32_t length)
     }
     recomputeCountOfChoices(face);
 }
-/* Hmmm
-static void addCycle(int length, int i1, int i2, int i3, int i4, int i5, int i6)
-{
-    Cycle cycle = &cycles[nextCycle++];
-    cycle->length = length;
-    cycle->curves[0] = i1;
-    cycle->curves[1] = i2;
-    cycle->curves[2] = i3;
-    cycle->curves[3] = i4;
-    cycle->curves[4] = i5;
-    cycle->curves[5] = i6;
-    for (int i = 0; i < length; i++)
-    {
-        face[i1].possibleCycles[i1] = cycle;
-    }
-}
-
-static void addCycles(int length, int omit1, int omit2, int omit3)
-{
-#define OMIT(x) (x == omit1 || x == omit2 || x == omit3)
-    for (int i1 = 0; i1 < NCURVES; i1++)
-    {
-        if (OMIT(i1))
-        {
-            continue;
-        }
-        for (int i2 = i1 + 1; i2 < NCURVES; i2++)
-        {
-            if (OMIT(i2))
-            {
-                continue;
-            }
-            for (int i3 = i2 + 1; i3 < NCURVES; i3++)
-            {
-                if (OMIT(i3))
-                {
-                    continue;
-                }
-                if (length == 3)
-                {
-                    addCycle(3, i1, i2, i3);
-                }
-                else
-                {
-                    for (int i4 = i3 + 1; i4 < NCURVES; i4++)
-                    {
-                        if (OMIT(i4))
-                        {
-                            continue;
-                        }
-                        if (length == 4)
-                        {
-                            addCycle(4, i1, i2, i3, i4);
-                        }
-                        else
-                        {
-                            for (int i5 = i4 + 1; i5 < NCURVES; i5++)
-                            {
-                                if (OMIT(i5))
-                                {
-                                    continue;
-                                }
-                                if (length == 5)
-                                {
-                                    addCycle(5, i1, i2, i3, i4, i5);
-                                }
-                                else
-                                {
-                                    for (int i6 = i5 + 1; i6 < NCURVES; i6++)
-                                    {
-                                        if (OMIT(i6))
-                                        {
-                                            continue;
-                                        }
-                                        addCycle(5, i1, i2, i3, i4, i5, i6);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-*/

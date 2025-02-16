@@ -1,4 +1,3 @@
-
 #include "venn.h"
 #include "visible_for_testing.h"
 

@@ -155,8 +155,6 @@ struct trail {
 } trail[TRAIL_SIZE];
 
 extern int trailTop;
-
-
 extern void initialize(void);
 extern void addToSet(uint32_t cycleId, CYCLESET cycleSet);
 extern void removeFromSet(uint32_t cycleId, CYCLESET cycleSet);
