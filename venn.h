@@ -52,6 +52,7 @@ typedef struct point * POINT;
 typedef uint64_t *CYCLESET;
 typedef uint64_t CYCLESET_DECLARE[CYCLESET_LENGTH];
 
+typedef struct trail * TRAIL;
 
 struct face {
     // cycle must be null if cycleSetSize is not 1.
@@ -59,6 +60,7 @@ struct face {
     STATIC struct face * adjacentFaces[NCURVES];
     STATIC struct edge * edges[NCURVES];
     DYNAMIC CYCLESET_DECLARE possibleCycles;
+    DYNAMIC TRAIL backtrack;
     STATIC unsigned int colors; // holds up to NFACES
     DYNAMIC uint_trail cycleSetSize; // holds up to NCYCLES
  };
@@ -139,7 +141,11 @@ struct face {
     */
     STATIC struct facial_cycle cycles[NCYCLES];
  };
- 
+
+ struct trail {
+   void * ptr;
+   uint_trail value;
+};
 
 extern struct global globals;
 
@@ -149,12 +155,7 @@ extern struct global globals;
 #define g_nextPoint globals.nextPoint
 #define g_cycles globals.cycles
 
-struct trail {
-    void * ptr;
-    uint_trail value;
-} trail[TRAIL_SIZE];
-
-extern int trailTop;
+extern TRAIL trail;
 extern void initialize(void);
 extern void addToSet(uint32_t cycleId, CYCLESET cycleSet);
 extern void removeFromSet(uint32_t cycleId, CYCLESET cycleSet);
@@ -162,5 +163,8 @@ extern bool memberOfSet(uint32_t cycleId, CYCLESET cycleSet);
 extern u_int32_t sizeOfSet(CYCLESET cycleSet);
 extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
 extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
+extern void setDynamicPointer(void ** ptr, void * value);
+extern void setDynamicInt(uint_trail * ptr, uint_trail value);
+extern void backtrackTo(TRAIL backtrackPoint);
 
 #endif
