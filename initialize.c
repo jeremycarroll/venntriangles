@@ -39,6 +39,7 @@ void clearInitialize()
   nextCycle = 0;
   nextEdge = 0;
   nextSetOfCycleSets = 0;
+  clearWithoutColor();
 }
 
 void initialize()
@@ -57,6 +58,8 @@ void initialize()
    * for each edge. */
   assert(nextEdge == ARRAY_LEN(g_edges));
   applyMonotonicity();
+
+  initializeWithoutColor();
 }
 
 static void addCycle(int length, ...)

@@ -44,6 +44,7 @@ typedef uint64_t uint_trail;  // Any non-pointer value that might go on the
   (CHOOSE_6_0 * FACTORIAL5 * 6 + CHOOSE_6_1 * FACTORIAL4 * 5 + \
    CHOOSE_6_2 * FACTORIAL3 * 4 + CHOOSE_6_3 * FACTORIAL2 * 3)
 #define MAX_ONE_WAY_CURVE_CROSSINGS 3
+#define MAX_CORNERS 3
 
 /* TODO: improve this number, 10^6 looks very safe, but we should aim for less.
  */
@@ -126,6 +127,9 @@ struct point {
   edge[3] is of color B and runs out of the point
   */
   EDGE edges[4];
+
+  /* A set of the two colors. */
+  COLORSET colors;
 };
 
 struct edge {
@@ -141,7 +145,14 @@ struct edge {
   STATIC COLOR color;
 };
 
-typedef uint32_t FAILURE_TYPE;
+typedef enum failureType {
+  MULTIPLE_FAILURE = 0x200,
+  NO_MATCH_FAILURE = 0x1,
+  CROSSING_LIMIT_FAILURE = 0x2,
+  DISCONNECTED_CURVE_FAILURE = 0x4,
+  TOO_MANY_CORNERS_FAILURE = 0x8,
+} FAILURE_TYPE;
+
 typedef struct failure *FAILURE;
 
 struct failure {
@@ -149,7 +160,11 @@ struct failure {
   char *label;
   // The number of times this failure has been used, at each depth.
   uint64_t count[NFACES];
-  void *moreInfo;
+  union {
+    COLORSET colors;
+    COLORSET *mulipleColors;
+    ;
+  } u;
 };
 
 struct trail {
@@ -195,6 +210,7 @@ struct global {
     set.
     */
   DYNAMIC uint_trail edgeCount[NCURVES];
+  DYNAMIC uint_trail curveComplete[NCURVES];
 };
 
 extern struct global globals;
@@ -206,9 +222,12 @@ extern struct global globals;
 #define g_cycles globals.cycles
 #define g_crossings globals.crossings
 #define g_edgeCount globals.edgeCount
+#define g_curveComplete globals.curveComplete
 
 extern TRAIL trail;
 extern void initialize(void);
+extern void clearWithoutColor();
+extern void initializeWithoutColor();
 extern void addToCycleSet(uint32_t cycleId, CYCLESET cycleSet);
 extern void removeFromCycleSet(uint32_t cycleId, CYCLESET cycleSet);
 extern bool memberOfCycleSet(uint32_t cycleId, CYCLESET cycleSet);
@@ -220,6 +239,9 @@ extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
 extern void setDynamicPointer_(void **ptr, void *value);
 #define setDynamicPointer(a, b) setDynamicPointer_((void **)a, b)
 
+extern EDGE followEdgeBackwards(EDGE edge);
+extern EDGE followEdgeForwards(EDGE edge);
+
 extern void setDynamicInt(uint_trail *ptr, uint_trail value);
 extern void backtrackTo(TRAIL backtrackPoint);
 extern void setCycleLength(uint32_t faceColors, uint32_t length);
@@ -228,12 +250,15 @@ extern POINT createPoint(EDGE aEdgeIn, EDGE aEdgeOut, EDGE bEdgeIn,
                          EDGE bEdgeOut, int depth, FAILURE *failureReturn);
 
 extern FAILURE makeChoice(FACE face);
-extern FAILURE curveChecks(EDGE edge);
+extern FAILURE curveChecks(EDGE edge, int depth);
 extern FAILURE noMatchingCyclesFailure(COLORSET colors, int depth);
 extern FAILURE maybeAddFailure(FAILURE multipleFailuresOrNull,
                                FAILURE singleFailure, int depth);
+extern FAILURE disconnectedCurveFailure(COLOR color, bool explicit, int depth);
+extern FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth);
+extern FAILURE tooManyCornersFailure(COLOR a, int depth);
 /* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
 and that number should be three or less. */
 extern FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth);
-extern FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth);
+extern bool removeColorFromSearch(COLOR color, int depth);
 #endif

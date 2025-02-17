@@ -44,7 +44,7 @@ COLOR point2inside2outsideColor(POINT point) { return point->edges[0]->color; }
 
 COLOR point2outside2insideColor(POINT point) { return point->edges[2]->color; }
 
-EDGE followEdge(EDGE edge)
+EDGE followEdgeForwards(EDGE edge)
 {
   if (edge->to == NULL) {
     return NULL;
@@ -54,6 +54,18 @@ EDGE followEdge(EDGE edge)
   }
   assert(edge->color == point2outside2insideColor(edge->to));
   return point2outside2insideOutgoingEdge(edge->to);
+}
+
+EDGE followEdgeBackwards(EDGE edge)
+{
+  if (edge->from == NULL) {
+    return NULL;
+  }
+  if (edge->color == point2inside2outsideColor(edge->from)) {
+    return point2inside2outsideIncomingEdge(edge->from);
+  }
+  assert(edge->color == point2outside2insideColor(edge->from));
+  return point2outside2insideIncomingEdge(edge->from);
 }
 
 /*
@@ -86,6 +98,8 @@ static POINT createPointOrdered(EDGE aEdgeIn, EDGE aEdgeOut, EDGE bEdgeIn,
   point->faces[1] = aEdgeOut->inner;
   point->faces[2] = bEdgeIn->inner;
   point->faces[3] = aEdgeIn->inner;
+
+  point->colors = (1u << aEdgeIn->color) | (1u << bEdgeIn->color);
   assert(point->faces[0] == bEdgeIn->outer);
   assert(point->faces[1] == bEdgeOut->outer);
   assert(point->faces[2] == bEdgeOut->inner);

@@ -14,7 +14,11 @@ test/%: test/%.c $(UNITY_DIR)/src/unity.c $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $^
 
 
-all: main tests
+all: formatheader main tests
+
+formatheader:
+	clang-format -i venn.h
+	if ! [ $$(tail -c 1 venn.h | od -An -t x1) == "0a" ]; then echo >> venn.h ; fi
 
 tests: test/test_initialize test/test_main
 	for i in $^; do ./$$i; done
