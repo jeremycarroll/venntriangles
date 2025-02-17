@@ -56,6 +56,6 @@ int main0(int argc, char *argv[]) {
         log_message(LOG_VERBOSE, "Argument %d: %d\n", i + 1, args[i]);
     }
 
-    printf("Hello, World! %ul\n", sizeof(int*));
+    printf("Hello, World! %lu\n", sizeof(int*));
     return 0;
 }

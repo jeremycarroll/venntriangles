@@ -64,23 +64,23 @@ void test_contains3(void)
     TEST_ASSERT_FALSE(contains3(cycle, 5, 4, 3));
 }
 
-void test_sizeOfSet(void)
+void test_sizeOfCycleSet(void)
 {
     CYCLESET_DECLARE cycleSet;
     memset(cycleSet, 0, sizeof(cycleSet));
-    TEST_ASSERT_EQUAL(0, sizeOfSet(cycleSet));
+    TEST_ASSERT_EQUAL(0, sizeOfCycleSet(cycleSet));
     cycleSet[0] = 1;
-    TEST_ASSERT_EQUAL(1, sizeOfSet(cycleSet));
+    TEST_ASSERT_EQUAL(1, sizeOfCycleSet(cycleSet));
     cycleSet[0] = 0x8000000000000000;
-    TEST_ASSERT_EQUAL(1, sizeOfSet(cycleSet));
+    TEST_ASSERT_EQUAL(1, sizeOfCycleSet(cycleSet));
     cycleSet[0] = 0x8000000000000001;
-    TEST_ASSERT_EQUAL(2, sizeOfSet(cycleSet));
+    TEST_ASSERT_EQUAL(2, sizeOfCycleSet(cycleSet));
     cycleSet[0] = 0x8000000000000001;
     cycleSet[1] = 0x8000000000000001;
-    TEST_ASSERT_EQUAL(4, sizeOfSet(cycleSet));
+    TEST_ASSERT_EQUAL(4, sizeOfCycleSet(cycleSet));
     memset(cycleSet, 0, sizeof(cycleSet));
-    addToSet(NCYCLES - 1, cycleSet);
-    TEST_ASSERT_EQUAL(1, sizeOfSet(cycleSet));
+    addToCycleSet(NCYCLES - 1, cycleSet);
+    TEST_ASSERT_EQUAL(1, sizeOfCycleSet(cycleSet));
 }
 
 void test_cycleset(void)
@@ -91,7 +91,7 @@ void test_cycleset(void)
     {
         for (j = 0; j < NCURVES; j++)
         {
-            int size2 = sizeOfSet(pairs2cycleSets[i][j]);
+            int size2 = sizeOfCycleSet(pairs2cycleSets[i][j]);
             if (i == j)
             {
                 TEST_ASSERT_EQUAL(0, size2);
@@ -102,7 +102,7 @@ void test_cycleset(void)
             }
             for (k = 0; k < NCURVES; k++)
             {
-                int size3 = sizeOfSet(triples2cycleSets[i][j][k]);
+                int size3 = sizeOfCycleSet(triples2cycleSets[i][j][k]);
                 if (i == j || i == k || j == k)
                 {
                     TEST_ASSERT_EQUAL(0, size3);
@@ -125,12 +125,43 @@ void test_same_and_opposite_directions(void)
     {
         for (j = 0; j < cycle->length; j++)
         {
-            TEST_ASSERT_TRUE(memberOfSet(cycleId, cycle->sameDirection[j]));
-            TEST_ASSERT_FALSE(memberOfSet(cycleId, cycle->oppositeDirection[j]));
+            TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, cycle->sameDirection[j]));
+            TEST_ASSERT_FALSE(memberOfCycleSet(cycleId, cycle->oppositeDirection[j]));
         }
     }
 }
 
+void test_opposite_directions(void)
+{
+    uint32_t cycleId, j, k, oppositeCycleId;
+    CYCLE cycle;
+    CYCLE oppositeCycle;
+    initialize();
+    for (cycleId = 0, cycle = g_cycles; cycleId < NCYCLES; cycleId++, cycle++)
+    {
+        for (j = 0; j < cycle->length; j++)
+        {
+            for (oppositeCycleId = 0, oppositeCycle = g_cycles; 
+                oppositeCycleId < NCYCLES; 
+                oppositeCycleId++, oppositeCycle++)
+            {
+                if (memberOfCycleSet(oppositeCycleId, cycle->oppositeDirection[j]))
+                {  for (k = 0; k < oppositeCycle->length; k++)
+                    {
+                        if (oppositeCycle->curves[k] == cycle->curves[j])
+                        {
+                            TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, oppositeCycle->oppositeDirection[k]));
+                            goto ok;
+                        }
+                    }
+                    TEST_FAIL_MESSAGE("opposite direction not found");
+                ok:
+                    continue;
+                }
+            }
+        }
+    }
+}
 
 void test_face_choice_count(void)
 {
@@ -153,10 +184,11 @@ int main(void)
     RUN_TEST(test_contains2);
     RUN_TEST(test_contains3);
     RUN_TEST(test_cycleset);
-    RUN_TEST(test_sizeOfSet);
+    RUN_TEST(test_sizeOfCycleSet);
     RUN_TEST(test_first_cycles);
     RUN_TEST(test_same_and_opposite_directions);
     RUN_TEST(test_face_choice_count);
+    RUN_TEST(test_opposite_directions);
 
     printf("CYCLESET_LENGTH = %lu\nNCYCLE_ENTRIES = %u\nNCYCLES = %u\n", 
         CYCLESET_LENGTH, NCYCLE_ENTRIES, NCYCLES);

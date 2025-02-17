@@ -27,7 +27,7 @@ static void initializeFacesAndEdges(void);
 static void applyMonotonicity(void);
 static void recomputeCountOfChoices(FACE face);
 /* face is truncated to 6 bits, higher bits may be set, and will be ignored. */
-static void setCycleLength(uint32_t faceColors, uint32_t length);
+void setCycleLength(uint32_t faceColors, uint32_t length);
 
 void clearInitialize()
 {
@@ -133,7 +133,7 @@ static void initializeCycleSets(void)
             {
                 if (contains2(&g_cycles[cycleId], i, j))
                 {
-                    addToSet(cycleId, pairs2cycleSets[i][j]);
+                    addToCycleSet(cycleId, pairs2cycleSets[i][j]);
                 }
             }
             for (k = 0; k < NCURVES; k++)
@@ -146,7 +146,7 @@ static void initializeCycleSets(void)
                 {
                     if (contains3(&g_cycles[cycleId], i, j, k))
                     {
-                        addToSet(cycleId, triples2cycleSets[i][j][k]);
+                        addToCycleSet(cycleId, triples2cycleSets[i][j][k]);
                     }
                 }
             }
@@ -237,7 +237,7 @@ static void applyMonotonicity(void)
         {
             if ((cycle->colors & colors) == 0 || (cycle->colors & ~colors) == 0)
             {
-                removeFromSet(cycleId, face->possibleCycles);
+                removeFromCycleSet(cycleId, face->possibleCycles);
             }
         }
         recomputeCountOfChoices(face);
@@ -248,10 +248,10 @@ static void applyMonotonicity(void)
 
 static void recomputeCountOfChoices(FACE face)
 {
-    face->cycleSetSize = sizeOfSet(face->possibleCycles);
+    face->cycleSetSize = sizeOfCycleSet(face->possibleCycles);
 }
 
-static void setCycleLength(uint32_t faceColors, uint32_t length)
+void setCycleLength(uint32_t faceColors, uint32_t length)
 {
     FACE face = g_faces + (faceColors & (NFACES - 1));
     CYCLE cycle;
@@ -260,7 +260,7 @@ static void setCycleLength(uint32_t faceColors, uint32_t length)
     {
         if (cycle->length != length)
         {
-            removeFromSet(cycleId, face->possibleCycles);
+            removeFromCycleSet(cycleId, face->possibleCycles);
         }
     }
     recomputeCountOfChoices(face);
