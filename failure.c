@@ -14,7 +14,11 @@ stats.
 static COLORSET MultipleFailures[200];
 static int CountOfFailuresInMultipleFailure = 0;
 static struct failure MultipleFailure = {
-    0, "Multiple failures", {0}, MultipleFailures};
+    0,
+    "Multiple failures",
+    {0},
+    MultipleFailures,
+};
 
 FAILURE maybeAddFailure(FAILURE failureCollection, FAILURE newFailure,
                         int depth)
@@ -47,7 +51,11 @@ FAILURE maybeAddFailure(FAILURE failureCollection, FAILURE newFailure,
 
 static COLORSET NoMatchColorset;
 static struct failure NoMatchFailure = {
-    NO_MATCH_FAILURE_TYPE, "No matching cycles", {0}, &NoMatchColorset};
+    NO_MATCH_FAILURE_TYPE,
+    "No matching cycles",
+    {0},
+    &NoMatchColorset,
+};
 
 FAILURE noMatchingCyclesFailure(COLORSET colors, int depth)
 {
@@ -57,10 +65,12 @@ FAILURE noMatchingCyclesFailure(COLORSET colors, int depth)
 }
 
 static COLORSET CrossingLimitColorPair;
-static struct failure CrossingLimitFailure = {CROSSING_LIMIT_FAILURE_TYPE,
-                                              "More than 3 crossing points",
-                                              {0},
-                                              &CrossingLimitColorPair};
+static struct failure CrossingLimitFailure = {
+    CROSSING_LIMIT_FAILURE_TYPE,
+    "More than 3 crossing points",
+    {0},
+    &CrossingLimitColorPair,
+};
 
 FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth)
 {
