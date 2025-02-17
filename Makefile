@@ -26,4 +26,8 @@ main: $(OBJ) $(XOBJ)
 	$(CC) $(CFLAGS) -o main $(OBJ) $(XOBJ)
 
 %.o: %.c venn.h
+	# Impose formatting.
+	clang-format -i $<
+	# Fix missing nl at eof.
+	if ! [ $$(tail -c 1 $< | od -An -t x1) == "0a" ]; then echo >> $< ; fi
 	$(CC) $(CFLAGS) -c $< -o $@
