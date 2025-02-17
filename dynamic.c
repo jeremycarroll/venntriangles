@@ -26,62 +26,6 @@ void setupCentralFaces(uint32_t aLength, uint32_t bLength, uint32_t cLength, uin
     makeChoice(centralFace);
 }
 
-/*
-The curve A crosses from inside the curve B to outside it.
-The curve B crosses from outside the curve A to inside it.
-
-Either return the point, or return NULL and set the value of failureReturn.
-*/
-static POINT createPointOrdered(EDGE aEdgeIn, EDGE aEdgeOut, EDGE bEdgeIn, EDGE bEdgeOut, FAILURE *failureReturn)
-{
-    POINT point = g_points + g_nextPoint;
-    FAILURE crossingLimit = checkCrossingLimit(aEdgeIn->color, bEdgeIn->color);
-    if (crossingLimit != NULL)
-    {
-        *failureReturn = crossingLimit;
-        return NULL;
-    }
-    setDynamicInt(&g_nextPoint, g_nextPoint + 1);
-    // not trailed, the point is on a stack.
-
-    // Edges: A before B, in before out:
-    point->edges[0] = aEdgeIn;
-    point->edges[1] = aEdgeOut;
-    point->edges[2] = bEdgeIn;
-    point->edges[3] = bEdgeOut;
-    // Faces: ~(AB), A, B, AB
-    point->faces[0] = aEdgeOut->outer;
-    point->faces[1] = aEdgeOut->inner;
-    point->faces[2] = bEdgeIn->inner;
-    point->faces[3] = aEdgeIn->inner;
-    assert(point->faces[0] == bEdgeIn->outer);
-    assert(point->faces[1] == bEdgeOut->outer);
-    assert(point->faces[2] == bEdgeOut->inner);
-    assert(point->faces[3] == bEdgeOut->inner);
-    setDynamicPointer(&aEdgeIn->to, point);
-    setDynamicPointer(&aEdgeOut->from, point);
-    setDynamicPointer(&bEdgeIn->to, point);
-    setDynamicPointer(&bEdgeOut->from, point);
-
-    return point;
-}
-
-static POINT createPoint(EDGE aEdgeIn, EDGE aEdgeOut, EDGE bEdgeIn, EDGE bEdgeOut, FAILURE *failureReturn)
-{
-    assert(aEdgeIn->to == NULL);
-    setDynamicInt(g_edgeCount + aEdgeIn->color, g_edgeCount[aEdgeIn->color] + 1);
-    assert(bEdgeIn->to == NULL);
-    setDynamicInt(g_edgeCount + bEdgeIn->color, g_edgeCount[bEdgeIn->color] + 1);
-    if (memberOfColorSet(bEdgeIn->color, aEdgeIn->inner->colors))
-    {
-        return createPointOrdered(aEdgeIn, aEdgeOut, bEdgeIn, bEdgeOut, failureReturn);
-    }
-    else
-    {
-        return createPointOrdered(bEdgeIn, bEdgeOut, aEdgeIn, aEdgeOut, failureReturn);
-    }
-}
-
 static void restrictCycles(FACE face, CYCLESET cycleSet)
 {
     uint32_t i;
@@ -125,7 +69,7 @@ static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET cycleSet, int dept
 /*
 Either return the point, or return NULL and set the value of failureReturn.
 */
-static POINT getOrCreatePointOnFace(FACE face, COLOR aColor, COLOR bColor, FAILURE *failureReturn)
+static POINT getOrCreatePointOnFace(FACE face, COLOR aColor, COLOR bColor, int depth, FAILURE *failureReturn)
 {
     EDGE aEdgeIn = face->edges[aColor];
     EDGE bEdgeOut = face->edges[bColor];
@@ -142,7 +86,7 @@ static POINT getOrCreatePointOnFace(FACE face, COLOR aColor, COLOR bColor, FAILU
         assert(aEdgeIn->to == bEdgeIn->from);
         return aEdgeIn->to;
     }
-    return createPoint(aEdgeIn, aEdgeOut, bEdgeIn, bEdgeOut, failureReturn);
+    return createPoint(aEdgeIn, aEdgeOut, bEdgeIn, bEdgeOut, depth, failureReturn);
 }
 
 static FAILURE propogateChoice(FACE face, POINT point, int depth)
@@ -191,11 +135,11 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
     {
         // getOrCreatePointOnFace is cheap so collect multiple failures to improve backtracking.
         singleFailure = NULL;
-        points[i] = getOrCreatePointOnFace(face, cycle->curves[i], cycle->curves[i + 1], &singleFailure);
-        multipleFailures = maybeAddFailure(multipleFailures, singleFailure);
+        points[i] = getOrCreatePointOnFace(face, cycle->curves[i], cycle->curves[i + 1], depth, &singleFailure);
+        multipleFailures = maybeAddFailure(multipleFailures, singleFailure, depth);
     }
-    points[i] = getOrCreatePointOnFace(face, cycle->curves[i], cycle->curves[0], &singleFailure);
-    multipleFailures = maybeAddFailure(multipleFailures, singleFailure);
+    points[i] = getOrCreatePointOnFace(face, cycle->curves[i], cycle->curves[0], depth, &singleFailure);
+    multipleFailures = maybeAddFailure(multipleFailures, singleFailure, depth);
     if (multipleFailures != NULL)
     {
         return multipleFailures;
@@ -204,7 +148,7 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
     for (i = 0; i < cycle->length; i++)
     {
         singleFailure = curveChecks(face->edges[cycle->curves[i]]);
-        multipleFailures = maybeAddFailure(multipleFailures, singleFailure);
+        multipleFailures = maybeAddFailure(multipleFailures, singleFailure, depth);
     }
     if (multipleFailures != NULL)
     {

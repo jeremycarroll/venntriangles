@@ -10,20 +10,20 @@ that we can skip stats.
 
 #define MULTIPLE_FAILURE_TYPE 0x200
 #define NO_MATCH_FAILURE_TYPE 0x1
-static struct failure multipleFailure = {0, "Multiple failures", 0, NULL};
+static struct failure multipleFailure = {0, "Multiple failures", {0}, NULL};
 
- FAILURE maybeAddFailure(FAILURE failureCollection, FAILURE newFailure) {
+ FAILURE maybeAddFailure(FAILURE failureCollection, FAILURE newFailure, int depth) {
      if (newFailure == NULL) {
          return failureCollection;
      }
      if (failureCollection == NULL) {
         failureCollection = &multipleFailure;
+        failureCollection->count[depth]++;
         multipleFailure.type = MULTIPLE_FAILURE_TYPE | newFailure->type;
      }
      // TODO: collect failures, and checktype
      assert(failureCollection == &multipleFailure);
      assert(failureCollection->type == (MULTIPLE_FAILURE_TYPE | newFailure->type));
-     failureCollection->count++;
      switch(newFailure->type) {
          case NO_MATCH_FAILURE_TYPE:
          break;
@@ -35,10 +35,14 @@ static struct failure multipleFailure = {0, "Multiple failures", 0, NULL};
  }
 
  static COLORSET noMatchColorset;
- static struct failure noMatchFailure = {NO_MATCH_FAILURE_TYPE, "No matching cycles", 0, &noMatchColorset};
+ static struct failure noMatchFailure = {NO_MATCH_FAILURE_TYPE, "No matching cycles", {0}, &noMatchColorset};
 
-FAILURE noMatchingCyclesFailure(COLORSET colors, uint32_t depth) {
+FAILURE noMatchingCyclesFailure(COLORSET colors, int depth) {
     *(COLORSET*) noMatchFailure.moreInfo = colors;
-    noMatchFailure.count++;
+    noMatchFailure.count[depth]++;
     return &noMatchFailure;
+}
+
+FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth) {
+    return NULL;
 }

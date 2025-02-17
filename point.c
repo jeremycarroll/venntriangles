@@ -85,3 +85,60 @@ EDGE followEdge(EDGE edge)
     assert(edge->color == point2outside2insideColor(edge->to));
     return point2outside2insideOutgoingEdge(edge->to);
 }
+
+
+/*
+The curve A crosses from inside the curve B to outside it.
+The curve B crosses from outside the curve A to inside it.
+
+Either return the point, or return NULL and set the value of failureReturn.
+*/
+static POINT createPointOrdered(EDGE aEdgeIn, EDGE aEdgeOut, EDGE bEdgeIn, EDGE bEdgeOut, int depth, FAILURE *failureReturn)
+{
+    POINT point = g_points + g_nextPoint;
+    FAILURE crossingLimit = checkCrossingLimit(aEdgeIn->color, bEdgeIn->color, depth);
+    if (crossingLimit != NULL)
+    {
+        *failureReturn = crossingLimit;
+        return NULL;
+    }
+    setDynamicInt(&g_nextPoint, g_nextPoint + 1);
+    // not trailed, the point is on a stack.
+
+    // Edges: A before B, in before out:
+    point->edges[0] = aEdgeIn;
+    point->edges[1] = aEdgeOut;
+    point->edges[2] = bEdgeIn;
+    point->edges[3] = bEdgeOut;
+    // Faces: ~(AB), A, B, AB
+    point->faces[0] = aEdgeOut->outer;
+    point->faces[1] = aEdgeOut->inner;
+    point->faces[2] = bEdgeIn->inner;
+    point->faces[3] = aEdgeIn->inner;
+    assert(point->faces[0] == bEdgeIn->outer);
+    assert(point->faces[1] == bEdgeOut->outer);
+    assert(point->faces[2] == bEdgeOut->inner);
+    assert(point->faces[3] == bEdgeOut->inner);
+    setDynamicPointer(&aEdgeIn->to, point);
+    setDynamicPointer(&aEdgeOut->from, point);
+    setDynamicPointer(&bEdgeIn->to, point);
+    setDynamicPointer(&bEdgeOut->from, point);
+
+    return point;
+}
+
+POINT createPoint(EDGE aEdgeIn, EDGE aEdgeOut, EDGE bEdgeIn, EDGE bEdgeOut, int depth, FAILURE *failureReturn)
+{
+    assert(aEdgeIn->to == NULL);
+    setDynamicInt(g_edgeCount + aEdgeIn->color, g_edgeCount[aEdgeIn->color] + 1);
+    assert(bEdgeIn->to == NULL);
+    setDynamicInt(g_edgeCount + bEdgeIn->color, g_edgeCount[bEdgeIn->color] + 1);
+    if (memberOfColorSet(bEdgeIn->color, aEdgeIn->inner->colors))
+    {
+        return createPointOrdered(aEdgeIn, aEdgeOut, bEdgeIn, bEdgeOut, depth, failureReturn);
+    }
+    else
+    {
+        return createPointOrdered(bEdgeIn, bEdgeOut, aEdgeIn, aEdgeOut, depth, failureReturn);
+    }
+}

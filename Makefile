@@ -5,7 +5,7 @@ UNITY_DIR = ../Unity
 CFLAGS += -I$(UNITY_DIR)/src
 TEST_SRC = test/test_main.c
 TEST_OBJ = $(TEST_SRC:.c=.o)
-SRC      = main.c initialize.c globals.c cycles.c trail.c dynamic.c failure.c colors.c triangles.c
+SRC      = main.c initialize.c globals.c cycles.c trail.c dynamic.c failure.c colors.c triangles.c point.c
 OBJ      = $(SRC:.c=.o)
 XSRC     = entrypoint.c
 XOBJ	 = $(XSRC:.c=.o)

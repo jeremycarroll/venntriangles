@@ -35,6 +35,7 @@ typedef uint64_t uint_trail; // Any non-pointer value that might go on the trail
 #define CYCLESET_LENGTH ((NCYCLES-1) / BITS_PER_WORD + 1)
 #define FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET ((1ul << (NCYCLES % BITS_PER_WORD)) - 1ul)
 #define NCYCLE_ENTRIES (CHOOSE_6_0 * FACTORIAL5 * 6 + CHOOSE_6_1 * FACTORIAL4 * 5 + CHOOSE_6_2 * FACTORIAL3 * 4 + CHOOSE_6_3  * FACTORIAL2 * 3)
+#define MAX_ONE_WAY_CURVE_CROSSINGS 3
 
 /* TODO: improve this number, 10^6 looks very safe, but we should aim for less. */
 #define TRAIL_SIZE 1000000
@@ -133,7 +134,8 @@ struct face {
  struct failure {
      FAILURE_TYPE type;
      char * label;
-     uint64_t count;
+     // The number of times this failure has been used, at each depth.
+     uint64_t count[NFACES];
      void * moreInfo;
  };
 
@@ -207,13 +209,15 @@ extern void setDynamicInt(uint_trail * ptr, uint_trail value);
 extern void backtrackTo(TRAIL backtrackPoint);
 extern void setCycleLength(uint32_t faceColors, uint32_t length);
 
-extern FAILURE collectMultipleFailures(FAILURE failureCollection, FAILURE newFailure);
+
+extern POINT createPoint(EDGE aEdgeIn, EDGE aEdgeOut, EDGE bEdgeIn, EDGE bEdgeOut, int depth, FAILURE *failureReturn);
+
 extern FAILURE makeChoice(FACE face);
 extern FAILURE curveChecks(EDGE edge);
-extern FAILURE noMatchingCyclesFailure(COLORSET colors, uint32_t depth);
-extern FAILURE maybeAddFailure(FAILURE multipleFailuresOrNull, FAILURE singleFailure);
+extern FAILURE noMatchingCyclesFailure(COLORSET colors, int depth);
+extern FAILURE maybeAddFailure(FAILURE multipleFailuresOrNull, FAILURE singleFailure, int depth);
 /* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
 and that number should be three or less. */
-extern FAILURE checkCrossingLimit(COLOR a, COLOR b);
-
+extern FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth);
+extern FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth);
 #endif

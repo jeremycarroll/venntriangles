@@ -12,6 +12,11 @@ FAILURE curveChecks(EDGE edge) {
     // TODO:
     return NULL;
 }
-FAILURE checkCrossingLimit(COLOR a, COLOR b) {
+FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth) {
+    uint_trail * crossing = g_crossings[a];
+    if (* crossing + 1 > MAX_ONE_WAY_CURVE_CROSSINGS) {
+        return crossingLimitFailure(a, b, depth);
+    }
+    setDynamicInt(crossing, * crossing + 1);
     return NULL;
 }
