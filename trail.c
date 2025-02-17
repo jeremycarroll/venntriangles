@@ -4,7 +4,7 @@
 static struct trail trailarray[TRAIL_SIZE];
 TRAIL trail = trailarray;
 
-void setDynamicPointer(void ** ptr, void * value)
+void setDynamicPointer_(void ** ptr, void * value)
 {
     trail->ptr = ptr;
     trail->value = (uint_trail)*ptr;

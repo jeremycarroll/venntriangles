@@ -5,9 +5,9 @@ UNITY_DIR = ../Unity
 CFLAGS += -I$(UNITY_DIR)/src
 TEST_SRC = test/test_main.c
 TEST_OBJ = $(TEST_SRC:.c=.o)
-SRC      = main.c initialize.c globals.c cycles.c trail.c
+SRC      = main.c initialize.c globals.c cycles.c trail.c dynamic.c failure.c colors.c triangles.c
 OBJ      = $(SRC:.c=.o)
-XSRC     = entry.c
+XSRC     = entrypoint.c
 XOBJ	 = $(XSRC:.c=.o)
 
 test/%: test/%.c $(UNITY_DIR)/src/unity.c $(OBJ)
@@ -25,6 +25,5 @@ clean:
 main: $(OBJ) $(XOBJ)
 	$(CC) $(CFLAGS) -o main $(OBJ) $(XOBJ)
 
-%.o: %.c
+%.o: %.c venn.h
 	$(CC) $(CFLAGS) -c $< -o $@
-

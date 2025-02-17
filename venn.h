@@ -44,6 +44,8 @@ typedef uint64_t uint_trail; // Any non-pointer value that might go on the trail
 #define DYNAMIC // This field is modified in the trail, i.e. after initialization we track all changes.
 #define STATIC  // This field is initialized before we start and is then not modified.
 
+typedef uint32_t COLOR;  /* Actually between 0 and 5, with NO_COLOR as a potential (I think unused). */
+typedef uint32_t COLORSET; /* A set of bits, so between 0 and 63 */
 typedef struct face * FACE;
 typedef struct facial_cycle * CYCLE;
 typedef struct edge * EDGE;
@@ -61,14 +63,14 @@ struct face {
     STATIC struct edge * edges[NCURVES];
     DYNAMIC CYCLESET_DECLARE possibleCycles;
     DYNAMIC TRAIL backtrack;
-    STATIC unsigned int colors; // holds up to NFACES
+    STATIC COLORSET colors; // holds up to NFACES
     DYNAMIC uint_trail cycleSetSize; // holds up to NCYCLES
  };
 
  STATIC struct facial_cycle {
     uint32_t length;
     uint32_t curves[NCURVES+1];
-    uint32_t colors;
+    COLORSET colors;
     /* 
       This is a pointer to an array of length length.
       sameDirection[i] refers to curves[i] and curves[i+1]
@@ -83,16 +85,25 @@ struct face {
 
  /* When we create the point we have all four faces and all four edges 
     to hand, so either all eight fields are null or none are.
+
+    The point is between the crossing of two curves, one colored A
+    and the other colored B, A and B used in the comments below.
+
+    The curve colored A crosses from inside the curve colored B to outside it.
+    The curve colored B crosses from outside the curve colored A to inside it.
   */
  struct point {
+   /* Color A: can be accessed as the color of edge[0].
+      Color B: can be accessed as the color of edge[2].
+   */
     /*
     If the point is between crossing of curve A and curve B, 
-    then face[0] is inside neither A nor B
+    then face[0] is inside neither curve 
     face[1] is inside A but not B
     face[2] is inside B but not A
     face[3] is inside both A and B
     */
-    DYNAMIC FACE * faces[4];
+    FACE faces[4];
     /*
     If the point is between crossing of curve A and curve B, 
     and color(A) < color(B),
@@ -101,7 +112,7 @@ struct face {
     edge[2] is of color B and runs into the point
     edge[3] is of color B and runs out of the point
     */
-    DYNAMIC EDGE * edges[4];
+    EDGE edges[4];
  };
 
  struct edge {
@@ -113,9 +124,23 @@ struct face {
    */
    DYNAMIC POINT from;
    DYNAMIC POINT to;
-   STATIC unsigned int color;
+   STATIC COLOR color;
  };
 
+ typedef uint32_t FAILURE_TYPE;
+ typedef struct failure * FAILURE;
+ 
+ struct failure {
+     FAILURE_TYPE type;
+     char * label;
+     uint64_t count;
+     void * moreInfo;
+ };
+
+ struct trail {
+   void * ptr;
+   uint_trail value;
+};
 
  /*
   All DYNAMIC fields must be in this structure: during unit testing we reset this to zero.
@@ -126,8 +151,12 @@ struct face {
     struct face faces[NFACES];
     /*
     The points are accessed from the edges, with the pointers set up dynamically.
-    We allocate the points from this array, using nextPoint to keep track of the next free point,
+    We allocate the points from this stack, using nextPoint to keep track of the next free point,
     nextPoint goes down as we backtrack, automatically freeing points.
+    Because this stack tracks the trail, we do not need to clean up, and so the value
+    of the fields of each point not in the trail; however, pointers to the POINT, are
+    in the trail (they are set once, so we don't really need to trail the previous value,
+    which is always NULL).
      */
     struct point points[NPOINTS];
     /*
@@ -140,12 +169,16 @@ struct face {
     The faces use the id of the cycle to find it in this list.
     */
     STATIC struct facial_cycle cycles[NCYCLES];
+    /* diagonal is 0; we expect in a solution that
+       this matrix is symmetric and all other values are 3 or 2. */
+    DYNAMIC uint_trail crossings[NCURVES][NCURVES];
+    /* If we have a color-curve that is not edgeCount[color] long, then we do not
+      have a solution. 
+      edgeCount[color] is the number of edges of given color with a _to_ field set.
+      */
+    DYNAMIC uint_trail edgeCount[NCURVES];
  };
 
- struct trail {
-   void * ptr;
-   uint_trail value;
-};
 
 extern struct global globals;
 
@@ -154,17 +187,33 @@ extern struct global globals;
 #define g_edges globals.edges
 #define g_nextPoint globals.nextPoint
 #define g_cycles globals.cycles
+#define g_crossings globals.crossings
+#define g_edgeCount globals.edgeCount
 
 extern TRAIL trail;
 extern void initialize(void);
-extern void addToSet(uint32_t cycleId, CYCLESET cycleSet);
-extern void removeFromSet(uint32_t cycleId, CYCLESET cycleSet);
-extern bool memberOfSet(uint32_t cycleId, CYCLESET cycleSet);
-extern u_int32_t sizeOfSet(CYCLESET cycleSet);
+extern void addToCycleSet(uint32_t cycleId, CYCLESET cycleSet);
+extern void removeFromCycleSet(uint32_t cycleId, CYCLESET cycleSet);
+extern bool memberOfCycleSet(uint32_t cycleId, CYCLESET cycleSet);
+extern CYCLE findFirstCycleInSet(CYCLESET cycleSet);
+extern bool memberOfColorSet(COLOR color, COLORSET colorSet);
+extern uint32_t sizeOfCycleSet(CYCLESET cycleSet);
 extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
 extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
-extern void setDynamicPointer(void ** ptr, void * value);
+extern void setDynamicPointer_(void ** ptr, void * value);
+#define setDynamicPointer(a, b) setDynamicPointer_((void**)a, b)
+
 extern void setDynamicInt(uint_trail * ptr, uint_trail value);
 extern void backtrackTo(TRAIL backtrackPoint);
+extern void setCycleLength(uint32_t faceColors, uint32_t length);
+
+extern FAILURE collectMultipleFailures(FAILURE failureCollection, FAILURE newFailure);
+extern FAILURE makeChoice(FACE face);
+extern FAILURE curveChecks(EDGE edge);
+extern FAILURE noMatchingCyclesFailure(COLORSET colors, uint32_t depth);
+extern FAILURE maybeAddFailure(FAILURE multipleFailuresOrNull, FAILURE singleFailure);
+/* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
+and that number should be three or less. */
+extern FAILURE checkCrossingLimit(COLOR a, COLOR b);
 
 #endif

@@ -1,22 +1,32 @@
 #include "venn.h"
 #include "visible_for_testing.h"
 
-void addToSet(uint32_t cycleId, CYCLESET cycleSet)
+void addToCycleSet(uint32_t cycleId, CYCLESET cycleSet)
 {
     assert(cycleId < NCYCLES);
     cycleSet[cycleId / BITS_PER_WORD] |= 1ul << (cycleId % BITS_PER_WORD);
 }
 
-bool memberOfSet(uint32_t cycleId, CYCLESET cycleSet)
+bool memberOfCycleSet(uint32_t cycleId, CYCLESET cycleSet)
 {
     assert(cycleId < NCYCLES);
     return (cycleSet[cycleId / BITS_PER_WORD] >> (cycleId % BITS_PER_WORD)) & 1ul;
 }
 
-void removeFromSet(uint32_t cycleId, CYCLESET cycleSet)
+void removeFromCycleSet(uint32_t cycleId, CYCLESET cycleSet)
 {
     assert(cycleId < NCYCLES);
     cycleSet[cycleId / BITS_PER_WORD] &= ~(1ul << (cycleId % BITS_PER_WORD));
+}
+
+CYCLE findFirstCycleInSet(CYCLESET cycleSet) {
+    uint32_t i;
+    for (i = 0; i < CYCLESET_LENGTH; i++) {
+        if (cycleSet[i]) {
+            return g_cycles + i * BITS_PER_WORD + __builtin_ctzll(cycleSet[i]);
+        }
+    }
+    return NULL;
 }
 
 bool contains2(CYCLE cycle, uint32_t i, uint32_t j)
@@ -46,7 +56,7 @@ bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k)
 }
 
 /* See https://en.wikichip.org/wiki/population_count#Software_support */
-u_int32_t sizeOfSet(CYCLESET cycleSet)
+u_int32_t sizeOfCycleSet(CYCLESET cycleSet)
 {
     u_int32_t size = 0;
     for (u_int32_t i = 0; i < CYCLESET_LENGTH; i++)
