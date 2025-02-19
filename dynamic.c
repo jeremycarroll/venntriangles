@@ -148,7 +148,7 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
   }
 
   for (i = 0; i < cycle->length; i++) {
-    singleFailure = curveChecks(face->edges[cycle->curves[i]]);
+    singleFailure = curveChecks(face->edges[cycle->curves[i]], depth);
     multipleFailures = maybeAddFailure(multipleFailures, singleFailure, depth);
   }
   if (multipleFailures != NULL) {
@@ -170,3 +170,36 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
 }
 
 FAILURE makeChoice(FACE face) { return makeChoiceInternal(face, 0); }
+
+static CYCLESET_DECLARE withoutColor[NCURVES];
+
+void clearWithoutColor() { memset(withoutColor, 0, sizeof(withoutColor)); }
+
+void initializeWithoutColor()
+{
+  COLOR color;
+  CYCLE cycle;
+  uint32_t i;
+  for (color = 0; color < NCURVES; color++) {
+    for (i = 0, cycle = g_cycles; i < NCYCLES; i++, cycle++) {
+      if (!memberOfColorSet(color, cycle->colors)) {
+        addToCycleSet(i, withoutColor[color]);
+      }
+    }
+  }
+}
+
+bool removeColorFromSearch(COLOR color, int depth)
+{
+  FACE f;
+  uint32_t i;
+  for (i = 0, f = g_faces; i < NFACES; i++, f++) {
+    if (f->cycle == NULL) {
+      /* Discard failure, we will report a different one. */
+      if (restrictAndPropogateCycles(f, withoutColor[color], depth) != NULL) {
+        return false;
+      }
+    }
+  }
+  return true;
+}

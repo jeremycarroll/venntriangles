@@ -7,17 +7,15 @@ current state of the failure as we backtrack.abort Each of the static failure
 also has a counter, which is incremented on every use, so that we can produce
 stats.
 */
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
-#define MULTIPLE_FAILURE_TYPE 0x200
-#define NO_MATCH_FAILURE_TYPE 0x1
-#define CROSSING_LIMIT_FAILURE_TYPE 0x2
 static COLORSET MultipleFailures[200];
 static int CountOfFailuresInMultipleFailure = 0;
 static struct failure MultipleFailure = {
-    0,
+    MULTIPLE_FAILURE,
     "Multiple failures",
     {0},
-    MultipleFailures,
+    .u.mulipleColors = MultipleFailures,
 };
 
 FAILURE maybeAddFailure(FAILURE failureCollection, FAILURE newFailure,
@@ -30,16 +28,16 @@ FAILURE maybeAddFailure(FAILURE failureCollection, FAILURE newFailure,
     failureCollection = &MultipleFailure;
     failureCollection->count[depth]++;
     CountOfFailuresInMultipleFailure = 0;
-    MultipleFailure.type = MULTIPLE_FAILURE_TYPE | newFailure->type;
+    MultipleFailure.type = MULTIPLE_FAILURE | newFailure->type;
   }
   assert(failureCollection == &MultipleFailure);
-  assert(failureCollection->type == (MULTIPLE_FAILURE_TYPE | newFailure->type));
+  assert(failureCollection->type == (MULTIPLE_FAILURE | newFailure->type));
   switch (newFailure->type) {
-    case CROSSING_LIMIT_FAILURE_TYPE:
+    case CROSSING_LIMIT_FAILURE:
       MultipleFailures[CountOfFailuresInMultipleFailure++] =
-          *(COLORSET *)newFailure->moreInfo;
+          newFailure->u.colors;
       break;
-    case NO_MATCH_FAILURE_TYPE:
+    case NO_MATCH_FAILURE:
       assert(NULL == "Unsupported failure type");
       break;
     default:
@@ -49,32 +47,57 @@ FAILURE maybeAddFailure(FAILURE failureCollection, FAILURE newFailure,
   return failureCollection;
 }
 
-static COLORSET NoMatchColorset;
 static struct failure NoMatchFailure = {
-    NO_MATCH_FAILURE_TYPE,
+    NO_MATCH_FAILURE,
     "No matching cycles",
     {0},
-    &NoMatchColorset,
 };
 
 FAILURE noMatchingCyclesFailure(COLORSET colors, int depth)
 {
-  NoMatchColorset = colors;
+  NoMatchFailure.u.colors = colors;
   NoMatchFailure.count[depth]++;
   return &NoMatchFailure;
 }
 
-static COLORSET CrossingLimitColorPair;
 static struct failure CrossingLimitFailure = {
-    CROSSING_LIMIT_FAILURE_TYPE,
+    CROSSING_LIMIT_FAILURE,
     "More than 3 crossing points",
     {0},
-    &CrossingLimitColorPair,
 };
 
 FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth)
 {
-  CrossingLimitColorPair = (1u << a) | (1u << b);
+  CrossingLimitFailure.u.colors = (1u << a) | (1u << b);
   CrossingLimitFailure.count[depth]++;
   return &CrossingLimitFailure;
+}
+
+static struct failure DisconnectedCurveFailure = {
+    DISCONNECTED_CURVE_FAILURE,
+    "Disconnected curve",
+    {0},
+};
+
+FAILURE disconnectedCurveFailure(COLOR a, bool explicit, int depth)
+{
+  if (explicit) {
+    depth = NFACES - 1;
+  }
+  DisconnectedCurveFailure.u.colors = (1u << a);
+  DisconnectedCurveFailure.count[depth]++;
+  return &DisconnectedCurveFailure;
+}
+
+static struct failure TooManyCornersFailure = {
+    TOO_MANY_CORNERS_FAILURE,
+    "Too many corners",
+    {0},
+};
+
+FAILURE tooManyCornersFailure(COLOR a, int depth)
+{
+  TooManyCornersFailure.u.colors = (1u << a);
+  TooManyCornersFailure.count[depth]++;
+  return &TooManyCornersFailure;
 }
