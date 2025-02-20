@@ -66,9 +66,9 @@ for order in equivocal6:
 
 """
 Output are either 6 tuples or 9 tuples or 12 tuples.
-6s are size of ~A, ~B, ~C, ~D, ~E, ~F
-9s are size of ~A, ~B, ~C, ~D, ~E, ~F, ~AB, ~CD, ~EF
-12s are size of ~A, ~B, ~C, ~D, ~E, ~F, ~AB, ~CD, ~EF, ~BC, ~DE, ~FA
+6s are sizes of ~A, ~B, ~C, ~D, ~E, ~F
+9s are sizes of ~A, ~B, ~C, ~D, ~E, ~F, ~AB, ~CD, ~EF
+12s are sizes of ~A, ~B, ~C, ~D, ~E, ~F, ~AB, ~CD, ~EF, ~BC, ~DE, ~FA
 
 12s include some with rotational symmetries, 6s and 9s are all strictly canonical.
 """
