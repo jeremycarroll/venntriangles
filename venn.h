@@ -83,7 +83,7 @@ struct face {
 
 STATIC struct facial_cycle {
   uint32_t length;
-  uint32_t curves[NCURVES + 1];
+  COLOR    curves[NCURVES + 1];
   COLORSET colors;
   /*
     This is a pointer to an array of length length.
@@ -234,6 +234,7 @@ extern bool memberOfCycleSet(uint32_t cycleId, CYCLESET cycleSet);
 extern CYCLE findFirstCycleInSet(CYCLESET cycleSet);
 extern bool memberOfColorSet(COLOR color, COLORSET colorSet);
 extern uint32_t sizeOfCycleSet(CYCLESET cycleSet);
+extern uint32_t findCycleId(uint32_t * cycle, uint32_t length);
 extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
 extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
 extern void setDynamicPointer_(void **ptr, void *value);

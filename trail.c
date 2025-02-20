@@ -27,3 +27,5 @@ void backtrackTo(TRAIL backtrackPoint)
     *(uint_trail*)trail->ptr = trail->value;
   }
 }
+
+void resetTrail() { trail = trailarray; }

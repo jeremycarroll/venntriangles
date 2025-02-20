@@ -96,3 +96,22 @@ bool printCycleSet(CYCLESET cycleSet)
   printf(" }\n");
   return true;
 }
+
+uint32_t findCycleId(uint32_t* cycle, uint32_t length)
+{
+  uint32_t cycleId;
+  for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
+    if (g_cycles[cycleId].length == length) {
+      uint32_t i;
+      for (i = 0; i < length; i++) {
+        if (g_cycles[cycleId].curves[i] != cycle[i]) {
+          break;
+        }
+      }
+      if (i == length) {
+        return cycleId;
+      }
+    }
+  }
+  assert(NULL == "Unreachable");
+}

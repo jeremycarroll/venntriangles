@@ -20,7 +20,7 @@ formatheader:
 	clang-format -i venn.h
 	if ! [ $$(tail -c 1 venn.h | od -An -t x1) == "0a" ]; then echo >> venn.h ; fi
 
-tests: test/test_initialize test/test_main
+tests: test/test_initialize test/test_main test/test_known_solution
 	for i in $^; do ./$$i; done
 
 clean:
