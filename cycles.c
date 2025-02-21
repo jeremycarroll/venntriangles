@@ -97,12 +97,12 @@ bool printCycleSet(CYCLESET cycleSet)
   return true;
 }
 
-uint32_t findCycleId(uint32_t* cycle, uint32_t length)
+uint32_t findCycleId(COLOR* cycle, uint32_t length)
 {
   uint32_t cycleId;
+  uint32_t i;
   for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
     if (g_cycles[cycleId].length == length) {
-      uint32_t i;
       for (i = 0; i < length; i++) {
         if (g_cycles[cycleId].curves[i] != cycle[i]) {
           break;

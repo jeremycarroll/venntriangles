@@ -280,9 +280,14 @@ void tearDown(void)
 static FACE faceFromColors(char* colors)
 {
   int face_id = 0;
-  while (*colors) {
-    face_id |= 1 << (*colors - 'a');
+  while (true) {
+    if (*colors == 0) {
+      break;
+    }
+    face_id |= (1 << (*colors - 'a'));
+    colors++;
   }
+  printf("Faceid %x\n", face_id);
   return g_faces + face_id;
 }
 
@@ -317,6 +322,18 @@ static void addFacesFromTestData(char* testData[][2], int length)
   }
 }
 
+void test_faceFromColors() {
+    TEST_ASSERT_EQUAL(g_faces, faceFromColors(""));
+    TEST_ASSERT_EQUAL(g_faces + 1, faceFromColors("a"));
+    TEST_ASSERT_EQUAL(g_faces + 2, faceFromColors("b"));
+    TEST_ASSERT_EQUAL(g_faces + 3, faceFromColors("ab"));
+    TEST_ASSERT_EQUAL(g_faces + 4, faceFromColors("c"));
+    TEST_ASSERT_EQUAL(g_faces + 5, faceFromColors("ac"));
+    TEST_ASSERT_EQUAL(g_faces + 6, faceFromColors("bc"));
+    TEST_ASSERT_EQUAL(g_faces + 7, faceFromColors("abc"));
+    TEST_ASSERT_EQUAL(g_faces + NFACES-1, faceFromColors("abcdef"));
+}
+
 void test_3_4_5_6(void)
 {
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
@@ -328,6 +345,7 @@ void test_3_4_5_6(void)
 int main(void)
 {
   UNITY_BEGIN();
+  RUN_TEST(test_faceFromColors);
   RUN_TEST(test_3_4_5_6);
   return UNITY_END();
 }
