@@ -25,6 +25,7 @@ static void initializeCycleSets(void);
 static void initializeSameDirection(void);
 static void initializeOppositeDirection(void);
 static void initializeFacesAndEdges(void);
+static void initializePossiblyTo(void);
 static void applyMonotonicity(void);
 static void recomputeCountOfChoices(FACE face);
 /* face is truncated to 6 bits, higher bits may be set, and will be ignored. */
@@ -53,6 +54,12 @@ void initialize()
   assert(nextSetOfCycleSets == 2 * NCYCLE_ENTRIES);
 
   initializeFacesAndEdges();
+#if POINT_DEBUG
+  for (uint32_t i = 0; i < NFACES; i++) {
+    printFace(g_faces + i);
+  }
+#endif
+  initializePossiblyTo();
   initializePoints();
   applyMonotonicity();
 
@@ -175,7 +182,7 @@ static void initializeOppositeDirection(void)
 
 static void initializeFacesAndEdges(void)
 {
-  uint32_t facecolors, color, j, othercolor;
+  uint32_t facecolors, color, j;
   FACE face, adjacent;
   EDGE edge;
   for (facecolors = 0, face = g_faces; facecolors < NFACES;
@@ -196,8 +203,18 @@ static void initializeFacesAndEdges(void)
       edge->reversed = &adjacent->edges[color];
     }
   }
+}
+
+static void initializePossiblyTo(void)
+{
+  uint32_t facecolors, color, othercolor;
+  FACE face;
+  EDGE edge;
   for (facecolors = 0, face = g_faces; facecolors < NFACES;
        facecolors++, face++) {
+#if POINT_DEBUG
+    printFace(face);
+#endif
     for (color = 0; color < NCURVES; color++) {
       edge = &face->edges[color];
       for (othercolor = 0; othercolor < NCURVES; othercolor++) {
@@ -209,6 +226,7 @@ static void initializeFacesAndEdges(void)
     }
   }
 }
+
 /*
 A FISC is isomorphic to a convex FISC if and only if it is monotone.
 A FISC is monotone if its dual has a unique source (no incoming edges) and a

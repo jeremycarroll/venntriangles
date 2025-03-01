@@ -30,13 +30,27 @@ typedef uint64_t uint_trail;  // Any non-pointer value that might go on the
 #define CHOOSE_6_1 6u
 #define CHOOSE_6_2 15u
 #define CHOOSE_6_3 20u
+#define CHOOSE_4_0 1u
+#define CHOOSE_4_1 4u
+#define CHOOSE_3_0 1u
 /* The curves are _colored_ from 0 to 5. */
 #define NCURVES 6
 #define NFACES (1 << NCURVES)
 // #define NPOINTS (NFACES - 2)
+#if NCURVES == 6
 #define NCYCLES                                        \
   (CHOOSE_6_0 * FACTORIAL5 + CHOOSE_6_1 * FACTORIAL4 + \
    CHOOSE_6_2 * FACTORIAL3 + CHOOSE_6_3 * FACTORIAL2)
+#define NCYCLE_ENTRIES                                         \
+  (CHOOSE_6_0 * FACTORIAL5 * 6 + CHOOSE_6_1 * FACTORIAL4 * 5 + \
+   CHOOSE_6_2 * FACTORIAL3 * 4 + CHOOSE_6_3 * FACTORIAL2 * 3)
+#elif NCURVES == 4
+#define NCYCLES (CHOOSE_4_0 * FACTORIAL3 + CHOOSE_4_1 * FACTORIAL2)
+#define NCYCLE_ENTRIES (CHOOSE_4_0 * FACTORIAL4 + CHOOSE_4_1 * FACTORIAL3)
+#else
+#define NCYCLES (CHOOSE_3_0 * FACTORIAL2)
+#define NCYCLE_ENTRIES (CHOOSE_3_0 * FACTORIAL3)
+#endif
 #define CYCLESET_LENGTH ((NCYCLES - 1) / BITS_PER_WORD + 1)
 /*
 There are NFACES - 2 points, by Euler.
@@ -50,9 +64,6 @@ the other.
 #define POINTSET_LENGTH ((NPOINTS - 1) / BITS_PER_WORD + 1)
 #define FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET \
   ((1ul << (NCYCLES % BITS_PER_WORD)) - 1ul)
-#define NCYCLE_ENTRIES                                         \
-  (CHOOSE_6_0 * FACTORIAL5 * 6 + CHOOSE_6_1 * FACTORIAL4 * 5 + \
-   CHOOSE_6_2 * FACTORIAL3 * 4 + CHOOSE_6_3 * FACTORIAL2 * 3)
 #define MAX_ONE_WAY_CURVE_CROSSINGS 3
 #define MAX_CORNERS 3
 
@@ -330,6 +341,8 @@ extern char *edge2str(char *dbuffer, EDGE edge);
 extern char *face2str(char *dbuffer, FACE face);
 extern char *colors2str(char *dbuffer, COLORSET colors);
 extern int color2char(char *dbuffer, COLOR c);
-#define POINT_DEBUG 1
+extern void printFace(FACE face);
+extern void printEdge(EDGE edge);
+#define POINT_DEBUG 0
 
 #endif

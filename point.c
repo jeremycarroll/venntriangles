@@ -33,17 +33,37 @@ static UPOINT getPoint(COLORSET innerFace, COLOR a, COLOR b)
   return allUPointPointers[innerFace][a][b];
 }
 
+/*
+The two edges have the same color and meet at the same point.
+which has other as the other color.
+The out[0] value for both edges for the other color is set to the reverse of the
+other edge.
+*/
+static void linkOut(EDGE edge1, EDGE edge2, COLOR other)
+{
+  assert(edge1->color == edge2->color);
+  assert(edge1->possiblyTo[other].out[0] == NULL);
+  assert(edge2->possiblyTo[other].out[0] == NULL);
+  assert(edge1->possiblyTo[other].point == edge2->possiblyTo[other].point);
+  assert(edge1->possiblyTo[other].point->colors =
+             (1u << edge1->color | 1u << other));
+  edge1->possiblyTo[other].out[0] = edge2->reversed;
+  edge2->possiblyTo[other].out[0] = edge1->reversed;
+}
+
+/*
+Set up out[0] on every possiblyTo.
+
+It must be the same color, and the reverse of the other edge of that color at
+the point.
+*/
 void initializePoints(void)
 {
   uint32_t i, j, k;
   for (i = 0; i < NPOINTS; i++) {
     UPOINT p = allUPoints + i;
-    for (j = 0; j < 4; j++) {
-      COLOR other = p->incomingEdges[1 - (1 & j)]->color;
-      assert(other != p->incomingEdges[j]->color);
-      p->incomingEdges[j]->possiblyTo[other].out[0] =
-          p->incomingEdges[(j ^ 3) & 3]->reversed;
-    }
+    linkOut(p->incomingEdges[0], p->incomingEdges[1], p->secondary);
+    linkOut(p->incomingEdges[2], p->incomingEdges[3], p->primary);
   }
   for (i = 0; i < NFACES; i++) {
     FACE f = g_faces + i;
@@ -148,28 +168,28 @@ UPOINT addToPoint(FACE face, EDGE incomingEdge, COLOR othercolor)
                          ~(1u << incomingEdge->color);
   UPOINT point;
   COLOR a, b;
-  uint32_t ix = (IS_PRIMARY_EDGE(incomingEdge) << 1) |
-                memberOfColorSet(othercolor, face->colors);
+  uint32_t ix = IS_PRIMARY_EDGE(incomingEdge) |
+                (memberOfColorSet(othercolor, face->colors) << 1);
 
-#ifdef POINT_DEBUG
+#if POINT_DEBUG
   char dbuffer[1024] = {1, 0, 0};
 #endif
   assert(othercolor != incomingEdge->color);
   switch (ix) {
     case 0:
-    case 3:
+    case 1:
       a = incomingEdge->color;
       b = othercolor;
       break;
-    case 1:
     case 2:
+    case 3:
       a = othercolor;
       b = incomingEdge->color;
       break;
     default:
       assert(0);
   }
-#ifdef POINT_DEBUG
+#if POINT_DEBUG
   printf("addToPoint(%s[%c,%c], f: %s, e: %s, r: %s, %c, %d)\n",
          colors2str(dbuffer, insideColor), color2char(dbuffer, a),
          color2char(dbuffer, b), face2str(dbuffer, face),
