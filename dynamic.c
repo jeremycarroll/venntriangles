@@ -64,52 +64,25 @@ static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET cycleSet,
   return NULL;
 }
 
-/*
-Either return the point, or return NULL and set the value of failureReturn.
-*/
-static POINT getOrCreatePointOnFace(FACE face, COLOR aColor, COLOR bColor,
-                                    int depth, FAILURE *failureReturn)
-{
-  EDGE aEdgeIn = face->edges[aColor];
-  EDGE bEdgeOut = face->edges[bColor];
-  FACE aFace = face->adjacentFaces[aColor];
-  FACE bFace = face->adjacentFaces[bColor];
-  FACE abFace = aFace->adjacentFaces[bColor];
-  assert(abFace == bFace->adjacentFaces[aColor]);
-  EDGE aEdgeOut = abFace->edges[aColor];
-  EDGE bEdgeIn = abFace->edges[bColor];
-  if (aEdgeIn->to != NULL) {
-    assert(aEdgeIn->to == bEdgeOut->from);
-    assert(aEdgeIn->to == aEdgeOut->from);
-    assert(aEdgeIn->to == bEdgeIn->from);
-    return aEdgeIn->to;
-  }
-  return createPoint(aEdgeIn, aEdgeOut, bEdgeIn, bEdgeOut, depth,
-                     failureReturn);
-}
-
-static FAILURE propogateChoice(FACE face, POINT point, int depth)
+static FAILURE propogateChoice(FACE face, EDGE edge, int depth)
 {
   FAILURE failure;
-  COLOR aColor = point->edges[0]->color;
-  COLOR bColor = point->edges[2]->color;
+  UPOINT upoint = edge->to->point;
+  COLOR aColor = edge->color;
+  COLOR bColor = edge->color == upoint->incomingEdges[1]->color
+                     ? upoint->incomingEdges[0]->color
+                     : upoint->incomingEdges[1]->color;
 
-  FACE aFace = face->adjacentFaces[aColor];
-  FACE bFace = face->adjacentFaces[bColor];
+  FACE aFace = face->adjacentFaces[edge->color];
   FACE abFace = aFace->adjacentFaces[bColor];
-  assert(abFace == bFace->adjacentFaces[aColor]);
+  assert(abFace == face->adjacentFaces[bColor]->adjacentFaces[aColor]);
   failure = restrictAndPropogateCycles(
       abFace, face->cycle->sameDirection[aColor], depth);
   if (failure != NULL) {
     return failure;
   }
-  failure = restrictAndPropogateCycles(
-      aFace, face->cycle->oppositeDirection[aColor], depth);
-  if (failure != NULL) {
-    return failure;
-  }
   return restrictAndPropogateCycles(
-      bFace, face->cycle->oppositeDirection[bColor], depth);
+      aFace, face->cycle->oppositeDirection[aColor], depth);
 }
 
 /*
@@ -129,26 +102,23 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
 {
   uint32_t i;
   CYCLE cycle = face->cycle;
-  POINT points[NCURVES];
   FAILURE singleFailure;
   FAILURE multipleFailures = NULL;
   for (i = 0; i < cycle->length - 1; i++) {
-    // getOrCreatePointOnFace is cheap so collect multiple failures to improve
+    // assignPoint is cheap so collect multiple failures to improve
     // backtracking.
-    singleFailure = NULL;
-    points[i] = getOrCreatePointOnFace(
-        face, cycle->curves[i], cycle->curves[i + 1], depth, &singleFailure);
+    singleFailure =
+        assignPoint(face, cycle->curves[i], cycle->curves[i + 1], depth);
     multipleFailures = maybeAddFailure(multipleFailures, singleFailure, depth);
   }
-  points[i] = getOrCreatePointOnFace(face, cycle->curves[i], cycle->curves[0],
-                                     depth, &singleFailure);
+  singleFailure = assignPoint(face, cycle->curves[i], cycle->curves[0], depth);
   multipleFailures = maybeAddFailure(multipleFailures, singleFailure, depth);
   if (multipleFailures != NULL) {
     return multipleFailures;
   }
 
   for (i = 0; i < cycle->length; i++) {
-    singleFailure = curveChecks(face->edges[cycle->curves[i]], depth);
+    singleFailure = curveChecks(&face->edges[cycle->curves[i]], depth);
     multipleFailures = maybeAddFailure(multipleFailures, singleFailure, depth);
   }
   if (multipleFailures != NULL) {
@@ -161,7 +131,8 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
        only be used once on any stack, so we would need some generic failure
        collection mechanism.
     */
-    FAILURE failure = propogateChoice(face, points[i], depth);
+    FAILURE failure =
+        propogateChoice(face, &face->edges[cycle->curves[i]], depth);
     if (failure != NULL) {
       return failure;
     }

@@ -1,11 +1,12 @@
 CC = gcc
-CFLAGS = -g -Wall -Wextra -std=c11 -arch arm64 
+CFLAGS = -g -Wall -Wextra -std=c11
 
 UNITY_DIR = ../Unity
 CFLAGS += -I$(UNITY_DIR)/src
 TEST_SRC = test/test_main.c
 TEST_OBJ = $(TEST_SRC:.c=.o)
-SRC      = main.c initialize.c globals.c cycles.c trail.c dynamic.c failure.c colors.c triangles.c point.c
+SRC      = main.c initialize.c globals.c cycles.c trail.c dynamic.c failure.c colors.c \
+           point.c triangles.c debug.c
 OBJ      = $(SRC:.c=.o)
 XSRC     = entrypoint.c
 XOBJ	 = $(XSRC:.c=.o)
