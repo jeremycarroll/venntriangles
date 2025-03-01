@@ -10,7 +10,6 @@
 #include "venn.h"
 
 static int nextCycle = 0;
-static int nextEdge = 0;
 static int nextSetOfCycleSets = 0;
 
 /*
@@ -26,6 +25,7 @@ static void initializeCycleSets(void);
 static void initializeSameDirection(void);
 static void initializeOppositeDirection(void);
 static void initializeFacesAndEdges(void);
+static void initializePossiblyTo(void);
 static void applyMonotonicity(void);
 static void recomputeCountOfChoices(FACE face);
 /* face is truncated to 6 bits, higher bits may be set, and will be ignored. */
@@ -37,8 +37,8 @@ void clearInitialize()
   memset(triples2cycleSets, 0, sizeof(triples2cycleSets));
   memset(setsOfCycleSets, 0, sizeof(setsOfCycleSets));
   nextCycle = 0;
-  nextEdge = 0;
   nextSetOfCycleSets = 0;
+  clearPoints();
   clearWithoutColor();
 }
 
@@ -54,9 +54,13 @@ void initialize()
   assert(nextSetOfCycleSets == 2 * NCYCLE_ENTRIES);
 
   initializeFacesAndEdges();
-  /* The FISC is simple, so there are four edges for each point, and two points
-   * for each edge. */
-  assert(nextEdge == ARRAY_LEN(g_edges));
+#if POINT_DEBUG
+  for (uint32_t i = 0; i < NFACES; i++) {
+    printFace(g_faces + i);
+  }
+#endif
+  initializePossiblyTo();
+  initializePoints();
   applyMonotonicity();
 
   initializeWithoutColor();
@@ -180,6 +184,7 @@ static void initializeFacesAndEdges(void)
 {
   uint32_t facecolors, color, j;
   FACE face, adjacent;
+  EDGE edge;
   for (facecolors = 0, face = g_faces; facecolors < NFACES;
        facecolors++, face++) {
     face->colors = facecolors;
@@ -192,18 +197,36 @@ static void initializeFacesAndEdges(void)
       uint32_t colorbit = (1 << color);
       adjacent = g_faces + (facecolors ^ (colorbit));
       face->adjacentFaces[color] = adjacent;
-      if (adjacent->edges[color] == NULL) {
-        EDGE edge = g_edges + nextEdge++;
-        edge->inner = (facecolors & colorbit) ? face : adjacent;
-        edge->outer = (facecolors & colorbit) ? adjacent : face;
-        edge->color = j;
-        face->edges[color] = edge;
-      } else {
-        face->edges[color] = adjacent->edges[color];
+      edge = &face->edges[color];
+      edge->face = face;
+      edge->color = color;
+      edge->reversed = &adjacent->edges[color];
+    }
+  }
+}
+
+static void initializePossiblyTo(void)
+{
+  uint32_t facecolors, color, othercolor;
+  FACE face;
+  EDGE edge;
+  for (facecolors = 0, face = g_faces; facecolors < NFACES;
+       facecolors++, face++) {
+#if POINT_DEBUG
+    printFace(face);
+#endif
+    for (color = 0; color < NCURVES; color++) {
+      edge = &face->edges[color];
+      for (othercolor = 0; othercolor < NCURVES; othercolor++) {
+        if (othercolor == color) {
+          continue;
+        }
+        edge->possiblyTo[othercolor].point = addToPoint(face, edge, othercolor);
       }
     }
   }
 }
+
 /*
 A FISC is isomorphic to a convex FISC if and only if it is monotone.
 A FISC is monotone if its dual has a unique source (no incoming edges) and a

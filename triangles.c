@@ -30,7 +30,8 @@ static EDGE findStartOfCurve(EDGE edge)
 static FAILURE checkForDisconnectedCurve(EDGE edge, int depth)
 {
   uint_trail length;
-  if (edge->from != NULL) {
+  // TODO: needs named macro!
+  if (edge->reversed->to != NULL) {
     // We have a colored cycle in the FISC.
     length = curveLength(edge);
     if (length < g_edgeCount[edge->color]) {
@@ -87,9 +88,7 @@ go clockwise and counterclockwise to identify the corners.
 start must either be an edge of the central face, or be an incomplete end.
 cornerReturn is a pointer to an array of length at least 3.
 */
-static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE (*follow)(EDGE),
-                                   POINT (*nextPoint)(EDGE),
-                                   POINT* cornersReturn)
+static FAILURE cornerCheckInternal(EDGE start, int depth, UPOINT* cornersReturn)
 {
   EDGE current = start;
   COLORSET
@@ -97,41 +96,39 @@ static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE (*follow)(EDGE),
   /* the curves we have crossed outside of since the last corner. */
       passed = 0,
   /* the curves we are currently outside. */
-      outside = ~start->inner->colors;
+      outside = ~start->face->colors;
   int counter = 0;
-  assert(start->from == NULL || start->inner->colors == NFACES - 1);
+  assert(start->reversed->to == NULL ||
+         (start->face->colors & notMyColor) == ((NFACES - 1) & notMyColor));
   do {
-    POINT p = nextPoint(current);
-    COLORSET other = p->colors & notMyColor;
+    DPOINT p = current->to;
+    COLORSET other = p->point->colors & notMyColor;
     if (other & outside) {
       outside = outside & ~other;
       if (other & passed) {
         if (counter > MAX_CORNERS) {
           return tooManyCornersFailure(start->color, depth);
         }
-        cornersReturn[counter++] = p;
+        cornersReturn[counter++] = p->point;
         passed = 0;
       }
     } else {
       passed |= other;
       outside |= other;
     }
-    current = follow(current);
-  } while (nextPoint(current) != NULL && current != start);
+    current = p->out[0];
+  } while (current->to != NULL && current != start);
   return NULL;
 }
 
-static POINT point2to(EDGE e) { return e->to; }
-
 FAILURE cornerCheck(EDGE start, int depth)
 {
-  POINT ignore[MAX_CORNERS];
-  if (start->from != NULL) {
+  UPOINT ignore[MAX_CORNERS];
+  if (start->reversed->to != NULL) {
     // we have a complete curve.
-    start = g_faces[NFACES - 1].edges[start->color];
+    start = &g_faces[NFACES - 1].edges[start->color];
   }
-  return cornerCheckInternal(start, depth, followEdgeForwards, point2to,
-                             ignore);
+  return cornerCheckInternal(start, depth, ignore);
 }
 
 FAILURE curveChecks(EDGE edge, int depth)

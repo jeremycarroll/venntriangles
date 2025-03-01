@@ -1,5 +1,89 @@
 
 #include "venn.h"
+
+/*
+ * Only a few of these are actually used, the look up table is easier this way.
+ With n being a COLORSET, and i, j being COLORs
+ * [n][i][j] is used if i != j, and the i and j are not in n.
+ * other values are left as null
+ */
+static struct undirectedPoint* allUPointPointers[NFACES][NCURVES][NCURVES];
+static struct undirectedPoint allUPoints[NPOINTS];
+static int nextUPointId = 0;
+
+void clearPoints()
+{
+  memset(allUPointPointers, 0, sizeof(allUPointPointers));
+  memset(allUPoints, 0, sizeof(allUPoints));
+  nextUPointId = 0;
+}
+
+static UPOINT getPoint(COLORSET innerFace, COLOR a, COLOR b)
+{
+  assert(!memberOfColorSet(a, innerFace));
+  assert(!memberOfColorSet(b, innerFace));
+  if (allUPointPointers[innerFace][a][b] == NULL) {
+    allUPoints[nextUPointId].id = nextUPointId;
+    allUPointPointers[innerFace][a][b] = &allUPoints[nextUPointId];
+    allUPoints[nextUPointId].primary = a;
+    allUPoints[nextUPointId].secondary = b;
+    allUPoints[nextUPointId].colors = 1u << a | 1u << b;
+    nextUPointId++;
+  }
+  return allUPointPointers[innerFace][a][b];
+}
+
+/*
+The two edges have the same color and meet at the same point.
+which has other as the other color.
+The out[0] value for both edges for the other color is set to the reverse of the
+other edge.
+*/
+static void linkOut(EDGE edge1, EDGE edge2, COLOR other)
+{
+  assert(edge1->color == edge2->color);
+  assert(edge1->possiblyTo[other].out[0] == NULL);
+  assert(edge2->possiblyTo[other].out[0] == NULL);
+  assert(edge1->possiblyTo[other].point == edge2->possiblyTo[other].point);
+  assert(edge1->possiblyTo[other].point->colors =
+             (1u << edge1->color | 1u << other));
+  edge1->possiblyTo[other].out[0] = edge2->reversed;
+  edge2->possiblyTo[other].out[0] = edge1->reversed;
+}
+
+/*
+Set up out[0] on every possiblyTo.
+
+It must be the same color, and the reverse of the other edge of that color at
+the point.
+*/
+void initializePoints(void)
+{
+  uint32_t i, j, k;
+  for (i = 0; i < NPOINTS; i++) {
+    UPOINT p = allUPoints + i;
+    linkOut(p->incomingEdges[0], p->incomingEdges[1], p->secondary);
+    linkOut(p->incomingEdges[2], p->incomingEdges[3], p->primary);
+  }
+  for (i = 0; i < NFACES; i++) {
+    FACE f = g_faces + i;
+    for (j = 0; j < NCURVES; j++) {
+      for (k = 0; k < NCURVES; k++) {
+        assert(j == f->edges[j].color);
+        if (k == j) {
+          continue;
+        }
+        assert(f->edges[j].possiblyTo[k].point != NULL);
+        assert(f->edges[j].possiblyTo[k].out[0] != NULL);
+        assert(f->edges[j].possiblyTo[k].out[0]->color == j);
+        assert(
+            f->edges[j].possiblyTo[k].out[0]->reversed->possiblyTo[k].point ==
+            f->edges[j].possiblyTo[k].point);
+      }
+    }
+  }
+}
+
 /*
     The point is between the crossing of two curves, one colored A
     and the other colored B, A and B used in the comments below.
@@ -10,11 +94,11 @@
 
 /* Face A&B
  */
-FACE point2insideFace(POINT point) { return point->faces[3]; }
+FACE point2insideFace(UPOINT point) { return point->faces[3]; }
 
 /* Face ~(A&B)
  */
-FACE point2outsideFace(POINT point) { return point->faces[0]; }
+FACE point2outsideFace(UPOINT point) { return point->faces[0]; }
 
 /*
 Face (~A)&B
@@ -25,105 +109,132 @@ around  point2insideFace(point). The face
 that is outside A and inside B is the face that is clockwise
 before the point.
 */
-FACE point2incomingFace(POINT point) { return point->faces[2]; }
+FACE point2incomingFace(UPOINT point) { return point->faces[2]; }
 
 /*
 Face A&~B
 */
-FACE point2outgoingFace(POINT point) { return point->faces[1]; }
+FACE point2outgoingFace(UPOINT point) { return point->faces[1]; }
 
-EDGE point2inside2outsideIncomingEdge(POINT point) { return point->edges[0]; }
+EDGE point2inside2outsideIncomingEdge(UPOINT point)
+{
+  return point->incomingEdges[0];
+}
 
-EDGE point2outside2insideIncomingEdge(POINT point) { return point->edges[2]; }
+EDGE point2outside2insideIncomingEdge(UPOINT point)
+{
+  return point->incomingEdges[2];
+}
 
-EDGE point2inside2outsideOutgoingEdge(POINT point) { return point->edges[1]; }
+// EDGE point2inside2outsideOutgoingEdge(POINT point) { return point->edges[1];
+// }
 
-EDGE point2outside2insideOutgoingEdge(POINT point) { return point->edges[3]; }
+// EDGE point2outside2insideOutgoingEdge(POINT point) { return point->edges[3];
+// }
 
-COLOR point2inside2outsideColor(POINT point) { return point->edges[0]->color; }
+COLOR point2inside2outsideColor(UPOINT point)
+{
+  return point->incomingEdges[0]->color;
+}
 
-COLOR point2outside2insideColor(POINT point) { return point->edges[2]->color; }
+COLOR point2outside2insideColor(UPOINT point)
+{
+  return point->incomingEdges[2]->color;
+}
 
 EDGE followEdgeForwards(EDGE edge)
 {
   if (edge->to == NULL) {
     return NULL;
   }
-  if (edge->color == point2inside2outsideColor(edge->to)) {
-    return point2inside2outsideOutgoingEdge(edge->to);
-  }
-  assert(edge->color == point2outside2insideColor(edge->to));
-  return point2outside2insideOutgoingEdge(edge->to);
+  return edge->to->out[0];
 }
 
 EDGE followEdgeBackwards(EDGE edge)
 {
-  if (edge->from == NULL) {
-    return NULL;
-  }
-  if (edge->color == point2inside2outsideColor(edge->from)) {
-    return point2inside2outsideIncomingEdge(edge->from);
-  }
-  assert(edge->color == point2outside2insideColor(edge->from));
-  return point2outside2insideIncomingEdge(edge->from);
+  EDGE reversedNext = followEdgeForwards(edge->reversed);
+  return reversedNext == NULL ? NULL : reversedNext->reversed;
 }
 
 /*
-The curve A crosses from inside the curve B to outside it.
-The curve B crosses from outside the curve A to inside it.
 
-Either return the point, or return NULL and set the value of failureReturn.
+   The curve colored A crosses from inside the curve colored B to outside it.
+   The curve colored B crosses from outside the curve colored A to inside it.
 */
-static POINT createPointOrdered(EDGE aEdgeIn, EDGE aEdgeOut, EDGE bEdgeIn,
-                                EDGE bEdgeOut, int depth,
-                                FAILURE *failureReturn)
+
+UPOINT addToPoint(FACE face, EDGE incomingEdge, COLOR othercolor)
 {
-  POINT point = g_points + g_nextPoint;
-  FAILURE crossingLimit =
-      checkCrossingLimit(aEdgeIn->color, bEdgeIn->color, depth);
-  if (crossingLimit != NULL) {
-    *failureReturn = crossingLimit;
-    return NULL;
+  COLORSET insideColor = incomingEdge->face->colors & ~(1u << othercolor) &
+                         ~(1u << incomingEdge->color);
+  UPOINT point;
+  COLOR a, b;
+  uint32_t ix = IS_PRIMARY_EDGE(incomingEdge) |
+                (memberOfColorSet(othercolor, face->colors) << 1);
+
+#if POINT_DEBUG
+  char dbuffer[1024] = {1, 0, 0};
+#endif
+  assert(othercolor != incomingEdge->color);
+  switch (ix) {
+    case 0:
+    case 1:
+      a = incomingEdge->color;
+      b = othercolor;
+      break;
+    case 2:
+    case 3:
+      a = othercolor;
+      b = incomingEdge->color;
+      break;
+    default:
+      assert(0);
   }
-  setDynamicInt(&g_nextPoint, g_nextPoint + 1);
-  // not trailed, the point is on a stack.
+#if POINT_DEBUG
+  printf("addToPoint(%s[%c,%c], f: %s, e: %s, r: %s, %c, %d)\n",
+         colors2str(dbuffer, insideColor), color2char(dbuffer, a),
+         color2char(dbuffer, b), face2str(dbuffer, face),
+         edge2str(dbuffer, incomingEdge),
+         edge2str(dbuffer, incomingEdge->reversed),
+         color2char(dbuffer, othercolor), ix);
+#endif
 
-  // Edges: A before B, in before out:
-  point->edges[0] = aEdgeIn;
-  point->edges[1] = aEdgeOut;
-  point->edges[2] = bEdgeIn;
-  point->edges[3] = bEdgeOut;
-  // Faces: ~(AB), A, B, AB
-  point->faces[0] = aEdgeOut->outer;
-  point->faces[1] = aEdgeOut->inner;
-  point->faces[2] = bEdgeIn->inner;
-  point->faces[3] = aEdgeIn->inner;
-
-  point->colors = (1u << aEdgeIn->color) | (1u << bEdgeIn->color);
-  assert(point->faces[0] == bEdgeIn->outer);
-  assert(point->faces[1] == bEdgeOut->outer);
-  assert(point->faces[2] == bEdgeOut->inner);
-  assert(point->faces[3] == bEdgeOut->inner);
-  setDynamicPointer(&aEdgeIn->to, point);
-  setDynamicPointer(&aEdgeOut->from, point);
-  setDynamicPointer(&bEdgeIn->to, point);
-  setDynamicPointer(&bEdgeOut->from, point);
-
+  point = getPoint(insideColor, a, b);
+  assert(point->incomingEdges[ix] == NULL);
+  assert(point->faces[ix] == NULL);
+  assert(point->colors == 0 || point->colors == ((1u << a) | (1u << b)));
+  assert(incomingEdge->color == (ix < 2 ? point->primary : point->secondary));
+  point->incomingEdges[ix] = incomingEdge;
+  point->faces[ix] = face;
+  assert(point->colors == ((1u << a) | (1u << b)));
   return point;
 }
 
-POINT createPoint(EDGE aEdgeIn, EDGE aEdgeOut, EDGE bEdgeIn, EDGE bEdgeOut,
-                  int depth, FAILURE *failureReturn)
+/*
+TODO: rename vars , the A B problem ...
+Either return the point, or return NULL and set the value of failureReturn.
+*/
+FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
 {
-  assert(aEdgeIn->to == NULL);
-  setDynamicInt(g_edgeCount + aEdgeIn->color, g_edgeCount[aEdgeIn->color] + 1);
-  assert(bEdgeIn->to == NULL);
-  setDynamicInt(g_edgeCount + bEdgeIn->color, g_edgeCount[bEdgeIn->color] + 1);
-  if (memberOfColorSet(bEdgeIn->color, aEdgeIn->inner->colors)) {
-    return createPointOrdered(aEdgeIn, aEdgeOut, bEdgeIn, bEdgeOut, depth,
-                              failureReturn);
-  } else {
-    return createPointOrdered(bEdgeIn, bEdgeOut, aEdgeIn, aEdgeOut, depth,
-                              failureReturn);
+  FAILURE crossingLimit;
+  UPOINT upoint;
+  COLOR colors[2];
+  if (face->edges[aColor].to != NULL) {
+    assert(face->edges[aColor].to == &face->edges[aColor].possiblyTo[bColor]);
+    return NULL;
   }
+  upoint = face->edges[aColor].possiblyTo[bColor].point;
+  colors[0] = upoint->incomingEdges[0]->color;
+  colors[1] = upoint->incomingEdges[1]->color;
+  crossingLimit = checkCrossingLimit(colors[0], colors[1], depth);
+  if (crossingLimit != NULL) {
+    return crossingLimit;
+  }
+  for (int i = 0; i < 4; i++) {
+    assert(upoint->incomingEdges[i]->to == NULL);
+    assert(upoint->incomingEdges[i]->color == colors[(i & 1)]);
+    setDynamicPointer(
+        &upoint->incomingEdges[i]->to,
+        &upoint->incomingEdges[i]->possiblyTo[colors[2 - (i & 1)]]);
+  }
+  return NULL;
 }
