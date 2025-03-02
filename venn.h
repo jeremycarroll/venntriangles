@@ -34,7 +34,9 @@ typedef uint64_t uint_trail;  // Any non-pointer value that might go on the
 #define CHOOSE_4_1 4u
 #define CHOOSE_3_0 1u
 /* The curves are _colored_ from 0 to 5. */
+#ifndef NCURVES
 #define NCURVES 6
+#endif
 #define NFACES (1 << NCURVES)
 // #define NPOINTS (NFACES - 2)
 #if NCURVES == 6
@@ -138,9 +140,7 @@ otherwise.
 
 #define memberOfColorSet(color, colorSet) (((colorSet) >> (color)) & 1u)
 #define IS_PRIMARY_EDGE(edge) \
-  ((edge)->face == NULL       \
-       ? 1                    \
-       : memberOfColorSet((edge)->color, (edge)->face->colors))
+  (memberOfColorSet((edge)->color, (edge)->face->colors))
 
 struct face {
   // cycle must be null if cycleSetSize is not 1.
@@ -184,8 +184,9 @@ STATIC struct facial_cycle {
    The point is between the crossing of two curves, one colored A
    and the other colored B, A and B used in the comments below.
 
-   The curve colored A crosses from inside the curve colored B to outside it.
-   The curve colored B crosses from outside the curve colored A to inside it.
+   The curve colored primary crosses from inside the curve colored secondary to
+   outside it. The curve colored secondary crosses from outside the curve
+   colored primary to inside it.
  */
 struct undirectedPoint {
   /*

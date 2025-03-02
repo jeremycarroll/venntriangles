@@ -280,6 +280,7 @@ void tearDown(void)
 static FACE faceFromColors(char* colors)
 {
   int face_id = 0;
+  char * colorsOrig = colors;
   while (true) {
     if (*colors == 0) {
       break;
@@ -287,7 +288,7 @@ static FACE faceFromColors(char* colors)
     face_id |= (1 << (*colors - 'a'));
     colors++;
   }
-  printf("Faceid %x\n", face_id);
+  printf("Faceid %x |%s|\n", face_id, colorsOrig);
   return g_faces + face_id;
 }
 

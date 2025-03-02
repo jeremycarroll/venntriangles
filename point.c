@@ -168,8 +168,21 @@ UPOINT addToPoint(FACE face, EDGE incomingEdge, COLOR othercolor)
                          ~(1u << incomingEdge->color);
   UPOINT point;
   COLOR a, b;
-  uint32_t ix = IS_PRIMARY_EDGE(incomingEdge) |
-                (memberOfColorSet(othercolor, face->colors) << 1);
+  uint32_t ix, faceIx;
+
+  if (IS_PRIMARY_EDGE(incomingEdge)) {
+    if (memberOfColorSet(othercolor, face->colors)) {
+      ix = 0;
+    } else {
+      ix = 3;
+    }
+  } else {
+    if (memberOfColorSet(othercolor, face->colors)) {
+      ix = 2;
+    } else {
+      ix = 1;
+    }
+  }
 
 #if POINT_DEBUG
   char dbuffer[1024] = {1, 0, 0};
@@ -200,11 +213,23 @@ UPOINT addToPoint(FACE face, EDGE incomingEdge, COLOR othercolor)
 
   point = getPoint(insideColor, a, b);
   assert(point->incomingEdges[ix] == NULL);
-  assert(point->faces[ix] == NULL);
   assert(point->colors == 0 || point->colors == ((1u << a) | (1u << b)));
   assert(incomingEdge->color == (ix < 2 ? point->primary : point->secondary));
   point->incomingEdges[ix] = incomingEdge;
-  point->faces[ix] = face;
+
+  if (face->colors & (1u << point->primary)) {
+    if (face->colors & (1u << point->secondary)) {
+      faceIx = 3;
+    } else {
+      faceIx = 1;
+    }
+  } else if (face->colors & (1u << point->secondary)) {
+    faceIx = 2;
+  } else {
+    faceIx = 0;
+  }
+  assert(point->faces[faceIx] == NULL);
+  point->faces[faceIx] = face;
   assert(point->colors == ((1u << a) | (1u << b)));
   return point;
 }
@@ -223,18 +248,18 @@ FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
     return NULL;
   }
   upoint = face->edges[aColor].possiblyTo[bColor].point;
-  colors[0] = upoint->incomingEdges[0]->color;
-  colors[1] = upoint->incomingEdges[1]->color;
-  crossingLimit = checkCrossingLimit(colors[0], colors[1], depth);
+  crossingLimit = checkCrossingLimit(upoint->primary, upoint->secondary, depth);
   if (crossingLimit != NULL) {
     return crossingLimit;
   }
+  colors[0] = upoint->primary;
+  colors[1] = upoint->secondary;
   for (int i = 0; i < 4; i++) {
     assert(upoint->incomingEdges[i]->to == NULL);
-    assert(upoint->incomingEdges[i]->color == colors[(i & 1)]);
+    assert(upoint->incomingEdges[i]->color == colors[(i & 2) >> 1]);
     setDynamicPointer(
         &upoint->incomingEdges[i]->to,
-        &upoint->incomingEdges[i]->possiblyTo[colors[2 - (i & 1)]]);
+        &upoint->incomingEdges[i]->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
   }
   return NULL;
 }
