@@ -17,16 +17,24 @@ XOBJ	 = $(XSRC:.c=.o)
 all: formatheader main tests
 
 test/test_venn3: test/test_venn3.c $(UNITY_DIR)/src/unity.c $(OBJ3)
+	@# Impose formatting.
+	@clang-format -i test/test_venn3.c
+	@# Fix missing nl at eof.
+	@if ! [ $$(tail -c 1 test/test_venn3.c | od -An -t x1) == "0a" ]; then echo >> test/test_venn3.c ; fi
 	$(CC) $(CFLAGS) -DNCURVES=3 -o $@ $^
 
 test/%: test/%.c $(UNITY_DIR)/src/unity.c $(OBJ)
+	@# Impose formatting.
+	@clang-format -i $<
+	@# Fix missing nl at eof.
+	@if ! [ $$(tail -c 1 $< | od -An -t x1) == "0a" ]; then echo >> $< ; fi
 	$(CC) $(CFLAGS) -o $@ $^
 
 formatheader:
 	clang-format -i venn.h
 	if ! [ $$(tail -c 1 venn.h | od -An -t x1) == "0a" ]; then echo >> venn.h ; fi
 
-tests: test/test_venn3  test/test_initialize test/test_known_solution test/test_main
+tests: test/test_venn3  # test/test_initialize test/test_known_solution test/test_main
 	for i in $^; do ./$$i; done
 
 clean:

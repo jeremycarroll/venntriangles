@@ -3,7 +3,7 @@
 /*
 This file is responsible for checking that a set of edges can make a triangle.
 */
-
+extern COLORSET completedColors;
 static uint_trail curveLength(EDGE edge)
 {
   EDGE current;
@@ -34,13 +34,14 @@ static FAILURE checkForDisconnectedCurve(EDGE edge, int depth)
   if (edge->reversed->to != NULL) {
     // We have a colored cycle in the FISC.
     length = curveLength(edge);
-    if (length < g_edgeCount[edge->color]) {
+    if (length < g_edgeCount[IS_PRIMARY_EDGE(edge)][edge->color]) {
       return disconnectedCurveFailure(edge->color, true, depth);
     }
-    assert(length == g_edgeCount[edge->color]);
-    if (!removeColorFromSearch(edge->color, depth)) {
-      return disconnectedCurveFailure(edge->color, false, depth);
+    assert(length == g_edgeCount[IS_PRIMARY_EDGE(edge)][edge->color]);
+    if (completedColors & 1u << edge->color) {
+      return NULL;
     }
+    completedColors |= 1u << edge->color;
     setDynamicInt(&g_curveComplete[edge->color], 1);
   }
   return NULL;

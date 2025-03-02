@@ -282,10 +282,11 @@ struct global {
   DYNAMIC uint_trail crossings[NCURVES][NCURVES];
   /* If we have a color-curve that is not edgeCount[color] long, then we do not
     have a solution.
-    edgeCount[color] is the number of edges of given color with a _to_ field
-    set.
+    edgeCount[0][color] is the number of edges of given color with a _to_ field
+    set, in the negative direction, edgeCount[1][color] is the number of edges
+    of given color with a _to_ field set, in the positive direction.
     */
-  DYNAMIC uint_trail edgeCount[NCURVES];
+  DYNAMIC uint_trail edgeCount[2][NCURVES];
   DYNAMIC uint_trail curveComplete[NCURVES];
 };
 
@@ -337,7 +338,7 @@ extern FAILURE tooManyCornersFailure(COLOR a, int depth);
 /* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
 and that number should be three or less. */
 extern FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth);
-extern bool removeColorFromSearch(COLOR color, int depth);
+extern bool removeColorFromSearch(COLOR color);
 
 extern char *edge2str(char *dbuffer, EDGE edge);
 extern char *face2str(char *dbuffer, FACE face);

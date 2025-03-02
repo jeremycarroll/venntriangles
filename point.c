@@ -242,7 +242,10 @@ FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
 {
   FAILURE crossingLimit;
   UPOINT upoint;
+  EDGE edge;
   COLOR colors[2];
+  uint_trail* edgeCountPtr;
+
   if (face->edges[aColor].to != NULL) {
     assert(face->edges[aColor].to == &face->edges[aColor].possiblyTo[bColor]);
     return NULL;
@@ -255,11 +258,13 @@ FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
   colors[0] = upoint->primary;
   colors[1] = upoint->secondary;
   for (int i = 0; i < 4; i++) {
-    assert(upoint->incomingEdges[i]->to == NULL);
-    assert(upoint->incomingEdges[i]->color == colors[(i & 2) >> 1]);
-    setDynamicPointer(
-        &upoint->incomingEdges[i]->to,
-        &upoint->incomingEdges[i]->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
+    edge = upoint->incomingEdges[i];
+    assert(edge->to == NULL);
+    assert(edge->color == colors[(i & 2) >> 1]);
+    setDynamicPointer(&edge->to, &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
+    // Count edge
+    edgeCountPtr = &g_edgeCount[IS_PRIMARY_EDGE(edge)][edge->color];
+    setDynamicInt(edgeCountPtr, (*edgeCountPtr) + 1);
   }
   return NULL;
 }
