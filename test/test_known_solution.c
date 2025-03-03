@@ -103,7 +103,7 @@ static char* testData3[][2] = {
         "bce",
     },
 };
-static char* testData4[][2] = {
+char* testData4[][2] = {
     {
         "a",
         "abed",
@@ -138,7 +138,7 @@ static char* testData4[][2] = {
     },
     {
         "abcd",
-        "befd",
+        "abef",
     },
     {
         "be",
@@ -320,7 +320,8 @@ static void addFacesFromTestData(char* testData[][2], int length)
 #if DEBUG
       printf("!\n");
 #endif
-      TEST_ASSERT_EQUAL(cycleId, findFirstCycleInSet(face->possibleCycles));
+      TEST_ASSERT_EQUAL(g_cycles + cycleId,
+                        findFirstCycleInSet(face->possibleCycles));
       TEST_ASSERT_EQUAL(face->cycle, g_cycles + cycleId);
     } else {
       face->cycle = g_cycles + cycleId;

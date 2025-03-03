@@ -130,7 +130,7 @@ void printSelectedFaces(void)
   uint32_t i;
   FACE face;
   for (i = 0, face = g_faces; i < NFACES; i++, face++) {
-    if (face->cycle || face->cycleSetSize < 2 || i == 3) {
+    if (face->cycle || face->cycleSetSize < 2) {
       printFace(face);
     }
   }
