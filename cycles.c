@@ -87,7 +87,7 @@ bool printCycleSet(CYCLESET cycleSet)
       for (j = 0; j < 64; j++) {
         if (cycleSet[i] & (1ul << j)) {
           putchar(' ');
-          printCycle(g_cycles + i);
+          printCycle(g_cycles + i * BITS_PER_WORD + j);
           putchar(',');
         }
       }
@@ -111,6 +111,17 @@ uint32_t findCycleId(COLOR* cycle, uint32_t length)
       if (i == length) {
         return cycleId;
       }
+    }
+  }
+  assert(NULL == "Unreachable");
+}
+
+uint32_t indexInCycle(CYCLE cycle, COLOR color)
+{
+  uint32_t i;
+  for (uint32_t i = 0; i < cycle->length; i++) {
+    if (cycle->curves[i] == color) {
+      return i;
     }
   }
   assert(NULL == "Unreachable");

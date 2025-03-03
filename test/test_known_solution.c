@@ -1,7 +1,9 @@
 
-#include "unity.h"
 #include "../venn.h"
 #include "../visible_for_testing.h"
+#include "unity.h"
+
+#define DEBUG 1
 
 static char* testData3[][2] = {
     {
@@ -280,7 +282,7 @@ void tearDown(void)
 static FACE faceFromColors(char* colors)
 {
   int face_id = 0;
-  char * colorsOrig = colors;
+  char* colorsOrig = colors;
   while (true) {
     if (*colors == 0) {
       break;
@@ -288,7 +290,9 @@ static FACE faceFromColors(char* colors)
     face_id |= (1 << (*colors - 'a'));
     colors++;
   }
+#if DEBUG
   printf("Faceid %x |%s|\n", face_id, colorsOrig);
+#endif
   return g_faces + face_id;
 }
 
@@ -307,32 +311,44 @@ static void addFacesFromTestData(char* testData[][2], int length)
   int i;
   FACE face;
   uint32_t cycleId;
+  FAILURE failure;
   for (i = 0; i < length; i++) {
     face = faceFromColors(testData[i][0]);
     cycleId = cycleIdFromColors(testData[i][1]);
     TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, face->possibleCycles));
     if (face->cycleSetSize == 1) {
-        printf("!\n");
+#if DEBUG
+      printf("!\n");
+#endif
       TEST_ASSERT_EQUAL(cycleId, findFirstCycleInSet(face->possibleCycles));
       TEST_ASSERT_EQUAL(face->cycle, g_cycles + cycleId);
     } else {
-        printf("+\n");
       face->cycle = g_cycles + cycleId;
-      TEST_ASSERT_NULL(makeChoice(face));
+#if DEBUG
+      printf("+\n");
+      printSelectedFaces();
+#endif
+      failure = makeChoice(face);
+      if (failure != NULL) {
+        printf("Failure: %s %x\n", failure->label, failure->type);
+        printSelectedFaces();
+      }
+      TEST_ASSERT_NULL(failure);
     }
   }
 }
 
-void test_faceFromColors() {
-    TEST_ASSERT_EQUAL(g_faces, faceFromColors(""));
-    TEST_ASSERT_EQUAL(g_faces + 1, faceFromColors("a"));
-    TEST_ASSERT_EQUAL(g_faces + 2, faceFromColors("b"));
-    TEST_ASSERT_EQUAL(g_faces + 3, faceFromColors("ab"));
-    TEST_ASSERT_EQUAL(g_faces + 4, faceFromColors("c"));
-    TEST_ASSERT_EQUAL(g_faces + 5, faceFromColors("ac"));
-    TEST_ASSERT_EQUAL(g_faces + 6, faceFromColors("bc"));
-    TEST_ASSERT_EQUAL(g_faces + 7, faceFromColors("abc"));
-    TEST_ASSERT_EQUAL(g_faces + NFACES-1, faceFromColors("abcdef"));
+void test_faceFromColors()
+{
+  TEST_ASSERT_EQUAL(g_faces, faceFromColors(""));
+  TEST_ASSERT_EQUAL(g_faces + 1, faceFromColors("a"));
+  TEST_ASSERT_EQUAL(g_faces + 2, faceFromColors("b"));
+  TEST_ASSERT_EQUAL(g_faces + 3, faceFromColors("ab"));
+  TEST_ASSERT_EQUAL(g_faces + 4, faceFromColors("c"));
+  TEST_ASSERT_EQUAL(g_faces + 5, faceFromColors("ac"));
+  TEST_ASSERT_EQUAL(g_faces + 6, faceFromColors("bc"));
+  TEST_ASSERT_EQUAL(g_faces + 7, faceFromColors("abc"));
+  TEST_ASSERT_EQUAL(g_faces + NFACES - 1, faceFromColors("abcdef"));
 }
 
 void test_3_4_5_6(void)
@@ -343,10 +359,82 @@ void test_3_4_5_6(void)
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
 }
 
+static bool findFace(char* colors, FACE* face, char** cyclePtr,
+                     char* testData[][2], int length)
+{
+  int i;
+  for (i = 0; i < length; i++) {
+    if (strcmp(colors, testData[i][0]) == 0) {
+      *face = faceFromColors(testData[i][0]);
+      *cyclePtr = testData[i][1];
+      return true;
+    }
+  }
+  return false;
+}
+
+static void addSpecificFace(char* colors)
+{
+  FACE face;
+  char* cycle;
+  uint32_t cycleId;
+  FAILURE failure;
+  findFace(colors, &face, &cycle, testData3,
+           sizeof(testData3) / sizeof(testData3[0])) ||
+      findFace(colors, &face, &cycle, testData4,
+               sizeof(testData4) / sizeof(testData4[0])) ||
+      findFace(colors, &face, &cycle, testData5,
+               sizeof(testData5) / sizeof(testData5[0])) ||
+      findFace(colors, &face, &cycle, testData6,
+               sizeof(testData6) / sizeof(testData6[0]));
+  cycleId = cycleIdFromColors(cycle);
+  TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, face->possibleCycles));
+  if (face->cycleSetSize == 1) {
+    TEST_ASSERT_EQUAL(cycleId, findFirstCycleInSet(face->possibleCycles));
+    TEST_ASSERT_EQUAL(face->cycle, g_cycles + cycleId);
+  } else {
+    face->cycle = g_cycles + cycleId;
+    failure = makeChoice(face);
+#if DEBUG
+    printSelectedFaces();
+#endif
+    TEST_ASSERT_NULL(failure);
+  }
+}
+
+void test_DE_1(void)
+{
+  FACE ab = faceFromColors("ab");
+  FACE abc = faceFromColors("abc");
+  uint32_t cycleId = cycleIdFromColors("afceb");
+  TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, ab->possibleCycles));
+  addSpecificFace("abc");
+#if DEBUG
+  printCycleSet(abc->cycle->oppositeDirection[0]);
+#endif
+  TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, abc->cycle->oppositeDirection[0]));
+  TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, ab->possibleCycles));
+  addSpecificFace("abce");
+  TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, ab->possibleCycles));
+}
+
+void test_DE_2(void)
+{
+  FACE ab = faceFromColors("ab");
+  uint32_t cycleId = cycleIdFromColors("afceb");
+  TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, ab->possibleCycles));
+  addSpecificFace("abce");
+  TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, ab->possibleCycles));
+  addSpecificFace("abc");
+  TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, ab->possibleCycles));
+}
+
 int main(void)
 {
   UNITY_BEGIN();
   RUN_TEST(test_faceFromColors);
   RUN_TEST(test_3_4_5_6);
+  RUN_TEST(test_DE_1);
+  RUN_TEST(test_DE_2);
   return UNITY_END();
 }

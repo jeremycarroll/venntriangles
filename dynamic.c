@@ -53,7 +53,7 @@ static void restrictCycles(FACE face, CYCLESET cycleSet)
   }
 }
 
-static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET cycleSet,
+static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
                                           int depth)
 {
   // check for no-op.
@@ -63,7 +63,7 @@ static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET cycleSet,
 
   // carefully updated face->possibleCycles to be anded with cycleSet, on the
   // trail. decreasing the count as we go.
-  restrictCycles(face, cycleSet);
+  restrictCycles(face, onlyCycleSet);
 
   if (face->cycleSetSize == 0) {
     return noMatchingCyclesFailure(face->colors, depth);
@@ -85,15 +85,16 @@ static FAILURE propogateChoice(FACE face, EDGE edge, int depth)
 
   FACE aFace = face->adjacentFaces[edge->color];
   FACE abFace = aFace->adjacentFaces[bColor];
+  uint32_t index = indexInCycle(face->cycle, aColor);
   assert(abFace == face->adjacentFaces[bColor]->adjacentFaces[aColor]);
   assert(abFace != face);
   failure = restrictAndPropogateCycles(
-      abFace, face->cycle->sameDirection[aColor], depth);
+      abFace, face->cycle->sameDirection[index], depth);
   if (failure != NULL) {
     return failure;
   }
   return restrictAndPropogateCycles(
-      aFace, face->cycle->oppositeDirection[aColor], depth);
+      aFace, face->cycle->oppositeDirection[index], depth);
 }
 
 /*

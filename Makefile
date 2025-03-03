@@ -34,7 +34,7 @@ formatheader:
 	clang-format -i venn.h
 	if ! [ $$(tail -c 1 venn.h | od -An -t x1) == "0a" ]; then echo >> venn.h ; fi
 
-tests: test/test_venn3  # test/test_initialize test/test_known_solution test/test_main
+tests: test/test_venn3 test/test_initialize test/test_known_solution test/test_main
 	for i in $^; do ./$$i; done
 
 clean:

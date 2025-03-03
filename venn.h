@@ -294,7 +294,6 @@ extern struct global globals;
 
 #define g_faces globals.faces
 #define g_points globals.points
-#define g_edges globals.edges
 #define g_nextPoint globals.nextPoint
 #define g_cycles globals.cycles
 #define g_crossings globals.crossings
@@ -315,6 +314,7 @@ extern uint32_t sizeOfCycleSet(CYCLESET cycleSet);
 extern uint32_t findCycleId(uint32_t *cycle, uint32_t length);
 extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
 extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
+extern uint32_t indexInCycle(CYCLE cycle, COLOR color);
 extern void setDynamicPointer_(void **ptr, void *value);
 #define setDynamicPointer(a, b) setDynamicPointer_((void **)a, b)
 
@@ -346,6 +346,7 @@ extern char *colors2str(char *dbuffer, COLORSET colors);
 extern int color2char(char *dbuffer, COLOR c);
 extern void printFace(FACE face);
 extern void printEdge(EDGE edge);
+extern void printSelectedFaces(void);
 #define POINT_DEBUG 0
 
 #endif

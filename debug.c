@@ -124,3 +124,14 @@ char* edge2str(char* dbuffer, EDGE edge)
   return returnSlot(result);
   ;
 }
+
+void printSelectedFaces(void)
+{
+  uint32_t i;
+  FACE face;
+  for (i = 0, face = g_faces; i < NFACES; i++, face++) {
+    if (face->cycle || face->cycleSetSize < 2 || i == 3) {
+      printFace(face);
+    }
+  }
+}
