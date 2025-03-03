@@ -33,6 +33,8 @@ FAILURE maybeAddFailure(FAILURE failureCollection, FAILURE newFailure,
   assert(failureCollection == &MultipleFailure);
   assert(failureCollection->type == (MULTIPLE_FAILURE | newFailure->type));
   switch (newFailure->type) {
+    case DISCONNECTED_CURVE_FAILURE:
+    case TOO_MANY_CORNERS_FAILURE:
     case CROSSING_LIMIT_FAILURE:
       MultipleFailures[CountOfFailuresInMultipleFailure++] =
           newFailure->u.colors;

@@ -56,7 +56,7 @@ ABDE BFC
 ADEF BFA
 BDEF ABFDC
 BCEF CBD
-CDEF ABCE
+CDEF ABDE
 ACDF EACD
 ACEF CBDE
 ABEF FCB
@@ -107,5 +107,13 @@ if __name__ == '__main__':
             faceId = toFaceId(key)
             labels[faceId] = key
             cycles[faceId] = rotate(value)
-    for i in range(64):
-        print(f"""/* {i}: {''.join(sorted(labels[i]))} */ "{cycles[i]}",""")
+    open = '{'
+    close = '}'
+    for sz in (3, 4, 5, 6):
+        print(f"char * testData{sz}[][2] = {open}")
+        for i in range(64):
+            if len(cycles[i]) == sz:
+                print(f"""  {open} "{''.join(sorted(labels[i]))}", "{cycles[i]}",  {close},""")
+        print(f"{close};")
+    # for i in range(64):
+    #     print(f"""/* {i}: {''.join(sorted(labels[i]))} */ "{cycles[i]}",""")

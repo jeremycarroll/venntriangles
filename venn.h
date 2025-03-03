@@ -34,7 +34,9 @@ typedef uint64_t uint_trail;  // Any non-pointer value that might go on the
 #define CHOOSE_4_1 4u
 #define CHOOSE_3_0 1u
 /* The curves are _colored_ from 0 to 5. */
+#ifndef NCURVES
 #define NCURVES 6
+#endif
 #define NFACES (1 << NCURVES)
 // #define NPOINTS (NFACES - 2)
 #if NCURVES == 6
@@ -138,9 +140,7 @@ otherwise.
 
 #define memberOfColorSet(color, colorSet) (((colorSet) >> (color)) & 1u)
 #define IS_PRIMARY_EDGE(edge) \
-  ((edge)->face == NULL       \
-       ? 1                    \
-       : memberOfColorSet((edge)->color, (edge)->face->colors))
+  (memberOfColorSet((edge)->color, (edge)->face->colors))
 
 struct face {
   // cycle must be null if cycleSetSize is not 1.
@@ -155,7 +155,7 @@ struct face {
 
 STATIC struct facial_cycle {
   uint32_t length;
-  uint32_t curves[NCURVES + 1];
+  COLOR curves[NCURVES + 1];
   COLORSET colors;
   /*
     This is a pointer to an array of length length.
@@ -184,8 +184,9 @@ STATIC struct facial_cycle {
    The point is between the crossing of two curves, one colored A
    and the other colored B, A and B used in the comments below.
 
-   The curve colored A crosses from inside the curve colored B to outside it.
-   The curve colored B crosses from outside the curve colored A to inside it.
+   The curve colored primary crosses from inside the curve colored secondary to
+   outside it. The curve colored secondary crosses from outside the curve
+   colored primary to inside it.
  */
 struct undirectedPoint {
   /*
@@ -281,10 +282,11 @@ struct global {
   DYNAMIC uint_trail crossings[NCURVES][NCURVES];
   /* If we have a color-curve that is not edgeCount[color] long, then we do not
     have a solution.
-    edgeCount[color] is the number of edges of given color with a _to_ field
-    set.
+    edgeCount[0][color] is the number of edges of given color with a _to_ field
+    set, in the negative direction, edgeCount[1][color] is the number of edges
+    of given color with a _to_ field set, in the positive direction.
     */
-  DYNAMIC uint_trail edgeCount[NCURVES];
+  DYNAMIC uint_trail edgeCount[2][NCURVES];
   DYNAMIC uint_trail curveComplete[NCURVES];
 };
 
@@ -292,7 +294,6 @@ extern struct global globals;
 
 #define g_faces globals.faces
 #define g_points globals.points
-#define g_edges globals.edges
 #define g_nextPoint globals.nextPoint
 #define g_cycles globals.cycles
 #define g_crossings globals.crossings
@@ -310,8 +311,10 @@ extern void removeFromCycleSet(uint32_t cycleId, CYCLESET cycleSet);
 extern bool memberOfCycleSet(uint32_t cycleId, CYCLESET cycleSet);
 extern CYCLE findFirstCycleInSet(CYCLESET cycleSet);
 extern uint32_t sizeOfCycleSet(CYCLESET cycleSet);
+extern uint32_t findCycleId(uint32_t *cycle, uint32_t length);
 extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
 extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
+extern uint32_t indexInCycle(CYCLE cycle, COLOR color);
 extern void setDynamicPointer_(void **ptr, void *value);
 #define setDynamicPointer(a, b) setDynamicPointer_((void **)a, b)
 
@@ -335,7 +338,7 @@ extern FAILURE tooManyCornersFailure(COLOR a, int depth);
 /* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
 and that number should be three or less. */
 extern FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth);
-extern bool removeColorFromSearch(COLOR color, int depth);
+extern bool removeColorFromSearch(COLOR color);
 
 extern char *edge2str(char *dbuffer, EDGE edge);
 extern char *face2str(char *dbuffer, FACE face);
@@ -343,6 +346,7 @@ extern char *colors2str(char *dbuffer, COLORSET colors);
 extern int color2char(char *dbuffer, COLOR c);
 extern void printFace(FACE face);
 extern void printEdge(EDGE edge);
+extern void printSelectedFaces(void);
 #define POINT_DEBUG 0
 
 #endif

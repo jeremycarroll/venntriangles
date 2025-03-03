@@ -1,7 +1,7 @@
 
 #include "venn.h"
 
-static struct trail trailarray[TRAIL_SIZE];
+struct trail trailarray[TRAIL_SIZE];
 TRAIL trail = trailarray;
 
 void setDynamicPointer_(void** ptr, void* value)
@@ -27,3 +27,5 @@ void backtrackTo(TRAIL backtrackPoint)
     *(uint_trail*)trail->ptr = trail->value;
   }
 }
+
+void resetTrail() { trail = trailarray; }

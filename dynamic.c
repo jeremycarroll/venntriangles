@@ -4,6 +4,12 @@
 */
 
 #include "venn.h"
+/* We use this global to defer removing colors from the search space until
+   we have completed computing consequential changes.
+   From a design point of view it is local to the makeChoice method, so
+   does not need to be in the trail.
+ */
+COLORSET completedColors;
 static FAILURE makeChoiceInternal(FACE face, int depth);
 
 void setupCentralFaces(uint32_t aLength, uint32_t bLength, uint32_t cLength,
@@ -47,12 +53,17 @@ static void restrictCycles(FACE face, CYCLESET cycleSet)
   }
 }
 
-static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET cycleSet,
+static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
                                           int depth)
 {
+  // check for no-op.
+  if (face->cycleSetSize == 1 && face->cycle != NULL) {
+    return NULL;
+  }
+
   // carefully updated face->possibleCycles to be anded with cycleSet, on the
   // trail. decreasing the count as we go.
-  restrictCycles(face, cycleSet);
+  restrictCycles(face, onlyCycleSet);
 
   if (face->cycleSetSize == 0) {
     return noMatchingCyclesFailure(face->colors, depth);
@@ -69,20 +80,21 @@ static FAILURE propogateChoice(FACE face, EDGE edge, int depth)
   FAILURE failure;
   UPOINT upoint = edge->to->point;
   COLOR aColor = edge->color;
-  COLOR bColor = edge->color == upoint->incomingEdges[1]->color
-                     ? upoint->incomingEdges[0]->color
-                     : upoint->incomingEdges[1]->color;
+  COLOR bColor =
+      edge->color == upoint->primary ? upoint->secondary : upoint->primary;
 
   FACE aFace = face->adjacentFaces[edge->color];
   FACE abFace = aFace->adjacentFaces[bColor];
+  uint32_t index = indexInCycle(face->cycle, aColor);
   assert(abFace == face->adjacentFaces[bColor]->adjacentFaces[aColor]);
+  assert(abFace != face);
   failure = restrictAndPropogateCycles(
-      abFace, face->cycle->sameDirection[aColor], depth);
+      abFace, face->cycle->sameDirection[index], depth);
   if (failure != NULL) {
     return failure;
   }
   return restrictAndPropogateCycles(
-      aFace, face->cycle->oppositeDirection[aColor], depth);
+      aFace, face->cycle->oppositeDirection[index], depth);
 }
 
 /*
@@ -104,9 +116,12 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
   CYCLE cycle = face->cycle;
   FAILURE singleFailure;
   FAILURE multipleFailures = NULL;
+  /* equality in the followign assertion is achieved in the Venn 3 case, where a
+  single choice in any face determines all the faces. */
+  assert(depth <= NFACES);
   for (i = 0; i < cycle->length - 1; i++) {
-    // assignPoint is cheap so collect multiple failures to improve
-    // backtracking.
+    /* assignPoint is cheap so collect multiple failures to improve
+     * backtracking. */
     singleFailure =
         assignPoint(face, cycle->curves[i], cycle->curves[i + 1], depth);
     multipleFailures = maybeAddFailure(multipleFailures, singleFailure, depth);
@@ -140,7 +155,27 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
   return NULL;
 }
 
-FAILURE makeChoice(FACE face) { return makeChoiceInternal(face, 0); }
+FAILURE makeChoice(FACE face)
+{
+  FAILURE failure;
+  COLOR completedColor;
+  completedColors = 0;
+  face->backtrack = trail;
+  failure = makeChoiceInternal(face, 0);
+  if (failure != NULL) {
+    return failure;
+  }
+  if (completedColors) {
+    for (completedColor = 0; completedColor < NCURVES; completedColor++) {
+      if (memberOfColorSet(completedColor, completedColors)) {
+        if (!removeColorFromSearch(completedColor)) {
+          return disconnectedCurveFailure(completedColor, true, 0);
+        }
+      }
+    }
+  }
+  return NULL;
+}
 
 static CYCLESET_DECLARE withoutColor[NCURVES];
 
@@ -160,14 +195,15 @@ void initializeWithoutColor()
   }
 }
 
-bool removeColorFromSearch(COLOR color, int depth)
+bool removeColorFromSearch(COLOR color)
 {
   FACE f;
   uint32_t i;
   for (i = 0, f = g_faces; i < NFACES; i++, f++) {
     if (f->cycle == NULL) {
       /* Discard failure, we will report a different one. */
-      if (restrictAndPropogateCycles(f, withoutColor[color], depth) != NULL) {
+      if (f->edges[color].to == NULL &&
+          restrictAndPropogateCycles(f, withoutColor[color], 0) != NULL) {
         return false;
       }
     }
