@@ -12,6 +12,7 @@
 COLORSET completedColors;
 static FAILURE makeChoiceInternal(FACE face, int depth);
 
+#if NCURVES == 6
 void setupCentralFaces(uint32_t aLength, uint32_t bLength, uint32_t cLength,
                        uint32_t dLength, uint32_t eLength, uint32_t fLength)
 {
@@ -32,6 +33,7 @@ void setupCentralFaces(uint32_t aLength, uint32_t bLength, uint32_t cLength,
   }
   makeChoice(centralFace);
 }
+#endif
 
 static void restrictCycles(FACE face, CYCLESET cycleSet)
 {
@@ -169,7 +171,7 @@ FAILURE makeChoice(FACE face)
     for (completedColor = 0; completedColor < NCURVES; completedColor++) {
       if (memberOfColorSet(completedColor, completedColors)) {
         if (!removeColorFromSearch(completedColor)) {
-          return disconnectedCurveFailure(completedColor, true, 0);
+          return disconnectedCurveFailure(completedColor, 0);
         }
       }
     }

@@ -35,7 +35,7 @@ static FAILURE checkForDisconnectedCurve(EDGE edge, int depth)
     // We have a colored cycle in the FISC.
     length = curveLength(edge);
     if (length < g_edgeCount[IS_PRIMARY_EDGE(edge)][edge->color]) {
-      return disconnectedCurveFailure(edge->color, true, depth);
+      return disconnectedCurveFailure(edge->color, depth);
     }
     assert(length == g_edgeCount[IS_PRIMARY_EDGE(edge)][edge->color]);
     if (completedColors & 1u << edge->color) {

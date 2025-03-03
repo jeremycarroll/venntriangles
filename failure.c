@@ -81,11 +81,8 @@ static struct failure DisconnectedCurveFailure = {
     {0},
 };
 
-FAILURE disconnectedCurveFailure(COLOR a, bool explicit, int depth)
+FAILURE disconnectedCurveFailure(COLOR a, int depth)
 {
-  if (explicit) {
-    depth = NFACES - 1;
-  }
   DisconnectedCurveFailure.u.colors = (1u << a);
   DisconnectedCurveFailure.count[depth]++;
   return &DisconnectedCurveFailure;

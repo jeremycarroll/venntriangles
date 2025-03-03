@@ -332,7 +332,7 @@ extern FAILURE curveChecks(EDGE edge, int depth);
 extern FAILURE noMatchingCyclesFailure(COLORSET colors, int depth);
 extern FAILURE maybeAddFailure(FAILURE multipleFailuresOrNull,
                                FAILURE singleFailure, int depth);
-extern FAILURE disconnectedCurveFailure(COLOR color, bool explicit, int depth);
+extern FAILURE disconnectedCurveFailure(COLOR color, int depth);
 extern FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth);
 extern FAILURE tooManyCornersFailure(COLOR a, int depth);
 /* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
