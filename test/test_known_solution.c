@@ -362,6 +362,30 @@ void test_3_4_5_6(void)
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
 }
 
+void test_4_3_5_6(void)
+{
+  addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
+  addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
+  addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
+  addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
+}
+
+void test_6_5_4_3(void)
+{
+  addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
+  addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
+  addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
+  addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
+}
+
+void test_5_3_6_4(void)
+{
+  addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
+  addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
+  addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
+  addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
+}
+
 static bool findFace(char* colors, FACE* face, char** cyclePtr,
                      char* testData[][2], int length)
 {
@@ -437,6 +461,9 @@ int main(void)
   UNITY_BEGIN();
   RUN_TEST(test_faceFromColors);
   RUN_TEST(test_3_4_5_6);
+  RUN_TEST(test_4_3_5_6);
+  RUN_TEST(test_5_3_6_4);
+  RUN_TEST(test_6_5_4_3);
   RUN_TEST(test_DE_1);
   RUN_TEST(test_DE_2);
   return UNITY_END();
