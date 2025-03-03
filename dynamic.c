@@ -202,7 +202,8 @@ bool removeColorFromSearch(COLOR color)
   for (i = 0, f = g_faces; i < NFACES; i++, f++) {
     if (f->cycle == NULL) {
       /* Discard failure, we will report a different one. */
-      if (restrictAndPropogateCycles(f, withoutColor[color], 0) != NULL) {
+      if (f->edges[color].to == NULL &&
+          restrictAndPropogateCycles(f, withoutColor[color], 0) != NULL) {
         return false;
       }
     }

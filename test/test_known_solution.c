@@ -3,7 +3,7 @@
 #include "../visible_for_testing.h"
 #include "unity.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 static char* testData3[][2] = {
     {
@@ -282,7 +282,9 @@ void tearDown(void)
 static FACE faceFromColors(char* colors)
 {
   int face_id = 0;
+#if DEBUG
   char* colorsOrig = colors;
+#endif
   while (true) {
     if (*colors == 0) {
       break;
