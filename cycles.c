@@ -119,7 +119,7 @@ uint32_t findCycleId(COLOR* cycle, uint32_t length)
 uint32_t indexInCycle(CYCLE cycle, COLOR color)
 {
   uint32_t i;
-  for (uint32_t i = 0; i < cycle->length; i++) {
+  for (i = 0; i < cycle->length; i++) {
     if (cycle->curves[i] == color) {
       return i;
     }

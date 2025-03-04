@@ -270,13 +270,21 @@ static char* testData6[][2] = {
     },
 };
 
-void setUp(void) { initialize(); }
+void setUp(void)
+{
+  initialize();
+  initializeStatsLogging(NULL, 8, 0);
+}
 
 void tearDown(void)
 {
+  if (cycleGuessCounter) {
+    printStatisticsFull();
+  }
   clearGlobals();
   clearInitialize();
   resetTrail();
+  resetStatistics();
 }
 
 static FACE faceFromColors(char* colors)
@@ -332,6 +340,7 @@ static void addFacesFromTestData(char* testData[][2], int length)
       printSelectedFaces();
 #endif
       failure = makeChoice(face);
+      printStatisticsOneLine();
       if (failure != NULL) {
         printf("Failure: %s %x\n", failure->label, failure->type);
         printSelectedFaces();

@@ -13,9 +13,38 @@ static COLORSET MultipleFailures[200];
 static int CountOfFailuresInMultipleFailure = 0;
 static struct failure MultipleFailure = {
     MULTIPLE_FAILURE,
+    "M",
     "Multiple failures",
     {0},
     .u.mulipleColors = MultipleFailures,
+};
+
+static struct failure NoMatchFailure = {
+    NO_MATCH_FAILURE,
+    "N",
+    "No matching cycles",
+    {0},
+};
+
+static struct failure CrossingLimitFailure = {
+    CROSSING_LIMIT_FAILURE,
+    "X",
+    "More than 3 crossing points",
+    {0},
+};
+
+static struct failure DisconnectedCurveFailure = {
+    DISCONNECTED_CURVE_FAILURE,
+    "D",
+    "Disconnected curve",
+    {0},
+};
+
+static struct failure TooManyCornersFailure = {
+    TOO_MANY_CORNERS_FAILURE,
+    "T",
+    "Too many corners",
+    {0},
 };
 
 FAILURE maybeAddFailure(FAILURE failureCollection, FAILURE newFailure,
@@ -49,24 +78,12 @@ FAILURE maybeAddFailure(FAILURE failureCollection, FAILURE newFailure,
   return failureCollection;
 }
 
-static struct failure NoMatchFailure = {
-    NO_MATCH_FAILURE,
-    "No matching cycles",
-    {0},
-};
-
 FAILURE noMatchingCyclesFailure(COLORSET colors, int depth)
 {
   NoMatchFailure.u.colors = colors;
   NoMatchFailure.count[depth]++;
   return &NoMatchFailure;
 }
-
-static struct failure CrossingLimitFailure = {
-    CROSSING_LIMIT_FAILURE,
-    "More than 3 crossing points",
-    {0},
-};
 
 FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth)
 {
@@ -75,31 +92,25 @@ FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth)
   return &CrossingLimitFailure;
 }
 
-static struct failure DisconnectedCurveFailure = {
-    DISCONNECTED_CURVE_FAILURE,
-    "Disconnected curve",
-    {0},
-};
-
-FAILURE disconnectedCurveFailure(COLOR a, bool explicit, int depth)
+FAILURE disconnectedCurveFailure(COLOR a, int depth)
 {
-  if (explicit) {
-    depth = NFACES - 1;
-  }
   DisconnectedCurveFailure.u.colors = (1u << a);
   DisconnectedCurveFailure.count[depth]++;
   return &DisconnectedCurveFailure;
 }
-
-static struct failure TooManyCornersFailure = {
-    TOO_MANY_CORNERS_FAILURE,
-    "Too many corners",
-    {0},
-};
 
 FAILURE tooManyCornersFailure(COLOR a, int depth)
 {
   TooManyCornersFailure.u.colors = (1u << a);
   TooManyCornersFailure.count[depth]++;
   return &TooManyCornersFailure;
+}
+
+void initializeFailures(void)
+{
+  newFailureStatistic(&NoMatchFailure);
+  newFailureStatistic(&CrossingLimitFailure);
+  newFailureStatistic(&DisconnectedCurveFailure);
+  newFailureStatistic(&TooManyCornersFailure);
+  newFailureStatistic(&MultipleFailure);
 }
