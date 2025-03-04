@@ -300,6 +300,9 @@ extern uint32_t findCycleId(uint32_t *cycle, uint32_t length);
 extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
 extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
 extern uint32_t indexInCycle(CYCLE cycle, COLOR color);
+extern void setupCentralFaces(uint32_t aLength, uint32_t bLength,
+                              uint32_t cLength, uint32_t dLength,
+                              uint32_t eLength, uint32_t fLength);
 extern void setDynamicPointer_(void **ptr, void *value);
 #define setDynamicPointer(a, b) setDynamicPointer_((void **)a, b)
 

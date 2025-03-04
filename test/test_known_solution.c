@@ -270,15 +270,18 @@ static char* testData6[][2] = {
     },
 };
 
+static FACE addSpecificFace(char* colors);
+
 void setUp(void)
 {
   initialize();
-  initializeStatsLogging(NULL, 8, 0);
+  initializeStatsLogging(NULL, 1, 0);
+  setupCentralFaces(5, 5, 5, 4, 4, 4);
 }
 
 void tearDown(void)
 {
-  if (cycleGuessCounter) {
+  if (cycleGuessCounter > 1) {
     printStatisticsFull();
   }
   clearGlobals();
@@ -395,6 +398,27 @@ void test_5_3_6_4(void)
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
 }
 
+void test_in_order(bool smallestFirst)
+{
+  FACE face;
+  char colors[7];
+  int i;
+  COLOR color;
+  while ((face = chooseFace(smallestFirst))) {
+    for (color = 0, i = 0; color < NCURVES; color++) {
+      if (memberOfColorSet(color, face->colors)) {
+        colors[i++] = 'a' + color;
+      }
+    }
+    colors[i] = 0;
+    TEST_ASSERT_EQUAL(face, addSpecificFace(colors));
+  }
+}
+
+void test_in_best_order(void) { test_in_order(true); }
+
+void test_in_worst_order(void) { test_in_order(false); }
+
 static bool findFace(char* colors, FACE* face, char** cyclePtr,
                      char* testData[][2], int length)
 {
@@ -409,7 +433,7 @@ static bool findFace(char* colors, FACE* face, char** cyclePtr,
   return false;
 }
 
-static void addSpecificFace(char* colors)
+static FACE addSpecificFace(char* colors)
 {
   FACE face;
   char* cycle;
@@ -431,11 +455,19 @@ static void addSpecificFace(char* colors)
   } else {
     face->cycle = g_cycles + cycleId;
     failure = makeChoice(face);
+    printStatisticsOneLine();
 #if DEBUG
     printSelectedFaces();
+#else
+
+    if (failure != NULL) {
+      printf("Failure: %s %x\n", failure->label, failure->type);
+      printSelectedFaces();
+    }
 #endif
     TEST_ASSERT_NULL(failure);
   }
+  return face;
 }
 
 void test_DE_1(void)
@@ -475,5 +507,7 @@ int main(void)
   RUN_TEST(test_6_5_4_3);
   RUN_TEST(test_DE_1);
   RUN_TEST(test_DE_2);
+  RUN_TEST(test_in_best_order);
+  RUN_TEST(test_in_worst_order);
   return UNITY_END();
 }

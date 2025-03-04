@@ -11,3 +11,6 @@ extern void resetTrail(void);
 extern void resetStatistics(void);
 extern struct trail trailarray[TRAIL_SIZE];
 extern uint64_t cycleGuessCounter;
+extern FACE chooseFace(bool smallestFirst);
+
+
