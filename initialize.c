@@ -63,6 +63,7 @@ void initialize()
   initializePoints();
   applyMonotonicity();
 
+  initializeDynamicCounters();
   initializeWithoutColor();
 }
 

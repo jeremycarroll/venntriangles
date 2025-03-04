@@ -7,7 +7,7 @@ TEST_SRC = test/test_main.c test/test_known_solution.c test/test_initialize.c
 TEST_OBJ = $(TEST_SRC:.c=.o)
 TEST_BIN = $(TEST_SRC:.c=)
 SRC      = main.c initialize.c globals.c cycles.c trail.c dynamic.c failure.c colors.c \
-           point.c triangles.c debug.c
+           point.c triangles.c debug.c statistics.c
 OBJ      = $(SRC:.c=.o)
 OBJ3      = $(SRC:.c=.3.o)
 XSRC     = entrypoint.c

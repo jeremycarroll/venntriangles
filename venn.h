@@ -233,6 +233,7 @@ typedef struct failure *FAILURE;
 
 struct failure {
   FAILURE_TYPE type;
+  char *shortLabel;
   char *label;
   // The number of times this failure has been used, at each depth.
   uint64_t count[NFACES];
@@ -256,22 +257,6 @@ struct trail {
  */
 struct global {
   struct face faces[NFACES];
-  /*
-  The points are accessed from the edges, with the pointers set up dynamically.
-  We allocate the points from this stack, using nextPoint to keep track of the
-  next free point, nextPoint goes down as we backtrack, automatically freeing
-  points. Because this stack tracks the trail, we do not need to clean up, and
-  so the value of the fields of each point not in the trail; however, pointers
-  to the POINT, are in the trail (they are set once, so we don't really need to
-  trail the previous value, which is always NULL).
-   */
-  // struct point points[NPOINTS];
-  /*
-  The edges are accessed from faces, with the pointers set up during
-  initialization.
-   */
-  // struct edge edges[NFACES * NCURVES];
-  DYNAMIC uint_trail nextPoint;
   /*
   These cycles are accessed from faces, with the pointers set up dynamically.
   The faces use the id of the cycle to find it in this list.
@@ -326,6 +311,7 @@ extern EDGE followEdgeForwards(EDGE edge);
 extern void setDynamicInt(uint_trail *ptr, uint_trail value);
 extern void backtrackTo(TRAIL backtrackPoint);
 extern void setCycleLength(uint32_t faceColors, uint32_t length);
+extern void maybeSetDynamicInt(uint_trail *ptr, uint_trail value);
 
 extern FAILURE makeChoice(FACE face);
 extern FAILURE curveChecks(EDGE edge, int depth);
@@ -335,6 +321,7 @@ extern FAILURE maybeAddFailure(FAILURE multipleFailuresOrNull,
 extern FAILURE disconnectedCurveFailure(COLOR color, int depth);
 extern FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth);
 extern FAILURE tooManyCornersFailure(COLOR a, int depth);
+extern void initializeFailures(void);
 /* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
 and that number should be three or less. */
 extern FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth);
@@ -347,6 +334,14 @@ extern int color2char(char *dbuffer, COLOR c);
 extern void printFace(FACE face);
 extern void printEdge(EDGE edge);
 extern void printSelectedFaces(void);
+
+extern void newStatistic(uint64_t *counter, char *shortName, char *name);
+extern void newFailureStatistic(FAILURE failure);
+extern void printStatisticsOneLine(void);
+extern void printStatisticsFull(void);
+extern void initializeDynamicCounters(void);
+extern void initializeStatsLogging(char *filename, int frequency, int seconds);
+
 #define POINT_DEBUG 0
 
 #endif

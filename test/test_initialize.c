@@ -8,6 +8,7 @@ void tearDown(void)
 {
   clearGlobals();
   clearInitialize();
+  resetStatistics();
 }
 
 void test_initialize(void)

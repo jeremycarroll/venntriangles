@@ -12,6 +12,13 @@ void setDynamicPointer_(void** ptr, void* value)
   *ptr = value;
 }
 
+void maybeSetDynamicInt(uint_trail* ptr, uint_trail value)
+{
+  if (*ptr != value) {
+    setDynamicInt(ptr, value);
+  }
+}
+
 void setDynamicInt(uint_trail* ptr, uint_trail value)
 {
   trail->ptr = ptr;
