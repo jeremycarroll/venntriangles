@@ -295,6 +295,7 @@ extern void addToCycleSet(uint32_t cycleId, CYCLESET cycleSet);
 extern void removeFromCycleSet(uint32_t cycleId, CYCLESET cycleSet);
 extern bool memberOfCycleSet(uint32_t cycleId, CYCLESET cycleSet);
 extern CYCLE findFirstCycleInSet(CYCLESET cycleSet);
+extern CYCLE findNextCycleInSet(CYCLESET cycleSet, CYCLE cycle);
 extern uint32_t sizeOfCycleSet(CYCLESET cycleSet);
 extern uint32_t findCycleId(uint32_t *cycle, uint32_t length);
 extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);

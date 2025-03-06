@@ -1,12 +1,6 @@
 #include "venn.h"
 
 static int shortCircuitResult;
-// Get the first non-zero value of a, b, or c, without evaluating the others.
-#define SHORT_CIRCUIT_OR(a, b, c)                           \
-  (((shortCircuitResult = a) || (shortCircuitResult = b) || \
-    (shortCircuitResult = c))                               \
-       ? shortCircuitResult                                 \
-       : 0)
 
 FACE chooseFace(bool smallestFirst)
 {
@@ -24,6 +18,59 @@ FACE chooseFace(bool smallestFirst)
   return face;
 }
 
+static CYCLE chooseCycle(FACE face, CYCLE cycle)
+{
+  findNextCycleInSet(face->possibleCycles, cycle);
+}
+
+void search(bool smallestFirst, void (*foundSolution)(void))
+{
+  FACE face;
+  FAILURE failure = NULL;
+  FACE chosenFaces[NFACES];
+  CYCLE chosenCycles[NFACES];
+  CYCLE cycle;
+  int position = 0;
+  enum { NEXT_FACE, NEXT_CYCLE } state = NEXT_FACE;
+  while (position >= 0) {
+    switch (state) {
+      case NEXT_FACE:
+        face = chooseFace(smallestFirst);
+        if (face == NULL) {
+          foundSolution();
+          position -= 1;
+          state = NEXT_CYCLE;
+        } else {
+          face->backtrack = trail;
+          chosenFaces[position] = face;
+          chosenCycles[position] = NULL;
+          state = NEXT_CYCLE;
+        }
+        break;
+      case NEXT_CYCLE:
+        face = chosenFaces[position];
+        backtrackTo(face->backtrack);
+        cycle = chooseCycle(face, chosenCycles[position]);
+        if (cycle == NULL) {
+          position -= 1;
+          state = NEXT_CYCLE;
+        } else {
+          chosenCycles[position] = cycle;
+          setDynamicPointer(&face->cycle, cycle);
+          failure = makeChoice(face);
+          if (failure == NULL) {
+            position += 1;
+            state = NEXT_FACE;
+          } else {
+            /*
+            same position, next cycle.
+            */
+          }
+        }
+        break;
+    }
+  }
+}
 /*
 FACE choose(void) {
     FACE face = chooseFace();
@@ -33,6 +80,12 @@ FACE choose(void) {
 */
 
 /* first cut code to be reworked.
+// Get the first non-zero value of a, b, or c, without evaluating the others.
+#define SHORT_CIRCUIT_OR(a, b, c)                           \
+  (((shortCircuitResult = a) || (shortCircuitResult = b) || \
+    (shortCircuitResult = c))                               \
+       ? shortCircuitResult                                 \
+       : 0)
 #define backtrack break
 void search() {
     Face backTrackFace = NULL;
