@@ -319,6 +319,9 @@ extern void maybeSetDynamicInt(uint_trail *ptr, uint_trail value);
 
 extern FAILURE makeChoice(FACE face);
 extern FAILURE curveChecks(EDGE edge, int depth);
+
+extern void search(bool smallestFirst, void (*foundSolution)(void));
+
 extern FAILURE noMatchingCyclesFailure(COLORSET colors, int depth);
 extern FAILURE maybeAddFailure(FAILURE multipleFailuresOrNull,
                                FAILURE singleFailure, int depth);

@@ -20,7 +20,7 @@ FACE chooseFace(bool smallestFirst)
 
 static CYCLE chooseCycle(FACE face, CYCLE cycle)
 {
-  findNextCycleInSet(face->possibleCycles, cycle);
+  return findNextCycleInSet(face->possibleCycles, cycle);
 }
 
 void search(bool smallestFirst, void (*foundSolution)(void))
@@ -56,7 +56,9 @@ void search(bool smallestFirst, void (*foundSolution)(void))
           state = NEXT_CYCLE;
         } else {
           chosenCycles[position] = cycle;
+          /* suspect - because face->backtrack gets reset. */
           setDynamicPointer(&face->cycle, cycle);
+          assert(face->cycle == cycle);
           failure = makeChoice(face);
           if (failure == NULL) {
             position += 1;
