@@ -185,8 +185,5 @@ int main(void)
   RUN_TEST(test_face_choice_count);
   RUN_TEST(test_opposite_directions);
   RUN_TEST(test_next_cycle);
-
-  printf("CYCLESET_LENGTH = %lu\nNCYCLE_ENTRIES = %u\nNCYCLES = %u\n",
-         CYCLESET_LENGTH, NCYCLE_ENTRIES, NCYCLES);
   return UNITY_END();
 }

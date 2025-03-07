@@ -4,6 +4,7 @@
 #include "unity.h"
 
 #define DEBUG 0
+#define STATS 0
 
 static char* testData3[][2] = {
     {
@@ -281,9 +282,11 @@ void setUp(void)
 
 void tearDown(void)
 {
+#if STATS
   if (cycleGuessCounter > 1) {
     printStatisticsFull();
   }
+#endif
   clearGlobals();
   clearInitialize();
   resetTrail();
@@ -343,7 +346,10 @@ static void addFacesFromTestData(char* testData[][2], int length)
       printSelectedFaces();
 #endif
       failure = makeChoice(face);
+
+#if STATS
       printStatisticsOneLine();
+#endif
       if (failure != NULL) {
         printf("Failure: %s %x\n", failure->label, failure->type);
         printSelectedFaces();
@@ -372,6 +378,7 @@ void test_3_4_5_6(void)
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
+  TEST_ASSERT_EQUAL(27, cycleGuessCounter);
 }
 
 void test_4_3_5_6(void)
@@ -380,6 +387,7 @@ void test_4_3_5_6(void)
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
+  TEST_ASSERT_EQUAL(26, cycleGuessCounter);
 }
 
 void test_6_5_4_3(void)
@@ -388,6 +396,7 @@ void test_6_5_4_3(void)
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
+  TEST_ASSERT_EQUAL(23, cycleGuessCounter);
 }
 
 void test_5_3_6_4(void)
@@ -396,6 +405,7 @@ void test_5_3_6_4(void)
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
+  TEST_ASSERT_EQUAL(26, cycleGuessCounter);
 }
 
 void test_in_order(bool smallestFirst)
@@ -415,9 +425,17 @@ void test_in_order(bool smallestFirst)
   }
 }
 
-void test_in_best_order(void) { test_in_order(true); }
+void test_in_best_order(void)
+{
+  test_in_order(true);
+  TEST_ASSERT_EQUAL(32, cycleGuessCounter);
+}
 
-void test_in_worst_order(void) { test_in_order(false); }
+void test_in_worst_order(void)
+{
+  test_in_order(false);
+  TEST_ASSERT_EQUAL(17, cycleGuessCounter);
+}
 
 static bool findFace(char* colors, FACE* face, char** cyclePtr,
                      char* testData[][2], int length)
@@ -455,7 +473,9 @@ static FACE addSpecificFace(char* colors)
   } else {
     face->cycle = g_cycles + cycleId;
     failure = makeChoice(face);
+#if STATS
     printStatisticsOneLine();
+#endif
 #if DEBUG
     printSelectedFaces();
 #else

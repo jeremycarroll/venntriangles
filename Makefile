@@ -34,7 +34,7 @@ bin/%.u: test/%.c $(UNITY_DIR)/src/unity.c $(OBJ6)
 	touch .format
 
 tests: $(TEST_BIN)
-	for i in $^; do ./$$i; done
+	for i in $^; do echo $$i; ./$$i | grep -v -e ':PASS$$' -e '^-*$$' ; done
 
 clean:
 	rm -f $(TEST_BIN) $(TARGET) $(OBJ6) $(OBJ3) $(XOBJ) $(TEST_BIN) .format
