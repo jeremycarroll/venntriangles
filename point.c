@@ -252,7 +252,11 @@ FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
            color2char(NULL, bColor));
     printEdge(&face->edges[aColor]);
 #endif
+
     assert(face->edges[aColor].to != &face->edges[aColor].possiblyTo[aColor]);
+    if (face->edges[aColor].to != &face->edges[aColor].possiblyTo[bColor]) {
+      return pointConflictFailure(aColor, bColor, depth);
+    }
     assert(face->edges[aColor].to == &face->edges[aColor].possiblyTo[bColor]);
     return NULL;
   }

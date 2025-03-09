@@ -46,24 +46,24 @@ clean:
 $(TARGET): $(OBJ6) $(XOBJ)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ6) $(XOBJ)
 
-objs3/%.o: %.c
+objs3/%.o: %.c  $(HDR)
 	@echo Compiling $<
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -DNCURVES=3 -c $< -o $@
 
 
-objs4/%.o: %.c
+objs4/%.o: %.c  $(HDR)
 	@echo Compiling $<
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -DNCURVES=4 -c $< -o $@
 
 
-objs5/%.o: %.c
+objs5/%.o: %.c  $(HDR)
 	@echo Compiling $<
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -DNCURVES=5 -c $< -o $@
 
-objs6/%.o: %.c
+objs6/%.o: %.c  $(HDR)
 	@echo Compiling $<
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -DNCURVES=6 -c $< -o $@

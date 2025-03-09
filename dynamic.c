@@ -15,24 +15,45 @@ uint64_t cycleGuessCounter = 0;
 static uint64_t cycleForcedCounter = 0;
 static uint64_t cycleSetReducedCounter = 0;
 
-#if NCURVES == 6
+#if NCURVES > 3
 void setupCentralFaces(uint32_t aLength, uint32_t bLength, uint32_t cLength,
-                       uint32_t dLength, uint32_t eLength, uint32_t fLength)
+                       uint32_t dLength
+#if NCURVES > 4
+                       ,
+                       uint32_t eLength
+#if NCURVES > 5
+                       ,
+                       uint32_t fLength
+#endif
+#endif
+)
 {
   CYCLE cycle;
+  uint64_t i;
   FACE centralFace = g_faces + (NFACES - 1);
   setCycleLength(~(1 << 0), aLength);
   setCycleLength(~(1 << 1), bLength);
   setCycleLength(~(1 << 2), cLength);
   setCycleLength(~(1 << 3), dLength);
+#if NCURVES > 4
   setCycleLength(~(1 << 4), eLength);
+#if NCURVES > 5
   setCycleLength(~(1 << 5), fLength);
+#endif
+#endif
   for (cycle = g_cycles;; cycle++) {
-    if (cycle->length == 6 && cycle->curves[1] == 1 && cycle->curves[2] == 2 &&
-        cycle->curves[3] == 3 && cycle->curves[4] == 4) {
-      centralFace->cycle = cycle;
-      break;
+    if (cycle->length != NCURVES) {
+      continue;
     }
+    for (i = 1; i < NCURVES; i++) {
+      if (cycle->curves[i] != i) {
+        goto NextCycle;
+      }
+    }
+    centralFace->cycle = cycle;
+    break;
+  NextCycle:
+    continue;
   }
   makeChoice(centralFace);
 }

@@ -263,6 +263,9 @@ void setCycleLength(uint32_t faceColors, uint32_t length)
   FACE face = g_faces + (faceColors & (NFACES - 1));
   CYCLE cycle;
   uint32_t cycleId;
+  if (length == 0) {
+    return;
+  }
   for (cycleId = 0, cycle = g_cycles; cycleId < NCYCLES; cycleId++, cycle++) {
     if (cycle->length != length) {
       removeFromCycleSet(cycleId, face->possibleCycles);
