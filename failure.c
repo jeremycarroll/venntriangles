@@ -9,16 +9,6 @@ stats.
 */
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
-static COLORSET MultipleFailures[200];
-static int CountOfFailuresInMultipleFailure = 0;
-static struct failure MultipleFailure = {
-    MULTIPLE_FAILURE,
-    "M",
-    "Multiple failures",
-    {0},
-    .u.mulipleColors = MultipleFailures,
-};
-
 static struct failure NoMatchFailure = {
     NO_MATCH_FAILURE,
     "N",
@@ -53,37 +43,6 @@ static struct failure PointConflictFailure = {
     "Point conflict",
     {0},
 };
-
-FAILURE maybeAddFailure(FAILURE failureCollection, FAILURE newFailure,
-                        int depth)
-{
-  if (newFailure == NULL) {
-    return failureCollection;
-  }
-  if (failureCollection == NULL) {
-    failureCollection = &MultipleFailure;
-    failureCollection->count[depth]++;
-    CountOfFailuresInMultipleFailure = 0;
-    MultipleFailure.type = MULTIPLE_FAILURE | newFailure->type;
-  }
-  assert(failureCollection == &MultipleFailure);
-  assert(failureCollection->type == (MULTIPLE_FAILURE | newFailure->type));
-  switch (newFailure->type) {
-    case DISCONNECTED_CURVE_FAILURE:
-    case TOO_MANY_CORNERS_FAILURE:
-    case CROSSING_LIMIT_FAILURE:
-      MultipleFailures[CountOfFailuresInMultipleFailure++] =
-          newFailure->u.colors;
-      break;
-    case NO_MATCH_FAILURE:
-      assert(NULL == "Unsupported failure type");
-      break;
-    default:
-      assert(NULL == "Unknown failure type");
-  }
-
-  return failureCollection;
-}
 
 FAILURE noMatchingCyclesFailure(COLORSET colors, int depth)
 {
@@ -127,5 +86,4 @@ void initializeFailures(void)
   newFailureStatistic(&DisconnectedCurveFailure);
   newFailureStatistic(&TooManyCornersFailure);
   newFailureStatistic(&PointConflictFailure);
-  newFailureStatistic(&MultipleFailure);
 }

@@ -324,8 +324,6 @@ extern FAILURE curveChecks(EDGE edge, int depth);
 extern void search(bool smallestFirst, void (*foundSolution)(void));
 
 extern FAILURE noMatchingCyclesFailure(COLORSET colors, int depth);
-extern FAILURE maybeAddFailure(FAILURE multipleFailuresOrNull,
-                               FAILURE singleFailure, int depth);
 extern FAILURE disconnectedCurveFailure(COLOR color, int depth);
 extern FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth);
 extern FAILURE tooManyCornersFailure(COLOR a, int depth);
