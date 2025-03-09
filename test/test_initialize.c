@@ -153,14 +153,23 @@ void test_face_choice_count(void)
   initialize();
   for (faceColors = 0, face = g_faces; faceColors < NFACES;
        faceColors++, face++) {
-    // printf("%c%c%c%c%c%c: %x %x (%d) %d\n",  (faceColors & 1)?'a':'-',
-    // ((faceColors >> 1) & 1)?'b':'-', ((faceColors >> 2) & 1)?'c':'-',
-    // ((faceColors >> 3) & 1)?'d':'-', ((faceColors >> 4) & 1)?'e':'-',
-    // ((faceColors >> 5) & 1)?'f':'-',
-    //   faceColors, face->colors, (faceColors), face->cycleSetSize);
     TEST_ASSERT_EQUAL(expected[__builtin_popcount(faceColors)],
                       face->cycleSetSize);
   }
+}
+
+void test_next_cycle(void)
+{
+  FACE face = g_faces;
+  int counter = 0;
+  CYCLE cycle = NULL;
+  initialize();
+  do {
+    cycle = findNextCycleInSet(face->possibleCycles, cycle);
+    counter++;
+  } while (cycle != NULL);
+
+  TEST_ASSERT_EQUAL(120 + 1, counter);
 }
 
 int main(void)
@@ -175,8 +184,6 @@ int main(void)
   RUN_TEST(test_same_and_opposite_directions);
   RUN_TEST(test_face_choice_count);
   RUN_TEST(test_opposite_directions);
-
-  printf("CYCLESET_LENGTH = %lu\nNCYCLE_ENTRIES = %u\nNCYCLES = %u\n",
-         CYCLESET_LENGTH, NCYCLE_ENTRIES, NCYCLES);
+  RUN_TEST(test_next_cycle);
   return UNITY_END();
 }

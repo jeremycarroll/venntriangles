@@ -121,43 +121,30 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
 {
   uint32_t i;
   CYCLE cycle = face->cycle;
-  FAILURE singleFailure;
-  FAILURE multipleFailures = NULL;
+  FAILURE failure;
+#define CHECK_FAILURE(call) \
+  failure = (call);         \
+  if (failure != NULL) {    \
+    return failure;         \
+  }
   /* equality in the followign assertion is achieved in the Venn 3 case, where a
   single choice in any face determines all the faces. */
+#if EDGE_DEBUG
+  printf("Making choice (internal): ");
+  printFace(face);
+#endif
   assert(depth <= NFACES);
   for (i = 0; i < cycle->length - 1; i++) {
-    /* assignPoint is cheap so collect multiple failures to improve
-     * backtracking. */
-    singleFailure =
-        assignPoint(face, cycle->curves[i], cycle->curves[i + 1], depth);
-    multipleFailures = maybeAddFailure(multipleFailures, singleFailure, depth);
+    CHECK_FAILURE(
+        assignPoint(face, cycle->curves[i], cycle->curves[i + 1], depth));
   }
-  singleFailure = assignPoint(face, cycle->curves[i], cycle->curves[0], depth);
-  multipleFailures = maybeAddFailure(multipleFailures, singleFailure, depth);
-  if (multipleFailures != NULL) {
-    return multipleFailures;
-  }
+  CHECK_FAILURE(assignPoint(face, cycle->curves[i], cycle->curves[0], depth));
 
   for (i = 0; i < cycle->length; i++) {
-    singleFailure = curveChecks(&face->edges[cycle->curves[i]], depth);
-    multipleFailures = maybeAddFailure(multipleFailures, singleFailure, depth);
+    CHECK_FAILURE(curveChecks(&face->edges[cycle->curves[i]], depth));
   }
-  if (multipleFailures != NULL) {
-    return multipleFailures;
-  }
-  for (i = 0; i < cycle->length - 1; i++) {
-    /*
-       propogateChoice is expensive so abort on first failure.
-       Also, propogateChoice recurses into this function, and each failure can
-       only be used once on any stack, so we would need some generic failure
-       collection mechanism.
-    */
-    FAILURE failure =
-        propogateChoice(face, &face->edges[cycle->curves[i]], depth);
-    if (failure != NULL) {
-      return failure;
-    }
+  for (i = 0; i < cycle->length; i++) {
+    CHECK_FAILURE(propogateChoice(face, &face->edges[cycle->curves[i]], depth));
   }
   return NULL;
 }
@@ -187,6 +174,11 @@ FAILURE makeChoice(FACE face)
   assert(cycleId < NCYCLES);
   assert(cycleId >= 0);
   setToSingletonCycleSet(face, cycleId);
+
+#if EDGE_DEBUG
+  printf("Making choice: ");
+  printFace(face);
+#endif
 
   failure = makeChoiceInternal(face, 0);
   if (failure != NULL) {

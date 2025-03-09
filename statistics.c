@@ -79,10 +79,23 @@ double searchSpace(void)
   return result;
 }
 
+int chosen(void)
+{
+  int result = 0;
+  uint32_t i;
+  FACE face;
+  for (i = 0, face = g_faces; i < NFACES; i++, face++) {
+    if (face->cycle != NULL) {
+      result += 1;
+    }
+  }
+  return result;
+}
+
 /*
 We might print the statistics in one line.
 */
-void printStatisticsOneLine(void)
+void printStatisticsOneLine(int position)
 {
   int i, j, k;
   char* timestr;
@@ -99,8 +112,11 @@ void printStatisticsOneLine(void)
        "Www Mmm dd hh:mm:ss yyyy",
       */
       timestr[19] = 0;
-      fprintf(logFile, "%s %ld:%02.2ld:%02.2ld %.1f ", timestr + 11,
-              elapsed / 3600, (elapsed / 60) % 60, elapsed % 60, searchSpace());
+      fprintf(logFile, "%s %ld:%02.2ld:%02.2ld %d %.1f ", timestr + 11,
+              elapsed / 3600, (elapsed / 60) % 60, elapsed % 60, chosen(),
+              searchSpace());
+
+      fprintf(logFile, "p %d ", position);
       for (i = 0; i < MAX_STATISTICS; i++) {
         if (statistics[i].countPtr == NULL) {
           break;
@@ -152,10 +168,11 @@ void printStatisticsFull(void)
   elapsed = now - startTime;
   searchSpaceLogSize = searchSpace();
   fprintf(logFile,
-          "%sRuntime: %ld:%02.2ld:%02.2ld\nOpen Search Space Size: Log = %.2f "
+          "%sRuntime: %ld:%02.2ld:%02.2ld\nChosen faces: %d\nOpen Search Space "
+          "Size: Log = %.2f "
           "; i.e. "
           "%6.3g\n",
-          timestr, elapsed / 3600, (elapsed / 60) % 60, elapsed % 60,
+          timestr, elapsed / 3600, (elapsed / 60) % 60, elapsed % 60, chosen(),
           searchSpaceLogSize, exp(searchSpaceLogSize));
   fprintf(logFile, "%30s %30s\n", "Counter", "Value(s)");
   for (i = 0; i < MAX_STATISTICS; i++) {

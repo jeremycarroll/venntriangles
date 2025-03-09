@@ -2,6 +2,8 @@
 #include "../visible_for_testing.h"
 #include "unity.h"
 
+#define STATS 0
+
 void setUp(void)
 {
   initialize();
@@ -174,12 +176,26 @@ static void test_choosing_and_backtracking()
     face = g_faces + i;
     face->cycle = g_cycles;
     TEST_ASSERT_NULL(makeChoice(face));
+#if STATS
     printStatisticsOneLine();
+#endif
     verify_face_size(1);
     backtrackTo(face->backtrack);
     face->cycle = NULL;
   }
+#if STATS
   printStatisticsFull();
+#endif
+  TEST_ASSERT_EQUAL(8, cycleGuessCounter);
+}
+
+static int solution_count = 0;
+static void found_solution() { solution_count++; }
+
+static void test_search()
+{
+  search(true, found_solution);
+  TEST_ASSERT_EQUAL(2, solution_count);
 }
 
 int main(void)
@@ -194,5 +210,6 @@ int main(void)
   RUN_TEST(test_ab_face_a_edge);
   RUN_TEST(test_abc_face_a_edge);
   RUN_TEST(test_choosing_and_backtracking);
+  RUN_TEST(test_search);
   return UNITY_END();
 }

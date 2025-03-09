@@ -27,12 +27,15 @@ void setDynamicInt(uint_trail* ptr, uint_trail value)
   *ptr = value;
 }
 
-void backtrackTo(TRAIL backtrackPoint)
+bool backtrackTo(TRAIL backtrackPoint)
 {
+  bool result = false;
   while (trail > backtrackPoint) {
+    result = true;
     trail--;
     *(uint_trail*)trail->ptr = trail->value;
   }
+  return result;
 }
 
 void resetTrail() { trail = trailarray; }

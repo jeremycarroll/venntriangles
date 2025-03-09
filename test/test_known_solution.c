@@ -4,6 +4,7 @@
 #include "unity.h"
 
 #define DEBUG 0
+#define STATS 0
 
 static char* testData3[][2] = {
     {
@@ -270,17 +271,22 @@ static char* testData6[][2] = {
     },
 };
 
+static FACE addSpecificFace(char* colors);
+
 void setUp(void)
 {
   initialize();
-  initializeStatsLogging(NULL, 8, 0);
+  initializeStatsLogging(NULL, 1, 0);
+  setupCentralFaces(5, 5, 5, 4, 4, 4);
 }
 
 void tearDown(void)
 {
-  if (cycleGuessCounter) {
+#if STATS
+  if (cycleGuessCounter > 1) {
     printStatisticsFull();
   }
+#endif
   clearGlobals();
   clearInitialize();
   resetTrail();
@@ -340,7 +346,10 @@ static void addFacesFromTestData(char* testData[][2], int length)
       printSelectedFaces();
 #endif
       failure = makeChoice(face);
-      printStatisticsOneLine();
+
+#if STATS
+      printStatisticsOneLine(0);
+#endif
       if (failure != NULL) {
         printf("Failure: %s %x\n", failure->label, failure->type);
         printSelectedFaces();
@@ -369,6 +378,7 @@ void test_3_4_5_6(void)
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
+  TEST_ASSERT_EQUAL(25, cycleGuessCounter);
 }
 
 void test_4_3_5_6(void)
@@ -377,6 +387,7 @@ void test_4_3_5_6(void)
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
+  TEST_ASSERT_EQUAL(19, cycleGuessCounter);
 }
 
 void test_6_5_4_3(void)
@@ -385,6 +396,7 @@ void test_6_5_4_3(void)
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
+  TEST_ASSERT_EQUAL(23, cycleGuessCounter);
 }
 
 void test_5_3_6_4(void)
@@ -393,6 +405,36 @@ void test_5_3_6_4(void)
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
+  TEST_ASSERT_EQUAL(24, cycleGuessCounter);
+}
+
+void test_in_order(bool smallestFirst)
+{
+  FACE face;
+  char colors[7];
+  int i;
+  COLOR color;
+  while ((face = chooseFace(smallestFirst))) {
+    for (color = 0, i = 0; color < NCURVES; color++) {
+      if (memberOfColorSet(color, face->colors)) {
+        colors[i++] = 'a' + color;
+      }
+    }
+    colors[i] = 0;
+    TEST_ASSERT_EQUAL(face, addSpecificFace(colors));
+  }
+}
+
+void test_in_best_order(void)
+{
+  test_in_order(true);
+  TEST_ASSERT_EQUAL(33, cycleGuessCounter);
+}
+
+void test_in_worst_order(void)
+{
+  test_in_order(false);
+  TEST_ASSERT_EQUAL(13, cycleGuessCounter);
 }
 
 static bool findFace(char* colors, FACE* face, char** cyclePtr,
@@ -409,7 +451,7 @@ static bool findFace(char* colors, FACE* face, char** cyclePtr,
   return false;
 }
 
-static void addSpecificFace(char* colors)
+static FACE addSpecificFace(char* colors)
 {
   FACE face;
   char* cycle;
@@ -426,16 +468,26 @@ static void addSpecificFace(char* colors)
   cycleId = cycleIdFromColors(cycle);
   TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, face->possibleCycles));
   if (face->cycleSetSize == 1) {
-    TEST_ASSERT_EQUAL(cycleId, findFirstCycleInSet(face->possibleCycles));
+    TEST_ASSERT_EQUAL(face->cycle, findFirstCycleInSet(face->possibleCycles));
     TEST_ASSERT_EQUAL(face->cycle, g_cycles + cycleId);
   } else {
     face->cycle = g_cycles + cycleId;
     failure = makeChoice(face);
+#if STATS
+    printStatisticsOneLine(0);
+#endif
 #if DEBUG
     printSelectedFaces();
+#else
+
+    if (failure != NULL) {
+      printf("Failure: %s %x\n", failure->label, failure->type);
+      printSelectedFaces();
+    }
 #endif
     TEST_ASSERT_NULL(failure);
   }
+  return face;
 }
 
 void test_DE_1(void)
@@ -475,5 +527,7 @@ int main(void)
   RUN_TEST(test_6_5_4_3);
   RUN_TEST(test_DE_1);
   RUN_TEST(test_DE_2);
+  RUN_TEST(test_in_best_order);
+  RUN_TEST(test_in_worst_order);
   return UNITY_END();
 }

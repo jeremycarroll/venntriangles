@@ -227,6 +227,7 @@ typedef enum failureType {
   CROSSING_LIMIT_FAILURE = 0x2,
   DISCONNECTED_CURVE_FAILURE = 0x4,
   TOO_MANY_CORNERS_FAILURE = 0x8,
+  POINT_CONFLICT_FAILURE = 0x10,
 } FAILURE_TYPE;
 
 typedef struct failure *FAILURE;
@@ -295,11 +296,15 @@ extern void addToCycleSet(uint32_t cycleId, CYCLESET cycleSet);
 extern void removeFromCycleSet(uint32_t cycleId, CYCLESET cycleSet);
 extern bool memberOfCycleSet(uint32_t cycleId, CYCLESET cycleSet);
 extern CYCLE findFirstCycleInSet(CYCLESET cycleSet);
+extern CYCLE findNextCycleInSet(CYCLESET cycleSet, CYCLE cycle);
 extern uint32_t sizeOfCycleSet(CYCLESET cycleSet);
 extern uint32_t findCycleId(uint32_t *cycle, uint32_t length);
 extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
 extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
 extern uint32_t indexInCycle(CYCLE cycle, COLOR color);
+extern void setupCentralFaces(uint32_t aLength, uint32_t bLength,
+                              uint32_t cLength, uint32_t dLength,
+                              uint32_t eLength, uint32_t fLength);
 extern void setDynamicPointer_(void **ptr, void *value);
 #define setDynamicPointer(a, b) setDynamicPointer_((void **)a, b)
 
@@ -309,18 +314,20 @@ extern EDGE followEdgeBackwards(EDGE edge);
 extern EDGE followEdgeForwards(EDGE edge);
 
 extern void setDynamicInt(uint_trail *ptr, uint_trail value);
-extern void backtrackTo(TRAIL backtrackPoint);
+extern bool backtrackTo(TRAIL backtrackPoint);
 extern void setCycleLength(uint32_t faceColors, uint32_t length);
 extern void maybeSetDynamicInt(uint_trail *ptr, uint_trail value);
 
 extern FAILURE makeChoice(FACE face);
 extern FAILURE curveChecks(EDGE edge, int depth);
+
+extern void search(bool smallestFirst, void (*foundSolution)(void));
+
 extern FAILURE noMatchingCyclesFailure(COLORSET colors, int depth);
-extern FAILURE maybeAddFailure(FAILURE multipleFailuresOrNull,
-                               FAILURE singleFailure, int depth);
 extern FAILURE disconnectedCurveFailure(COLOR color, int depth);
 extern FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth);
 extern FAILURE tooManyCornersFailure(COLOR a, int depth);
+extern FAILURE pointConflictFailure(COLOR a, COLOR b, int depth);
 extern void initializeFailures(void);
 /* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
 and that number should be three or less. */
@@ -337,11 +344,13 @@ extern void printSelectedFaces(void);
 
 extern void newStatistic(uint64_t *counter, char *shortName, char *name);
 extern void newFailureStatistic(FAILURE failure);
-extern void printStatisticsOneLine(void);
+extern void printStatisticsOneLine(int position);
 extern void printStatisticsFull(void);
 extern void initializeDynamicCounters(void);
 extern void initializeStatsLogging(char *filename, int frequency, int seconds);
 
 #define POINT_DEBUG 0
+#define EDGE_DEBUG 0
+#define BACKTRACK_DEBUG 0
 
 #endif

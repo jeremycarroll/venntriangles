@@ -21,11 +21,23 @@ void removeFromCycleSet(uint32_t cycleId, CYCLESET cycleSet)
 
 CYCLE findFirstCycleInSet(CYCLESET cycleSet)
 {
-  uint32_t i;
-  for (i = 0; i < CYCLESET_LENGTH; i++) {
-    if (cycleSet[i]) {
-      return g_cycles + i * BITS_PER_WORD + __builtin_ctzll(cycleSet[i]);
+  return findNextCycleInSet(cycleSet, NULL);
+}
+
+CYCLE findNextCycleInSet(CYCLESET cycleSet, CYCLE cycle)
+{
+  uint64_t i;
+  int64_t j;
+  CYCLE result;
+  uint64_t cycleId = cycle == NULL ? 0 : cycle - g_cycles + 1;
+  uint64_t mask = ~((1ull << (cycleId % BITS_PER_WORD)) - 1);
+  for (i = cycleId / BITS_PER_WORD; i < CYCLESET_LENGTH; i++) {
+    if (mask & cycleSet[i]) {
+      j = i * BITS_PER_WORD + __builtin_ctzll(mask & cycleSet[i]);
+      assert(j < NCYCLES);
+      return &g_cycles[j];
     }
+    mask = ~0ull;
   }
   return NULL;
 }
