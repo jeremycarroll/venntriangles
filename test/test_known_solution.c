@@ -4,7 +4,7 @@
 #include "unity.h"
 
 #define DEBUG 0
-#define STATS 0
+#define STATS 1
 
 static char* testData3[][2] = {
     {
@@ -276,7 +276,7 @@ static FACE addSpecificFace(char* colors);
 void setUp(void)
 {
   initialize();
-  initializeStatsLogging(NULL, 1, 0);
+  initializeStatsLogging("/dev/stdout", 20, 5);
   setupCentralFaces(5, 5, 5, 4, 4, 4);
 }
 

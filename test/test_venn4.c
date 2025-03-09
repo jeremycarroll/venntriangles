@@ -7,7 +7,7 @@
 void setUp(void)
 {
   initialize();
-  initializeStatsLogging(NULL, 20, 0);
+  initializeStatsLogging("/dev/stdout", 20, 5);
 }
 
 void tearDown(void)
@@ -29,9 +29,36 @@ static void test_search()
   TEST_ASSERT_EQUAL(FACTORIAL4, solution_count);
 }
 
+static void test_search_abcd()
+{
+  solution_count = 0;
+  setupCentralFaces(0, 0, 0, 0);
+  search(false, found_solution);
+  TEST_ASSERT_EQUAL(4, solution_count);
+}
+
+static void test_search_4343()
+{
+  solution_count = 0;
+  setupCentralFaces(4, 3, 4, 3);
+  search(false, found_solution);
+  TEST_ASSERT_EQUAL(0, solution_count);
+}
+
+static void test_search_4433()
+{
+  solution_count = 0;
+  setupCentralFaces(4, 4, 3, 3);
+  search(false, found_solution);
+  TEST_ASSERT_EQUAL(1, solution_count);
+}
+
 int main(void)
 {
   UNITY_BEGIN();
+  RUN_TEST(test_search_4343);
   RUN_TEST(test_search);
+  RUN_TEST(test_search_abcd);
+  RUN_TEST(test_search_4433);
   return UNITY_END();
 }
