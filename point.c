@@ -247,6 +247,12 @@ FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
   uint_trail* edgeCountPtr;
 
   if (face->edges[aColor].to != NULL) {
+#if EDGE_DEBUG
+    printf("Assigned edge %c %c: ", color2char(NULL, aColor),
+           color2char(NULL, bColor));
+    printEdge(&face->edges[aColor]);
+#endif
+    assert(face->edges[aColor].to != &face->edges[aColor].possiblyTo[aColor]);
     assert(face->edges[aColor].to == &face->edges[aColor].possiblyTo[bColor]);
     return NULL;
   }
@@ -257,11 +263,31 @@ FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
   }
   colors[0] = upoint->primary;
   colors[1] = upoint->secondary;
+#if EDGE_DEBUG
+  printf("Assigning edges:\n");
+#endif
   for (int i = 0; i < 4; i++) {
     edge = upoint->incomingEdges[i];
-    assert(edge->to == NULL);
     assert(edge->color == colors[(i & 2) >> 1]);
-    setDynamicPointer(&edge->to, &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
+    assert(edge->color != colors[1 - ((i & 2) >> 1)]);
+    if (edge->to != NULL) {
+#if EDGE_DEBUG
+      printf("Edge already assigned  %c %c: ", color2char(NULL, colors[0]),
+             color2char(NULL, colors[1]));
+      printEdge(edge);
+#endif
+      if (edge->to != &edge->possiblyTo[colors[(i & 2) >> 1]]) {
+        return pointConflictFailure(edge->color, colors[(i & 2) >> 1], depth);
+      }
+      assert(edge->to == &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
+    } else {
+      setDynamicPointer(&edge->to,
+                        &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
+#if EDGE_DEBUG
+      printEdge(edge);
+#endif
+    }
+    assert(edge->to != &edge->possiblyTo[edge->color]);
     // Count edge
     edgeCountPtr = &g_edgeCount[IS_PRIMARY_EDGE(edge)][edge->color];
     setDynamicInt(edgeCountPtr, (*edgeCountPtr) + 1);

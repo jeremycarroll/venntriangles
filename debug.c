@@ -87,7 +87,10 @@ char* colors2str(char* dbuffer, COLORSET colors)
   return returnSlot(result);
 }
 
-int color2char(char* dbuffer, COLOR c) { return getLookup(dbuffer)[c]; }
+int color2char(char* dbuffer, COLOR c)
+{
+  return (dbuffer ? getLookup(dbuffer) : normal)[c];
+}
 
 char* cycle2str(char* dbuffer, CYCLE cycle)
 {
@@ -114,15 +117,26 @@ char* face2str(char* dbuffer, FACE face)
   sprintf(result, "%s%s^%llu", colors, cycle, face->cycleSetSize);
   return returnSlot(result);
 }
+char* dpoint2str(char* dbuffer, DPOINT dp)
+{
+  char* lookup = getLookup(dbuffer);
+  char* colors = colors2str(dbuffer, dp->point->faces[0]->colors);
+  char* result = nextSlot(dbuffer);
+  sprintf(result, "%s(%c,%c)", colors, lookup[dp->point->primary],
+          lookup[dp->point->secondary]);
+  return returnSlot(result);
+}
+
 char* edge2str(char* dbuffer, EDGE edge)
 {
   char color = color2char(dbuffer, edge->color);
   char* colors =
       edge->face == NULL ? "***" : colors2str(dbuffer, edge->face->colors);
+  char* to = edge->to == NULL ? "***" : dpoint2str(dbuffer, edge->to);
   char* result = nextSlot(dbuffer);
-  sprintf(result, "%c%c/%s", color, IS_PRIMARY_EDGE(edge) ? '+' : '-', colors);
+  sprintf(result, "%c%c/%s[%s]", color, IS_PRIMARY_EDGE(edge) ? '+' : '-',
+          colors, to);
   return returnSlot(result);
-  ;
 }
 
 void printSelectedFaces(void)

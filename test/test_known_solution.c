@@ -348,7 +348,7 @@ static void addFacesFromTestData(char* testData[][2], int length)
       failure = makeChoice(face);
 
 #if STATS
-      printStatisticsOneLine();
+      printStatisticsOneLine(0);
 #endif
       if (failure != NULL) {
         printf("Failure: %s %x\n", failure->label, failure->type);
@@ -378,7 +378,7 @@ void test_3_4_5_6(void)
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
-  TEST_ASSERT_EQUAL(27, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(25, cycleGuessCounter);
 }
 
 void test_4_3_5_6(void)
@@ -387,7 +387,7 @@ void test_4_3_5_6(void)
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
-  TEST_ASSERT_EQUAL(26, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(19, cycleGuessCounter);
 }
 
 void test_6_5_4_3(void)
@@ -405,7 +405,7 @@ void test_5_3_6_4(void)
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
-  TEST_ASSERT_EQUAL(26, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(24, cycleGuessCounter);
 }
 
 void test_in_order(bool smallestFirst)
@@ -428,13 +428,13 @@ void test_in_order(bool smallestFirst)
 void test_in_best_order(void)
 {
   test_in_order(true);
-  TEST_ASSERT_EQUAL(32, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(33, cycleGuessCounter);
 }
 
 void test_in_worst_order(void)
 {
   test_in_order(false);
-  TEST_ASSERT_EQUAL(17, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(13, cycleGuessCounter);
 }
 
 static bool findFace(char* colors, FACE* face, char** cyclePtr,
@@ -468,13 +468,13 @@ static FACE addSpecificFace(char* colors)
   cycleId = cycleIdFromColors(cycle);
   TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, face->possibleCycles));
   if (face->cycleSetSize == 1) {
-    TEST_ASSERT_EQUAL(cycleId, findFirstCycleInSet(face->possibleCycles));
+    TEST_ASSERT_EQUAL(face->cycle, findFirstCycleInSet(face->possibleCycles));
     TEST_ASSERT_EQUAL(face->cycle, g_cycles + cycleId);
   } else {
     face->cycle = g_cycles + cycleId;
     failure = makeChoice(face);
 #if STATS
-    printStatisticsOneLine();
+    printStatisticsOneLine(0);
 #endif
 #if DEBUG
     printSelectedFaces();

@@ -3,7 +3,7 @@ CFLAGS      = -g -Wall -Wextra -std=c11
 
 UNITY_DIR   = ../Unity
 TEST_CFLAGS = -I$(UNITY_DIR)/src
-TEST_SRC    = test/test_venn3.c test/test_main.c test/test_known_solution.c test/test_initialize.c 
+TEST_SRC    = test/test_known_solution.c test/test_venn4.c test/test_venn3.c test/test_main.c test/test_initialize.c 
 TEST_BIN    = $(TEST_SRC:test/%.c=bin/%.u)
 SRC         = main.c initialize.c globals.c cycles.c trail.c dynamic.c failure.c colors.c \
               point.c triangles.c debug.c statistics.c search.c
@@ -22,6 +22,10 @@ all: .format $(TARGET) tests
 bin/test_venn3.u: test/test_venn3.c $(UNITY_DIR)/src/unity.c $(OBJ3)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(TEST_CFLAGS) -DNCURVES=3 -o $@ $^
+
+bin/test_venn4.u: test/test_venn4.c $(UNITY_DIR)/src/unity.c $(OBJ4)
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(TEST_CFLAGS) -DNCURVES=4 -o $@ $^
 
 bin/%.u: test/%.c $(UNITY_DIR)/src/unity.c $(OBJ6)
 	@mkdir -p $(@D)
@@ -46,6 +50,18 @@ objs3/%.o: %.c
 	@echo Compiling $<
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -DNCURVES=3 -c $< -o $@
+
+
+objs4/%.o: %.c
+	@echo Compiling $<
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) -DNCURVES=4 -c $< -o $@
+
+
+objs5/%.o: %.c
+	@echo Compiling $<
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) -DNCURVES=5 -c $< -o $@
 
 objs6/%.o: %.c
 	@echo Compiling $<

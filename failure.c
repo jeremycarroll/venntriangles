@@ -47,6 +47,13 @@ static struct failure TooManyCornersFailure = {
     {0},
 };
 
+static struct failure PointConflictFailure = {
+    POINT_CONFLICT_FAILURE,
+    "P",
+    "Point conflict",
+    {0},
+};
+
 FAILURE maybeAddFailure(FAILURE failureCollection, FAILURE newFailure,
                         int depth)
 {
@@ -92,6 +99,13 @@ FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth)
   return &CrossingLimitFailure;
 }
 
+FAILURE pointConflictFailure(COLOR a, COLOR b, int depth)
+{
+  PointConflictFailure.u.colors = (1u << a) | (1u << b);
+  PointConflictFailure.count[depth]++;
+  return &PointConflictFailure;
+}
+
 FAILURE disconnectedCurveFailure(COLOR a, int depth)
 {
   DisconnectedCurveFailure.u.colors = (1u << a);
@@ -112,5 +126,6 @@ void initializeFailures(void)
   newFailureStatistic(&CrossingLimitFailure);
   newFailureStatistic(&DisconnectedCurveFailure);
   newFailureStatistic(&TooManyCornersFailure);
+  newFailureStatistic(&PointConflictFailure);
   newFailureStatistic(&MultipleFailure);
 }

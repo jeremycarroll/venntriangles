@@ -1,7 +1,5 @@
 #include "venn.h"
 
-static int shortCircuitResult;
-
 FACE chooseFace(bool smallestFirst)
 {
   FACE face = NULL;
@@ -33,6 +31,7 @@ void search(bool smallestFirst, void (*foundSolution)(void))
   int position = 0;
   enum { NEXT_FACE, NEXT_CYCLE } state = NEXT_FACE;
   while (position >= 0) {
+    printStatisticsOneLine(position);
     switch (state) {
       case NEXT_FACE:
         face = chooseFace(smallestFirst);
@@ -49,7 +48,12 @@ void search(bool smallestFirst, void (*foundSolution)(void))
         break;
       case NEXT_CYCLE:
         face = chosenFaces[position];
-        backtrackTo(face->backtrack);
+        if (backtrackTo(face->backtrack)) {
+#if BACKTRACK_DEBUG
+          printf("Backtracking to ");
+          printFace(face);
+#endif
+        }
         cycle = chooseCycle(face, chosenCycles[position]);
         if (cycle == NULL) {
           position -= 1;
