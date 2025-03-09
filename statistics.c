@@ -209,7 +209,9 @@ void printStatisticsFull(void)
 
 void initializeStatsLogging(char* filename, int frequency, int seconds)
 {
-  logFile = filename == NULL ? stderr : fopen(filename, "w");
+  logFile = filename == NULL                  ? stderr
+            : strcmp("/dev/stdout", filename) ? fopen(filename, "w")
+                                              : stdout;
   checkFrequency = frequency;
   secondsBetweenLogs = seconds;
   startTime = time(NULL);

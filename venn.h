@@ -30,6 +30,9 @@ typedef uint64_t uint_trail;  // Any non-pointer value that might go on the
 #define CHOOSE_6_1 6u
 #define CHOOSE_6_2 15u
 #define CHOOSE_6_3 20u
+#define CHOOSE_5_0 1u
+#define CHOOSE_5_1 5u
+#define CHOOSE_5_2 10u
 #define CHOOSE_4_0 1u
 #define CHOOSE_4_1 4u
 #define CHOOSE_3_0 1u
@@ -49,6 +52,11 @@ typedef uint64_t uint_trail;  // Any non-pointer value that might go on the
 #elif NCURVES == 4
 #define NCYCLES (CHOOSE_4_0 * FACTORIAL3 + CHOOSE_4_1 * FACTORIAL2)
 #define NCYCLE_ENTRIES (CHOOSE_4_0 * FACTORIAL4 + CHOOSE_4_1 * FACTORIAL3)
+#elif NCURVES == 5
+#define NCYCLES \
+  (CHOOSE_5_0 * FACTORIAL4 + CHOOSE_5_1 * FACTORIAL3 + CHOOSE_5_2 * FACTORIAL2)
+#define NCYCLE_ENTRIES \
+  (CHOOSE_5_0 * FACTORIAL5 + CHOOSE_5_1 * FACTORIAL4 + CHOOSE_5_2 * FACTORIAL3)
 #else
 #define NCYCLES (CHOOSE_3_0 * FACTORIAL2)
 #define NCYCLE_ENTRIES (CHOOSE_3_0 * FACTORIAL3)

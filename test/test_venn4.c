@@ -7,7 +7,7 @@
 void setUp(void)
 {
   initialize();
-  initializeStatsLogging(NULL, 20, 0);
+  initializeStatsLogging("/dev/stdout", 20, 5);
 }
 
 void tearDown(void)

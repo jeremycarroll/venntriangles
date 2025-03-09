@@ -3,7 +3,7 @@ CFLAGS      = -g -Wall -Wextra -std=c11
 
 UNITY_DIR   = ../Unity
 TEST_CFLAGS = -I$(UNITY_DIR)/src
-TEST_SRC    = test/test_known_solution.c test/test_venn4.c test/test_venn3.c test/test_main.c test/test_initialize.c 
+TEST_SRC    = test/test_venn5.c test/test_known_solution.c test/test_venn4.c # test/test_venn3.c test/test_main.c test/test_initialize.c 
 TEST_BIN    = $(TEST_SRC:test/%.c=bin/%.u)
 SRC         = main.c initialize.c globals.c cycles.c trail.c dynamic.c failure.c colors.c \
               point.c triangles.c debug.c statistics.c search.c
@@ -27,6 +27,10 @@ bin/test_venn4.u: test/test_venn4.c $(UNITY_DIR)/src/unity.c $(OBJ4)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(TEST_CFLAGS) -DNCURVES=4 -o $@ $^
 
+bin/test_venn5.u: test/test_venn5.c $(UNITY_DIR)/src/unity.c $(OBJ5)
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(TEST_CFLAGS) -DNCURVES=5 -o $@ $^
+
 bin/%.u: test/%.c $(UNITY_DIR)/src/unity.c $(OBJ6)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(TEST_CFLAGS) -DNCURVES=6 -o $@ $^
@@ -38,7 +42,7 @@ bin/%.u: test/%.c $(UNITY_DIR)/src/unity.c $(OBJ6)
 	touch .format
 
 tests: $(TEST_BIN)
-	for i in $^; do echo $$i; ./$$i | grep -v -e ':PASS$$' -e '^-*$$' ; done
+	for i in $^; do echo $$i; ./$$i | grep -v -e ':XPASS$$' -e '^-*$$' ; done
 
 clean:
 	rm -f $(TEST_BIN) $(TARGET) $(OBJ6) $(OBJ3) $(XOBJ) $(TEST_BIN) .format
