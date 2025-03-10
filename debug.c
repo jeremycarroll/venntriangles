@@ -207,7 +207,7 @@ void printNecklaces()
       do {
         char* dpstr = dpoint2str(buffer, dp);
         done[edge->face->colors][edge->color] = true;
-        printf("%s->[%d]%c ", dpstr, edge->level,
+        printf("%s->[%llu]%c ", dpstr, edge->level,
                color2char(NULL, dp->out[1]->color));
         buffer[2] = 0;
         edge = dp->out[1];

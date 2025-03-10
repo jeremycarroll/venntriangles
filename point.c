@@ -43,7 +43,6 @@ The out[1] value is set to the reverse of edge3 or edge4 maintaining the level.
 */
 static void linkOut(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
 {
-  COLOR a = edge1->color;
   COLOR other = edge3->color;
   uint32_t level1 = edge1->level;
   uint32_t level2 = edge2->level;

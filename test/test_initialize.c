@@ -149,7 +149,7 @@ void test_face_choice_count(void)
 {
   uint32_t faceColors;
   FACE face;
-  uint32_t expected[] = {120, 320, 380, 390, 380, 320, 120, -1};
+  uint32_t expected[] = {120, 320, 248, 216, 248, 320, 120, -1};
   initialize();
   for (faceColors = 0, face = g_faces; faceColors < NFACES;
        faceColors++, face++) {

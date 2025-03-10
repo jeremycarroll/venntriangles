@@ -22,12 +22,14 @@ void tearDown(void)
 static int solution_count = 0;
 static void found_solution()
 {
+#if DEBUG
   int i;
   FACIAL_CYCLE_SIZES sizes = facialCycleSizes();
   for (i = 0; i < NCURVES; i++) {
     printf("%d,", sizes.sizes[i]);
   }
   printf("\n");
+#endif
   solution_count++;
 }
 
@@ -161,15 +163,16 @@ static void test_search_54434()
 int main(void)
 {
   UNITY_BEGIN();
-  RUN_TEST(test_specific);
-  RUN_TEST(test_specific2);
   if (0) {
-    RUN_TEST(test_search_abcde);
-    RUN_TEST(test_search_44444);
-    RUN_TEST(test_search_55343);
-    RUN_TEST(test_search_55433);
-    RUN_TEST(test_search_54443);
-    RUN_TEST(test_search_54434);
+    RUN_TEST(test_specific);
+    RUN_TEST(test_specific2);
   }
+  RUN_TEST(test_search_abcde);
+  RUN_TEST(test_search_44444);
+  RUN_TEST(test_search_55343);
+  RUN_TEST(test_search_55433);
+  RUN_TEST(test_search_54443);
+  RUN_TEST(test_search_54434);
+
   return UNITY_END();
 }

@@ -90,9 +90,11 @@ static void restrictCycles(FACE face, CYCLESET cycleSet)
 static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
                                           int depth)
 {
-  /* check for no-op. */
+  /* check for conflict or no-op. */
   if (face->cycleSetSize == 1 || face->cycle != NULL) {
-    assert(memberOfCycleSet(face->cycle - g_cycles, onlyCycleSet));
+    if (!memberOfCycleSet(face->cycle - g_cycles, onlyCycleSet)) {
+      return conflictingConstraintsFailure(face, depth);
+    }
     return NULL;
   }
 

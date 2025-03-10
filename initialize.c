@@ -257,7 +257,7 @@ static void applyMonotonicity(void)
   CYCLE cycle;
   uint32_t chainingCount, i;
 #define ONE_IN_ONE_OUT(a, b, colors) \
-  (__builtin_popcount(((1 << (a)) | (1 << (b))) ^ colors) == 1)
+  (__builtin_popcount(((1 << (a)) | (1 << (b))) & colors) == 1)
   /* The inner face is NFACES-1, with all the colors; the outer face is 0, with
    * no colors.
    */

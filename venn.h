@@ -238,6 +238,7 @@ typedef enum failureType {
   DISCONNECTED_CURVE_FAILURE = 0x4,
   TOO_MANY_CORNERS_FAILURE = 0x8,
   POINT_CONFLICT_FAILURE = 0x10,
+  CONFLICTING_CONSTRAINTS_FAILURE = 0x20,
 } FAILURE_TYPE;
 
 typedef struct failure *FAILURE;
@@ -356,6 +357,7 @@ extern FAILURE disconnectedCurveFailure(COLOR color, int depth);
 extern FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth);
 extern FAILURE tooManyCornersFailure(COLOR a, int depth);
 extern FAILURE pointConflictFailure(COLOR a, COLOR b, int depth);
+extern FAILURE conflictingConstraintsFailure(FACE f, int depth);
 extern void initializeFailures(void);
 /* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
 and that number should be three or less. */
@@ -380,7 +382,7 @@ extern void initializeDynamicCounters(void);
 extern void initializeStatsLogging(char *filename, int frequency, int seconds);
 
 #define POINT_DEBUG 0
-#define EDGE_DEBUG 1
+#define EDGE_DEBUG 0
 #define BACKTRACK_DEBUG 0
 
 #endif

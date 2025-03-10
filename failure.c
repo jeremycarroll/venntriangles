@@ -44,6 +44,13 @@ static struct failure PointConflictFailure = {
     {0},
 };
 
+static struct failure ConflictingConstraintsFailure = {
+    CONFLICTING_CONSTRAINTS_FAILURE,
+    "C",
+    "Conflicting constraints",
+    {0},
+};
+
 FAILURE noMatchingCyclesFailure(COLORSET colors, int depth)
 {
   NoMatchFailure.u.colors = colors;
@@ -63,6 +70,13 @@ FAILURE pointConflictFailure(COLOR a, COLOR b, int depth)
   PointConflictFailure.u.colors = (1u << a) | (1u << b);
   PointConflictFailure.count[depth]++;
   return &PointConflictFailure;
+}
+
+FAILURE conflictingConstraintsFailure(FACE f, int depth)
+{
+  ConflictingConstraintsFailure.u.colors = f->colors;
+  ConflictingConstraintsFailure.count[depth]++;
+  return &ConflictingConstraintsFailure;
 }
 
 FAILURE disconnectedCurveFailure(COLOR a, int depth)
@@ -86,4 +100,5 @@ void initializeFailures(void)
   newFailureStatistic(&DisconnectedCurveFailure);
   newFailureStatistic(&TooManyCornersFailure);
   newFailureStatistic(&PointConflictFailure);
+  newFailureStatistic(&ConflictingConstraintsFailure);
 }
