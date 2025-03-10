@@ -8,7 +8,7 @@
  * other values are left as null
  */
 static struct undirectedPoint* allUPointPointers[NFACES][NCURVES][NCURVES];
-static struct undirectedPoint allUPoints[NPOINTS];
+struct undirectedPoint allUPoints[NPOINTS];
 static int nextUPointId = 0;
 
 void clearPoints()
@@ -34,13 +34,22 @@ static UPOINT getPoint(COLORSET innerFace, COLOR a, COLOR b)
 }
 
 /*
-The two edges have the same color and meet at the same point.
-which has other as the other color.
-The out[0] value for both edges for the other color is set to the reverse of the
-other edge.
+Set up the out values for edge1 and edge2 that have the same color.
+All four edges meet at the same point.
+The edge3 and edge4 have the other color.
+The out[0] value for both  edge1 and edge2  for the other color is set to
+the reverse of the other edge.
+The out[1] value is set to the reverse of edge3 or edge4 maintaining the level.
 */
-static void linkOut(EDGE edge1, EDGE edge2, COLOR other)
+static void linkOut(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
 {
+  COLOR a = edge1->color;
+  COLOR other = edge3->color;
+  uint32_t level1 = edge1->level;
+  uint32_t level2 = edge2->level;
+  uint32_t level3 = edge3->reversed->level;
+  uint32_t level4 = edge4->reversed->level;
+
   assert(edge1->color == edge2->color);
   assert(edge1->possiblyTo[other].out[0] == NULL);
   assert(edge2->possiblyTo[other].out[0] == NULL);
@@ -49,6 +58,16 @@ static void linkOut(EDGE edge1, EDGE edge2, COLOR other)
              (1u << edge1->color | 1u << other));
   edge1->possiblyTo[other].out[0] = edge2->reversed;
   edge2->possiblyTo[other].out[0] = edge1->reversed;
+  if (level1 == level3) {
+    edge1->possiblyTo[other].out[1] = edge3->reversed;
+    edge2->possiblyTo[other].out[1] = edge4->reversed;
+    assert(level2 == level4);
+  } else {
+    edge1->possiblyTo[other].out[1] = edge4->reversed;
+    edge2->possiblyTo[other].out[1] = edge3->reversed;
+    assert(level1 == level4);
+    assert(level2 == level3);
+  }
 }
 
 /*
@@ -62,8 +81,10 @@ void initializePoints(void)
   uint32_t i, j, k;
   for (i = 0; i < NPOINTS; i++) {
     UPOINT p = allUPoints + i;
-    linkOut(p->incomingEdges[0], p->incomingEdges[1], p->secondary);
-    linkOut(p->incomingEdges[2], p->incomingEdges[3], p->primary);
+    linkOut(p->incomingEdges[0], p->incomingEdges[1], p->incomingEdges[2],
+            p->incomingEdges[3]);
+    linkOut(p->incomingEdges[2], p->incomingEdges[3], p->incomingEdges[0],
+            p->incomingEdges[1]);
   }
   for (i = 0; i < NFACES; i++) {
     FACE f = g_faces + i;
@@ -291,10 +312,14 @@ FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
       printEdge(edge);
 #endif
     }
+
     assert(edge->to != &edge->possiblyTo[edge->color]);
     // Count edge
     edgeCountPtr = &g_edgeCount[IS_PRIMARY_EDGE(edge)][edge->color];
     setDynamicInt(edgeCountPtr, (*edgeCountPtr) + 1);
+  }
+  for (int i = 0; i < 4; i++) {
+    assert(upoint->incomingEdges[i]->to != NULL);
   }
   return NULL;
 }

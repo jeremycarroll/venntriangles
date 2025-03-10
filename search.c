@@ -30,12 +30,23 @@ void search(bool smallestFirst, void (*foundSolution)(void))
   CYCLE cycle;
   int position = 0;
   enum { NEXT_FACE, NEXT_CYCLE } state = NEXT_FACE;
+  FACIAL_CYCLE_SIZES debugMe = {
+      .sizes = {3, 5, 4, 4, 5, 0, 0, 0},
+  };
+
   while (position >= 0) {
     printStatisticsOneLine(position);
     switch (state) {
       case NEXT_FACE:
         face = chooseFace(smallestFirst);
         if (face == NULL) {
+          if (facialCycleSizes().value == debugMe.value) {
+            printf("Debug me start:\n");
+            for (int i = 0; i < position; i++) {
+              printFace(chosenFaces[i]);
+            }
+            printf("Debug me end.\n");
+          }
           foundSolution();
           position -= 1;
           state = NEXT_CYCLE;

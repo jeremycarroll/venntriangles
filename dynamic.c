@@ -15,6 +15,13 @@ uint64_t cycleGuessCounter = 0;
 static uint64_t cycleForcedCounter = 0;
 static uint64_t cycleSetReducedCounter = 0;
 
+/* If using this macro, you must declare a local variable failure. */
+#define CHECK_FAILURE(call) \
+  failure = (call);         \
+  if (failure != NULL) {    \
+    return failure;         \
+  }
+
 #if NCURVES > 3
 void setupCentralFaces(uint32_t aLength, uint32_t bLength, uint32_t cLength,
                        uint32_t dLength
@@ -85,6 +92,7 @@ static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
 {
   /* check for no-op. */
   if (face->cycleSetSize == 1 || face->cycle != NULL) {
+    assert(memberOfCycleSet(face->cycle - g_cycles, onlyCycleSet));
     return NULL;
   }
 
@@ -116,13 +124,11 @@ static FAILURE propogateChoice(FACE face, EDGE edge, int depth)
   uint32_t index = indexInCycle(face->cycle, aColor);
   assert(abFace == face->adjacentFaces[bColor]->adjacentFaces[aColor]);
   assert(abFace != face);
-  failure = restrictAndPropogateCycles(
-      abFace, face->cycle->sameDirection[index], depth);
-  if (failure != NULL) {
-    return failure;
-  }
-  return restrictAndPropogateCycles(
-      aFace, face->cycle->oppositeDirection[index], depth);
+  CHECK_FAILURE(restrictAndPropogateCycles(
+      abFace, face->cycle->sameDirection[index], depth));
+  CHECK_FAILURE(restrictAndPropogateCycles(
+      aFace, face->cycle->oppositeDirection[index], depth));
+  return NULL;
 }
 
 /*
@@ -143,11 +149,6 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
   uint32_t i;
   CYCLE cycle = face->cycle;
   FAILURE failure;
-#define CHECK_FAILURE(call) \
-  failure = (call);         \
-  if (failure != NULL) {    \
-    return failure;         \
-  }
   /* equality in the followign assertion is achieved in the Venn 3 case, where a
   single choice in any face determines all the faces. */
 #if EDGE_DEBUG
@@ -166,6 +167,15 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
   }
   for (i = 0; i < cycle->length; i++) {
     CHECK_FAILURE(propogateChoice(face, &face->edges[cycle->curves[i]], depth));
+  }
+  if (1) {
+    for (i = 0; i < NCURVES; i++) {
+      if (memberOfColorSet(i, cycle->colors)) {
+        continue;
+      }
+      CHECK_FAILURE(restrictAndPropogateCycles(face->adjacentFaces[i],
+                                               omittingCycleSets[i], depth));
+    }
   }
   return NULL;
 }
@@ -194,6 +204,7 @@ FAILURE makeChoice(FACE face)
   cycleId = face->cycle - g_cycles;
   assert(cycleId < NCYCLES);
   assert(cycleId >= 0);
+  assert(memberOfCycleSet(cycleId, face->possibleCycles));
   setToSingletonCycleSet(face, cycleId);
 
 #if EDGE_DEBUG

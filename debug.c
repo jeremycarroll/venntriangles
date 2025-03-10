@@ -1,5 +1,6 @@
 
 #include "venn.h"
+#include "visible_for_testing.h"
 
 /*
 Utilities for printing items when debugging. These are not intended to be
@@ -146,6 +147,73 @@ void printSelectedFaces(void)
   for (i = 0, face = g_faces; i < NFACES; i++, face++) {
     if (face->cycle || face->cycleSetSize < 2) {
       printFace(face);
+    }
+  }
+}
+
+FACIAL_CYCLE_SIZES facialCycleSizes()
+{
+  FACIAL_CYCLE_SIZES result;
+  result.value = 0;
+  for (uint32_t i = 0; i < NCURVES; i++) {
+    result.sizes[i] = (uint8_t)g_faces[(NFACES - 1) & ~(1 << i)].cycle->length;
+  }
+  return result;
+}
+
+uint32_t cycleIdFromColors(char* colors)
+{
+  COLOR cycle[NCURVES];
+  int i;
+  for (i = 0; *colors; i++, colors++) {
+    cycle[i] = *colors - 'a';
+  }
+  return findCycleId(cycle, i);
+}
+
+FACE faceFromColors(char* colors)
+{
+  int face_id = 0;
+  while (true) {
+    if (*colors == 0) {
+      break;
+    }
+    face_id |= (1 << (*colors - 'a'));
+    colors++;
+  }
+  return g_faces + face_id;
+}
+
+void printNecklaces()
+{
+  uint64_t i, j, k = 0;
+  char buffer[4096] = {1, 0, 0};
+  bool done[NFACES][NCURVES];
+  memset(done, 0, sizeof(done));
+  for (i = 0; i < NFACES; i++) {
+    FACE f = g_faces + i;
+    for (j = 0; j < NCURVES; j++) {
+      EDGE edge = &f->edges[j];
+      if (edge->to == NULL) {
+        continue;
+      }
+      DPOINT dpoint = edge->to;
+      if (done[edge->face->colors][edge->color]) {
+        continue;
+      }
+      DPOINT dp = dpoint;
+      uint32_t level = edge->level;
+      printf("*%d* ", level);
+      do {
+        char* dpstr = dpoint2str(buffer, dp);
+        done[edge->face->colors][edge->color] = true;
+        printf("%s->[%d]%c ", dpstr, edge->level,
+               color2char(NULL, dp->out[1]->color));
+        buffer[2] = 0;
+        edge = dp->out[1];
+        dp = edge->to;
+      } while (dp != dpoint && k++ < 10000);
+      printf("\n");
     }
   }
 }

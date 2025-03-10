@@ -12,5 +12,7 @@ extern void resetStatistics(void);
 extern struct trail trailarray[TRAIL_SIZE];
 extern uint64_t cycleGuessCounter;
 extern FACE chooseFace(bool smallestFirst);
-
+extern uint32_t cycleIdFromColors(char* colors);
+extern FACE faceFromColors(char* colors);
+extern struct undirectedPoint allUPoints[NPOINTS];
 

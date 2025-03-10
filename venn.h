@@ -135,6 +135,8 @@ struct edge {
   */
   DYNAMIC DPOINT to;
   STATIC COLOR color;
+  /* A value between 0 and NCURVES, being the cardinaltiy of face. */
+  STATIC uint64_t level;
   /* This point at the end of this edge may cross one of the other colors.
   We have all 5 pre-initialized in this array, with the color-th enty
   being all NULL.
@@ -196,7 +198,7 @@ STATIC struct facial_cycle {
    outside it. The curve colored secondary crosses from outside the curve
    colored primary to inside it.
  */
-struct undirectedPoint {
+STATIC struct undirectedPoint {
   /*
   TODO: logically redundant, is this helpful?
   If the point is between crossing of curve A and curve B,
@@ -258,6 +260,11 @@ struct trail {
   uint_trail value;
 };
 
+typedef union {
+  uint64_t value;
+  u_int8_t sizes[8];
+} FACIAL_CYCLE_SIZES;
+
 /*
  All DYNAMIC fields must be in this structure: during unit testing we reset this
  to zero. Also, any datum that can be the value of any DYNAMIC pointer must be
@@ -293,6 +300,8 @@ extern struct global globals;
 #define g_crossings globals.crossings
 #define g_edgeCount globals.edgeCount
 #define g_curveComplete globals.curveComplete
+
+extern CYCLESET_DECLARE omittingCycleSets[NCURVES];
 
 extern TRAIL trail;
 extern void initialize(void);
@@ -360,6 +369,8 @@ extern int color2char(char *dbuffer, COLOR c);
 extern void printFace(FACE face);
 extern void printEdge(EDGE edge);
 extern void printSelectedFaces(void);
+extern FACIAL_CYCLE_SIZES facialCycleSizes();
+extern void printNecklaces();
 
 extern void newStatistic(uint64_t *counter, char *shortName, char *name);
 extern void newFailureStatistic(FAILURE failure);
@@ -369,7 +380,7 @@ extern void initializeDynamicCounters(void);
 extern void initializeStatsLogging(char *filename, int frequency, int seconds);
 
 #define POINT_DEBUG 0
-#define EDGE_DEBUG 0
+#define EDGE_DEBUG 1
 #define BACKTRACK_DEBUG 0
 
 #endif

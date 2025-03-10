@@ -293,35 +293,6 @@ void tearDown(void)
   resetStatistics();
 }
 
-static FACE faceFromColors(char* colors)
-{
-  int face_id = 0;
-#if DEBUG
-  char* colorsOrig = colors;
-#endif
-  while (true) {
-    if (*colors == 0) {
-      break;
-    }
-    face_id |= (1 << (*colors - 'a'));
-    colors++;
-  }
-#if DEBUG
-  printf("Faceid %x |%s|\n", face_id, colorsOrig);
-#endif
-  return g_faces + face_id;
-}
-
-static uint32_t cycleIdFromColors(char* colors)
-{
-  COLOR cycle[NCURVES];
-  int i;
-  for (i = 0; *colors; i++, colors++) {
-    cycle[i] = *colors - 'a';
-  }
-  return findCycleId(cycle, i);
-}
-
 static void addFacesFromTestData(char* testData[][2], int length)
 {
   int i;
@@ -378,7 +349,7 @@ void test_3_4_5_6(void)
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
-  TEST_ASSERT_EQUAL(25, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(14, cycleGuessCounter);
 }
 
 void test_4_3_5_6(void)
@@ -387,7 +358,7 @@ void test_4_3_5_6(void)
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
-  TEST_ASSERT_EQUAL(19, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(15, cycleGuessCounter);
 }
 
 void test_6_5_4_3(void)
@@ -396,7 +367,7 @@ void test_6_5_4_3(void)
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
-  TEST_ASSERT_EQUAL(23, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(16, cycleGuessCounter);
 }
 
 void test_5_3_6_4(void)
@@ -405,7 +376,7 @@ void test_5_3_6_4(void)
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
-  TEST_ASSERT_EQUAL(24, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(16, cycleGuessCounter);
 }
 
 void test_in_order(bool smallestFirst)
@@ -428,13 +399,13 @@ void test_in_order(bool smallestFirst)
 void test_in_best_order(void)
 {
   test_in_order(true);
-  TEST_ASSERT_EQUAL(33, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(25, cycleGuessCounter);
 }
 
 void test_in_worst_order(void)
 {
   test_in_order(false);
-  TEST_ASSERT_EQUAL(13, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(9, cycleGuessCounter);
 }
 
 static bool findFace(char* colors, FACE* face, char** cyclePtr,
@@ -523,8 +494,8 @@ int main(void)
   RUN_TEST(test_faceFromColors);
   RUN_TEST(test_3_4_5_6);
   RUN_TEST(test_4_3_5_6);
-  RUN_TEST(test_5_3_6_4);
   RUN_TEST(test_6_5_4_3);
+  RUN_TEST(test_5_3_6_4);
   RUN_TEST(test_DE_1);
   RUN_TEST(test_DE_2);
   RUN_TEST(test_in_best_order);
