@@ -367,7 +367,7 @@ extern bool removeColorFromSearch(COLOR color);
 extern char *edge2str(char *dbuffer, EDGE edge);
 extern char *face2str(char *dbuffer, FACE face);
 extern char *colors2str(char *dbuffer, COLORSET colors);
-extern int color2char(char *dbuffer, COLOR c);
+extern int color2char(COLOR c);
 extern void printFace(FACE face);
 extern void printEdge(EDGE edge);
 extern void printSelectedFaces(void);

@@ -205,7 +205,7 @@ UPOINT addToPoint(FACE face, EDGE incomingEdge, COLOR othercolor)
   }
 
 #if POINT_DEBUG
-  char dbuffer[1024] = {1, 0, 0};
+  char dbuffer[1024] = {0, 0};
 #endif
   assert(othercolor != incomingEdge->color);
   switch (ix) {
