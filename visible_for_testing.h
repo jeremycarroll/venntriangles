@@ -15,4 +15,5 @@ extern FACE chooseFace(bool smallestFirst);
 extern uint32_t cycleIdFromColors(char* colors);
 extern FACE faceFromColors(char* colors);
 extern struct undirectedPoint allUPoints[NPOINTS];
+extern FACE addSpecificFace(char* colors, char* cycle);
 

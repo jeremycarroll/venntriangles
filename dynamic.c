@@ -153,7 +153,7 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
   FAILURE failure;
   /* equality in the followign assertion is achieved in the Venn 3 case, where a
   single choice in any face determines all the faces. */
-#if EDGE_DEBUG
+#if FACE_DEBUG
   printf("Making choice (internal): ");
   printFace(face);
 #endif
@@ -222,7 +222,7 @@ FAILURE makeChoice(FACE face)
   assert(memberOfCycleSet(cycleId, face->possibleCycles));
   setToSingletonCycleSet(face, cycleId);
 
-#if EDGE_DEBUG
+#if FACE_DEBUG
   printf("Making choice: ");
   printFace(face);
 #endif

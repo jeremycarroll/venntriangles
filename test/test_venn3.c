@@ -7,7 +7,7 @@
 void setUp(void)
 {
   initialize();
-  initializeStatsLogging(NULL, 4, 0);
+  initializeStatsLogging(NULL, 4, 1);
 }
 
 void tearDown(void)

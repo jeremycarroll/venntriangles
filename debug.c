@@ -1,4 +1,5 @@
 
+#include "unity.h"
 #include "venn.h"
 #include "visible_for_testing.h"
 
@@ -145,12 +146,14 @@ void printSelectedFaces(void)
   }
 }
 
-FACIAL_CYCLE_SIZES facialCycleSizes()
+FACIAL_CYCLE_SIZES facialCycleSizes(void)
 {
+  uint32_t nColors = NCURVES;
   FACIAL_CYCLE_SIZES result;
+  uint32_t nFaces = 1 << nColors;
   result.value = 0;
-  for (uint32_t i = 0; i < NCURVES; i++) {
-    result.sizes[i] = (uint8_t)g_faces[(NFACES - 1) & ~(1 << i)].cycle->length;
+  for (uint32_t i = 0; i < nColors; i++) {
+    result.sizes[i] = (uint8_t)g_faces[(nFaces - 1) & ~(1 << i)].cycle->length;
   }
   return result;
 }
@@ -178,6 +181,7 @@ FACE faceFromColors(char* colors)
   return g_faces + face_id;
 }
 
+/*
 void printNecklaces()
 {
   uint64_t i, j, k = 0;
@@ -210,4 +214,34 @@ void printNecklaces()
       printf("\n");
     }
   }
+}
+*/
+
+FACE addSpecificFace(char* colors, char* cycle)
+{
+  FAILURE failure;
+  FACE face = faceFromColors(colors);
+  uint32_t cycleId = cycleIdFromColors(cycle);
+  TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, face->possibleCycles));
+  if (face->cycleSetSize == 1) {
+    TEST_ASSERT_EQUAL(face->cycle, findFirstCycleInSet(face->possibleCycles));
+    TEST_ASSERT_EQUAL(face->cycle, g_cycles + cycleId);
+  } else {
+    face->cycle = g_cycles + cycleId;
+    failure = makeChoice(face);
+#if STATS
+    printStatisticsOneLine(0);
+#endif
+#if DEBUG
+    printSelectedFaces();
+#else
+
+    if (failure != NULL) {
+      printf("Failure: %s %x\n", failure->label, failure->type);
+      printSelectedFaces();
+    }
+#endif
+    TEST_ASSERT_NULL(failure);
+  }
+  return face;
 }

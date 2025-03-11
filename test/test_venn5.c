@@ -12,7 +12,9 @@ void setUp(void)
 
 void tearDown(void)
 {
+#if TEST_INFO
   printStatisticsFull();
+#endif
   clearGlobals();
   clearInitialize();
   resetTrail();
@@ -41,35 +43,6 @@ static void test_search_abcde()
   TEST_ASSERT_EQUAL(152, solution_count);
 }
 
-static FACE addSpecificFace(char* colors, char* cycle)
-{
-  FAILURE failure;
-  FACE face = faceFromColors(colors);
-  uint32_t cycleId = cycleIdFromColors(cycle);
-  TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, face->possibleCycles));
-  if (face->cycleSetSize == 1) {
-    TEST_ASSERT_EQUAL(face->cycle, findFirstCycleInSet(face->possibleCycles));
-    TEST_ASSERT_EQUAL(face->cycle, g_cycles + cycleId);
-  } else {
-    face->cycle = g_cycles + cycleId;
-    failure = makeChoice(face);
-#if STATS
-    printStatisticsOneLine(0);
-#endif
-#if DEBUG
-    printSelectedFaces();
-#else
-
-    if (failure != NULL) {
-      printf("Failure: %s %x\n", failure->label, failure->type);
-      printSelectedFaces();
-    }
-#endif
-    TEST_ASSERT_NULL(failure);
-  }
-  return face;
-}
-
 static void test_specific()
 {
   setupCentralFaces(0, 0, 0, 0, 0);
@@ -78,7 +51,6 @@ static void test_specific()
   addSpecificFace("bd", "bde");
   addSpecificFace("ae", "aec");
   TEST_ASSERT_NULL(chooseFace(false));
-  printNecklaces();
   found_solution();
 }
 
