@@ -1,5 +1,10 @@
 
 #include "venn.h"
+#include "visible_for_testing.h"
+
+/* Use the lettering from the 2000 diagram of six triangles (ABCDEF round the
+ * outer face) */
+#define LEGACY_LETTERS 0
 
 /*
 Utilities for printing items when debugging. These are not intended to be
@@ -10,49 +15,42 @@ and return points into the buffer.
 
 The buffer is organized as
 
-specialByte, null-terminated-string, 0, null-terminated-string, 0, etc.
+null-terminated-string, 0, null-terminated-string, 0, etc.
 
-
-The specialByte must be 1 to use the obvious a,b,c,d,e,f coloring; or 2
+LEGACY_LETTERS must be 0 to use the obvious a,b,c,d,e,f coloring; or 1
 to use the D E F C A B coloring used in the picture from 2000.
 (Which has A, B,C, D, E, F round the outer face)
 
 This means that we are typically looking for double null terminated strings to
 find the next slot in the buffer.
 
-The buffer must be initialized to either 1,0,0 or 2,0,0.
+The buffer must be initialized to either 0,0 or 0,0.
 
 When adding a string, the new string is added over the second zero.
-So that the buffer always starts 1,0 or 2,0
+So that the buffer always starts with a 0.
 
 We provide no protection for buffer overflow.
 */
 
-static char* normal = "abcdef";
-static char* original = "DEFCAB";
-
-static char* getLookup(char* buffer)
+static char* getLookup(void)
 {
-  assert(buffer[1] == '\0');
-  if (*buffer == 1) {
-    return normal;
-  }
-  assert(*buffer == 2);
-  return original;
+#if LEGACY_LETTERS
+  return "DEFCAB";
+#else
+  return "abcdef";
+#endif
 }
 
 void printFace(FACE face)
 {
-  char nBuffer[2048] = {1, 0, 0};
-  char oBuffer[2048] = {2, 0, 0};
-  printf("%s AKA %s\n", face2str(nBuffer, face), face2str(oBuffer, face));
+  char nBuffer[2048] = {0, 0};
+  printf("%s\n", face2str(nBuffer, face));
 }
 
 void printEdge(EDGE edge)
 {
-  char nBuffer[2048] = {1, 0, 0};
-  char oBuffer[2048] = {2, 0, 0};
-  printf("%s AKA %s\n", edge2str(nBuffer, edge), edge2str(oBuffer, edge));
+  char nBuffer[2048] = {0, 0};
+  printf("%s\n", edge2str(nBuffer, edge));
 }
 
 static char* nextSlot(char* buffer)
@@ -74,7 +72,7 @@ char* colors2str(char* dbuffer, COLORSET colors)
 {
   uint32_t i;
   char* result = nextSlot(dbuffer);
-  char* lookup = getLookup(dbuffer);
+  char* lookup = getLookup();
   char* p = result;
   *p++ = '|';
   for (i = 0; i < NCURVES; i++) {
@@ -87,15 +85,12 @@ char* colors2str(char* dbuffer, COLORSET colors)
   return returnSlot(result);
 }
 
-int color2char(char* dbuffer, COLOR c)
-{
-  return (dbuffer ? getLookup(dbuffer) : normal)[c];
-}
+int color2char(COLOR c) { return getLookup()[c]; }
 
 char* cycle2str(char* dbuffer, CYCLE cycle)
 {
   char* result = nextSlot(dbuffer);
-  char* lookup = getLookup(dbuffer);
+  char* lookup = getLookup();
   char* p = result;
   if (cycle == NULL) {
     return "(NULL)";
@@ -119,7 +114,7 @@ char* face2str(char* dbuffer, FACE face)
 }
 char* dpoint2str(char* dbuffer, DPOINT dp)
 {
-  char* lookup = getLookup(dbuffer);
+  char* lookup = getLookup();
   char* colors = colors2str(dbuffer, dp->point->faces[0]->colors);
   char* result = nextSlot(dbuffer);
   sprintf(result, "%s(%c,%c)", colors, lookup[dp->point->primary],
@@ -129,7 +124,7 @@ char* dpoint2str(char* dbuffer, DPOINT dp)
 
 char* edge2str(char* dbuffer, EDGE edge)
 {
-  char color = color2char(dbuffer, edge->color);
+  char color = color2char(edge->color);
   char* colors =
       edge->face == NULL ? "***" : colors2str(dbuffer, edge->face->colors);
   char* to = edge->to == NULL ? "***" : dpoint2str(dbuffer, edge->to);
@@ -146,6 +141,73 @@ void printSelectedFaces(void)
   for (i = 0, face = g_faces; i < NFACES; i++, face++) {
     if (face->cycle || face->cycleSetSize < 2) {
       printFace(face);
+    }
+  }
+}
+
+FACIAL_CYCLE_SIZES facialCycleSizes()
+{
+  FACIAL_CYCLE_SIZES result;
+  result.value = 0;
+  for (uint32_t i = 0; i < NCURVES; i++) {
+    result.sizes[i] = (uint8_t)g_faces[(NFACES - 1) & ~(1 << i)].cycle->length;
+  }
+  return result;
+}
+
+uint32_t cycleIdFromColors(char* colors)
+{
+  COLOR cycle[NCURVES];
+  int i;
+  for (i = 0; *colors; i++, colors++) {
+    cycle[i] = *colors - 'a';
+  }
+  return findCycleId(cycle, i);
+}
+
+FACE faceFromColors(char* colors)
+{
+  int face_id = 0;
+  while (true) {
+    if (*colors == 0) {
+      break;
+    }
+    face_id |= (1 << (*colors - 'a'));
+    colors++;
+  }
+  return g_faces + face_id;
+}
+
+void printNecklaces()
+{
+  uint64_t i, j, k = 0;
+  char buffer[4096] = {0, 0};
+  bool done[NFACES][NCURVES];
+  memset(done, 0, sizeof(done));
+  for (i = 0; i < NFACES; i++) {
+    FACE f = g_faces + i;
+    for (j = 0; j < NCURVES; j++) {
+      EDGE edge = &f->edges[j];
+      if (edge->to == NULL) {
+        continue;
+      }
+      DPOINT dpoint = edge->to;
+      if (done[edge->face->colors][edge->color]) {
+        continue;
+      }
+      DPOINT dp = dpoint;
+      uint32_t level = edge->level;
+      printf("*%d* ", level);
+      do {
+        char* dpstr = dpoint2str(buffer, dp);
+        done[edge->face->colors][edge->color] = true;
+        printf("%s->[%llu]%c ", dpstr, edge->level,
+               color2char(dp->out[1]->color));
+        buffer[2] = 0;
+        edge = dp->out[1];
+        dp = edge->to;
+      } while (dp != dpoint && k++ < 10000);
+      printf("\n");
     }
   }
 }

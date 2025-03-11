@@ -18,12 +18,15 @@ initialization.
  */
 CYCLESET_DECLARE pairs2cycleSets[NCURVES][NCURVES];
 CYCLESET_DECLARE triples2cycleSets[NCURVES][NCURVES][NCURVES];
+CYCLESET_DECLARE omittingCycleSets[NCURVES];
+CYCLESET_DECLARE omittingCycleSetPairs[NCURVES][NCURVES];
 CYCLESET setsOfCycleSets[NCYCLE_ENTRIES * 2];
 
 static void initializeCycles(void);
 static void initializeCycleSets(void);
 static void initializeSameDirection(void);
 static void initializeOppositeDirection(void);
+static void initializeOmittingCycleSets(void);
 static void initializeFacesAndEdges(void);
 static void initializePossiblyTo(void);
 static void applyMonotonicity(void);
@@ -36,6 +39,8 @@ void clearInitialize()
   memset(pairs2cycleSets, 0, sizeof(pairs2cycleSets));
   memset(triples2cycleSets, 0, sizeof(triples2cycleSets));
   memset(setsOfCycleSets, 0, sizeof(setsOfCycleSets));
+  memset(omittingCycleSets, 0, sizeof(omittingCycleSets));
+  memset(omittingCycleSetPairs, 0, sizeof(omittingCycleSetPairs));
   nextCycle = 0;
   nextSetOfCycleSets = 0;
   clearPoints();
@@ -52,6 +57,7 @@ void initialize()
   assert(nextSetOfCycleSets == NCYCLE_ENTRIES);
   initializeOppositeDirection();
   assert(nextSetOfCycleSets == 2 * NCYCLE_ENTRIES);
+  initializeOmittingCycleSets();
 
   initializeFacesAndEdges();
 #if POINT_DEBUG
@@ -181,6 +187,29 @@ static void initializeOppositeDirection(void)
   }
 }
 
+static void initializeOmittingCycleSets()
+{
+  uint32_t i, j, cycleId;
+  for (i = 0; i < NCURVES; i++) {
+    for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
+      if (!memberOfColorSet(i, g_cycles[cycleId].colors)) {
+        addToCycleSet(cycleId, omittingCycleSets[i]);
+      }
+    }
+  }
+  for (i = 0; i < NCURVES; i++) {
+    for (j = i + 1; j < NCURVES; j++) {
+      for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
+        if (!(memberOfColorSet(i, g_cycles[cycleId].colors) &&
+              memberOfColorSet(j, g_cycles[cycleId].colors) &&
+              contains2(&g_cycles[cycleId], i, j))) {
+          addToCycleSet(cycleId, omittingCycleSetPairs[i][j]);
+        }
+      }
+    }
+  }
+}
+
 static void initializeFacesAndEdges(void)
 {
   uint32_t facecolors, color, j;
@@ -200,6 +229,7 @@ static void initializeFacesAndEdges(void)
       face->adjacentFaces[color] = adjacent;
       edge = &face->edges[color];
       edge->face = face;
+      edge->level = __builtin_popcount(face->colors);
       edge->color = color;
       edge->reversed = &adjacent->edges[color];
     }
@@ -238,12 +268,27 @@ static void applyMonotonicity(void)
   uint32_t colors, cycleId;
   FACE face;
   CYCLE cycle;
+  uint32_t chainingCount, i;
+#define ONE_IN_ONE_OUT(a, b, colors) \
+  (__builtin_popcount(((1 << (a)) | (1 << (b))) & colors) == 1)
   /* The inner face is NFACES-1, with all the colors; the outer face is 0, with
    * no colors.
    */
   for (colors = 1, face = g_faces + 1; colors < NFACES - 1; colors++, face++) {
     for (cycleId = 0, cycle = g_cycles; cycleId < NCYCLES; cycleId++, cycle++) {
       if ((cycle->colors & colors) == 0 || (cycle->colors & ~colors) == 0) {
+        removeFromCycleSet(cycleId, face->possibleCycles);
+      }
+      chainingCount = ONE_IN_ONE_OUT(cycle->curves[cycle->length - 1],
+                                     cycle->curves[0], colors)
+                          ? 1
+                          : 0;
+      for (i = 1; i < cycle->length; i++) {
+        if (ONE_IN_ONE_OUT(cycle->curves[i - 1], cycle->curves[i], colors)) {
+          chainingCount++;
+        }
+      }
+      if (chainingCount != 2) {
         removeFromCycleSet(cycleId, face->possibleCycles);
       }
     }

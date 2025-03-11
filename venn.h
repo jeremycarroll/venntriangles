@@ -135,6 +135,8 @@ struct edge {
   */
   DYNAMIC DPOINT to;
   STATIC COLOR color;
+  /* A value between 0 and NCURVES, being the cardinaltiy of face. */
+  STATIC uint64_t level;
   /* This point at the end of this edge may cross one of the other colors.
   We have all 5 pre-initialized in this array, with the color-th enty
   being all NULL.
@@ -196,7 +198,7 @@ STATIC struct facial_cycle {
    outside it. The curve colored secondary crosses from outside the curve
    colored primary to inside it.
  */
-struct undirectedPoint {
+STATIC struct undirectedPoint {
   /*
   TODO: logically redundant, is this helpful?
   If the point is between crossing of curve A and curve B,
@@ -236,6 +238,7 @@ typedef enum failureType {
   DISCONNECTED_CURVE_FAILURE = 0x4,
   TOO_MANY_CORNERS_FAILURE = 0x8,
   POINT_CONFLICT_FAILURE = 0x10,
+  CONFLICTING_CONSTRAINTS_FAILURE = 0x20,
 } FAILURE_TYPE;
 
 typedef struct failure *FAILURE;
@@ -257,6 +260,11 @@ struct trail {
   void *ptr;
   uint_trail value;
 };
+
+typedef union {
+  uint64_t value;
+  u_int8_t sizes[8];
+} FACIAL_CYCLE_SIZES;
 
 /*
  All DYNAMIC fields must be in this structure: during unit testing we reset this
@@ -293,6 +301,9 @@ extern struct global globals;
 #define g_crossings globals.crossings
 #define g_edgeCount globals.edgeCount
 #define g_curveComplete globals.curveComplete
+
+extern CYCLESET_DECLARE omittingCycleSets[NCURVES];
+extern CYCLESET_DECLARE omittingCycleSetPairs[NCURVES][NCURVES];
 
 extern TRAIL trail;
 extern void initialize(void);
@@ -347,6 +358,7 @@ extern FAILURE disconnectedCurveFailure(COLOR color, int depth);
 extern FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth);
 extern FAILURE tooManyCornersFailure(COLOR a, int depth);
 extern FAILURE pointConflictFailure(COLOR a, COLOR b, int depth);
+extern FAILURE conflictingConstraintsFailure(FACE f, int depth);
 extern void initializeFailures(void);
 /* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
 and that number should be three or less. */
@@ -356,10 +368,12 @@ extern bool removeColorFromSearch(COLOR color);
 extern char *edge2str(char *dbuffer, EDGE edge);
 extern char *face2str(char *dbuffer, FACE face);
 extern char *colors2str(char *dbuffer, COLORSET colors);
-extern int color2char(char *dbuffer, COLOR c);
+extern int color2char(COLOR c);
 extern void printFace(FACE face);
 extern void printEdge(EDGE edge);
 extern void printSelectedFaces(void);
+extern FACIAL_CYCLE_SIZES facialCycleSizes();
+extern void printNecklaces();
 
 extern void newStatistic(uint64_t *counter, char *shortName, char *name);
 extern void newFailureStatistic(FAILURE failure);
