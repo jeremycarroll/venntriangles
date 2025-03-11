@@ -88,7 +88,6 @@ static void addCycle(int length, ...)
     cycle->colors |= 1u << color;
   }
   va_end(ap);
-  cycle->curves[ix] = NO_COLOR;
 }
 
 static void initializeCycles(void)

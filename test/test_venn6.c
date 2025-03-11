@@ -1,0 +1,56 @@
+#include "../venn.h"
+#include "../visible_for_testing.h"
+#include "unity.h"
+
+#define STATS 0
+
+void setUp(void)
+{
+  initialize();
+  initializeStatsLogging("/dev/stdout", 20, 2);
+}
+
+void tearDown(void)
+{
+#if TEST_INFO
+  printStatisticsFull();
+#endif
+  clearGlobals();
+  clearInitialize();
+  resetTrail();
+  resetStatistics();
+}
+
+static int solution_count = 0;
+static void found_solution()
+{
+#if TEST_INFO
+  printStatisticsFull();
+#endif
+  solution_count++;
+}
+
+static void test_search_for_best_solution()
+{
+  solution_count = 0;
+  setupCentralFaces(5, 5, 5, 4, 4, 4);
+  addSpecificFace("a", "abed");
+  addSpecificFace("c", "adbce");
+  addSpecificFace("bde", "bfd");
+  addSpecificFace("bdf", "abf");
+  addSpecificFace("abce", "cef");
+  addSpecificFace("acdf", "aced");
+  addSpecificFace("cde", "adb");
+  addSpecificFace("b", "abcf");
+  addSpecificFace("f", "aefdc");
+  search(false, found_solution);
+
+  TEST_ASSERT_EQUAL(1, solution_count);
+}
+
+int main(void)
+{
+  UNITY_BEGIN();
+  RUN_TEST(test_search_for_best_solution);
+  return UNITY_END();
+}

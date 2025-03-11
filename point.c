@@ -268,8 +268,7 @@ FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
 
   if (face->edges[aColor].to != NULL) {
 #if EDGE_DEBUG
-    printf("Assigned edge %c %c: ", color2char(NULL, aColor),
-           color2char(NULL, bColor));
+    printf("Assigned edge %c %c: ", color2char(aColor), color2char(bColor));
     printEdge(&face->edges[aColor]);
 #endif
 
@@ -296,8 +295,8 @@ FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
     assert(edge->color != colors[1 - ((i & 2) >> 1)]);
     if (edge->to != NULL) {
 #if EDGE_DEBUG
-      printf("Edge already assigned  %c %c: ", color2char(NULL, colors[0]),
-             color2char(NULL, colors[1]));
+      printf("Edge already assigned  %c %c: ", color2char(colors[0]),
+             color2char(colors[1]));
       printEdge(edge);
 #endif
       if (edge->to != &edge->possiblyTo[colors[(i & 2) >> 1]]) {

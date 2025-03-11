@@ -81,7 +81,6 @@ the other.
  */
 #define TRAIL_SIZE 1000000
 
-#define NO_COLOR (~(uint32_t)0)
 // In this file we add these keywords, with the given meanings.
 #define DYNAMIC  // This field is modified in the trail, i.e. after
                  // initialization we track all changes.
@@ -155,17 +154,16 @@ otherwise.
 struct face {
   // cycle must be null if cycleSetSize is not 1.
   DYNAMIC struct facial_cycle *cycle;
-  STATIC struct face *adjacentFaces[NCURVES];
-  STATIC struct edge edges[NCURVES];
-  DYNAMIC CYCLESET_DECLARE possibleCycles;
   DYNAMIC TRAIL backtrack;
   STATIC COLORSET colors;           // holds up to NFACES
   DYNAMIC uint_trail cycleSetSize;  // holds up to NCYCLES
+  DYNAMIC CYCLESET_DECLARE possibleCycles;
+  STATIC struct face *adjacentFaces[NCURVES];
+  STATIC struct edge edges[NCURVES];
 };
 
 STATIC struct facial_cycle {
   uint32_t length;
-  COLOR curves[NCURVES + 1];
   COLORSET colors;
   /*
     This is a pointer to an array of length length.
@@ -177,6 +175,7 @@ STATIC struct facial_cycle {
      oppositeDirection[i] refers to curves[i-1] curves[i] and curves[i+1]
   */
   CYCLESET *oppositeDirection;
+  COLOR curves[NCURVES];
 };
 
 /* We create all possible points during initialization.
@@ -372,8 +371,8 @@ extern int color2char(COLOR c);
 extern void printFace(FACE face);
 extern void printEdge(EDGE edge);
 extern void printSelectedFaces(void);
-extern FACIAL_CYCLE_SIZES facialCycleSizes();
-extern void printNecklaces();
+extern FACIAL_CYCLE_SIZES facialCycleSizes(void);
+/*extern void printNecklaces();*/
 
 extern void newStatistic(uint64_t *counter, char *shortName, char *name);
 extern void newFailureStatistic(FAILURE failure);
@@ -384,6 +383,8 @@ extern void initializeStatsLogging(char *filename, int frequency, int seconds);
 
 #define POINT_DEBUG 0
 #define EDGE_DEBUG 0
+#define FACE_DEBUG 0
 #define BACKTRACK_DEBUG 0
+#define TEST_INFO 0
 
 #endif

@@ -13,14 +13,12 @@ void tearDown(void)
 
 void test_initialize(void)
 {
-  uint32_t i, j;
+  uint32_t j;
   initialize();
   for (j = 0; j < NCYCLES; j++) {
     TEST_ASSERT_NOT_EQUAL(0, g_cycles[j].length);
-    for (i = 0; i < g_cycles[j].length; i++) {
-      TEST_ASSERT_NOT_EQUAL(NO_COLOR, g_cycles[j].curves[i]);
-    }
-    TEST_ASSERT_EQUAL(NO_COLOR, g_cycles[j].curves[g_cycles[j].length]);
+    TEST_ASSERT_GREATER_OR_EQUAL_INT32(3, g_cycles[j].length);
+    TEST_ASSERT_LESS_OR_EQUAL_INT32(NCURVES, g_cycles[j].length);
   }
 }
 
@@ -28,8 +26,8 @@ void test_initialize(void)
 void test_first_cycles(void)
 {
   initialize();
-  TEST_ASSERT_EQUAL(0, bcmp(g_cycles[0].curves, (uint32_t[]){0, 1, 2, NO_COLOR},
-                            4 * sizeof(uint32_t)));
+  TEST_ASSERT_EQUAL(
+      0, bcmp(g_cycles[0].curves, (uint32_t[]){0, 1, 2}, 3 * sizeof(uint32_t)));
 }
 
 void test_contains2(void)

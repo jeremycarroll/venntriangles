@@ -12,7 +12,9 @@ void setUp(void)
 
 void tearDown(void)
 {
+#if TEST_INFO
   printStatisticsFull();
+#endif
   clearGlobals();
   clearInitialize();
   resetTrail();
@@ -56,8 +58,8 @@ static void test_search_4433()
 int main(void)
 {
   UNITY_BEGIN();
-  RUN_TEST(test_search_4343);
   RUN_TEST(test_search);
+  RUN_TEST(test_search_4343);
   RUN_TEST(test_search_abcd);
   RUN_TEST(test_search_4433);
   return UNITY_END();
