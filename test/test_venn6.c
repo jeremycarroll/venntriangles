@@ -3,11 +3,12 @@
 #include "unity.h"
 
 #define STATS 0
+#define TEST_INFO 1
 
 void setUp(void)
 {
   initialize();
-  initializeStatsLogging("/dev/stdout", 20, 2);
+  initializeStatsLogging("/dev/stdout", 200, 10);
 }
 
 void tearDown(void)
@@ -34,6 +35,8 @@ static void test_search_for_best_solution()
 {
   solution_count = 0;
   setupCentralFaces(5, 5, 5, 4, 4, 4);
+  addSpecificFace("c", "adbce");
+  /* This is a short statement of the best solution.
   addSpecificFace("a", "abed");
   addSpecificFace("c", "adbce");
   addSpecificFace("bde", "bfd");
@@ -43,9 +46,10 @@ static void test_search_for_best_solution()
   addSpecificFace("cde", "adb");
   addSpecificFace("b", "abcf");
   addSpecificFace("f", "aefdc");
+  */
   search(false, found_solution);
 
-  TEST_ASSERT_EQUAL(1, solution_count);
+  TEST_ASSERT_EQUAL(2, solution_count);
 }
 
 int main(void)

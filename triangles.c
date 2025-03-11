@@ -1,5 +1,10 @@
 
 #include "venn.h"
+#if NCURVES == 4
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+
 /*
 This file is responsible for checking that a set of edges can make a triangle.
 */
@@ -89,6 +94,7 @@ go clockwise and counterclockwise to identify the corners.
 start must either be an edge of the central face, or be an incomplete end.
 cornerReturn is a pointer to an array of length at least 3.
 */
+
 static FAILURE cornerCheckInternal(EDGE start, int depth, UPOINT* cornersReturn)
 {
   EDGE current = start;
