@@ -303,6 +303,7 @@ extern struct global globals;
 #define g_curveComplete globals.curveComplete
 
 extern CYCLESET_DECLARE omittingCycleSets[NCURVES];
+extern CYCLESET_DECLARE omittingCycleSetPairs[NCURVES][NCURVES];
 
 extern TRAIL trail;
 extern void initialize(void);

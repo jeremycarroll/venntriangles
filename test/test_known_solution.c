@@ -358,7 +358,7 @@ void test_4_3_5_6(void)
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
-  TEST_ASSERT_EQUAL(13, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(11, cycleGuessCounter);
 }
 
 void test_6_5_4_3(void)
@@ -367,7 +367,7 @@ void test_6_5_4_3(void)
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
-  TEST_ASSERT_EQUAL(14, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(12, cycleGuessCounter);
 }
 
 void test_5_3_6_4(void)
@@ -376,7 +376,7 @@ void test_5_3_6_4(void)
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
-  TEST_ASSERT_EQUAL(13, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(11, cycleGuessCounter);
 }
 
 void test_in_order(bool smallestFirst)
@@ -399,7 +399,7 @@ void test_in_order(bool smallestFirst)
 void test_in_best_order(void)
 {
   test_in_order(true);
-  TEST_ASSERT_EQUAL(27, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(26, cycleGuessCounter);
 }
 
 void test_in_worst_order(void)

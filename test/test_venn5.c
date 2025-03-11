@@ -38,7 +38,7 @@ static void test_search_abcde()
   solution_count = 0;
   setupCentralFaces(0, 0, 0, 0, 0);
   search(false, found_solution);
-  TEST_ASSERT_EQUAL(162, solution_count);
+  TEST_ASSERT_EQUAL(152, solution_count);
 }
 
 static FACE addSpecificFace(char* colors, char* cycle)
@@ -133,7 +133,7 @@ static void test_search_55433()
   solution_count = 0;
   setupCentralFaces(5, 5, 4, 3, 3);
   search(false, found_solution);
-  TEST_ASSERT_EQUAL(7, solution_count);
+  TEST_ASSERT_EQUAL(6, solution_count);
 }
 
 static void test_search_55343()

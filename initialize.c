@@ -19,6 +19,7 @@ initialization.
 CYCLESET_DECLARE pairs2cycleSets[NCURVES][NCURVES];
 CYCLESET_DECLARE triples2cycleSets[NCURVES][NCURVES][NCURVES];
 CYCLESET_DECLARE omittingCycleSets[NCURVES];
+CYCLESET_DECLARE omittingCycleSetPairs[NCURVES][NCURVES];
 CYCLESET setsOfCycleSets[NCYCLE_ENTRIES * 2];
 
 static void initializeCycles(void);
@@ -39,6 +40,7 @@ void clearInitialize()
   memset(triples2cycleSets, 0, sizeof(triples2cycleSets));
   memset(setsOfCycleSets, 0, sizeof(setsOfCycleSets));
   memset(omittingCycleSets, 0, sizeof(omittingCycleSets));
+  memset(omittingCycleSetPairs, 0, sizeof(omittingCycleSetPairs));
   nextCycle = 0;
   nextSetOfCycleSets = 0;
   clearPoints();
@@ -187,11 +189,22 @@ static void initializeOppositeDirection(void)
 
 static void initializeOmittingCycleSets()
 {
-  uint32_t i, cycleId;
+  uint32_t i, j, cycleId;
   for (i = 0; i < NCURVES; i++) {
     for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
       if (!memberOfColorSet(i, g_cycles[cycleId].colors)) {
         addToCycleSet(cycleId, omittingCycleSets[i]);
+      }
+    }
+  }
+  for (i = 0; i < NCURVES; i++) {
+    for (j = i + 1; j < NCURVES; j++) {
+      for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
+        if (!(memberOfColorSet(i, g_cycles[cycleId].colors) &&
+              memberOfColorSet(j, g_cycles[cycleId].colors) &&
+              contains2(&g_cycles[cycleId], i, j))) {
+          addToCycleSet(cycleId, omittingCycleSetPairs[i][j]);
+        }
       }
     }
   }

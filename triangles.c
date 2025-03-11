@@ -107,7 +107,7 @@ static FAILURE cornerCheckInternal(EDGE start, int depth, UPOINT* cornersReturn)
     if (other & outside) {
       outside = outside & ~other;
       if (other & passed) {
-        if (counter > MAX_CORNERS) {
+        if (counter >= MAX_CORNERS) {
           return tooManyCornersFailure(start->color, depth);
         }
         cornersReturn[counter++] = p->point;
@@ -124,7 +124,7 @@ static FAILURE cornerCheckInternal(EDGE start, int depth, UPOINT* cornersReturn)
 
 FAILURE cornerCheck(EDGE start, int depth)
 {
-  UPOINT ignore[MAX_CORNERS];
+  UPOINT ignore[MAX_CORNERS * 100];
   if (start->reversed->to != NULL) {
     // we have a complete curve.
     start = &g_faces[NFACES - 1].edges[start->color];
@@ -143,7 +143,7 @@ FAILURE curveChecks(EDGE edge, int depth)
   if (failure != NULL) {
     return failure;
   }
-  return NULL;
+  return cornerCheck(start, depth);
 }
 
 FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth)

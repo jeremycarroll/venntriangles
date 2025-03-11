@@ -148,7 +148,7 @@ we)
 */
 static FAILURE makeChoiceInternal(FACE face, int depth)
 {
-  uint32_t i;
+  uint32_t i, j;
   CYCLE cycle = face->cycle;
   FAILURE failure;
   /* equality in the followign assertion is achieved in the Venn 3 case, where a
@@ -170,15 +170,28 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
   for (i = 0; i < cycle->length; i++) {
     CHECK_FAILURE(propogateChoice(face, &face->edges[cycle->curves[i]], depth));
   }
-  if (1) {
-    for (i = 0; i < NCURVES; i++) {
-      if (memberOfColorSet(i, cycle->colors)) {
-        continue;
+  for (i = 0; i < NCURVES; i++) {
+    if (memberOfColorSet(i, cycle->colors)) {
+      continue;
+    }
+    CHECK_FAILURE(restrictAndPropogateCycles(face->adjacentFaces[i],
+                                             omittingCycleSets[i], depth));
+  }
+
+  for (i = 0; i < NCURVES; i++) {
+    for (j = i + 1; j < NCURVES; j++) {
+      if (memberOfColorSet(i, cycle->colors) &&
+          memberOfColorSet(j, cycle->colors)) {
+        if (contains2(face->cycle, i, j)) {
+          continue;
+        }
       }
-      CHECK_FAILURE(restrictAndPropogateCycles(face->adjacentFaces[i],
-                                               omittingCycleSets[i], depth));
+      CHECK_FAILURE(
+          restrictAndPropogateCycles(face->adjacentFaces[i]->adjacentFaces[j],
+                                     omittingCycleSetPairs[i][j], depth));
     }
   }
+
   return NULL;
 }
 
