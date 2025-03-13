@@ -110,9 +110,13 @@ char* face2str(char* dbuffer, FACE face)
   char* colors = colors2str(dbuffer, face->colors);
   char* cycle = cycle2str(dbuffer, face->cycle);
   char* result = nextSlot(dbuffer);
-  sprintf(result, "%s%s^%llu", colors, cycle, face->cycleSetSize);
+  char* cycleSetSizeBuf = result + sprintf(result, "%s%s", colors, cycle);
+  if (face->cycleSetSize > 1) {
+    sprintf(cycleSetSizeBuf, "^%llu", face->cycleSetSize);
+  }
   return returnSlot(result);
 }
+
 char* dpoint2str(char* dbuffer, DPOINT dp)
 {
   char* lookup = getLookup();
@@ -181,41 +185,33 @@ FACE faceFromColors(char* colors)
   return g_faces + face_id;
 }
 
-/*
-void printNecklaces()
+void printSolution(FILE* fp)
 {
-  uint64_t i, j, k = 0;
-  char buffer[4096] = {0, 0};
-  bool done[NFACES][NCURVES];
-  memset(done, 0, sizeof(done));
-  for (i = 0; i < NFACES; i++) {
-    FACE f = g_faces + i;
-    for (j = 0; j < NCURVES; j++) {
-      EDGE edge = &f->edges[j];
-      if (edge->to == NULL) {
-        continue;
-      }
-      DPOINT dpoint = edge->to;
-      if (done[edge->face->colors][edge->color]) {
-        continue;
-      }
-      DPOINT dp = dpoint;
-      uint32_t level = edge->level;
-      printf("*%d* ", level);
-      do {
-        char* dpstr = dpoint2str(buffer, dp);
-        done[edge->face->colors][edge->color] = true;
-        printf("%s->[%llu]%c ", dpstr, edge->level,
-               color2char(dp->out[1]->color));
-        buffer[2] = 0;
-        edge = dp->out[1];
-        dp = edge->to;
-      } while (dp != dpoint && k++ < 10000);
-      printf("\n");
-    }
+  COLORSET colors = 0;
+  if (fp == NULL) {
+    fp = stdout;
   }
+
+  while (true) {
+    FACE face = g_faces + colors;
+    do {
+      FACE next = face->next;
+      COLORSET colorBeingDropped = face->colors & ~next->colors;
+      COLORSET colorBeingAdded = next->colors & ~face->colors;
+      char buffer[256] = {0, 0};
+      fprintf(fp, "%s [%c,%c] ", face2str(buffer, face),
+              colors2str(buffer, colorBeingDropped)[1],
+              colors2str(buffer, colorBeingAdded)[1]);
+      face = next;
+    } while (face->colors != colors);
+    fprintf(fp, "\n");
+    if (colors == (NFACES - 1)) {
+      break;
+    }
+    colors |= (face->previous->colors | 1);
+  }
+  fprintf(fp, "\n");
 }
-*/
 
 FACE addSpecificFace(char* colors, char* cycle)
 {

@@ -24,7 +24,6 @@ static CYCLE chooseCycle(FACE face, CYCLE cycle)
 void search(bool smallestFirst, void (*foundSolution)(void))
 {
   FACE face;
-  FAILURE failure = NULL;
   FACE chosenFaces[NFACES];
   CYCLE chosenCycles[NFACES];
   CYCLE cycle;
@@ -36,7 +35,9 @@ void search(bool smallestFirst, void (*foundSolution)(void))
       case NEXT_FACE:
         face = chooseFace(smallestFirst);
         if (face == NULL) {
-          foundSolution();
+          if (finalCorrectnessChecks() == NULL) {
+            foundSolution();
+          }
           position -= 1;
           state = NEXT_CYCLE;
         } else {
@@ -63,8 +64,7 @@ void search(bool smallestFirst, void (*foundSolution)(void))
           /* suspect - because face->backtrack gets reset. */
           setDynamicPointer(&face->cycle, cycle);
           assert(face->cycle == cycle);
-          failure = makeChoice(face);
-          if (failure == NULL) {
+          if (makeChoice(face) == NULL) {
             position += 1;
             state = NEXT_FACE;
           } else {

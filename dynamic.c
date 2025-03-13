@@ -150,6 +150,7 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
 {
   uint32_t i, j;
   CYCLE cycle = face->cycle;
+  uint64_t cycleId = cycle - g_cycles;
   FAILURE failure;
   /* equality in the followign assertion is achieved in the Venn 3 case, where a
   single choice in any face determines all the faces. */
@@ -157,6 +158,8 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
   printf("Making choice (internal): ");
   printFace(face);
 #endif
+  /* TODO: what order should these checks be done in. There are a lot of them.
+   */
   assert(depth <= NFACES);
   for (i = 0; i < cycle->length - 1; i++) {
     CHECK_FAILURE(
@@ -176,6 +179,22 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
     }
     CHECK_FAILURE(restrictAndPropogateCycles(face->adjacentFaces[i],
                                              omittingCycleSets[i], depth));
+  }
+
+  if (face->colors == 0 || face->colors == (NFACES - 1)) {
+    setDynamicPointer(&face->next, face);
+    setDynamicPointer(&face->previous, face);
+  } else {
+    setDynamicPointer(&face->next, g_faces + GET_COMPRESSED_FACE_POINTER_ENTRY(
+                                                 face->nextByCycleId, cycleId));
+    setDynamicPointer(&face->previous,
+                      g_faces + GET_COMPRESSED_FACE_POINTER_ENTRY(
+                                    face->previousByCycleId, cycleId));
+  }
+
+  if (face->colors != 0 && face->colors != (NFACES - 1)) {
+    assert(face->next != g_faces);
+    assert(face->previous != g_faces);
   }
 
   for (i = 0; i < NCURVES; i++) {
