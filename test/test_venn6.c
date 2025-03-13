@@ -3,7 +3,7 @@
 #include "unity.h"
 
 #define STATS 0
-#define TEST_INFO 1
+#define TEST_INFO 0
 
 void setUp(void)
 {
@@ -26,6 +26,7 @@ static int solution_count = 0;
 static void found_solution()
 {
 #if TEST_INFO
+  printSolution(NULL);
   printStatisticsFull();
 #endif
   solution_count++;
@@ -35,7 +36,7 @@ static void test_search_for_best_solution()
 {
   solution_count = 0;
   setupCentralFaces(5, 5, 5, 4, 4, 4);
-  addSpecificFace("c", "adbce");
+  // addSpecificFace("c", "adbce");
   /* This is a short statement of the best solution.
   addSpecificFace("a", "abed");
   addSpecificFace("c", "adbce");
@@ -47,9 +48,9 @@ static void test_search_for_best_solution()
   addSpecificFace("b", "abcf");
   addSpecificFace("f", "aefdc");
   */
-  search(false, found_solution);
+  search(true, found_solution);
 
-  TEST_ASSERT_EQUAL(2, solution_count);
+  TEST_ASSERT_EQUAL(160, solution_count);
 }
 
 int main(void)

@@ -77,6 +77,25 @@ the other.
 #define MAX_ONE_WAY_CURVE_CROSSINGS 3
 #define MAX_CORNERS 3
 
+/* We precompute 50,432 face pointers: we store them in a compressed format, to
+ * hopefully improve L2 cache behavior. */
+#define COMPRESSED_FACE_POINTER_BITS NCURVES
+#define COMPRESSED_FACE_POINTER_MASK ((1u << COMPRESSED_FACE_POINTER_BITS) - 1)
+#define COMPRESSED_FACE_POINTER_PER_WORD \
+  (BITS_PER_WORD / COMPRESSED_FACE_POINTER_BITS)
+#define FACE_POINTERS_PER_CYCLE_LENGTH \
+  (NCYCLES / COMPRESSED_FACE_POINTER_PER_WORD + 1)
+
+#define SET_COMPRESSED_FACE_POINTER_ENTRY(array64, cycleId, faceId) \
+  (array64)[cycleId / COMPRESSED_FACE_POINTER_PER_WORD] |=          \
+      ((faceId) << ((cycleId % COMPRESSED_FACE_POINTER_PER_WORD) *  \
+                    COMPRESSED_FACE_POINTER_BITS))
+#define GET_COMPRESSED_FACE_POINTER_ENTRY(array64, cycleId)  \
+  (((array64)[cycleId / COMPRESSED_FACE_POINTER_PER_WORD] >> \
+    ((cycleId % COMPRESSED_FACE_POINTER_PER_WORD) *          \
+     COMPRESSED_FACE_POINTER_BITS)) &                        \
+   COMPRESSED_FACE_POINTER_MASK)
+
 /* TODO: improve this number, 10^6 looks very safe, but we should aim for less.
  */
 #define TRAIL_SIZE 1000000
@@ -155,11 +174,16 @@ struct face {
   // cycle must be null if cycleSetSize is not 1.
   DYNAMIC struct facial_cycle *cycle;
   DYNAMIC TRAIL backtrack;
+  /* We point to previous and next with the same number of colors. */
+  DYNAMIC FACE previous;
+  DYNAMIC FACE next;
   STATIC COLORSET colors;           // holds up to NFACES
   DYNAMIC uint_trail cycleSetSize;  // holds up to NCYCLES
   DYNAMIC CYCLESET_DECLARE possibleCycles;
   STATIC struct face *adjacentFaces[NCURVES];
   STATIC struct edge edges[NCURVES];
+  STATIC uint64_t previousByCycleId[NCYCLES];
+  STATIC uint64_t nextByCycleId[NCYCLES];
 };
 
 STATIC struct facial_cycle {
@@ -231,13 +255,13 @@ STATIC struct undirectedPoint {
 };
 
 typedef enum failureType {
-  MULTIPLE_FAILURE = 0x200,
   NO_MATCH_FAILURE = 0x1,
   CROSSING_LIMIT_FAILURE = 0x2,
   DISCONNECTED_CURVE_FAILURE = 0x4,
   TOO_MANY_CORNERS_FAILURE = 0x8,
   POINT_CONFLICT_FAILURE = 0x10,
   CONFLICTING_CONSTRAINTS_FAILURE = 0x20,
+  DISCONNECTED_FACES_FAILURE = 0x40,
 } FAILURE_TYPE;
 
 typedef struct failure *FAILURE;
@@ -289,6 +313,7 @@ struct global {
     */
   DYNAMIC uint_trail edgeCount[2][NCURVES];
   DYNAMIC uint_trail curveComplete[NCURVES];
+  STATIC uint64_t lengthOfCycleOfFaces[NCURVES + 1];
 };
 
 extern struct global globals;
@@ -300,6 +325,7 @@ extern struct global globals;
 #define g_crossings globals.crossings
 #define g_edgeCount globals.edgeCount
 #define g_curveComplete globals.curveComplete
+#define g_lengthOfCycleOfFaces globals.lengthOfCycleOfFaces
 
 extern CYCLESET_DECLARE omittingCycleSets[NCURVES];
 extern CYCLESET_DECLARE omittingCycleSetPairs[NCURVES][NCURVES];
@@ -354,6 +380,7 @@ extern void search(bool smallestFirst, void (*foundSolution)(void));
 
 extern FAILURE noMatchingCyclesFailure(COLORSET colors, int depth);
 extern FAILURE disconnectedCurveFailure(COLOR color, int depth);
+extern FAILURE disconnectedFacesFailure(COLORSET color, int depth);
 extern FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth);
 extern FAILURE tooManyCornersFailure(COLOR a, int depth);
 extern FAILURE pointConflictFailure(COLOR a, COLOR b, int depth);
@@ -372,7 +399,7 @@ extern void printFace(FACE face);
 extern void printEdge(EDGE edge);
 extern void printSelectedFaces(void);
 extern FACIAL_CYCLE_SIZES facialCycleSizes(void);
-/*extern void printNecklaces();*/
+extern void printSolution(FILE *fp);
 
 extern void newStatistic(uint64_t *counter, char *shortName, char *name);
 extern void newFailureStatistic(FAILURE failure);

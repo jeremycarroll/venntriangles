@@ -29,6 +29,7 @@ static void initializeOppositeDirection(void);
 static void initializeOmittingCycleSets(void);
 static void initializeFacesAndEdges(void);
 static void initializePossiblyTo(void);
+static void initializeLengthOfCycleOfFaces(void);
 static void applyMonotonicity(void);
 static void recomputeCountOfChoices(FACE face);
 /* face is truncated to 6 bits, higher bits may be set, and will be ignored. */
@@ -71,6 +72,17 @@ void initialize()
 
   initializeDynamicCounters();
   initializeWithoutColor();
+  initializeLengthOfCycleOfFaces();
+}
+
+static void initializeLengthOfCycleOfFaces(void)
+{
+  uint32_t i;
+  g_lengthOfCycleOfFaces[0] = 1;
+  for (i = 0; i < NCURVES; i++) {
+    g_lengthOfCycleOfFaces[i + 1] =
+        g_lengthOfCycleOfFaces[i] * (NCURVES - i) / (i + 1);
+  }
 }
 
 static void addCycle(int length, ...)
@@ -268,8 +280,14 @@ static void applyMonotonicity(void)
   FACE face;
   CYCLE cycle;
   uint32_t chainingCount, i;
-#define ONE_IN_ONE_OUT(a, b, colors) \
-  (__builtin_popcount(((1 << (a)) | (1 << (b))) & colors) == 1)
+  uint64_t currentXor, previousFaceXor, nextFaceXor;
+#define ONE_IN_ONE_OUT_CORE(a, b, colors)                              \
+  (__builtin_popcountll((currentXor = ((1ll << (a)) | (1ll << (b)))) & \
+                        colors) == 1)
+#define ONE_IN_ONE_OUT(a, b, colors)                               \
+  (!ONE_IN_ONE_OUT_CORE(a, b, colors) ? 0                          \
+   : ((1 << (a)) & colors)            ? (nextFaceXor = currentXor) \
+                                      : (previousFaceXor = currentXor))
   /* The inner face is NFACES-1, with all the colors; the outer face is 0, with
    * no colors.
    */
@@ -278,6 +296,7 @@ static void applyMonotonicity(void)
       if ((cycle->colors & colors) == 0 || (cycle->colors & ~colors) == 0) {
         removeFromCycleSet(cycleId, face->possibleCycles);
       }
+      previousFaceXor = nextFaceXor = 0;
       chainingCount = ONE_IN_ONE_OUT(cycle->curves[cycle->length - 1],
                                      cycle->curves[0], colors)
                           ? 1
@@ -289,6 +308,16 @@ static void applyMonotonicity(void)
       }
       if (chainingCount != 2) {
         removeFromCycleSet(cycleId, face->possibleCycles);
+      } else {
+        assert(previousFaceXor);
+        assert(nextFaceXor);
+        SET_COMPRESSED_FACE_POINTER_ENTRY(face->nextByCycleId, cycleId,
+                                          colors ^ nextFaceXor);
+        SET_COMPRESSED_FACE_POINTER_ENTRY(face->previousByCycleId, cycleId,
+                                          colors ^ previousFaceXor);
+        assert(GET_COMPRESSED_FACE_POINTER_ENTRY(face->previousByCycleId,
+                                                 cycleId));
+        assert(GET_COMPRESSED_FACE_POINTER_ENTRY(face->nextByCycleId, cycleId));
       }
     }
     recomputeCountOfChoices(face);
