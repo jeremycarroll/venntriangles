@@ -110,10 +110,9 @@ char* face2str(char* dbuffer, FACE face)
   char* colors = colors2str(dbuffer, face->colors);
   char* cycle = cycle2str(dbuffer, face->cycle);
   char* result = nextSlot(dbuffer);
-  char* cycleSetSizeBuf =
-      result + sprintf(result, "%s%s", colors, cycle, face->cycleSetSize);
+  char* cycleSetSizeBuf = result + sprintf(result, "%s%s", colors, cycle);
   if (face->cycleSetSize > 1) {
-    sprintf(cycleSetSizeBuf, "^%llu", colors, cycle, face->cycleSetSize);
+    sprintf(cycleSetSizeBuf, "^%llu", face->cycleSetSize);
   }
   return returnSlot(result);
 }

@@ -166,3 +166,40 @@ FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth)
   setDynamicInt(crossing, *crossing + 1);
   return NULL;
 }
+
+static FAILURE checkLengthOfCycleOfFaces(FACE face)
+{
+  uint32_t i = 0,
+           expected = g_lengthOfCycleOfFaces[__builtin_popcount(face->colors)];
+  FACE f = face;
+  /* Don't call this with inner or outer face. */
+  assert(expected != 1);
+  do {
+    f = f->next;
+    i++;
+    assert(i <= expected);
+    if (f == face) {
+      if (i != expected) {
+        return disconnectedFacesFailure(face->colors, 0);
+      }
+      return NULL;
+      ;
+    }
+  } while (f != NULL);
+  assert(0);
+}
+
+FAILURE finalCorrectnessChecks(void)
+{
+  FAILURE failure;
+  COLORSET colors = 1;
+  FACE face;
+  for (colors = 1; colors < (NFACES - 1); colors |= face->previous->colors) {
+    face = g_faces + colors;
+    failure = checkLengthOfCycleOfFaces(face);
+    if (failure != NULL) {
+      return failure;
+    }
+  }
+  return NULL;
+}

@@ -390,6 +390,7 @@ extern void initializeFailures(void);
 and that number should be three or less. */
 extern FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth);
 extern bool removeColorFromSearch(COLOR color);
+extern FAILURE finalCorrectnessChecks(void);
 
 extern char *edge2str(char *dbuffer, EDGE edge);
 extern char *face2str(char *dbuffer, FACE face);

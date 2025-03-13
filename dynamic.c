@@ -133,29 +133,6 @@ static FAILURE propogateChoice(FACE face, EDGE edge, int depth)
   return NULL;
 }
 
-static FAILURE checkLengthOfCycleOfFaces(FACE face)
-{
-  uint32_t i = 0,
-           expected = g_lengthOfCycleOfFaces[__builtin_popcount(face->colors)];
-  FACE f = face;
-  if (expected == 1) {
-    return NULL;
-  }
-  do {
-    f = f->next;
-    i++;
-    assert(i <= expected);
-    if (f == face) {
-      if (i != expected) {
-        return disconnectedFacesFailure(face->colors, 0);
-      }
-      return NULL;
-      ;
-    }
-  } while (f != NULL);
-  return NULL;
-}
-
 /*
 We have just set the value of the cycle on this face.
 We need to:
@@ -218,7 +195,6 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
   if (face->colors != 0 && face->colors != (NFACES - 1)) {
     assert(face->next != g_faces);
     assert(face->previous != g_faces);
-    CHECK_FAILURE(checkLengthOfCycleOfFaces(face));
   }
 
   for (i = 0; i < NCURVES; i++) {
