@@ -57,6 +57,12 @@ static struct failure DisconnectedFacesFailure = {
     "Disconnected faces",
     {0},
 };
+static struct failure NonCanoncialFailure = {
+    NON_CANONICAL_FAILURE,
+    "=",
+    "Non Canonical",
+    {0},
+};
 
 FAILURE noMatchingCyclesFailure(COLORSET colors, int depth)
 {
@@ -106,6 +112,11 @@ FAILURE disconnectedFacesFailure(COLORSET colors, int depth)
   DisconnectedFacesFailure.count[depth]++;
   return &DisconnectedFacesFailure;
 }
+FAILURE nonCanonicalFailure(void)
+{
+  NonCanoncialFailure.count[0]++;
+  return &NonCanoncialFailure;
+}
 
 void initializeFailures(void)
 {
@@ -116,4 +127,5 @@ void initializeFailures(void)
   newFailureStatistic(&PointConflictFailure);
   newFailureStatistic(&ConflictingConstraintsFailure);
   newFailureStatistic(&DisconnectedFacesFailure);
+  newFailureStatistic(&NonCanoncialFailure);
 }

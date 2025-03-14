@@ -76,7 +76,7 @@ char* colors2str(char* dbuffer, COLORSET colors)
   char* lookup = getLookup();
   char* p = result;
   *p++ = '|';
-  for (i = 0; i < NCURVES; i++) {
+  for (i = 0; i < NCOLORS; i++) {
     if (colors & (1u << i)) {
       *p++ = lookup[i];
     }
@@ -152,7 +152,7 @@ void printSelectedFaces(void)
 
 FACIAL_CYCLE_SIZES facialCycleSizes(void)
 {
-  uint32_t nColors = NCURVES;
+  uint32_t nColors = NCOLORS;
   FACIAL_CYCLE_SIZES result;
   uint32_t nFaces = 1 << nColors;
   result.value = 0;
@@ -164,7 +164,7 @@ FACIAL_CYCLE_SIZES facialCycleSizes(void)
 
 uint32_t cycleIdFromColors(char* colors)
 {
-  COLOR cycle[NCURVES];
+  COLOR cycle[NCOLORS];
   int i;
   for (i = 0; *colors; i++, colors++) {
     cycle[i] = *colors - 'a';

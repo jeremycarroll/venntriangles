@@ -22,13 +22,13 @@ static uint64_t cycleSetReducedCounter = 0;
     return failure;         \
   }
 
-#if NCURVES > 3
+#if NCOLORS > 3
 void setupCentralFaces(uint32_t aLength, uint32_t bLength, uint32_t cLength,
                        uint32_t dLength
-#if NCURVES > 4
+#if NCOLORS > 4
                        ,
                        uint32_t eLength
-#if NCURVES > 5
+#if NCOLORS > 5
                        ,
                        uint32_t fLength
 #endif
@@ -42,17 +42,17 @@ void setupCentralFaces(uint32_t aLength, uint32_t bLength, uint32_t cLength,
   setCycleLength(~(1 << 1), bLength);
   setCycleLength(~(1 << 2), cLength);
   setCycleLength(~(1 << 3), dLength);
-#if NCURVES > 4
+#if NCOLORS > 4
   setCycleLength(~(1 << 4), eLength);
-#if NCURVES > 5
+#if NCOLORS > 5
   setCycleLength(~(1 << 5), fLength);
 #endif
 #endif
   for (cycle = g_cycles;; cycle++) {
-    if (cycle->length != NCURVES) {
+    if (cycle->length != NCOLORS) {
       continue;
     }
-    for (i = 1; i < NCURVES; i++) {
+    for (i = 1; i < NCOLORS; i++) {
       if (cycle->curves[i] != i) {
         goto NextCycle;
       }
@@ -173,7 +173,7 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
   for (i = 0; i < cycle->length; i++) {
     CHECK_FAILURE(propogateChoice(face, &face->edges[cycle->curves[i]], depth));
   }
-  for (i = 0; i < NCURVES; i++) {
+  for (i = 0; i < NCOLORS; i++) {
     if (memberOfColorSet(i, cycle->colors)) {
       continue;
     }
@@ -197,8 +197,8 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
     assert(face->previous != g_faces);
   }
 
-  for (i = 0; i < NCURVES; i++) {
-    for (j = i + 1; j < NCURVES; j++) {
+  for (i = 0; i < NCOLORS; i++) {
+    for (j = i + 1; j < NCOLORS; j++) {
       if (memberOfColorSet(i, cycle->colors) &&
           memberOfColorSet(j, cycle->colors)) {
         if (contains2(face->cycle, i, j)) {
@@ -251,7 +251,7 @@ FAILURE makeChoice(FACE face)
     return failure;
   }
   if (completedColors) {
-    for (completedColor = 0; completedColor < NCURVES; completedColor++) {
+    for (completedColor = 0; completedColor < NCOLORS; completedColor++) {
       if (memberOfColorSet(completedColor, completedColors)) {
         if (!removeColorFromSearch(completedColor)) {
           return disconnectedCurveFailure(completedColor, 0);
@@ -262,7 +262,7 @@ FAILURE makeChoice(FACE face)
   return NULL;
 }
 
-static CYCLESET_DECLARE withoutColor[NCURVES];
+static CYCLESET_DECLARE withoutColor[NCOLORS];
 
 void clearWithoutColor() { memset(withoutColor, 0, sizeof(withoutColor)); }
 
@@ -271,7 +271,7 @@ void initializeWithoutColor()
   COLOR color;
   CYCLE cycle;
   uint32_t i;
-  for (color = 0; color < NCURVES; color++) {
+  for (color = 0; color < NCOLORS; color++) {
     for (i = 0, cycle = g_cycles; i < NCYCLES; i++, cycle++) {
       if (!memberOfColorSet(color, cycle->colors)) {
         addToCycleSet(i, withoutColor[color]);
