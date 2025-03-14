@@ -2,8 +2,8 @@
 
 extern void clearGlobals(void);
 extern void clearInitialize(void);
-extern CYCLESET_DECLARE pairs2cycleSets[NCURVES][NCURVES];
-extern CYCLESET_DECLARE triples2cycleSets[NCURVES][NCURVES][NCURVES];
+extern CYCLESET_DECLARE pairs2cycleSets[NCOLORS][NCOLORS];
+extern CYCLESET_DECLARE triples2cycleSets[NCOLORS][NCOLORS][NCOLORS];
 extern bool printCycleSet(CYCLESET cycleSet);
 extern void printCycle(CYCLE cycle);
 extern void clearInitialize(void);

@@ -1,3 +1,4 @@
+#include "d6.h"
 #include "venn.h"
 
 FACE chooseFace(bool smallestFirst)

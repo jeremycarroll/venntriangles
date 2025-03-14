@@ -27,7 +27,7 @@ static void found_solution()
 #if DEBUG
   int i;
   FACIAL_CYCLE_SIZES sizes = facialCycleSizes();
-  for (i = 0; i < NCURVES; i++) {
+  for (i = 0; i < NCOLORS; i++) {
     printf("%d,", sizes.sizes[i]);
   }
   printf("\n");

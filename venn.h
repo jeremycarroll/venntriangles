@@ -13,6 +13,11 @@ We use just one header file:
 #include <stdlib.h>
 #include <string.h>
 
+/* The curves are _colored_ from 0 to 5. */
+#ifndef NCOLORS
+#define NCOLORS 6
+#endif
+
 #define ASSUMPTION     \
   (sizeof(uint64_t) == \
    sizeof(void *))            // we cast pointers to uint64_t in the trail.
@@ -36,23 +41,19 @@ typedef uint64_t uint_trail;  // Any non-pointer value that might go on the
 #define CHOOSE_4_0 1u
 #define CHOOSE_4_1 4u
 #define CHOOSE_3_0 1u
-/* The curves are _colored_ from 0 to 5. */
-#ifndef NCURVES
-#define NCURVES 6
-#endif
-#define NFACES (1 << NCURVES)
+#define NFACES (1 << NCOLORS)
 // #define NPOINTS (NFACES - 2)
-#if NCURVES == 6
+#if NCOLORS == 6
 #define NCYCLES                                        \
   (CHOOSE_6_0 * FACTORIAL5 + CHOOSE_6_1 * FACTORIAL4 + \
    CHOOSE_6_2 * FACTORIAL3 + CHOOSE_6_3 * FACTORIAL2)
 #define NCYCLE_ENTRIES                                         \
   (CHOOSE_6_0 * FACTORIAL5 * 6 + CHOOSE_6_1 * FACTORIAL4 * 5 + \
    CHOOSE_6_2 * FACTORIAL3 * 4 + CHOOSE_6_3 * FACTORIAL2 * 3)
-#elif NCURVES == 4
+#elif NCOLORS == 4
 #define NCYCLES (CHOOSE_4_0 * FACTORIAL3 + CHOOSE_4_1 * FACTORIAL2)
 #define NCYCLE_ENTRIES (CHOOSE_4_0 * FACTORIAL4 + CHOOSE_4_1 * FACTORIAL3)
-#elif NCURVES == 5
+#elif NCOLORS == 5
 #define NCYCLES \
   (CHOOSE_5_0 * FACTORIAL4 + CHOOSE_5_1 * FACTORIAL3 + CHOOSE_5_2 * FACTORIAL2)
 #define NCYCLE_ENTRIES \
@@ -70,7 +71,7 @@ of the other colors being the inner face. We wire those points up in advance.
 The two colors are ordered, first the one crossing from inside to outside, then
 the other.
 */
-#define NPOINTS ((1 << (NCURVES - 2)) * NCURVES * (NCURVES - 1))
+#define NPOINTS ((1 << (NCOLORS - 2)) * NCOLORS * (NCOLORS - 1))
 #define POINTSET_LENGTH ((NPOINTS - 1) / BITS_PER_WORD + 1)
 #define FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET \
   ((1ul << (NCYCLES % BITS_PER_WORD)) - 1ul)
@@ -79,7 +80,7 @@ the other.
 
 /* We precompute 50,432 face pointers: we store them in a compressed format, to
  * hopefully improve L2 cache behavior. */
-#define COMPRESSED_FACE_POINTER_BITS NCURVES
+#define COMPRESSED_FACE_POINTER_BITS NCOLORS
 #define COMPRESSED_FACE_POINTER_MASK ((1u << COMPRESSED_FACE_POINTER_BITS) - 1)
 #define COMPRESSED_FACE_POINTER_PER_WORD \
   (BITS_PER_WORD / COMPRESSED_FACE_POINTER_BITS)
@@ -153,13 +154,13 @@ struct edge {
   */
   DYNAMIC DPOINT to;
   STATIC COLOR color;
-  /* A value between 0 and NCURVES, being the cardinaltiy of face. */
+  /* A value between 0 and NCOLORS, being the cardinaltiy of face. */
   STATIC uint64_t level;
   /* This point at the end of this edge may cross one of the other colors.
   We have all 5 pre-initialized in this array, with the color-th enty
   being all NULL.
    */
-  STATIC struct directedPoint possiblyTo[NCURVES];
+  STATIC struct directedPoint possiblyTo[NCOLORS];
 };
 /*
 IS_PRIMARY_EDGE is 1 if the edge is clockwise around the central face, 0
@@ -180,8 +181,8 @@ struct face {
   STATIC COLORSET colors;           // holds up to NFACES
   DYNAMIC uint_trail cycleSetSize;  // holds up to NCYCLES
   DYNAMIC CYCLESET_DECLARE possibleCycles;
-  STATIC struct face *adjacentFaces[NCURVES];
-  STATIC struct edge edges[NCURVES];
+  STATIC struct face *adjacentFaces[NCOLORS];
+  STATIC struct edge edges[NCOLORS];
   STATIC uint64_t previousByCycleId[NCYCLES];
   STATIC uint64_t nextByCycleId[NCYCLES];
 };
@@ -199,7 +200,7 @@ STATIC struct facial_cycle {
      oppositeDirection[i] refers to curves[i-1] curves[i] and curves[i+1]
   */
   CYCLESET *oppositeDirection;
-  COLOR curves[NCURVES];
+  COLOR curves[NCOLORS];
 };
 
 /* We create all possible points during initialization.
@@ -262,6 +263,7 @@ typedef enum failureType {
   POINT_CONFLICT_FAILURE = 0x10,
   CONFLICTING_CONSTRAINTS_FAILURE = 0x20,
   DISCONNECTED_FACES_FAILURE = 0x40,
+  NON_CANONICAL_FAILURE = 0x80,
 } FAILURE_TYPE;
 
 typedef struct failure *FAILURE;
@@ -293,7 +295,7 @@ typedef union {
  All DYNAMIC fields must be in this structure: during unit testing we reset this
  to zero. Also, any datum that can be the value of any DYNAMIC pointer must be
  in this structure, (this allows us to safely switch to a 32 bit trail if we
- choose)
+ choose).
  */
 struct global {
   struct face faces[NFACES];
@@ -304,16 +306,16 @@ struct global {
   STATIC struct facial_cycle cycles[NCYCLES];
   /* diagonal is 0; we expect in a solution that
      this matrix is symmetric and all other values are 3 or 2. */
-  DYNAMIC uint_trail crossings[NCURVES][NCURVES];
+  DYNAMIC uint_trail crossings[NCOLORS][NCOLORS];
   /* If we have a color-curve that is not edgeCount[color] long, then we do not
     have a solution.
     edgeCount[0][color] is the number of edges of given color with a _to_ field
     set, in the negative direction, edgeCount[1][color] is the number of edges
     of given color with a _to_ field set, in the positive direction.
     */
-  DYNAMIC uint_trail edgeCount[2][NCURVES];
-  DYNAMIC uint_trail curveComplete[NCURVES];
-  STATIC uint64_t lengthOfCycleOfFaces[NCURVES + 1];
+  DYNAMIC uint_trail edgeCount[2][NCOLORS];
+  DYNAMIC uint_trail curveComplete[NCOLORS];
+  STATIC uint64_t lengthOfCycleOfFaces[NCOLORS + 1];
 };
 
 extern struct global globals;
@@ -327,8 +329,8 @@ extern struct global globals;
 #define g_curveComplete globals.curveComplete
 #define g_lengthOfCycleOfFaces globals.lengthOfCycleOfFaces
 
-extern CYCLESET_DECLARE omittingCycleSets[NCURVES];
-extern CYCLESET_DECLARE omittingCycleSetPairs[NCURVES][NCURVES];
+extern CYCLESET_DECLARE omittingCycleSets[NCOLORS];
+extern CYCLESET_DECLARE omittingCycleSetPairs[NCOLORS][NCOLORS];
 
 extern TRAIL trail;
 extern void initialize(void);
@@ -347,13 +349,13 @@ extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
 extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
 extern uint32_t indexInCycle(CYCLE cycle, COLOR color);
 
-#if NCURVES > 3
+#if NCOLORS > 3
 void setupCentralFaces(uint32_t aLength, uint32_t bLength, uint32_t cLength,
                        uint32_t dLength
-#if NCURVES > 4
+#if NCOLORS > 4
                        ,
                        uint32_t eLength
-#if NCURVES > 5
+#if NCOLORS > 5
                        ,
                        uint32_t fLength
 #endif
@@ -385,6 +387,7 @@ extern FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth);
 extern FAILURE tooManyCornersFailure(COLOR a, int depth);
 extern FAILURE pointConflictFailure(COLOR a, COLOR b, int depth);
 extern FAILURE conflictingConstraintsFailure(FACE f, int depth);
+extern FAILURE nonCanonicalFailure(void);
 extern void initializeFailures(void);
 /* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
 and that number should be three or less. */

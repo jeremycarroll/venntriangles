@@ -16,10 +16,10 @@ static int nextSetOfCycleSets = 0;
 These cycleSets are accessed from cycles, with the pointers set up during
 initialization.
  */
-CYCLESET_DECLARE pairs2cycleSets[NCURVES][NCURVES];
-CYCLESET_DECLARE triples2cycleSets[NCURVES][NCURVES][NCURVES];
-CYCLESET_DECLARE omittingCycleSets[NCURVES];
-CYCLESET_DECLARE omittingCycleSetPairs[NCURVES][NCURVES];
+CYCLESET_DECLARE pairs2cycleSets[NCOLORS][NCOLORS];
+CYCLESET_DECLARE triples2cycleSets[NCOLORS][NCOLORS][NCOLORS];
+CYCLESET_DECLARE omittingCycleSets[NCOLORS];
+CYCLESET_DECLARE omittingCycleSetPairs[NCOLORS][NCOLORS];
 CYCLESET setsOfCycleSets[NCYCLE_ENTRIES * 2];
 
 static void initializeCycles(void);
@@ -79,9 +79,9 @@ static void initializeLengthOfCycleOfFaces(void)
 {
   uint32_t i;
   g_lengthOfCycleOfFaces[0] = 1;
-  for (i = 0; i < NCURVES; i++) {
+  for (i = 0; i < NCOLORS; i++) {
     g_lengthOfCycleOfFaces[i + 1] =
-        g_lengthOfCycleOfFaces[i] * (NCURVES - i) / (i + 1);
+        g_lengthOfCycleOfFaces[i] * (NCOLORS - i) / (i + 1);
   }
 }
 
@@ -105,24 +105,24 @@ static void addCycle(int length, ...)
 static void initializeCycles(void)
 {
   uint32_t c1, c2, c3, c4, c5, c6;
-  for (c1 = 0; c1 < NCURVES; c1++) {
-    for (c2 = c1 + 1; c2 < NCURVES; c2++) {
-      for (c3 = c1 + 1; c3 < NCURVES; c3++) {
+  for (c1 = 0; c1 < NCOLORS; c1++) {
+    for (c2 = c1 + 1; c2 < NCOLORS; c2++) {
+      for (c3 = c1 + 1; c3 < NCOLORS; c3++) {
         if (c3 == c2) {
           continue;
         }
         addCycle(3, c1, c2, c3);
-        for (c4 = c1 + 1; c4 < NCURVES; c4++) {
+        for (c4 = c1 + 1; c4 < NCOLORS; c4++) {
           if (c4 == c2 || c4 == c3) {
             continue;
           }
           addCycle(4, c1, c2, c3, c4);
-          for (c5 = c1 + 1; c5 < NCURVES; c5++) {
+          for (c5 = c1 + 1; c5 < NCOLORS; c5++) {
             if (c5 == c2 || c5 == c3 || c5 == c4) {
               continue;
             }
             addCycle(5, c1, c2, c3, c4, c5);
-            for (c6 = c1 + 1; c6 < NCURVES; c6++) {
+            for (c6 = c1 + 1; c6 < NCOLORS; c6++) {
               if (c6 == c2 || c6 == c3 || c6 == c4 || c6 == c5) {
                 continue;
               }
@@ -138,8 +138,8 @@ static void initializeCycles(void)
 static void initializeCycleSets(void)
 {
   uint32_t i, j, k, cycleId;
-  for (i = 0; i < NCURVES; i++) {
-    for (j = 0; j < NCURVES; j++) {
+  for (i = 0; i < NCOLORS; i++) {
+    for (j = 0; j < NCOLORS; j++) {
       if (i == j) {
         continue;
       }
@@ -148,7 +148,7 @@ static void initializeCycleSets(void)
           addToCycleSet(cycleId, pairs2cycleSets[i][j]);
         }
       }
-      for (k = 0; k < NCURVES; k++) {
+      for (k = 0; k < NCOLORS; k++) {
         if (i == k || j == k) {
           continue;
         }
@@ -201,15 +201,15 @@ static void initializeOppositeDirection(void)
 static void initializeOmittingCycleSets()
 {
   uint32_t i, j, cycleId;
-  for (i = 0; i < NCURVES; i++) {
+  for (i = 0; i < NCOLORS; i++) {
     for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
       if (!memberOfColorSet(i, g_cycles[cycleId].colors)) {
         addToCycleSet(cycleId, omittingCycleSets[i]);
       }
     }
   }
-  for (i = 0; i < NCURVES; i++) {
-    for (j = i + 1; j < NCURVES; j++) {
+  for (i = 0; i < NCOLORS; i++) {
+    for (j = i + 1; j < NCOLORS; j++) {
       for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
         if (!(memberOfColorSet(i, g_cycles[cycleId].colors) &&
               memberOfColorSet(j, g_cycles[cycleId].colors) &&
@@ -234,7 +234,7 @@ static void initializeFacesAndEdges(void)
     }
     face->possibleCycles[j] = FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET;
 
-    for (color = 0; color < NCURVES; color++) {
+    for (color = 0; color < NCOLORS; color++) {
       uint32_t colorbit = (1 << color);
       adjacent = g_faces + (facecolors ^ (colorbit));
       face->adjacentFaces[color] = adjacent;
@@ -257,9 +257,9 @@ static void initializePossiblyTo(void)
 #if POINT_DEBUG
     printFace(face);
 #endif
-    for (color = 0; color < NCURVES; color++) {
+    for (color = 0; color < NCOLORS; color++) {
       edge = &face->edges[color];
-      for (othercolor = 0; othercolor < NCURVES; othercolor++) {
+      for (othercolor = 0; othercolor < NCOLORS; othercolor++) {
         if (othercolor == color) {
           continue;
         }
@@ -322,8 +322,8 @@ static void applyMonotonicity(void)
     }
     recomputeCountOfChoices(face);
   }
-  setCycleLength(0, NCURVES);
-  setCycleLength(~0, NCURVES);
+  setCycleLength(0, NCOLORS);
+  setCycleLength(~0, NCOLORS);
 }
 
 static void recomputeCountOfChoices(FACE face)

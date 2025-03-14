@@ -7,7 +7,7 @@
  * [n][i][j] is used if i != j, and the i and j are not in n.
  * other values are left as null
  */
-static struct undirectedPoint* allUPointPointers[NFACES][NCURVES][NCURVES];
+static struct undirectedPoint* allUPointPointers[NFACES][NCOLORS][NCOLORS];
 struct undirectedPoint allUPoints[NPOINTS];
 static int nextUPointId = 0;
 
@@ -87,8 +87,8 @@ void initializePoints(void)
   }
   for (i = 0; i < NFACES; i++) {
     FACE f = g_faces + i;
-    for (j = 0; j < NCURVES; j++) {
-      for (k = 0; k < NCURVES; k++) {
+    for (j = 0; j < NCOLORS; j++) {
+      for (k = 0; k < NCOLORS; k++) {
         assert(j == f->edges[j].color);
         if (k == j) {
           continue;

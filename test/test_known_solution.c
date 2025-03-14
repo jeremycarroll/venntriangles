@@ -386,7 +386,7 @@ static void test_in_order(bool smallestFirst)
   int i;
   COLOR color;
   while ((face = chooseFace(smallestFirst))) {
-    for (color = 0, i = 0; color < NCURVES; color++) {
+    for (color = 0, i = 0; color < NCOLORS; color++) {
       if (memberOfColorSet(color, face->colors)) {
         colors[i++] = 'a' + color;
       }

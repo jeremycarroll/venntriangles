@@ -18,7 +18,7 @@ void test_initialize(void)
   for (j = 0; j < NCYCLES; j++) {
     TEST_ASSERT_NOT_EQUAL(0, g_cycles[j].length);
     TEST_ASSERT_GREATER_OR_EQUAL_INT32(3, g_cycles[j].length);
-    TEST_ASSERT_LESS_OR_EQUAL_INT32(NCURVES, g_cycles[j].length);
+    TEST_ASSERT_LESS_OR_EQUAL_INT32(NCOLORS, g_cycles[j].length);
   }
 }
 
@@ -83,15 +83,15 @@ void test_cycleset(void)
 {
   uint32_t i, j, k;
   initialize();
-  for (i = 0; i < NCURVES; i++) {
-    for (j = 0; j < NCURVES; j++) {
+  for (i = 0; i < NCOLORS; i++) {
+    for (j = 0; j < NCOLORS; j++) {
       int size2 = sizeOfCycleSet(pairs2cycleSets[i][j]);
       if (i == j) {
         TEST_ASSERT_EQUAL(0, size2);
       } else {
         TEST_ASSERT_EQUAL(64, size2);
       }
-      for (k = 0; k < NCURVES; k++) {
+      for (k = 0; k < NCOLORS; k++) {
         int size3 = sizeOfCycleSet(triples2cycleSets[i][j][k]);
         if (i == j || i == k || j == k) {
           TEST_ASSERT_EQUAL(0, size3);

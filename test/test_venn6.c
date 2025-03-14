@@ -32,7 +32,7 @@ static void found_solution()
   /*
     uint32_t i;
     u_int32_t mask = 3;
-    for (i = 0, mask = 3; i < NCURVES - 1; i++, mask <<= 1) {
+    for (i = 0, mask = 3; i < NCOLORS - 1; i++, mask <<= 1) {
       printf("%d,", g_faces[(NFACES - 1) & ~mask].cycle->length);
     }
     printf("%d\n", g_faces[((NFACES - 1) >> 1) - 1].cycle->length);
@@ -58,7 +58,7 @@ static void test_search_for_best_solution()
   */
   search(true, found_solution);
 
-  TEST_ASSERT_EQUAL(160, solution_count);
+  TEST_ASSERT_EQUAL(80, solution_count);
 }
 
 static void test_search_for_two_solutions()

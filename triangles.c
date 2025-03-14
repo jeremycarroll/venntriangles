@@ -1,6 +1,9 @@
 
 #include "venn.h"
-#if NCURVES == 4
+#if NCOLORS == 6
+#include "d6.h"
+#endif
+#if NCOLORS == 4
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunused-function"
 #endif
@@ -130,7 +133,7 @@ static FAILURE cornerCheckInternal(EDGE start, int depth, UPOINT* cornersReturn)
 
 FAILURE cornerCheck(EDGE start, int depth)
 {
-#if NCURVES == 4
+#if NCOLORS == 4
   /* test_venn4.c does not like the normal code - not an issue. */
   return NULL;
 #else
@@ -194,6 +197,18 @@ FAILURE finalCorrectnessChecks(void)
   FAILURE failure;
   COLORSET colors = 1;
   FACE face;
+#if NCOLORS == 6
+  switch (d6SymmetryTypeFaces(g_faces)) {
+    case NON_CANONICAL:
+      return nonCanonicalFailure();
+    case EQUIVOCAL:
+      /* Does not happen? But not deeply problematic if it does. */
+      printf("Equivocal\n");
+      break;
+    case CANONICAL:
+      break;
+  }
+#endif
   for (colors = 1; colors < (NFACES - 1); colors |= face->previous->colors) {
     face = g_faces + colors;
     failure = checkLengthOfCycleOfFaces(face);
