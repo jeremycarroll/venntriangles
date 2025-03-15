@@ -1,5 +1,6 @@
 #include "d6.h"
 #define D6_DEBUG 0
+#define TOTAL_5FACE_DEGREE 27
 static COLORSET sequenceOrder[NFACES];
 static COLORSET inverseSequenceOrder[NFACES];
 
@@ -150,18 +151,16 @@ SYMMETRY_TYPE d6SymmetryTypeFaces(FACE allFaces)
 }
 
 static void canoncialCallbackImpl(int depth, int sum, int *args,
-                                  Callback6 callback6, Callback12 callback12)
+                                  Callback6 callback6)
 {
-  if (depth <= 6) {
-    if (sum > 27) {
-      return;
-    }
+  if (sum > TOTAL_5FACE_DEGREE) {
+    return;
   }
-  if (depth == 6) {
-    if (sum != 27) {
+  if (depth == NCOLORS) {
+    if (sum != TOTAL_5FACE_DEGREE) {
       return;
     }
-    switch (d6SymmetryTypeN(6, args)) {
+    switch (d6SymmetryTypeN(NCOLORS, args)) {
       case NON_CANONICAL:
         return;
       case EQUIVOCAL:
@@ -170,31 +169,14 @@ static void canoncialCallbackImpl(int depth, int sum, int *args,
         return;
     }
   }
-  if (depth <= 12 && depth >= 6) {
-    // if ((sum - 27) + (21 - depth) * 3 > 56) {
-    //   return;
-    // }
-  }
-  if (depth == 12) {
-    switch (d6SymmetryTypeN(12, args)) {
-      case NON_CANONICAL:
-        break;
-      case EQUIVOCAL:
-      case CANONICAL:
-        callback12(args[0], args[1], args[2], args[3], args[4], args[5],
-                   args[6], args[7], args[8], args[9], args[10], args[11]);
-        break;
-    }
-    return;
-  }
-  for (int i = 3; i <= 6; i++) {
+  for (int i = 3; i <= NCOLORS; i++) {
     args[depth] = i;
-    canoncialCallbackImpl(depth + 1, sum + i, args, callback6, callback12);
+    canoncialCallbackImpl(depth + 1, sum + i, args, callback6);
   }
 }
 
-void canoncialCallback(Callback6 callback6, Callback12 callback12)
+void canoncialCallback(Callback6 callback6)
 {
-  int args[12];
-  canoncialCallbackImpl(0, 0, args, callback6, callback12);
+  int args[NCOLORS];
+  canoncialCallbackImpl(0, 0, args, callback6);
 }

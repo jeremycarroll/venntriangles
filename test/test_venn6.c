@@ -1,3 +1,5 @@
+#include <time.h>
+
 #include "../d6.h"
 #include "../venn.h"
 #include "../visible_for_testing.h"
@@ -31,14 +33,6 @@ static void found_solution()
   printSolution(NULL);
   printStatisticsFull();
 #endif
-  /*
-    uint32_t i;
-    int mask = 3;
-    for (i = 0, mask = 3; i < NCOLORS - 1; i++, mask <<= 1) {
-      printf("%d,", g_faces[(NFACES - 1) & ~mask].cycle->length);
-    }
-    printf("%d\n", g_faces[((NFACES - 1) >> 1) - 1].cycle->length);
-    */
   solution_count++;
 }
 
@@ -46,18 +40,6 @@ static void test_search_for_best_solution()
 {
   solution_count = 0;
   setupCentralFaces(5, 5, 5, 4, 4, 4);
-  // addSpecificFace("c", "adbce");
-  /* This is a short statement of the best solution.
-  addSpecificFace("a", "abed");
-  addSpecificFace("c", "adbce");
-  addSpecificFace("bde", "bfd");
-  addSpecificFace("bdf", "abf");
-  addSpecificFace("abce", "cef");
-  addSpecificFace("acdf", "aced");
-  addSpecificFace("cde", "adb");
-  addSpecificFace("b", "abcf");
-  addSpecificFace("f", "aefdc");
-  */
   search(true, found_solution);
 
   TEST_ASSERT_EQUAL(80, solution_count);
@@ -87,10 +69,13 @@ static void test_search_for_two_solutions()
   TEST_ASSERT_EQUAL(2, solution_count);
 }
 
-static TRAIL restartHere;
+static clock_t totalWastedTime = 0;
+static clock_t totalUsefulTime = 0;
 static void full_search_callback6(int a1, int a2, int a3, int a4, int a5,
                                   int a6)
 {
+  clock_t now = clock();
+  clock_t used;
   int initialSolutionCount = solution_count;
   clearGlobals();
   clearInitialize();
@@ -98,23 +83,26 @@ static void full_search_callback6(int a1, int a2, int a3, int a4, int a5,
   initialize();
   setupCentralFaces(a1, a2, a3, a4, a5, a6);
   search(true, found_solution);
+  used = clock() - now;
   if (solution_count != initialSolutionCount) {
-    printf("%d %d %d %d %d %d gives %d new solutions\n", a1, a2, a3, a4, a5, a6,
-           -initialSolutionCount + solution_count);
+    totalUsefulTime += used;
+    printf(
+        "[%1lu.%6.6lu] [%1lu.%6.6lu] [%1lu.%6.6lu] %d %d %d %d %d %d gives %d "
+        "new "
+        "solutions\n",
+        used / CLOCKS_PER_SEC, used % CLOCKS_PER_SEC,
+        totalUsefulTime / CLOCKS_PER_SEC, totalUsefulTime % CLOCKS_PER_SEC,
+        totalWastedTime / CLOCKS_PER_SEC, totalWastedTime % CLOCKS_PER_SEC, a1,
+        a2, a3, a4, a5, a6, -initialSolutionCount + solution_count);
+  } else {
+    totalWastedTime += used;
   }
-}
-
-static void search_555444_callback12(int a1, int a2, int a3, int a4, int a5,
-                                     int a6, int a7, int a8, int a9, int a10,
-                                     int a11, int a12)
-{
-  assert(0);
 }
 
 static void test_full_search(void)
 {
   solution_count = 0;
-  canoncialCallback(full_search_callback6, search_555444_callback12);
+  canoncialCallback(full_search_callback6);
 #if STATS
   printStatisticsFull();
 #endif
