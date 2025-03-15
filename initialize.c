@@ -32,8 +32,6 @@ static void initializePossiblyTo(void);
 static void initializeLengthOfCycleOfFaces(void);
 static void applyMonotonicity(void);
 static void recomputeCountOfChoices(FACE face);
-/* face is truncated to 6 bits, higher bits may be set, and will be ignored. */
-void setCycleLength(uint32_t faceColors, uint32_t length);
 
 void clearInitialize()
 {
@@ -51,6 +49,7 @@ void clearInitialize()
 void initialize()
 {
   assert(ASSUMPTION);
+  assert(nextCycle == 0);
   initializeCycles();
   assert(nextCycle == ARRAY_LEN(g_cycles));
   initializeCycleSets();
@@ -328,21 +327,30 @@ static void applyMonotonicity(void)
 
 static void recomputeCountOfChoices(FACE face)
 {
-  face->cycleSetSize = sizeOfCycleSet(face->possibleCycles);
+  setDynamicInt(&face->cycleSetSize, sizeOfCycleSet(face->possibleCycles));
 }
 
-void setCycleLength(uint32_t faceColors, uint32_t length)
+static void removeFromCycleSetWithTrail(uint32_t cycleId, CYCLESET cycleSet)
+{
+  assert(cycleId < NCYCLES);
+  setDynamicInt(
+      &cycleSet[cycleId / BITS_PER_WORD],
+      cycleSet[cycleId / BITS_PER_WORD] & ~(1ul << (cycleId % BITS_PER_WORD)));
+}
+
+bool setCycleLength(uint32_t faceColors, uint32_t length)
 {
   FACE face = g_faces + (faceColors & (NFACES - 1));
   CYCLE cycle;
   uint32_t cycleId;
   if (length == 0) {
-    return;
+    return true;
   }
   for (cycleId = 0, cycle = g_cycles; cycleId < NCYCLES; cycleId++, cycle++) {
     if (cycle->length != length) {
-      removeFromCycleSet(cycleId, face->possibleCycles);
+      removeFromCycleSetWithTrail(cycleId, face->possibleCycles);
     }
   }
   recomputeCountOfChoices(face);
+  return face->cycleSetSize != 0;
 }

@@ -372,7 +372,7 @@ extern EDGE followEdgeForwards(EDGE edge);
 
 extern void setDynamicInt(uint_trail *ptr, uint_trail value);
 extern bool backtrackTo(TRAIL backtrackPoint);
-extern void setCycleLength(uint32_t faceColors, uint32_t length);
+extern bool setCycleLength(uint32_t faceColors, uint32_t length);
 extern void maybeSetDynamicInt(uint_trail *ptr, uint_trail value);
 
 extern FAILURE makeChoice(FACE face);

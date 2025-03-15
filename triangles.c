@@ -204,6 +204,7 @@ FAILURE finalCorrectnessChecks(void)
     case EQUIVOCAL:
       /* Does not happen? But not deeply problematic if it does. */
       printf("Equivocal\n");
+      assert(0); /* could fall through, but will get duplicate solutions. */
       break;
     case CANONICAL:
       break;
