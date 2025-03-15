@@ -25,6 +25,9 @@ void newStatistic(uint64_t* counter, char* shortName, char* name)
 {
   int i;
   for (i = 0; i < MAX_STATISTICS; i++) {
+    if (statistics[i].countPtr == counter) {
+      return;
+    }
     if (statistics[i].countPtr == NULL) {
       statistics[i].countPtr = counter;
       statistics[i].shortName = shortName;

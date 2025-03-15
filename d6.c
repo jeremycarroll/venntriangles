@@ -1,5 +1,7 @@
 #include "d6.h"
+#define D6_DEBUG 0
 static COLORSET sequenceOrder[NFACES];
+static COLORSET inverseSequenceOrder[NFACES];
 
 static PERMUTATION group[] = {
     {0, 1, 2, 3, 4, 5}, {1, 2, 3, 4, 5, 0}, {2, 3, 4, 5, 0, 1},
@@ -10,13 +12,13 @@ static PERMUTATION group[] = {
 
 void initializeSequenceOrder(void)
 {
-  uint32_t ix = 0, i;
+  int ix = 0, i;
   uint64_t done = 0;
 
-#define ADD_TO_SEQUENCE_ORDER(colors) \
-  do {                                \
-    sequenceOrder[ix++] = (colors);   \
-    done |= 1llu << (colors);         \
+#define ADD_TO_SEQUENCE_ORDER(colors)               \
+  do {                                              \
+    sequenceOrder[ix++] = (NFACES - 1) & ~(colors); \
+    done |= 1llu << (colors);                       \
   } while (0)
   for (i = 0; i < NCOLORS; i++) {
     ADD_TO_SEQUENCE_ORDER(1llu << i);
@@ -33,6 +35,9 @@ void initializeSequenceOrder(void)
   }
   assert(done == ~0llu);
   assert(ix == NFACES);
+  for (i = 0; i < NFACES; i++) {
+    inverseSequenceOrder[sequenceOrder[i]] = i;
+  }
 }
 
 COLOR d6PermuteColor(COLOR color, PERMUTATION permutation)
@@ -53,27 +58,50 @@ COLORSET d6PermuteColorSet(COLORSET colorSet, PERMUTATION permutation)
 
 static int compareUint8(const void *a, const void *b)
 {
-  return -memcmp(a, b, sizeof(uint8_t) * NFACES);
+  return -memcmp(a, b, sizeof(int) * NFACES);
 }
 
-static SYMMETRY_TYPE d6SymmetryType64(uint8_t *sizes)
+/*
+sizes[i] is in sequenceOrder
+To find the color we have to use inverseSequenceOrder, then permute, then map
+back
+*/
+static SYMMETRY_TYPE d6SymmetryType64(int *sizes)
 {
-  uint8_t permuted[12][NFACES];
-  uint32_t i, j;
+  int permuted[12][NFACES];
+  int i, j;
+#if D6_DEBUG
+  printf("+\n");
+  printf("%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\n", sizes[0], sizes[1], sizes[2],
+         sizes[3], sizes[4], sizes[5], sizes[6], sizes[7], sizes[8], sizes[9],
+         sizes[10], sizes[11]);
+  printf("+\n");
+#endif
   for (i = 0; i < 12; i++) {
     for (j = 0; j < NFACES; j++) {
-      permuted[i][j] = sizes[d6PermuteColorSet(j, group[i])];
+      permuted[i][j] = sizes[inverseSequenceOrder[d6PermuteColorSet(
+          sequenceOrder[j], group[i])]];
     }
   }
   assert(memcmp(permuted[0], sizes, sizeof(permuted[0])) == 0);
+#if D6_DEBUG
+  printf("*\n");
+  for (i = 0; i < 12; i++) {
+    printf("%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\n", permuted[i][0],
+           permuted[i][1], permuted[i][2], permuted[i][3], permuted[i][4],
+           permuted[i][5], permuted[i][6], permuted[i][7], permuted[i][8],
+           permuted[i][9], permuted[i][10], permuted[i][11]);
+  }
+  printf("*\n");
+#endif
   qsort(permuted, 12, sizeof(permuted[0]), compareUint8);
-#if 0
+#if D6_DEBUG
   printf("=\n");
   for (i = 0; i < 12; i++) {
-    printf("%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\n", permuted[i][1],
-           permuted[i][2], permuted[i][4], permuted[i][8], permuted[i][16],
-           permuted[i][32], permuted[i][3], permuted[i][6], permuted[i][12],
-           permuted[i][24], permuted[i][48], permuted[i][33]);
+    printf("%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\n", permuted[i][0],
+           permuted[i][1], permuted[i][2], permuted[i][3], permuted[i][4],
+           permuted[i][5], permuted[i][6], permuted[i][7], permuted[i][8],
+           permuted[i][9], permuted[i][10], permuted[i][11]);
   }
   printf("=\n");
 #endif
@@ -88,49 +116,85 @@ static SYMMETRY_TYPE d6SymmetryType64(uint8_t *sizes)
   return CANONICAL;
 }
 
-SYMMETRY_TYPE d6SymmetryType6(u_int32_t a1, u_int32_t a2, u_int32_t a3,
-                              u_int32_t a4, u_int32_t a5, u_int32_t a6)
+static SYMMETRY_TYPE d6SymmetryTypeN(int n, int *args)
 {
-  uint8_t sizes[NFACES];
+  int sizes[NFACES];
   memset(sizes, 0, sizeof(sizes));
-  sizes[sequenceOrder[0]] = a1;
-  sizes[sequenceOrder[1]] = a2;
-  sizes[sequenceOrder[2]] = a3;
-  sizes[sequenceOrder[3]] = a4;
-  sizes[sequenceOrder[4]] = a5;
-  sizes[sequenceOrder[5]] = a6;
-
+  for (int i = 0; i < n; i++) {
+    sizes[i] = args[i];
+  }
   return d6SymmetryType64(sizes);
 }
 
-SYMMETRY_TYPE d6SymmetryType12(u_int32_t a1, u_int32_t a2, u_int32_t a3,
-                               u_int32_t a4, u_int32_t a5, u_int32_t a6,
-                               u_int32_t a7, u_int32_t a8, u_int32_t a9,
-                               u_int32_t a10, u_int32_t a11, u_int32_t a12)
+SYMMETRY_TYPE d6SymmetryType6(int a1, int a2, int a3, int a4, int a5, int a6)
 {
-  uint8_t sizes[NFACES];
-  memset(sizes, 0, sizeof(sizes));
-  sizes[sequenceOrder[0]] = a1;
-  sizes[sequenceOrder[1]] = a2;
-  sizes[sequenceOrder[2]] = a3;
-  sizes[sequenceOrder[3]] = a4;
-  sizes[sequenceOrder[4]] = a5;
-  sizes[sequenceOrder[5]] = a6;
-  sizes[sequenceOrder[6]] = a7;
-  sizes[sequenceOrder[7]] = a8;
-  sizes[sequenceOrder[8]] = a9;
-  sizes[sequenceOrder[9]] = a10;
-  sizes[sequenceOrder[10]] = a11;
-  sizes[sequenceOrder[11]] = a12;
+  int args[] = {a1, a2, a3, a4, a5, a6};
+  return d6SymmetryTypeN(6, args);
+}
 
-  return d6SymmetryType64(sizes);
+SYMMETRY_TYPE d6SymmetryType12(int a1, int a2, int a3, int a4, int a5, int a6,
+                               int a7, int a8, int a9, int a10, int a11,
+                               int a12)
+{
+  int args[] = {a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12};
+  return d6SymmetryTypeN(12, args);
 }
 
 SYMMETRY_TYPE d6SymmetryTypeFaces(FACE allFaces)
 {
-  uint8_t sizes[NFACES];
+  int sizes[NFACES];
   for (int i = 0; i < NFACES; i++) {
-    sizes[(NFACES - 1) & ~i] = allFaces[i].cycle->length;
+    sizes[i] = allFaces[sequenceOrder[i]].cycle->length;
   }
   return d6SymmetryType64(sizes);
+}
+
+static void canoncialCallbackImpl(int depth, int sum, int *args,
+                                  Callback6 callback6, Callback12 callback12)
+{
+  if (depth <= 6) {
+    if (sum > 27) {
+      return;
+    }
+  }
+  if (depth == 6) {
+    if (sum != 27) {
+      return;
+    }
+    switch (d6SymmetryTypeN(6, args)) {
+      case NON_CANONICAL:
+        return;
+      case EQUIVOCAL:
+      case CANONICAL:
+        callback6(args[0], args[1], args[2], args[3], args[4], args[5]);
+        return;
+    }
+  }
+  if (depth <= 12 && depth >= 6) {
+    // if ((sum - 27) + (21 - depth) * 3 > 56) {
+    //   return;
+    // }
+  }
+  if (depth == 12) {
+    switch (d6SymmetryTypeN(12, args)) {
+      case NON_CANONICAL:
+        break;
+      case EQUIVOCAL:
+      case CANONICAL:
+        callback12(args[0], args[1], args[2], args[3], args[4], args[5],
+                   args[6], args[7], args[8], args[9], args[10], args[11]);
+        break;
+    }
+    return;
+  }
+  for (int i = 3; i <= 6; i++) {
+    args[depth] = i;
+    canoncialCallbackImpl(depth + 1, sum + i, args, callback6, callback12);
+  }
+}
+
+void canoncialCallback(Callback6 callback6, Callback12 callback12)
+{
+  int args[12];
+  canoncialCallbackImpl(0, 0, args, callback6, callback12);
 }
