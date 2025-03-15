@@ -170,8 +170,9 @@ static void test_choosing_and_backtracking()
 {
   int i;
   FACE face;
+  TRAIL startTrail = trail;
   for (i = 0; i < NFACES; i++) {
-    TEST_ASSERT_EQUAL(trailarray, trail);
+    TEST_ASSERT_EQUAL(startTrail, trail);
     verify_face_size(2);
     face = g_faces + i;
     face->cycle = g_cycles;

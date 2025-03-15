@@ -71,6 +71,8 @@ static void test_search_for_two_solutions()
 
 static clock_t totalWastedTime = 0;
 static clock_t totalUsefulTime = 0;
+static int wastedSearchCount = 0;
+static int usefulSearchCount = 0;
 static void full_search_callback6(int a1, int a2, int a3, int a4, int a5,
                                   int a6)
 {
@@ -86,15 +88,20 @@ static void full_search_callback6(int a1, int a2, int a3, int a4, int a5,
   used = clock() - now;
   if (solution_count != initialSolutionCount) {
     totalUsefulTime += used;
+    usefulSearchCount += 1;
     printf(
-        "[%1lu.%6.6lu] [%1lu.%6.6lu] [%1lu.%6.6lu] %d %d %d %d %d %d gives %d "
+        "[%1lu.%6.6lu] [%1lu.%6.6lu(%d)] [%1lu.%6.6lu(%d)] %d %d %d %d %d %d "
+        "gives %d "
         "new "
         "solutions\n",
         used / CLOCKS_PER_SEC, used % CLOCKS_PER_SEC,
         totalUsefulTime / CLOCKS_PER_SEC, totalUsefulTime % CLOCKS_PER_SEC,
-        totalWastedTime / CLOCKS_PER_SEC, totalWastedTime % CLOCKS_PER_SEC, a1,
-        a2, a3, a4, a5, a6, -initialSolutionCount + solution_count);
+        usefulSearchCount, totalWastedTime / CLOCKS_PER_SEC,
+        totalWastedTime % CLOCKS_PER_SEC, wastedSearchCount, a1, a2, a3, a4, a5,
+        a6, solution_count - initialSolutionCount);
   } else {
+    wastedSearchCount += 1;
+
     totalWastedTime += used;
   }
 }

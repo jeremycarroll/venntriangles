@@ -5,6 +5,7 @@
 
 #include "../d6.h"
 #include "unity.h"
+#define DEBUG_CANONICAL_SOLUTIONS 1
 
 void setUp(void) { initializeSequenceOrder(); }
 
@@ -20,27 +21,24 @@ void test_canonical6()
   TEST_ASSERT_EQUAL(EQUIVOCAL, d6SymmetryType6(5, 5, 5, 4, 4, 4));
 }
 
-int count6, count12;
-static void print6(int a, int b, int c, int d, int e, int f)
+int count6;
+static void countSolutions(
+#if DEBUG_CANONICAL_SOLUTIONS
+    int a, int b, int c, int d, int e, int f
+#endif
+)
 {
-  /* printf("%d %d %d %d %d %d\n", a, b, c, d, e, f); */
+#if DEBUG_CANONICAL_SOLUTIONS
+  printf("%d %d %d %d %d %d\n", a, b, c, d, e, f);
+#endif
   count6++;
-}
-static void print12(int a, int b, int c, int d, int e, int f, int g, int h,
-                    int i, int j, int k, int l)
-{
-  /* printf("%d %d %d %d %d %d %d %d %d %d %d %d\n", a, b, c, d, e, f, g, h, i,
-     j, k, l); */
-  count12++;
 }
 
 void test_callback()
 {
-  canoncialCallback(print6, print12);
+  canoncialCallback(countSolutions);
 
-  printf("count6=%d count12=%d\n", count6, count12);
-  TEST_ASSERT_EQUAL(42, count6);
-  TEST_ASSERT_EQUAL(20854, count12);
+  TEST_ASSERT_EQUAL(56, count6);
 }
 
 int main(void)

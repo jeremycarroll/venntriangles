@@ -169,7 +169,7 @@ static void canoncialCallbackImpl(int depth, int sum, int *args,
         return;
     }
   }
-  for (int i = 3; i <= NCOLORS; i++) {
+  for (int i = NCOLORS; i >= 3; i--) {
     args[depth] = i;
     canoncialCallbackImpl(depth + 1, sum + i, args, callback6);
   }
