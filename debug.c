@@ -1,4 +1,6 @@
 
+#include <stdarg.h>
+
 #include "unity.h"
 #include "venn.h"
 #include "visible_for_testing.h"
@@ -240,4 +242,18 @@ FACE addSpecificFace(char* colors, char* cycle)
     TEST_ASSERT_NULL(failure);
   }
   return face;
+}
+
+int* intArray(int a, ...)
+{
+  static int result[NCOLORS];
+  va_list ap;
+  int i;
+  va_start(ap, a);
+  for (i = 0; i < NCOLORS; i++) {
+    result[i] = a;
+    a = va_arg(ap, int);
+  }
+  va_end(ap);
+  return result;
 }

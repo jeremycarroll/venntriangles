@@ -275,9 +275,10 @@ static FACE addFaceFromTestData(char* colors);
 
 void setUp(void)
 {
+  int args[] = {5, 5, 5, 4, 4, 4};
   initialize();
   initializeStatsLogging("/dev/stdout", 20, 5);
-  setupCentralFaces(5, 5, 5, 4, 4, 4);
+  setupCentralFaces(args);
 }
 
 void tearDown(void)

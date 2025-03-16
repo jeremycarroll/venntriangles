@@ -23,31 +23,14 @@ static uint64_t cycleSetReducedCounter = 0;
   }
 
 #if NCOLORS > 3
-void setupCentralFaces(uint32_t aLength, uint32_t bLength, uint32_t cLength,
-                       uint32_t dLength
-#if NCOLORS > 4
-                       ,
-                       uint32_t eLength
-#if NCOLORS > 5
-                       ,
-                       uint32_t fLength
-#endif
-#endif
-)
+void setupCentralFaces(int *faceDegrees)
 {
   CYCLE cycle;
   uint64_t i;
   FACE centralFace = g_faces + (NFACES - 1);
-  setCycleLength(~(1 << 0), aLength);
-  setCycleLength(~(1 << 1), bLength);
-  setCycleLength(~(1 << 2), cLength);
-  setCycleLength(~(1 << 3), dLength);
-#if NCOLORS > 4
-  setCycleLength(~(1 << 4), eLength);
-#if NCOLORS > 5
-  setCycleLength(~(1 << 5), fLength);
-#endif
-#endif
+  for (i = 0; i < NCOLORS; i++) {
+    setCycleLength(~(1 << i), faceDegrees[i]);
+  }
   for (cycle = g_cycles;; cycle++) {
     if (cycle->length != NCOLORS) {
       continue;

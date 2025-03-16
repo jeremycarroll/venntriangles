@@ -16,11 +16,12 @@ typedef enum {
 
 extern void initializeSequenceOrder(void);
 extern SYMMETRY_TYPE d6SymmetryTypeFaces(FACE allFaces);
-extern SYMMETRY_TYPE d6SymmetryType6(int a1, int a2, int a3, int a4, int a5,
-                                     int a6);
-extern SYMMETRY_TYPE d6SymmetryType12(int a1, int a2, int a3, int a4, int a5,
-                                      int a6, int a7, int a8, int a9, int a10,
-                                      int a11, int a12);
 
-typedef void (*Callback6)(int a, int b, int c, int d, int e, int f);
-extern void canoncialCallback(Callback6 callback6);
+/* The faceDegrees is an array of NCOLORS integers between 3 and NCOLORS being
+   used as the face degrees for the NCOLORS faces around the central face. */
+extern SYMMETRY_TYPE d6SymmetryType6(int* faceDegrees);
+
+/* The faceDegrees is an array of NCOLORS integers between 3 and NCOLORS to be
+   used as the face degrees for the NCOLORS faces around the central face. */
+typedef void (*UseFaceDegrees)(int* faceDegrees);
+extern void canoncialCallback(UseFaceDegrees callback);

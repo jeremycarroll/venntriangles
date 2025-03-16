@@ -350,18 +350,9 @@ extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
 extern uint32_t indexInCycle(CYCLE cycle, COLOR color);
 
 #if NCOLORS > 3
-void setupCentralFaces(uint32_t aLength, uint32_t bLength, uint32_t cLength,
-                       uint32_t dLength
-#if NCOLORS > 4
-                       ,
-                       uint32_t eLength
-#if NCOLORS > 5
-                       ,
-                       uint32_t fLength
+extern void setupCentralFaces(int *faceDegrees);
 #endif
-#endif
-);
-#endif
+
 extern void setDynamicPointer_(void **ptr, void *value);
 #define setDynamicPointer(a, b) setDynamicPointer_((void **)a, b)
 
