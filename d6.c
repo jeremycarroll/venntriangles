@@ -5,10 +5,12 @@ static COLORSET sequenceOrder[NFACES];
 static COLORSET inverseSequenceOrder[NFACES];
 
 static PERMUTATION group[] = {
+#if NCOLORS == 6
     {0, 1, 2, 3, 4, 5}, {1, 2, 3, 4, 5, 0}, {2, 3, 4, 5, 0, 1},
     {3, 4, 5, 0, 1, 2}, {4, 5, 0, 1, 2, 3}, {5, 0, 1, 2, 3, 4},
     {5, 4, 3, 2, 1, 0}, {4, 3, 2, 1, 0, 5}, {3, 2, 1, 0, 5, 4},
     {2, 1, 0, 5, 4, 3}, {1, 0, 5, 4, 3, 2}, {0, 5, 4, 3, 2, 1},
+#endif
 };
 
 void initializeSequenceOrder(void)
@@ -127,31 +129,35 @@ static SYMMETRY_TYPE d6SymmetryTypeN(int n, int *args)
   return d6SymmetryType64(sizes);
 }
 
-SYMMETRY_TYPE d6SymmetryType6(int a1, int a2, int a3, int a4, int a5, int a6)
-{
-  int args[] = {a1, a2, a3, a4, a5, a6};
-  return d6SymmetryTypeN(6, args);
-}
+SYMMETRY_TYPE d6SymmetryType6(int *args) { return d6SymmetryTypeN(6, args); }
 
-SYMMETRY_TYPE d6SymmetryType12(int a1, int a2, int a3, int a4, int a5, int a6,
-                               int a7, int a8, int a9, int a10, int a11,
-                               int a12)
+static int *d6FaceDegrees()
 {
-  int args[] = {a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12};
-  return d6SymmetryTypeN(12, args);
-}
-
-SYMMETRY_TYPE d6SymmetryTypeFaces(FACE allFaces)
-{
-  int sizes[NFACES];
+  static int faceDegrees[NFACES];
   for (int i = 0; i < NFACES; i++) {
-    sizes[i] = allFaces[sequenceOrder[i]].cycle->length;
+    faceDegrees[i] = g_faces[sequenceOrder[i]].cycle->length;
   }
-  return d6SymmetryType64(sizes);
+  return faceDegrees;
+}
+
+SYMMETRY_TYPE d6SymmetryTypeFaces(void)
+{
+  return d6SymmetryType64(d6FaceDegrees());
+}
+
+char *d6FaceDegreeSignature(void)
+{
+  static char result[NCOLORS + 1];
+  int *faceDegrees = d6FaceDegrees();
+  for (int i = 0; i < NCOLORS; i++) {
+    result[i] = '0' + faceDegrees[i];
+  }
+  result[NCOLORS] = '\0';
+  return result;
 }
 
 static void canoncialCallbackImpl(int depth, int sum, int *args,
-                                  Callback6 callback6)
+                                  UseFaceDegrees callback, void *data)
 {
   if (sum > TOTAL_5FACE_DEGREE) {
     return;
@@ -165,18 +171,18 @@ static void canoncialCallbackImpl(int depth, int sum, int *args,
         return;
       case EQUIVOCAL:
       case CANONICAL:
-        callback6(args[0], args[1], args[2], args[3], args[4], args[5]);
+        callback(data, args);
         return;
     }
   }
   for (int i = NCOLORS; i >= 3; i--) {
     args[depth] = i;
-    canoncialCallbackImpl(depth + 1, sum + i, args, callback6);
+    canoncialCallbackImpl(depth + 1, sum + i, args, callback, data);
   }
 }
 
-void canoncialCallback(Callback6 callback6)
+void canoncialCallback(UseFaceDegrees callback, void *data)
 {
   int args[NCOLORS];
-  canoncialCallbackImpl(0, 0, args, callback6);
+  canoncialCallbackImpl(0, 0, args, callback, data);
 }

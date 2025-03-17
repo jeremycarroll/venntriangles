@@ -34,7 +34,7 @@ static void test_search()
 static void test_search_abcd()
 {
   solution_count = 0;
-  setupCentralFaces(0, 0, 0, 0);
+  setupCentralFaces(intArray(0, 0, 0, 0));
   search(false, found_solution);
   TEST_ASSERT_EQUAL(4, solution_count);
 }
@@ -42,7 +42,7 @@ static void test_search_abcd()
 static void test_search_4343()
 {
   solution_count = 0;
-  setupCentralFaces(4, 3, 4, 3);
+  setupCentralFaces(intArray(4, 3, 4, 3));
   search(false, found_solution);
   TEST_ASSERT_EQUAL(0, solution_count);
 }
@@ -50,7 +50,7 @@ static void test_search_4343()
 static void test_search_4433()
 {
   solution_count = 0;
-  setupCentralFaces(4, 4, 3, 3);
+  setupCentralFaces(intArray(4, 4, 3, 3));
   search(false, found_solution);
   TEST_ASSERT_EQUAL(1, solution_count);
 }

@@ -1,7 +1,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-typedef enum { LOG_DEBUG, LOG_VERBOSE, LOG_QUIET } log_level_t;
+typedef enum { LOG_DEBUG, LOG_VERBOSE, LOG_INFO, LOG_QUIET } log_level_t;
 
 
 extern int main0(int argc, char *argv[]);

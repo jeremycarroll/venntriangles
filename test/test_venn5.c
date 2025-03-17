@@ -38,14 +38,14 @@ static void found_solution()
 static void test_search_abcde()
 {
   solution_count = 0;
-  setupCentralFaces(0, 0, 0, 0, 0);
+  setupCentralFaces(intArray(0, 0, 0, 0, 0));
   search(false, found_solution);
   TEST_ASSERT_EQUAL(152, solution_count);
 }
 
 static void test_specific()
 {
-  setupCentralFaces(0, 0, 0, 0, 0);
+  setupCentralFaces(intArray(0, 0, 0, 0, 0));
   addSpecificFace("ab", "bdc");
   addSpecificFace("bc", "aecb");
   addSpecificFace("bd", "bde");
@@ -56,7 +56,7 @@ static void test_specific()
 
 static void test_specific2()
 {
-  setupCentralFaces(0, 0, 0, 0, 0);
+  setupCentralFaces(intArray(0, 0, 0, 0, 0));
   addSpecificFace("ab", "bdc");
   addSpecificFace("bc", "aecb");
   addSpecificFace("abc", "abcde");
@@ -95,7 +95,7 @@ static void test_specific2()
 static void test_search_44444()
 {
   solution_count = 0;
-  setupCentralFaces(4, 4, 4, 4, 4);
+  setupCentralFaces(intArray(4, 4, 4, 4, 4));
   search(false, found_solution);
   TEST_ASSERT_EQUAL(2, solution_count);
 }
@@ -103,7 +103,7 @@ static void test_search_44444()
 static void test_search_55433()
 {
   solution_count = 0;
-  setupCentralFaces(5, 5, 4, 3, 3);
+  setupCentralFaces(intArray(5, 5, 4, 3, 3));
   search(false, found_solution);
   TEST_ASSERT_EQUAL(6, solution_count);
 }
@@ -111,7 +111,7 @@ static void test_search_55433()
 static void test_search_55343()
 {
   solution_count = 0;
-  setupCentralFaces(5, 5, 3, 4, 3);
+  setupCentralFaces(intArray(5, 5, 3, 4, 3));
   search(false, found_solution);
   TEST_ASSERT_EQUAL(0, solution_count);
 }
@@ -119,7 +119,7 @@ static void test_search_55343()
 static void test_search_54443()
 {
   solution_count = 0;
-  setupCentralFaces(5, 4, 4, 4, 3);
+  setupCentralFaces(intArray(5, 4, 4, 4, 3));
   search(false, found_solution);
   TEST_ASSERT_EQUAL(4, solution_count);
 }
@@ -127,7 +127,7 @@ static void test_search_54443()
 static void test_search_54434()
 {
   solution_count = 0;
-  setupCentralFaces(5, 4, 4, 3, 4);
+  setupCentralFaces(intArray(5, 4, 4, 3, 4));
   search(false, found_solution);
   TEST_ASSERT_EQUAL(5, solution_count);
 }

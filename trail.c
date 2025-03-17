@@ -1,4 +1,3 @@
-
 #include "venn.h"
 
 struct trail trailarray[TRAIL_SIZE];
