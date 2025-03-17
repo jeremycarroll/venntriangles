@@ -240,7 +240,7 @@ FACE addSpecificFace(char* colors, char* cycle)
 #else
 
     if (failure != NULL) {
-      printf("Failure: %s %x\n", failure->label, failure->type);
+      printf("Failure: %s %s\n", failure->label, failure->shortLabel);
       printSelectedFaces();
     }
 #endif

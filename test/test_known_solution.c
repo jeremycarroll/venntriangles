@@ -323,7 +323,7 @@ static void addFacesFromTestData(char* testData[][2], int length)
       printStatisticsOneLine(0);
 #endif
       if (failure != NULL) {
-        printf("Failure: %s %x\n", failure->label, failure->type);
+        printf("Failure: %s %s\n", failure->label, failure->shortLabel);
         printSelectedFaces();
       }
       TEST_ASSERT_NULL(failure);

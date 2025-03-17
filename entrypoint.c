@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "main.h"
+extern int main0(int argc, char *argv[]);
 
 int main(int argc, char *argv[]) { return main0(argc, argv); }
 

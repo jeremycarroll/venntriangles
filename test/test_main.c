@@ -5,6 +5,8 @@
 
 #include "../main.h"
 #include "unity.h"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+extern int main0(int argc, char *argv[]);
 
 void setUp(void)
 {
@@ -76,12 +78,16 @@ void test_main_arguments(void)
   TEST_ASSERT_NOT_EQUAL_INT(0, run(argc5, argv5));
 }
 
-void full_search() { /* stub or testing. */ }
+void full_search(void (*foundSolution)(void)) { /* stub for testing. */ }
 
-void d6FaceDegreeSignature() { /* stub for testing. */ }
+const char *d6FaceDegreeSignature(void) { return "stub"; }
+
+void writeSolution(const char *buffer) { /* stub for testing. */ }
+
 void initializeSequenceOrder() { /* stub for testing. */ }
-void writeSolution() { /* stub for testing. */ }
-void initializeStatsLogging() { /* stub for testing. */ }
+
+void initializeStatsLogging(char *filename, int frequency, int seconds)
+{ /* stub for testing. */ }
 
 int main(void)
 {

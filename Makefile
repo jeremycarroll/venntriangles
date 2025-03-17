@@ -4,12 +4,13 @@ CFLAGS      = -g -Wall -Wextra -std=c11
 UNITY_DIR   = ../Unity
 TEST_CFLAGS = -I$(UNITY_DIR)/src
 TEST_SRC    = test/test_venn6.c test/test_main.c test/test_venn4.c test/test_known_solution.c test/test_venn3.c \
-              test/test_initialize.c test/test_d6.c  test/test_venn5.c
+	          test/test_initialize.c test/test_d6.c  test/test_venn5.c
 TEST_BIN    = $(TEST_SRC:test/%.c=bin/%)
+# Do not include entrypoint.c in the test builds, it contains the main function, which is also in the test files.
 SRC         = main.c initialize.c globals.c cycles.c trail.c dynamic.c failure.c colors.c \
-              point.c triangles.c debug.c statistics.c search.c d6.c output.c
+	          point.c triangles.c debug.c statistics.c search.c d6.c output.c logging.c
 XSRC        = entrypoint.c
-HDR	        = venn.h
+HDR	        = venn.h core.h
 D6          = d6.h
 OBJ3        = $(SRC:%.c=objs3/%.o)
 OBJ4        = $(SRC:%.c=objs4/%.o)
@@ -33,7 +34,7 @@ bin/test_venn5: test/test_venn5.c $(UNITY_DIR)/src/unity.c $(OBJ5)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(TEST_CFLAGS) -DNCOLORS=5 -o $@ $^
 
-bin/test_main: test/test_main.c $(UNITY_DIR)/src/unity.c objs6/main.o
+bin/test_main: test/test_main.c $(UNITY_DIR)/src/unity.c objs6/main.o objs6/logging.o
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(TEST_CFLAGS) -DNCOLORS=6 -o $@ $^
 
@@ -57,9 +58,9 @@ $(TARGET): $(OBJ6) $(XOBJ)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ6) $(XOBJ)
 
 objs%/debug.o: debug.c $(HDR)
-		@echo Compiling $<
-		@mkdir -p $(@D)
-		$(CC) $(CFLAGS) $(TEST_CFLAGS) -DNCOLORS=$(*F) -c $< -o $@
+	    @echo Compiling $<
+	    @mkdir -p $(@D)
+	    $(CC) $(CFLAGS) $(TEST_CFLAGS) -DNCOLORS=$(*F) -c $< -o $@
 
 objs3/%.o: %.c  $(HDR)
 	@echo Compiling $<

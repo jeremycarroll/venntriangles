@@ -1,30 +1,17 @@
 #include "main.h"
 
 #include <getopt.h>
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-log_level_t log_level = LOG_INFO;
-static char *targetFolder = NULL;
-extern void initializeStatsLogging(char *filename, int frequency, int seconds);
+#include "logging.h"
+#include "statistics.h"
 
-void log_message(log_level_t level, const char *format, ...)
-{
-  if (level >= log_level) {
-    va_list args;
-    va_start(args, format);
-    vfprintf(stderr, format, args);
-    va_end(args);
-  }
-}
-extern void full_search(void (*foundSolution)(void));
-extern void initializeSequenceOrder(void);
-extern char *d6FaceDegreeSignature(void);
-extern void writeSolution(char *folderName);
+static char *targetFolder = NULL;
+
 void save_result(void)
 {
   char buffer[1024];
@@ -84,12 +71,7 @@ int main0(int argc, char *argv[])
   log_message(LOG_DEBUG, "Debug mode enabled\n");
   log_message(LOG_VERBOSE, "Verbose mode enabled\n");
 
-  log_message(LOG_INFO, "Hello, World! %lu\n", sizeof(int *));
-#if NCOLORS == 6
-  initializeStatsLogging("/dev/stdout", 200, 10);
   setUpOutputFolder();
-  initializeSequenceOrder();
   full_search(save_result);
-#endif
   return 0;
 }

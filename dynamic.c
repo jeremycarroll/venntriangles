@@ -74,7 +74,7 @@ static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
   /* check for conflict or no-op. */
   if (face->cycleSetSize == 1 || face->cycle != NULL) {
     if (!memberOfCycleSet(face->cycle - g_cycles, onlyCycleSet)) {
-      return conflictingConstraintsFailure(face, depth);
+      return conflictingConstraintsFailure(depth);
     }
     return NULL;
   }
@@ -84,7 +84,7 @@ static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
   restrictCycles(face, onlyCycleSet);
 
   if (face->cycleSetSize == 0) {
-    return noMatchingCyclesFailure(face->colors, depth);
+    return noMatchingCyclesFailure(depth);
   }
   if (face->cycleSetSize == 1) {
     setDynamicPointer(&face->cycle, findFirstCycleInSet(face->possibleCycles));
@@ -235,7 +235,7 @@ FAILURE makeChoice(FACE face)
     for (completedColor = 0; completedColor < NCOLORS; completedColor++) {
       if (memberOfColorSet(completedColor, completedColors)) {
         if (!removeColorFromSearch(completedColor)) {
-          return disconnectedCurveFailure(completedColor, 0);
+          return disconnectedCurveFailure(0);
         }
       }
     }

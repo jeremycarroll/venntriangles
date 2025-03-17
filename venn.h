@@ -1,5 +1,5 @@
-#ifndef _VENN_H
-#define _VENN_H
+#ifndef VENN_H
+#define VENN_H
 
 /*
 We use just one header file:
@@ -13,10 +13,7 @@ We use just one header file:
 #include <stdlib.h>
 #include <string.h>
 
-/* The curves are _colored_ from 0 to 5. */
-#ifndef NCOLORS
-#define NCOLORS 6
-#endif
+#include "statistics.h"
 
 #define ASSUMPTION     \
   (sizeof(uint64_t) == \
@@ -25,53 +22,8 @@ typedef uint64_t uint_trail;  // Any non-pointer value that might go on the
                               // trail, should be of this type, using a union.
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 #define BITS_PER_WORD (sizeof(uint64_t) * 8)
-#define FACTORIAL0 1u
-#define FACTORIAL1 1u
-#define FACTORIAL2 2u
-#define FACTORIAL3 6u
-#define FACTORIAL4 24u
-#define FACTORIAL5 120u
-#define CHOOSE_6_0 1u
-#define CHOOSE_6_1 6u
-#define CHOOSE_6_2 15u
-#define CHOOSE_6_3 20u
-#define CHOOSE_5_0 1u
-#define CHOOSE_5_1 5u
-#define CHOOSE_5_2 10u
-#define CHOOSE_4_0 1u
-#define CHOOSE_4_1 4u
-#define CHOOSE_3_0 1u
-#define NFACES (1 << NCOLORS)
-// #define NPOINTS (NFACES - 2)
-#if NCOLORS == 6
-#define NCYCLES                                        \
-  (CHOOSE_6_0 * FACTORIAL5 + CHOOSE_6_1 * FACTORIAL4 + \
-   CHOOSE_6_2 * FACTORIAL3 + CHOOSE_6_3 * FACTORIAL2)
-#define NCYCLE_ENTRIES                                         \
-  (CHOOSE_6_0 * FACTORIAL5 * 6 + CHOOSE_6_1 * FACTORIAL4 * 5 + \
-   CHOOSE_6_2 * FACTORIAL3 * 4 + CHOOSE_6_3 * FACTORIAL2 * 3)
-#elif NCOLORS == 4
-#define NCYCLES (CHOOSE_4_0 * FACTORIAL3 + CHOOSE_4_1 * FACTORIAL2)
-#define NCYCLE_ENTRIES (CHOOSE_4_0 * FACTORIAL4 + CHOOSE_4_1 * FACTORIAL3)
-#elif NCOLORS == 5
-#define NCYCLES \
-  (CHOOSE_5_0 * FACTORIAL4 + CHOOSE_5_1 * FACTORIAL3 + CHOOSE_5_2 * FACTORIAL2)
-#define NCYCLE_ENTRIES \
-  (CHOOSE_5_0 * FACTORIAL5 + CHOOSE_5_1 * FACTORIAL4 + CHOOSE_5_2 * FACTORIAL3)
-#else
-#define NCYCLES (CHOOSE_3_0 * FACTORIAL2)
-#define NCYCLE_ENTRIES (CHOOSE_3_0 * FACTORIAL3)
-#endif
+
 #define CYCLESET_LENGTH ((NCYCLES - 1) / BITS_PER_WORD + 1)
-/*
-There are NFACES - 2 points, by Euler.
-These are chosen from a rather larger set: each point is defined
-by  the two colors crossing at that point, and then the 2^4 possible faces
-of the other colors being the inner face. We wire those points up in advance.
-The two colors are ordered, first the one crossing from inside to outside, then
-the other.
-*/
-#define NPOINTS ((1 << (NCOLORS - 2)) * NCOLORS * (NCOLORS - 1))
 #define POINTSET_LENGTH ((NPOINTS - 1) / BITS_PER_WORD + 1)
 #define FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET \
   ((1ul << (NCYCLES % BITS_PER_WORD)) - 1ul)
@@ -266,8 +218,9 @@ typedef enum failureType {
   NON_CANONICAL_FAILURE = 0x80,
 } FAILURE_TYPE;
 
-typedef struct failure *FAILURE;
+typedef Failure *FAILURE;
 
+/*
 struct failure {
   FAILURE_TYPE type;
   char *shortLabel;
@@ -280,6 +233,7 @@ struct failure {
     ;
   } u;
 };
+*/
 
 struct trail {
   void *ptr;
@@ -370,13 +324,6 @@ extern FAILURE curveChecks(EDGE edge, int depth);
 
 extern void search(bool smallestFirst, void (*foundSolution)(void));
 
-extern FAILURE noMatchingCyclesFailure(COLORSET colors, int depth);
-extern FAILURE disconnectedCurveFailure(COLOR color, int depth);
-extern FAILURE disconnectedFacesFailure(COLORSET color, int depth);
-extern FAILURE crossingLimitFailure(COLOR a, COLOR b, int depth);
-extern FAILURE tooManyCornersFailure(COLOR a, int depth);
-extern FAILURE pointConflictFailure(COLOR a, COLOR b, int depth);
-extern FAILURE conflictingConstraintsFailure(FACE f, int depth);
 extern FAILURE nonCanonicalFailure(void);
 extern void initializeFailures(void);
 /* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
@@ -406,10 +353,21 @@ extern void initializeDynamicCounters(void);
 extern void initializeStatsLogging(char *filename, int frequency, int seconds);
 extern void full_search(void (*foundSolution)(void));
 
+extern void newFailureStatistic(Failure *failure);
+
+extern FAILURE noMatchingCyclesFailure(int depth);
+extern FAILURE crossingLimitFailure(int depth);
+extern FAILURE pointConflictFailure(int depth);
+extern FAILURE conflictingConstraintsFailure(int depth);
+extern FAILURE disconnectedCurveFailure(int depth);
+extern FAILURE tooManyCornersFailure(int depth);
+extern FAILURE disconnectedFacesFailure(int depth);
+extern FAILURE nonCanonicalFailure(void);
+
 #define POINT_DEBUG 0
 #define EDGE_DEBUG 0
 #define FACE_DEBUG 0
 #define BACKTRACK_DEBUG 0
 #define TEST_INFO 0
 
-#endif
+#endif  // VENN_H

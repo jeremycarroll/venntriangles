@@ -274,7 +274,7 @@ FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
 
     assert(face->edges[aColor].to != &face->edges[aColor].possiblyTo[aColor]);
     if (face->edges[aColor].to != &face->edges[aColor].possiblyTo[bColor]) {
-      return pointConflictFailure(aColor, bColor, depth);
+      return pointConflictFailure(depth);
     }
     assert(face->edges[aColor].to == &face->edges[aColor].possiblyTo[bColor]);
     return NULL;
@@ -300,7 +300,7 @@ FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
       printEdge(edge);
 #endif
       if (edge->to != &edge->possiblyTo[colors[(i & 2) >> 1]]) {
-        return pointConflictFailure(edge->color, colors[(i & 2) >> 1], depth);
+        return pointConflictFailure(depth);
       }
       assert(edge->to == &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
     } else {

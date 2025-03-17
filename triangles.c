@@ -41,7 +41,7 @@ static FAILURE checkForDisconnectedCurve(EDGE edge, int depth)
     // We have a colored cycle in the FISC.
     length = curveLength(edge);
     if (length < g_edgeCount[IS_PRIMARY_EDGE(edge)][edge->color]) {
-      return disconnectedCurveFailure(edge->color, depth);
+      return disconnectedCurveFailure(depth);
     }
     assert(length == g_edgeCount[IS_PRIMARY_EDGE(edge)][edge->color]);
     if (completedColors & 1u << edge->color) {
@@ -115,7 +115,7 @@ static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn)
       outside = outside & ~other;
       if (other & passed) {
         if (counter >= MAX_CORNERS) {
-          return tooManyCornersFailure(start->color, depth);
+          return tooManyCornersFailure(depth);
         }
         cornersReturn[counter++] = current;
         passed = 0;
@@ -207,7 +207,7 @@ FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth)
 {
   uint_trail* crossing = &g_crossings[a][b];
   if (*crossing + 1 > MAX_ONE_WAY_CURVE_CROSSINGS) {
-    return crossingLimitFailure(a, b, depth);
+    return crossingLimitFailure(depth);
   }
   setDynamicInt(crossing, *crossing + 1);
   return NULL;
@@ -226,7 +226,7 @@ static FAILURE checkLengthOfCycleOfFaces(FACE face)
     assert(i <= expected);
     if (f == face) {
       if (i != expected) {
-        return disconnectedFacesFailure(face->colors, 0);
+        return disconnectedFacesFailure(0);
       }
       return NULL;
       ;
