@@ -348,10 +348,9 @@ extern uint32_t findCycleId(uint32_t *cycle, uint32_t length);
 extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
 extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
 extern uint32_t indexInCycle(CYCLE cycle, COLOR color);
+extern char *d6FaceDegreeSignature(void);
 
-#if NCOLORS > 3
 extern void setupCentralFaces(int *faceDegrees);
-#endif
 
 extern void setDynamicPointer_(void **ptr, void *value);
 #define setDynamicPointer(a, b) setDynamicPointer_((void **)a, b)
@@ -385,16 +384,19 @@ and that number should be three or less. */
 extern FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth);
 extern bool removeColorFromSearch(COLOR color);
 extern FAILURE finalCorrectnessChecks(void);
+extern void findCorners(COLOR a, EDGE result[3][2]);
 
 extern char *edge2str(char *dbuffer, EDGE edge);
 extern char *face2str(char *dbuffer, FACE face);
 extern char *colors2str(char *dbuffer, COLORSET colors);
+extern char *upoint2str(char *dbuffer, UPOINT up);
 extern int color2char(COLOR c);
 extern void printFace(FACE face);
 extern void printEdge(EDGE edge);
 extern void printSelectedFaces(void);
 extern FACIAL_CYCLE_SIZES facialCycleSizes(void);
 extern void printSolution(FILE *fp);
+extern int pathLength(EDGE from, EDGE to);
 
 extern void newStatistic(uint64_t *counter, char *shortName, char *name);
 extern void newFailureStatistic(FAILURE failure);
@@ -402,6 +404,7 @@ extern void printStatisticsOneLine(int position);
 extern void printStatisticsFull(void);
 extern void initializeDynamicCounters(void);
 extern void initializeStatsLogging(char *filename, int frequency, int seconds);
+extern void full_search(void (*foundSolution)(void));
 
 #define POINT_DEBUG 0
 #define EDGE_DEBUG 0

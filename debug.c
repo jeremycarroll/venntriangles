@@ -119,14 +119,19 @@ char* face2str(char* dbuffer, FACE face)
   return returnSlot(result);
 }
 
-char* dpoint2str(char* dbuffer, DPOINT dp)
+char* upoint2str(char* dbuffer, UPOINT up)
 {
   char* lookup = getLookup();
-  char* colors = colors2str(dbuffer, dp->point->faces[0]->colors);
+  char* colors = colors2str(dbuffer, up->colors);
   char* result = nextSlot(dbuffer);
-  sprintf(result, "%s(%c,%c)", colors, lookup[dp->point->primary],
-          lookup[dp->point->secondary]);
+  sprintf(result, "%s(%c,%c)", colors, lookup[up->primary],
+          lookup[up->secondary]);
   return returnSlot(result);
+}
+
+char* dpoint2str(char* dbuffer, DPOINT dp)
+{
+  return upoint2str(dbuffer, dp->point);
 }
 
 char* edge2str(char* dbuffer, EDGE edge)
@@ -249,10 +254,11 @@ int* intArray(int a, ...)
   static int result[NCOLORS];
   va_list ap;
   int i;
+  result[0] = a;
   va_start(ap, a);
-  for (i = 0; i < NCOLORS; i++) {
-    result[i] = a;
+  for (i = 1; i < NCOLORS; i++) {
     a = va_arg(ap, int);
+    result[i] = a;
   }
   va_end(ap);
   return result;

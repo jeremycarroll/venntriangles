@@ -2,10 +2,15 @@
 
 #include <getopt.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
-log_level_t log_level = LOG_QUIET;
+log_level_t log_level = LOG_INFO;
+static char *targetFolder = NULL;
+extern void initializeStatsLogging(char *filename, int frequency, int seconds);
 
 void log_message(log_level_t level, const char *format, ...)
 {
@@ -16,14 +21,42 @@ void log_message(log_level_t level, const char *format, ...)
     va_end(args);
   }
 }
+extern void full_search(void (*foundSolution)(void));
+extern void initializeSequenceOrder(void);
+extern char *d6FaceDegreeSignature(void);
+extern void writeSolution(char *folderName);
+void save_result(void)
+{
+  char buffer[1024];
+  snprintf(buffer, sizeof(buffer), "%s/%s", targetFolder,
+           d6FaceDegreeSignature());
+  writeSolution(buffer);
+}
+
+void setUpOutputFolder()
+{
+  struct stat st = {0};
+
+  if (stat(targetFolder, &st) == -1) {
+    // Directory does not exist, create it
+    if (mkdir(targetFolder, 0700) != 0) {
+      perror("Failed to create directory");
+      exit(EXIT_FAILURE);
+    }
+  } else {
+    // Directory exists, check if it is writable
+    if (!S_ISDIR(st.st_mode) || access(targetFolder, W_OK) != 0) {
+      fprintf(stderr, "Target folder exists but is not writable\n");
+      exit(EXIT_FAILURE);
+    }
+  }
+}
 
 int main0(int argc, char *argv[])
 {
   int opt;
-  int args[6] = {0};
-  int arg_count = 0;
-
-  while ((opt = getopt(argc, argv, "dvq")) != -1) {
+  targetFolder = NULL;
+  while ((opt = getopt(argc, argv, "dvqf:")) != -1) {
     switch (opt) {
       case 'd':
         log_level = LOG_DEBUG;
@@ -34,32 +67,29 @@ int main0(int argc, char *argv[])
       case 'q':
         log_level = LOG_QUIET;
         break;
+      case 'f':
+        targetFolder = optarg;
+        break;
       default:
-        fprintf(stderr, "Usage: %s [-d] [-v] [-q] [integers...]\n", argv[0]);
+        fprintf(stderr, "Usage: %s [-d] [-v] [-q] -f outputFolder\n", argv[0]);
         return EXIT_FAILURE;
     }
   }
 
-  for (int i = optind; i < argc && arg_count < 6; i++) {
-    int value = atoi(argv[i]);
-    if (value >= 3 && value <= 6) {
-      args[arg_count++] = value;
-    } else {
-      fprintf(stderr,
-              "Invalid argument: %s. Must be an integer between 3 and 6.\n",
-              argv[i]);
-      return EXIT_FAILURE;
-    }
+  if (optind != argc || targetFolder == NULL) {
+    fprintf(stderr, "Usage: %s [-d] [-v] [-q] -f outputFolder\n", argv[0]);
+    return EXIT_FAILURE;
   }
 
   log_message(LOG_DEBUG, "Debug mode enabled\n");
   log_message(LOG_VERBOSE, "Verbose mode enabled\n");
 
-  log_message(LOG_VERBOSE, "Received %d arguments:\n", arg_count);
-  for (int i = 0; i < arg_count; i++) {
-    log_message(LOG_VERBOSE, "Argument %d: %d\n", i + 1, args[i]);
-  }
-
-  printf("Hello, World! %lu\n", sizeof(int *));
+  log_message(LOG_INFO, "Hello, World! %lu\n", sizeof(int *));
+#if NCOLORS == 6
+  initializeStatsLogging("/dev/stdout", 200, 10);
+  setUpOutputFolder();
+  initializeSequenceOrder();
+  full_search(save_result);
+#endif
   return 0;
 }

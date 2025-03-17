@@ -1,8 +1,6 @@
 
-#include "venn.h"
-#if NCOLORS == 6
 #include "d6.h"
-#endif
+#include "venn.h"
 #if NCOLORS == 4
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -98,7 +96,7 @@ start must either be an edge of the central face, or be an incomplete end.
 cornerReturn is a pointer to an array of length at least 3.
 */
 
-static FAILURE cornerCheckInternal(EDGE start, int depth, UPOINT* cornersReturn)
+static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn)
 {
   EDGE current = start;
   COLORSET
@@ -119,7 +117,7 @@ static FAILURE cornerCheckInternal(EDGE start, int depth, UPOINT* cornersReturn)
         if (counter >= MAX_CORNERS) {
           return tooManyCornersFailure(start->color, depth);
         }
-        cornersReturn[counter++] = p->point;
+        cornersReturn[counter++] = current;
         passed = 0;
       }
     } else {
@@ -128,6 +126,9 @@ static FAILURE cornerCheckInternal(EDGE start, int depth, UPOINT* cornersReturn)
     }
     current = p->out[0];
   } while (current->to != NULL && current != start);
+  while (counter < MAX_CORNERS) {
+    cornersReturn[counter++] = NULL;
+  }
   return NULL;
 }
 
@@ -146,6 +147,51 @@ FAILURE cornerCheck(EDGE start, int depth)
 #endif
 }
 
+int pathLength(EDGE from, EDGE to)
+{
+  int i = 1;
+  for (; from != to; i++) {
+    from = followEdgeForwards(from);
+    assert(from != NULL);
+  }
+  return i;
+}
+
+void findCorners(COLOR a, EDGE result[3][2])
+{
+  int i, j;
+  EDGE clockWiseCorners[MAX_CORNERS];
+  EDGE counterClockWiseCorners[MAX_CORNERS];
+  FAILURE failure =
+      cornerCheckInternal(&g_faces[NFACES - 1].edges[a], 0, clockWiseCorners);
+  assert(failure == NULL);
+  failure = cornerCheckInternal(g_faces[NFACES - 1].edges[a].reversed, 0,
+                                counterClockWiseCorners);
+  assert(failure == NULL);
+  assert((clockWiseCorners[2] == NULL) == (counterClockWiseCorners[2] == NULL));
+  assert((clockWiseCorners[1] != NULL));
+  assert((counterClockWiseCorners[1] != NULL));
+  for (i = 0; i < 3 && clockWiseCorners[i]; i++) {
+    result[i][0] = clockWiseCorners[i];
+  }
+  if (i < 3) {
+    result[i][0] = NULL;
+    result[i][1] = NULL;
+  }
+
+  for (j = 0; j < 3 && counterClockWiseCorners[j]; j++) {
+    assert(i - 1 - j >= 0);
+    assert(i - 1 - j < 3);
+    result[i - 1 - j][1] = counterClockWiseCorners[j];
+  }
+}
+
+#define CHECK_FAILURE(call) \
+  failure = (call);         \
+  if (failure != NULL) {    \
+    return failure;         \
+  }
+
 FAILURE curveChecks(EDGE edge, int depth)
 {
   FAILURE failure;
@@ -153,10 +199,7 @@ FAILURE curveChecks(EDGE edge, int depth)
     return NULL;
   }
   EDGE start = findStartOfCurve(edge);
-  failure = checkForDisconnectedCurve(start, depth);
-  if (failure != NULL) {
-    return failure;
-  }
+  CHECK_FAILURE(checkForDisconnectedCurve(start, depth));
   return cornerCheck(start, depth);
 }
 
@@ -198,7 +241,7 @@ FAILURE finalCorrectnessChecks(void)
   COLORSET colors = 1;
   FACE face;
 #if NCOLORS == 6
-  switch (d6SymmetryTypeFaces(g_faces)) {
+  switch (d6SymmetryTypeFaces()) {
     case NON_CANONICAL:
       return nonCanonicalFailure();
     case EQUIVOCAL:
@@ -212,10 +255,7 @@ FAILURE finalCorrectnessChecks(void)
 #endif
   for (colors = 1; colors < (NFACES - 1); colors |= face->previous->colors) {
     face = g_faces + colors;
-    failure = checkLengthOfCycleOfFaces(face);
-    if (failure != NULL) {
-      return failure;
-    }
+    CHECK_FAILURE(checkLengthOfCycleOfFaces(face));
   }
   return NULL;
 }

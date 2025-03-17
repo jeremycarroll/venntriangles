@@ -25,12 +25,13 @@ void test_canonical6()
 int count6;
 static void countSolutions(
 #if DEBUG_CANONICAL_SOLUTIONS
-    int* args
+    void* mustBeNull, int* args
 #endif
 )
 {
 #if DEBUG_CANONICAL_SOLUTIONS
   int i;
+  assert(mustBeNull == NULL);
   for (i = 0; i < NCOLORS; i++) {
     printf("%d ", args[i]);
   }
@@ -41,7 +42,7 @@ static void countSolutions(
 
 void test_callback()
 {
-  canoncialCallback(countSolutions);
+  canoncialCallback(countSolutions, NULL);
 
   TEST_ASSERT_EQUAL(56, count6);
 }

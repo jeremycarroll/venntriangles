@@ -22,7 +22,6 @@ static uint64_t cycleSetReducedCounter = 0;
     return failure;         \
   }
 
-#if NCOLORS > 3
 void setupCentralFaces(int *faceDegrees)
 {
   CYCLE cycle;
@@ -47,7 +46,6 @@ void setupCentralFaces(int *faceDegrees)
   }
   makeChoice(centralFace);
 }
-#endif
 
 static void restrictCycles(FACE face, CYCLESET cycleSet)
 {
