@@ -1,6 +1,6 @@
 The program is essentially complete. The best feature is that it is very fast.
 
-Two two do items are:
+Two to-do items are:
 - graphml output
 - appropriate use of log methods to proviode variable levels of output.
 
@@ -21,3 +21,4 @@ Issues to be addressed in refactoring:
 - [ ] rationalize initialization; maybe use more lazy initialization
 - [ ] ensure visible_for_testing.h is doing the right thing - i.e. only exposing functions and variables to the test files as appropriate
 - [ ] ensure coding conventions are documented
+- [ ] ensure no use of // comments.
