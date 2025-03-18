@@ -1,4 +1,10 @@
-#include "venn.h"
+#include "point.h"
+
+#include <assert.h>
+#include <string.h>
+
+#include "debug.h"   /* For debug functions */
+#include "failure.h" /* For FAILURE type and failure functions */
 
 /*
  * Only a few of these are actually used, the look up table is easier this way.
