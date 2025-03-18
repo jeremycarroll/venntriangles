@@ -1,4 +1,3 @@
-
 #include "venn.h"
 
 /*
@@ -104,64 +103,6 @@ void initializePoints(void)
   }
 }
 
-/*
-    The point is between the crossing of two curves, one colored A
-    and the other colored B, A and B used in the comments below.
-
-    The curve colored A crosses from inside the curve colored B to outside it.
-    The curve colored B crosses from outside the curve colored A to inside it.
-  */
-
-/* Face A&B
- */
-FACE point2insideFace(UPOINT point) { return point->faces[3]; }
-
-/* Face ~(A&B)
- */
-FACE point2outsideFace(UPOINT point) { return point->faces[0]; }
-
-/*
-Face (~A)&B
-
-Both curves are going clockwise around the central face
-of the FISC. Hence, both curves are going clockwise
-around  point2insideFace(point). The face
-that is outside A and inside B is the face that is clockwise
-before the point.
-*/
-FACE point2incomingFace(UPOINT point) { return point->faces[2]; }
-
-/*
-Face A&~B
-*/
-FACE point2outgoingFace(UPOINT point) { return point->faces[1]; }
-
-EDGE point2inside2outsideIncomingEdge(UPOINT point)
-{
-  return point->incomingEdges[0];
-}
-
-EDGE point2outside2insideIncomingEdge(UPOINT point)
-{
-  return point->incomingEdges[2];
-}
-
-// EDGE point2inside2outsideOutgoingEdge(POINT point) { return point->edges[1];
-// }
-
-// EDGE point2outside2insideOutgoingEdge(POINT point) { return point->edges[3];
-// }
-
-COLOR point2inside2outsideColor(UPOINT point)
-{
-  return point->incomingEdges[0]->color;
-}
-
-COLOR point2outside2insideColor(UPOINT point)
-{
-  return point->incomingEdges[2]->color;
-}
-
 EDGE followEdgeForwards(EDGE edge)
 {
   if (edge->to == NULL) {
@@ -177,11 +118,9 @@ EDGE followEdgeBackwards(EDGE edge)
 }
 
 /*
-
    The curve colored A crosses from inside the curve colored B to outside it.
    The curve colored B crosses from outside the curve colored A to inside it.
 */
-
 UPOINT addToPoint(FACE face, EDGE incomingEdge, COLOR othercolor)
 {
   COLORSET insideColor = incomingEdge->face->colors & ~(1u << othercolor) &
