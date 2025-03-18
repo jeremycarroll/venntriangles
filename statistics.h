@@ -1,6 +1,8 @@
 #ifndef _STATISTICS_H
 #define _STATISTICS_H
 
+#include <stdio.h>
+
 #include "types.h"
 
 /* Statistics function declarations */

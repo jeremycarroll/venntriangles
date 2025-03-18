@@ -37,6 +37,7 @@ typedef struct failure *FAILURE;
 #define NPOINTS ((1 << (NCOLORS - 2)) * NCOLORS * (NCOLORS - 1))
 #define BITS_PER_WORD (sizeof(uint64_t) * 8)
 #define POINTSET_LENGTH ((NPOINTS - 1) / BITS_PER_WORD + 1)
+#define MAX_DEPTH 100 /* Maximum depth for failure tracking */
 
 /* Macros */
 #define memberOfColorSet(color, colorSet) (((colorSet) >> (color)) & 1u)
