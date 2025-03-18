@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "face.h" /* For complete struct face definition */
 #include "types.h"
 
 /* Failure types */
