@@ -157,18 +157,6 @@ void printSelectedFaces(void)
   }
 }
 
-FACIAL_CYCLE_SIZES facialCycleSizes(void)
-{
-  uint32_t nColors = NCOLORS;
-  FACIAL_CYCLE_SIZES result;
-  uint32_t nFaces = 1 << nColors;
-  result.value = 0;
-  for (uint32_t i = 0; i < nColors; i++) {
-    result.sizes[i] = (uint8_t)g_faces[(nFaces - 1) & ~(1 << i)].cycle->length;
-  }
-  return result;
-}
-
 uint32_t cycleIdFromColors(char* colors)
 {
   COLOR cycle[NCOLORS];
@@ -262,4 +250,35 @@ int* intArray(int a, ...)
   }
   va_end(ap);
   return result;
+}
+
+void printCycle(CYCLE cycle)
+{
+  for (uint64_t i = 0; i < cycle->length; i++) {
+    printf("%c", 'a' + cycle->curves[i]);
+  }
+}
+/* returns false if cycleset has bits set past the last. */
+bool printCycleSet(CYCLESET cycleSet)
+{
+  uint32_t lastBit = (NCYCLES - 1) % BITS_PER_WORD;
+  uint64_t faulty, i, j;
+  if ((faulty = (cycleSet[CYCLESET_LENGTH - 1] & ~((1ul << lastBit) - 1ul)))) {
+    printf("0x%016llx\n", faulty);
+    return false;
+  }
+  putchar('{');
+  for (i = 0; i < CYCLESET_LENGTH; i++) {
+    if (cycleSet[i]) {
+      for (j = 0; j < 64; j++) {
+        if (cycleSet[i] & (1ul << j)) {
+          putchar(' ');
+          printCycle(g_cycles + i * BITS_PER_WORD + j);
+          putchar(',');
+        }
+      }
+    }
+  }
+  printf(" }\n");
+  return true;
 }

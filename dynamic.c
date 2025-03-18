@@ -1,6 +1,5 @@
 /* These are the operations that change the dynamic fields in the data
-  structure. initialize() must alreayd have been called before any of these
-  methods are called.
+  structures. These are hence the mechanics of search.
 */
 
 #include "venn.h"
@@ -166,11 +165,8 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
     setDynamicPointer(&face->next, face);
     setDynamicPointer(&face->previous, face);
   } else {
-    setDynamicPointer(&face->next, g_faces + GET_COMPRESSED_FACE_POINTER_ENTRY(
-                                                 face->nextByCycleId, cycleId));
-    setDynamicPointer(&face->previous,
-                      g_faces + GET_COMPRESSED_FACE_POINTER_ENTRY(
-                                    face->previousByCycleId, cycleId));
+    setDynamicPointer(&face->next, face->nextByCycleId[cycleId]);
+    setDynamicPointer(&face->previous, face->previousByCycleId[cycleId]);
   }
 
   if (face->colors != 0 && face->colors != (NFACES - 1)) {
@@ -241,24 +237,6 @@ FAILURE makeChoice(FACE face)
     }
   }
   return NULL;
-}
-
-static CYCLESET_DECLARE withoutColor[NCOLORS];
-
-void clearWithoutColor() { memset(withoutColor, 0, sizeof(withoutColor)); }
-
-void initializeWithoutColor()
-{
-  COLOR color;
-  CYCLE cycle;
-  uint32_t i;
-  for (color = 0; color < NCOLORS; color++) {
-    for (i = 0, cycle = g_cycles; i < NCYCLES; i++, cycle++) {
-      if (!memberOfColorSet(color, cycle->colors)) {
-        addToCycleSet(i, withoutColor[color]);
-      }
-    }
-  }
 }
 
 bool removeColorFromSearch(COLOR color)

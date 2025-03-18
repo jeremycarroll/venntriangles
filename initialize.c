@@ -5,9 +5,16 @@
  * - which cycles a priori can't be used with which face
  * etc.
  */
+#include <assert.h>
 #include <stdarg.h>
+#include <string.h>
 
-#include "venn.h"
+/* In this file we construct the constants used elsewhere. */
+#define STATIC
+
+#include "graph.h"
+#include "point.h"
+#include "trail.h"
 
 static int nextCycle = 0;
 static int nextSetOfCycleSets = 0;
@@ -48,7 +55,8 @@ void clearInitialize()
 
 void initialize()
 {
-  assert(ASSUMPTION);
+  /* Not true on all architectures, but assumed in our trail. */
+  assert((sizeof(uint64_t) == sizeof(void *)));
   assert(nextCycle == 0);
   initializeCycles();
   assert(nextCycle == ARRAY_LEN(g_cycles));
@@ -310,13 +318,8 @@ static void applyMonotonicity(void)
       } else {
         assert(previousFaceXor);
         assert(nextFaceXor);
-        SET_COMPRESSED_FACE_POINTER_ENTRY(face->nextByCycleId, cycleId,
-                                          colors ^ nextFaceXor);
-        SET_COMPRESSED_FACE_POINTER_ENTRY(face->previousByCycleId, cycleId,
-                                          colors ^ previousFaceXor);
-        assert(GET_COMPRESSED_FACE_POINTER_ENTRY(face->previousByCycleId,
-                                                 cycleId));
-        assert(GET_COMPRESSED_FACE_POINTER_ENTRY(face->nextByCycleId, cycleId));
+        face->nextByCycleId[cycleId] = g_faces + (colors ^ nextFaceXor);
+        face->previousByCycleId[cycleId] = g_faces + (colors ^ previousFaceXor);
       }
     }
     recomputeCountOfChoices(face);

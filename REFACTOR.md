@@ -22,3 +22,12 @@ Issues to be addressed in refactoring:
 - [ ] ensure visible_for_testing.h is doing the right thing - i.e. only exposing functions and variables to the test files as appropriate
 - [ ] ensure coding conventions are documented
 - [ ] ensure no use of // comments.
+- [ ] ensure copyright header in every file.
+- [x] eliminate GET_COMPRESSED_FACE_POINTER_ENTRY
+- [ ] move FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET to color.c
+- [ ] delete globals.c
+- [ ] improve TRAIL_SIZE, add maxTrail to stats
+- [ ] https://stackoverflow.com/questions/2394609/makefile-header-dependencies
+- [ ] more clearly separating code that is for testing only.
+- [ ] withoutColor - via function? - rename
+

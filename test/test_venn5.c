@@ -22,18 +22,7 @@ void tearDown(void)
 }
 
 static int solution_count = 0;
-static void found_solution()
-{
-#if DEBUG
-  int i;
-  FACIAL_CYCLE_SIZES sizes = facialCycleSizes();
-  for (i = 0; i < NCOLORS; i++) {
-    printf("%d,", sizes.sizes[i]);
-  }
-  printf("\n");
-#endif
-  solution_count++;
-}
+static void found_solution() { solution_count++; }
 
 static void test_search_abcde()
 {

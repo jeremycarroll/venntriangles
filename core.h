@@ -23,7 +23,7 @@
 #define CHOOSE_4_1 4u
 #define CHOOSE_3_0 1u
 #define NFACES (1 << NCOLORS)
-// #define NPOINTS (NFACES - 2)
+
 #if NCOLORS == 6
 #define NCYCLES                                        \
   (CHOOSE_6_0 * FACTORIAL5 + CHOOSE_6_1 * FACTORIAL4 + \
@@ -44,15 +44,24 @@
 #define NCYCLE_ENTRIES (CHOOSE_3_0 * FACTORIAL3)
 #endif
 
+#define BITS_PER_WORD (sizeof(void *) * 8)
+#define CYCLESET_LENGTH ((NCYCLES - 1) / BITS_PER_WORD + 1)
 
-/*
-There are NFACES - 2 points, by Euler.
-These are chosen from a rather larger set: each point is defined
-by  the two colors crossing at that point, and then the 2^4 possible faces
-of the other colors being the inner face. We wire those points up in advance.
-The two colors are ordered, first the one crossing from inside to outside, then
-the other.
-*/
 #define NPOINTS ((1 << (NCOLORS - 2)) * NCOLORS * (NCOLORS - 1))
 
+#ifndef STATIC
+#define STATIC const
 #endif
+#ifndef DYNAMIC
+#define DYNAMIC
+#endif
+
+#define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
+
+typedef struct edge *EDGE;
+typedef struct face *FACE;
+
+// TODO - move these:
+extern void initializeDynamicCounters(void);
+
+#endif  // CORE_H

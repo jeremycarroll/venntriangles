@@ -1,23 +1,23 @@
 #ifndef VENN_H
 #define VENN_H
 
-/*
-We use just one header file:
-- the data structures refer to one another a lot.
-- this is not too long.
-*/
-
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "graph.h"
+#include "statistics.h"
+#include "trail.h"
+typedef Failure *FAILURE;
+#if 0
+
 #include "statistics.h"
 
 #define ASSUMPTION     \
   (sizeof(uint64_t) == \
-   sizeof(void *))            // we cast pointers to uint64_t in the trail.
+   sizeof(void *))  // we cast pointers to uint64_t in the trail.
 typedef uint64_t uint_trail;  // Any non-pointer value that might go on the
                               // trail, should be of this type, using a union.
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
@@ -285,6 +285,7 @@ extern struct global globals;
 
 extern CYCLESET_DECLARE omittingCycleSets[NCOLORS];
 extern CYCLESET_DECLARE omittingCycleSetPairs[NCOLORS][NCOLORS];
+#endif
 
 extern TRAIL trail;
 extern void initialize(void);
@@ -328,7 +329,7 @@ extern FAILURE nonCanonicalFailure(void);
 extern void initializeFailures(void);
 /* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
 and that number should be three or less. */
-extern FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth);
+extern FAILURE checkCrossingLimit(int depth);
 extern bool removeColorFromSearch(COLOR color);
 extern FAILURE finalCorrectnessChecks(void);
 extern void findCorners(COLOR a, EDGE result[3][2]);
@@ -341,7 +342,6 @@ extern int color2char(COLOR c);
 extern void printFace(FACE face);
 extern void printEdge(EDGE edge);
 extern void printSelectedFaces(void);
-extern FACIAL_CYCLE_SIZES facialCycleSizes(void);
 extern void printSolution(FILE *fp);
 extern int pathLength(EDGE from, EDGE to);
 
