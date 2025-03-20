@@ -6,15 +6,14 @@
 typedef struct directedPoint *DPOINT;
 typedef struct undirectedPoint *UPOINT;
 
-
 struct directedPoint {
-    /* This DPOINT is at the end of one edge only.
-       To find that edge, if the to field here is not NULL, then:
-       it is: out[0]->reversed->to->out[0]->reversed
-    */
-    EDGE out[2];
-    UPOINT point;
-  };
+  /* This DPOINT is at the end of one edge only.
+     To find that edge, if the to field here is not NULL, then:
+     it is: out[0]->reversed->to->out[0]->reversed
+  */
+  EDGE out[2];
+  UPOINT point;
+};
 
 /* We create all possible points during initialization.
 
@@ -35,43 +34,42 @@ struct directedPoint {
    outside it. The curve colored secondary crosses from outside the curve
    colored primary to inside it.
  */
- struct undirectedPoint {
-    /*
-    TODO: logically redundant, is this helpful?
-    If the point is between crossing of curve A and curve B,
-    then face[0] is inside neither curve
-    face[1] is inside A but not B
-    face[2] is inside B but not A
-    face[3] is inside both A and B
-    */
-   STATIC FACE faces[4];
-    /*
-    If the point is between crossing of curve A and curve B,
-    and color(A) < color(B),
-    then edge[0] is of color A and runs into the point
-    edge[1] is the counterclockwise edge of color A that runs into the point
-    edge[2] is of color B and runs into the point
-    edge[3] is the counterclockwise edge of color B that runs into the point
-  
-    The outgoing edges are found by reversing the incoming edges
-    */
-   STATIC EDGE incomingEdges[4];
-  
-    /* A value between 0 and NPOINTS */
-    STATIC uint32_t id;
-  
-    /* Colors can also be accessed from the edges as above.
-     */
-    STATIC COLOR primary, secondary;
-  
-    /* A set of the two colors. */
-    STATIC COLORSET colors;
-  };
-  
+struct undirectedPoint {
+  /*
+  TODO: logically redundant, is this helpful?
+  If the point is between crossing of curve A and curve B,
+  then face[0] is inside neither curve
+  face[1] is inside A but not B
+  face[2] is inside B but not A
+  face[3] is inside both A and B
+  */
+  STATIC FACE faces[4];
+  /*
+  If the point is between crossing of curve A and curve B,
+  and color(A) < color(B),
+  then edge[0] is of color A and runs into the point
+  edge[1] is the counterclockwise edge of color A that runs into the point
+  edge[2] is of color B and runs into the point
+  edge[3] is the counterclockwise edge of color B that runs into the point
+
+  The outgoing edges are found by reversing the incoming edges
+  */
+  STATIC EDGE incomingEdges[4];
+
+  /* A value between 0 and NPOINTS */
+  STATIC uint32_t id;
+
+  /* Colors can also be accessed from the edges as above.
+   */
+  STATIC COLOR primary, secondary;
+
+  /* A set of the two colors. */
+  STATIC COLORSET colors;
+};
 
 extern void initializePoints(void);
 extern void clearPoints(void);
 extern UPOINT addToPoint(FACE face, EDGE incomingEdge, COLOR othercolor);
 extern FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth);
 
-#endif // POINT_H
+#endif  // POINT_H

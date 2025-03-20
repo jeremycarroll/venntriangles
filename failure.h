@@ -1,16 +1,15 @@
 #ifndef FAILURE_H
 #define FAILURE_H
 
-#include "core.h"
 #include <stdint.h>
 
+#include "core.h"
+
 typedef struct {
-    uint64_t count[NFACES];
-    char* shortLabel;
-    char* label;
+  uint64_t count[NFACES];
+  char* shortLabel;
+  char* label;
 } Failure, *FAILURE;
-
-
 
 void newFailureStatistic(FAILURE failure);
 FAILURE noMatchingCyclesFailure(int depth);
@@ -23,4 +22,4 @@ FAILURE disconnectedFacesFailure(int depth);
 FAILURE nonCanonicalFailure(void);
 void initializeFailures(void);
 
-#endif // FAILURE_H
+#endif  // FAILURE_H

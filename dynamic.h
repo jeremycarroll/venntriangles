@@ -1,12 +1,12 @@
 #ifndef DYNAMIC_H
 #define DYNAMIC_H
 
-#include "core.h"
 #include "color.h"
-#include "graph.h"
-#include "trail.h"
-#include "point.h"
+#include "core.h"
 #include "failure.h"
+#include "graph.h"
+#include "point.h"
+#include "trail.h"
 
 extern COLORSET completedColors;
 extern uint64_t cycleGuessCounter;
@@ -16,4 +16,4 @@ FAILURE makeChoice(FACE face);
 bool removeColorFromSearch(COLOR color);
 void initializeDynamicCounters(void);
 
-#endif // DYNAMIC_H
+#endif  // DYNAMIC_H

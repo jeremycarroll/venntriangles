@@ -1,15 +1,16 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include "core.h"
+#include <stdint.h>
+
 #include "color.h"
-#include "trail.h"
+#include "core.h"
+#include "edge.h"
+#include "face.h"
 #include "point.h"
 #include "statistics.h"
-#include "face.h"
-#include "edge.h"
-#include <stdint.h>
+#include "trail.h"
 
 void initializeGraph(void);
 
-#endif // GRAPH_H
+#endif  // GRAPH_H

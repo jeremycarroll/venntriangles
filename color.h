@@ -1,8 +1,8 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "core.h"
 #include "failure.h"
@@ -13,25 +13,23 @@ typedef uint32_t COLORSET;
 typedef uint64_t *CYCLESET;
 typedef uint64_t CYCLESET_DECLARE[CYCLESET_LENGTH];
 
-
 typedef struct facial_cycle *CYCLE;
 
 struct facial_cycle {
-    uint32_t length;
-    COLORSET colors;
-    /*
-      This is a pointer to an array of length length.
-      sameDirection[i] refers to curves[i] and curves[i+1]
-    */
-    CYCLESET *sameDirection;
-    /*
-       This is a pointer to an array of length length.
-       oppositeDirection[i] refers to curves[i-1] curves[i] and curves[i+1]
-    */
-    CYCLESET *oppositeDirection;
-    COLOR curves[NCOLORS];
-  };
-
+  uint32_t length;
+  COLORSET colors;
+  /*
+    This is a pointer to an array of length length.
+    sameDirection[i] refers to curves[i] and curves[i+1]
+  */
+  CYCLESET *sameDirection;
+  /*
+     This is a pointer to an array of length length.
+     oppositeDirection[i] refers to curves[i-1] curves[i] and curves[i+1]
+  */
+  CYCLESET *oppositeDirection;
+  COLOR curves[NCOLORS];
+};
 
 #define memberOfColorSet(color, colorSet) (((colorSet) >> (color)) & 1u)
 
@@ -54,4 +52,4 @@ extern void initializeWithoutColor(void);
 // Should have Dynamic in name, and be so.
 extern bool setCycleLength(uint32_t faceColors, uint32_t length);
 
-#endif // COLOR_H
+#endif  // COLOR_H
