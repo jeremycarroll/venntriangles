@@ -137,8 +137,7 @@ char* dpoint2str(char* dbuffer, DPOINT dp)
 char* edge2str(char* dbuffer, EDGE edge)
 {
   char color = color2char(edge->color);
-  char* colors =
-      edge->face == NULL ? "***" : colors2str(dbuffer, edge->face->colors);
+  char* colors = colors2str(dbuffer, edge->colors);
   char* to = edge->to == NULL ? "***" : dpoint2str(dbuffer, edge->to);
   char* result = nextSlot(dbuffer);
   sprintf(result, "%c%c/%s[%s]", color, IS_PRIMARY_EDGE(edge) ? '+' : '-',

@@ -263,7 +263,7 @@ static void initializeFacesAndEdges(void)
       adjacent = g_faces + (facecolors ^ (colorbit));
       face->adjacentFaces[color] = adjacent;
       edge = &face->edges[color];
-      edge->face = face;
+      edge->colors = face->colors;
       edge->level = __builtin_popcount(face->colors);
       edge->color = color;
       edge->reversed = &adjacent->edges[color];

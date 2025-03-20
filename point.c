@@ -129,8 +129,8 @@ EDGE followEdgeBackwards(EDGE edge)
 */
 UPOINT addToPoint(FACE face, EDGE incomingEdge, COLOR othercolor)
 {
-  COLORSET insideColor = incomingEdge->face->colors & ~(1u << othercolor) &
-                         ~(1u << incomingEdge->color);
+  COLORSET insideColor =
+      incomingEdge->colors & ~(1u << othercolor) & ~(1u << incomingEdge->color);
   UPOINT point;
   COLOR a, b;
   uint32_t ix, faceIx;

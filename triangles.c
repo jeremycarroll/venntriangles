@@ -109,10 +109,10 @@ static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn)
   /* the curves we have crossed outside of since the last corner. */
       passed = 0,
   /* the curves we are currently outside. */
-      outside = ~start->face->colors;
+      outside = ~start->colors;
   int counter = 0;
   assert(start->reversed->to == NULL ||
-         (start->face->colors & notMyColor) == ((NFACES - 1) & notMyColor));
+         (start->colors & notMyColor) == ((NFACES - 1) & notMyColor));
   do {
     DPOINT p = current->to;
     COLORSET other = p->point->colors & notMyColor;
