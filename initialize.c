@@ -242,6 +242,9 @@ static void initializeOmittingCycleSets()
   }
 }
 
+#define FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET \
+  ((1ul << (NCYCLES % BITS_PER_WORD)) - 1ul)
+
 static void initializeFacesAndEdges(void)
 {
   uint32_t facecolors, color, j;

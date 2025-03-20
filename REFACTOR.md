@@ -33,7 +33,7 @@ Issues to be addressed in refactoring:
 - [ ] omittingCycleSets - move - rename
 - [ ] include order as per https://stackoverflow.com/a/2762596
 - [ ] names matching (|dynamic|initialize|reset)(Point|Color|ColorSet|Edge|Face|Cycle|CycleSet|Failure|Trail)[A-Z][a-z]*
-- [ ] break up graph into edge and face
+- [x] break up graph into edge and face
 - [ ] revisit static/dynamic macros ...
 
 
