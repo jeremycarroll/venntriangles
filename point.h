@@ -1,9 +1,9 @@
 #ifndef POINT_H
 #define POINT_H
 
-#include "graph.h"
+#include "color.h"
 
-typedef struct dpoint *DPOINT;
+typedef struct directedPoint *DPOINT;
 typedef struct undirectedPoint *UPOINT;
 
 
@@ -72,5 +72,6 @@ struct directedPoint {
 extern void initializePoints(void);
 extern void clearPoints(void);
 extern UPOINT addToPoint(FACE face, EDGE incomingEdge, COLOR othercolor);
+extern FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth);
 
 #endif // POINT_H

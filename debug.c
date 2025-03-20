@@ -1,9 +1,9 @@
 
 #include <stdarg.h>
 
+#include "graph.h"
+#include "output.h"
 #include "unity.h"
-#include "venn.h"
-#include "visible_for_testing.h"
 
 /* Use the lettering from the 2000 diagram of six triangles (ABCDEF round the
  * outer face) */

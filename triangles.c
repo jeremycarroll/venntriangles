@@ -1,10 +1,15 @@
 
+#include <stddef.h>
+
 #include "d6.h"
-#include "venn.h"
+#include "graph.h"
 #if NCOLORS == 4
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunused-function"
 #endif
+
+#define MAX_ONE_WAY_CURVE_CROSSINGS 3
+#define MAX_CORNERS 3
 
 /*
 This file is responsible for checking that a set of edges can make a triangle.
@@ -138,7 +143,7 @@ FAILURE cornerCheck(EDGE start, int depth)
   /* test_venn4.c does not like the normal code - not an issue. */
   return NULL;
 #else
-  UPOINT ignore[MAX_CORNERS * 100];
+  EDGE ignore[MAX_CORNERS * 100];
   if (start->reversed->to != NULL) {
     // we have a complete curve.
     start = &g_faces[NFACES - 1].edges[start->color];
@@ -246,7 +251,6 @@ FAILURE finalCorrectnessChecks(void)
       return nonCanonicalFailure();
     case EQUIVOCAL:
       /* Does not happen? But not deeply problematic if it does. */
-      printf("Equivocal\n");
       assert(0); /* could fall through, but will get duplicate solutions. */
       break;
     case CANONICAL:

@@ -19,6 +19,7 @@ struct trail {
 #define TRAIL_SIZE 1000000
 
 
+extern TRAIL trail;
 extern void setDynamicPointer_(void **ptr, void *value);
 #define setDynamicPointer(a, b) setDynamicPointer_((void **)a, b)
 

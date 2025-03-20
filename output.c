@@ -1,7 +1,9 @@
+#include "output.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "venn.h"
+#include "graph.h"
 /*
 TODO: add graphml support.
 */

@@ -1,5 +1,6 @@
+#include "failure.h"
+
 #include "statistics.h"
-#include "venn.h"
 
 /*
 We run single threaded and have only one active failure at any time;

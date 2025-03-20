@@ -329,7 +329,7 @@ extern FAILURE nonCanonicalFailure(void);
 extern void initializeFailures(void);
 /* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
 and that number should be three or less. */
-extern FAILURE checkCrossingLimit(int depth);
+extern FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth);
 extern bool removeColorFromSearch(COLOR color);
 extern FAILURE finalCorrectnessChecks(void);
 extern void findCorners(COLOR a, EDGE result[3][2]);

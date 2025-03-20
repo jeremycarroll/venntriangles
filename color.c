@@ -1,6 +1,8 @@
 #include "color.h"
 
-#include "visible_for_testing.h"
+#include "trail.h"
+
+struct facial_cycle g_cycles[NCYCLES];
 
 void addToCycleSet(uint32_t cycleId, CYCLESET cycleSet)
 {
@@ -69,10 +71,10 @@ bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k)
 }
 
 /* See https://en.wikichip.org/wiki/population_count#Software_support */
-u_int32_t sizeOfCycleSet(CYCLESET cycleSet)
+uint32_t sizeOfCycleSet(CYCLESET cycleSet)
 {
-  u_int32_t size = 0;
-  for (u_int32_t i = 0; i < CYCLESET_LENGTH; i++) {
+  uint32_t size = 0;
+  for (uint32_t i = 0; i < CYCLESET_LENGTH; i++) {
     size += __builtin_popcountll(cycleSet[i]);
   }
   return size;

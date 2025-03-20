@@ -4,7 +4,7 @@
 #include <math.h>
 #include <string.h>
 
-#include "venn.h"  // Include venn.h for g_faces and NFACES
+#include "graph.h"
 
 static Statistic statistics[MAX_STATISTICS];
 static Failure failures[MAX_STATISTICS];

@@ -29,6 +29,12 @@ CYCLESET_DECLARE omittingCycleSets[NCOLORS];
 CYCLESET_DECLARE omittingCycleSetPairs[NCOLORS][NCOLORS];
 CYCLESET setsOfCycleSets[NCYCLE_ENTRIES * 2];
 
+STATIC struct face g_faces[NFACES];
+uint64_t g_edgeCount[2][NCOLORS];
+uint64_t g_lengthOfCycleOfFaces[NCOLORS + 1];
+uint64_t g_crossings[NCOLORS][NCOLORS];
+uint64_t g_curveComplete[NCOLORS];
+
 static void initializeCycles(void);
 static void initializeCycleSets(void);
 static void initializeSameDirection(void);
@@ -39,7 +45,14 @@ static void initializePossiblyTo(void);
 static void initializeLengthOfCycleOfFaces(void);
 static void applyMonotonicity(void);
 static void recomputeCountOfChoices(FACE face);
-
+void clearGlobals()
+{
+  memset(g_faces, 0, sizeof(g_faces));
+  memset(g_edgeCount, 0, sizeof(g_edgeCount));
+  memset(g_lengthOfCycleOfFaces, 0, sizeof(g_lengthOfCycleOfFaces));
+  memset(g_crossings, 0, sizeof(g_crossings));
+  memset(g_curveComplete, 0, sizeof(g_curveComplete));
+}
 void clearInitialize()
 {
   memset(pairs2cycleSets, 0, sizeof(pairs2cycleSets));
@@ -47,6 +60,7 @@ void clearInitialize()
   memset(setsOfCycleSets, 0, sizeof(setsOfCycleSets));
   memset(omittingCycleSets, 0, sizeof(omittingCycleSets));
   memset(omittingCycleSetPairs, 0, sizeof(omittingCycleSetPairs));
+
   nextCycle = 0;
   nextSetOfCycleSets = 0;
   clearPoints();

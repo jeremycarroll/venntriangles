@@ -2,7 +2,18 @@
   structures. These are hence the mechanics of search.
 */
 
-#include "venn.h"
+#include "dynamic.h"
+
+#include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "failure.h"
+#include "graph.h"
+#include "point.h"
+#include "statistics.h"
+#include "trail.h"
 /* We use this global to defer removing colors from the search space until
    we have completed computing consequential changes.
    From a design point of view it is local to the makeChoice method, so

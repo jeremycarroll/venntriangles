@@ -30,4 +30,13 @@ Issues to be addressed in refactoring:
 - [ ] https://stackoverflow.com/questions/2394609/makefile-header-dependencies
 - [ ] more clearly separating code that is for testing only.
 - [ ] withoutColor - via function? - rename
+- [ ] omittingCycleSets - move - rename
+- [ ] include order as per https://stackoverflow.com/a/2762596
+- [ ] names matching (|dynamic|initialize|reset)(Point|Color|ColorSet|Edge|Face|Cycle|CycleSet|Failure|Trail)[A-Z][a-z]*
+- [ ] break up graph into edge and face
+- [ ] revisit static/dynamic macros ...
+
+
+Naming is not quite there yet ... the empty case is for global constants; we need to look at the exceptions
+to these too.
 

@@ -5,9 +5,9 @@
 #include "color.h"
 #include "trail.h"
 #include "point.h"
+#include "statistics.h"
 #include <stdint.h>
 
-typedef struct facial_cycle *CYCLE;
 
 
 struct edge {
@@ -28,6 +28,11 @@ struct edge {
    */
   STATIC struct directedPoint possiblyTo[NCOLORS];
 };
+extern EDGE followEdgeBackwards(EDGE edge);
+extern EDGE followEdgeForwards(EDGE edge);
+extern FAILURE curveChecks(EDGE edge, int depth);
+extern void findCorners(COLOR a, EDGE result[3][2]);
+extern int pathLength(EDGE from, EDGE to);
 
 struct face {
   // cycle must be null if cycleSetSize is not 1.
@@ -48,14 +53,18 @@ struct face {
 
 
 extern STATIC struct face g_faces[NFACES];
-extern uint32_t g_edgeCount[2][NCOLORS];
-extern uint32_t g_lengthOfCycleOfFaces[NCOLORS + 1];
-extern uint32_t g_crossings[NCOLORS][NCOLORS];
-extern uint32_t g_curveComplete[NCOLORS];
+extern uint64_t g_edgeCount[2][NCOLORS];
+extern uint64_t g_lengthOfCycleOfFaces[NCOLORS + 1];
+extern uint64_t g_crossings[NCOLORS][NCOLORS];
+extern uint64_t g_curveComplete[NCOLORS];
 extern STATIC struct facial_cycle g_cycles[NCYCLES];
+extern FAILURE makeChoice(FACE face);
+extern FAILURE finalCorrectnessChecks(void);
+extern void setupCentralFaces(int *faceDegrees);
+extern void initializeGraph(void);
+extern void initialize(void);
 
-void setupCentralFaces(int *faceDegrees);
-void initializeGraph(void);
+extern FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth);
 
 #define IS_PRIMARY_EDGE(edge) \
   (memberOfColorSet((edge)->color, (edge)->face->colors))

@@ -50,7 +50,7 @@
 #define NPOINTS ((1 << (NCOLORS - 2)) * NCOLORS * (NCOLORS - 1))
 
 #ifndef STATIC
-#define STATIC const
+#define STATIC
 #endif
 #ifndef DYNAMIC
 #define DYNAMIC
@@ -63,5 +63,10 @@ typedef struct face *FACE;
 
 // TODO - move these:
 extern void initializeDynamicCounters(void);
+
+#include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
 #endif  // CORE_H

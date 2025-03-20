@@ -1,7 +1,8 @@
+#include <stdio.h>
 #include <time.h>
 
 #include "d6.h"
-#include "venn.h"
+#include "graph.h"
 #include "visible_for_testing.h"
 
 FACE chooseFace(bool smallestFirst)

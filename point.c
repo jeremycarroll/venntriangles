@@ -1,4 +1,10 @@
-#include "venn.h"
+#include "point.h"
+
+#include <assert.h>
+#include <stddef.h>
+#include <string.h>
+
+#include "graph.h"
 
 /*
  * Only a few of these are actually used, the look up table is easier this way.

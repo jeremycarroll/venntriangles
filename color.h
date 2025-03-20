@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include "core.h"
+#include "failure.h"
 
 typedef uint32_t COLOR;
 typedef uint32_t COLORSET;
@@ -34,7 +35,9 @@ struct facial_cycle {
 
 #define memberOfColorSet(color, colorSet) (((colorSet) >> (color)) & 1u)
 
-
+extern CYCLESET_DECLARE omittingCycleSets[NCOLORS];
+extern CYCLESET_DECLARE omittingCycleSetPairs[NCOLORS][NCOLORS];
+extern CYCLESET_DECLARE withoutColor[NCOLORS];
 extern void addToCycleSet(uint32_t cycleId, CYCLESET cycleSet);
 extern void removeFromCycleSet(uint32_t cycleId, CYCLESET cycleSet);
 extern bool memberOfCycleSet(uint32_t cycleId, CYCLESET cycleSet);
@@ -45,7 +48,7 @@ extern uint32_t findCycleId(uint32_t *cycle, uint32_t length);
 extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
 extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
 extern uint32_t indexInCycle(CYCLE cycle, COLOR color);
-
+extern struct facial_cycle g_cycles[NCYCLES];
 extern void clearWithoutColor(void);
 extern void initializeWithoutColor(void);
 // Should have Dynamic in name, and be so.
