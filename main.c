@@ -72,6 +72,7 @@ int main0(int argc, char *argv[])
   log_message(LOG_VERBOSE, "Verbose mode enabled\n");
 
   setUpOutputFolder();
+  initializeStatsLogging("/dev/stdout", 200, 10);
   full_search(save_result);
   return 0;
 }

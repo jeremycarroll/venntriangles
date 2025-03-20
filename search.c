@@ -131,6 +131,7 @@ static void full_search_callback6(void *foundSolutionVoidPtr, int *args)
 
 void full_search(void (*foundSolution)(void))
 {
+  initializeSequenceOrder();
   solution_count = 0;
   canoncialCallback(full_search_callback6, (void *)foundSolution);
 #if STATS
