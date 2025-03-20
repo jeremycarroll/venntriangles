@@ -25,9 +25,9 @@ Issues to be addressed in refactoring:
 - [ ] ensure copyright header in every file.
 - [x] eliminate GET_COMPRESSED_FACE_POINTER_ENTRY
 - [ ] move FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET to color.c
-- [ ] delete globals.c
+- [x] delete globals.c
 - [ ] improve TRAIL_SIZE, add maxTrail to stats
-- [ ] https://stackoverflow.com/questions/2394609/makefile-header-dependencies
+- [x] https://stackoverflow.com/questions/2394609/makefile-header-dependencies
 - [ ] more clearly separating code that is for testing only.
 - [ ] withoutColor - via function? - rename
 - [ ] omittingCycleSets - move - rename
