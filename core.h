@@ -61,8 +61,7 @@
 typedef struct edge *EDGE;
 typedef struct face *FACE;
 
-// TODO - move these:
-extern void initializeDynamicCounters(void);
+#define VISIBLE_FOR_TESTING extern
 
 #include <assert.h>
 #include <stddef.h>

@@ -10,7 +10,7 @@ SRC		 = main.c initialize.c trail.c dynamic.c failure.c color.c \
 			  point.c triangles.c debug.c statistics.c search.c d6.c output.c logging.c
 XSRC		= entrypoint.c
 HDR			= color.h edge.h logging.h statistics.h core.h face.h main.h trail.h \
-			  d6.h failure.h output.h venn.h dynamic.h graph.h point.h
+			  d6.h failure.h output.h dynamic.h graph.h point.h
 OBJ3		= $(SRC:%.c=objs3/%.o)
 OBJ4		= $(SRC:%.c=objs4/%.o)
 OBJ5		= $(SRC:%.c=objs5/%.o)

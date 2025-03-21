@@ -29,6 +29,7 @@ struct face {
   STATIC FACE nextByCycleId[NCYCLES];
 };
 
+extern void initializeGraph(void);
 extern STATIC struct face Faces[NFACES];
 extern uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
 extern uint64_t FaceSumOfFaceDegree[NCOLORS + 1];

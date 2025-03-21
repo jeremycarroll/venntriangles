@@ -11,6 +11,4 @@
 #include "statistics.h"
 #include "trail.h"
 
-void initializeGraph(void);
-
 #endif  // GRAPH_H

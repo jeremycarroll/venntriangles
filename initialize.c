@@ -15,6 +15,7 @@
 #include "graph.h"
 #include "point.h"
 #include "trail.h"
+#include "utils.h"
 
 static int nextCycle = 0;
 static int nextSetOfCycleSets = 0;
@@ -45,6 +46,10 @@ static void initializePossiblyTo(void);
 static void initializeLengthOfCycleOfFaces(void);
 static void applyMonotonicity(void);
 static void recomputeCountOfChoices(FACE face);
+
+extern void resetGlobals(void);
+extern void resetInitialize(void);
+
 void resetGlobals()
 {
   memset(Faces, 0, sizeof(Faces));

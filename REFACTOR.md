@@ -8,10 +8,10 @@ Issues to be addressed in refactoring:
 - [ ] Modularization: which functions and variables should be in which files and why.
 - [x] Replace monolithic header file with (approximately) one per source file?
 - [ ] Order include statements appropriately
-- [ ] Better use of -I in the Makefile
+- [x] Better use of -I in the Makefile
 - [ ] Use of #include <> vs #include ""
 - [ ] naming conventions: when to use camelCase, snake_case, all caps etc.
-- [ ] naming conventions when to use prefixes to provide some namespacing
+- [x] naming conventions when to use prefixes to provide some namespacing
 - [ ] ensuring most files are between 100 and 500 lines long
 - [ ] removing unused functions
 - [ ] removing unused struct fields
@@ -19,7 +19,7 @@ Issues to be addressed in refactoring:
 - [ ] ensuring setupCentralFaces uses the trail, so that we don't need to reinitialize in full_search_callback6 but can simply backtrack
 - [ ] ensure toplevel documentation adequately describes the goal and approach
 - [ ] rationalize initialization; maybe use more lazy initialization
-- [ ] ensure visible_for_testing.h is doing the right thing - i.e. only exposing functions and variables to the test files as appropriate
+- [x] ensure visible_for_testing.h is doing the right thing - i.e. only exposing functions and variables to the test files as appropriate
 - [ ] ensure coding conventions are documented
 - [ ] ensure no use of // comments.
 - [ ] ensure copyright header in every file.
