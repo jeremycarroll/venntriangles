@@ -4,7 +4,6 @@
 #include <stdint.h>
 
 #include "color.h"
-#include "graph.h"
 
 typedef int PERMUTATION[NCOLORS];
 

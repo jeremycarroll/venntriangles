@@ -1,4 +1,6 @@
 #include "d6.h"
+
+#include "face.h"
 #define D6_DEBUG 0
 #define TOTAL_5FACE_DEGREE 27
 static COLORSET sequenceOrder[NFACES];

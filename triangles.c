@@ -2,7 +2,7 @@
 #include <stddef.h>
 
 #include "d6.h"
-#include "graph.h"
+#include "face.h"
 #if NCOLORS == 4
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunused-function"

@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "graph.h"
+#include "face.h"
 
 /*
  * Only a few of these are actually used, the look up table is easier this way.

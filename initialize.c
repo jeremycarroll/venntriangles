@@ -12,7 +12,7 @@
 /* In this file we construct the constants used elsewhere. */
 #define STATIC
 
-#include "graph.h"
+#include "face.h"
 #include "point.h"
 #include "trail.h"
 #include "utils.h"

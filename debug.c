@@ -1,7 +1,6 @@
 
 #include <stdarg.h>
 
-#include "graph.h"
 #include "output.h"
 #include "unity.h"
 

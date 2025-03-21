@@ -1,7 +1,7 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-#include "graph.h"
+#include "face.h"
 
 extern char* dynamicEdgeToStr(char* dbuffer, EDGE edge);
 extern char* dynamicFaceToStr(char* dbuffer, FACE face);

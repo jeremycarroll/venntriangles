@@ -7,8 +7,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "face.h"
 #include "failure.h"
-#include "graph.h"
 #include "point.h"
 #include "statistics.h"
 #include "trail.h"

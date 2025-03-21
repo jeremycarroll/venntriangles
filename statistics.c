@@ -4,7 +4,7 @@
 #include <math.h>
 #include <string.h>
 
-#include "graph.h"
+#include "face.h"
 
 static Statistic statistics[MAX_STATISTICS];
 static Failure failures[MAX_STATISTICS];

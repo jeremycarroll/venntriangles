@@ -2,7 +2,8 @@
 #include <time.h>
 
 #include "d6.h"
-#include "graph.h"
+#include "face.h"
+#include "statistics.h"
 #include "trail.h"
 #include "utils.h"
 
