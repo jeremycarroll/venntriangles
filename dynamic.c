@@ -1,5 +1,5 @@
 /* These are the operations that change the dynamic fields in the data
-  structures. These are hence the mechanics of search.
+  structures. These are hence the mechanics of dynamicSearch.
 */
 
 #include "dynamic.h"
@@ -14,14 +14,14 @@
 #include "point.h"
 #include "statistics.h"
 #include "trail.h"
-/* We use this global to defer removing colors from the search space until
-   we have completed computing consequential changes.
-   From a design point of view it is local to the makeChoice method, so
-   does not need to be in the trail.
+/* We use this global to defer removing colors from the dynamicSearch space
+   until we have completed computing consequential changes. From a design point
+   of view it is local to the dynamicFaceMakeChoice method, so does not need to
+   be in the DynamicTrail.
  */
-COLORSET completedColors;
+COLORSET DynamicColorCompleted;
 static FAILURE makeChoiceInternal(FACE face, int depth);
-uint64_t cycleGuessCounter = 0;
+uint64_t DynamicCycleGuessCounter = 0;
 static uint64_t cycleForcedCounter = 0;
 static uint64_t cycleSetReducedCounter = 0;
 
@@ -32,15 +32,15 @@ static uint64_t cycleSetReducedCounter = 0;
     return failure;         \
   }
 
-void setupCentralFaces(int *faceDegrees)
+void initializeFaceSetupCentral(int *faceDegrees)
 {
   CYCLE cycle;
   uint64_t i;
-  FACE centralFace = g_faces + (NFACES - 1);
+  FACE centralFace = Faces + (NFACES - 1);
   for (i = 0; i < NCOLORS; i++) {
     setCycleLength(~(1 << i), faceDegrees[i]);
   }
-  for (cycle = g_cycles;; cycle++) {
+  for (cycle = Cycles;; cycle++) {
     if (cycle->length != NCOLORS) {
       continue;
     }
@@ -54,7 +54,7 @@ void setupCentralFaces(int *faceDegrees)
   NextCycle:
     continue;
   }
-  makeChoice(centralFace);
+  dynamicFaceMakeChoice(centralFace);
 }
 
 static void restrictCycles(FACE face, CYCLESET cycleSet)
@@ -68,13 +68,13 @@ static void restrictCycles(FACE face, CYCLESET cycleSet)
     if (toBeCleared == 0) {
       continue;
     }
-    setDynamicInt(&face->possibleCycles[i],
-                  face->possibleCycles[i] & cycleSet[i]);
+    dynamicTrailSetInt(&face->possibleCycles[i],
+                       face->possibleCycles[i] & cycleSet[i]);
     newCycleSetSize -= __builtin_popcountll(toBeCleared);
   }
   if (newCycleSetSize < face->cycleSetSize) {
     cycleSetReducedCounter++;
-    setDynamicInt(&face->cycleSetSize, newCycleSetSize);
+    dynamicTrailSetInt(&face->cycleSetSize, newCycleSetSize);
   }
 }
 
@@ -83,21 +83,22 @@ static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
 {
   /* check for conflict or no-op. */
   if (face->cycleSetSize == 1 || face->cycle != NULL) {
-    if (!memberOfCycleSet(face->cycle - g_cycles, onlyCycleSet)) {
-      return conflictingConstraintsFailure(depth);
+    if (!initializeCycleSetMember(face->cycle - Cycles, onlyCycleSet)) {
+      return dynamicFailureConflictingConstraints(depth);
     }
     return NULL;
   }
 
   /* Carefully update face->possibleCycles to be anded with cycleSet, on the
-     trail. decreasing the count as we go. */
+     DynamicTrail. decreasing the count as we go. */
   restrictCycles(face, onlyCycleSet);
 
   if (face->cycleSetSize == 0) {
-    return noMatchingCyclesFailure(depth);
+    return dynamicFailureNoMatchingCycles(depth);
   }
   if (face->cycleSetSize == 1) {
-    setDynamicPointer(&face->cycle, findFirstCycleInSet(face->possibleCycles));
+    setDynamicPointer(&face->cycle,
+                      initializeCycleSetFindFirst(face->possibleCycles));
     cycleForcedCounter++;
     return makeChoiceInternal(face, depth + 1);
   }
@@ -114,7 +115,7 @@ static FAILURE propogateChoice(FACE face, EDGE edge, int depth)
 
   FACE aFace = face->adjacentFaces[edge->color];
   FACE abFace = aFace->adjacentFaces[bColor];
-  uint32_t index = indexInCycle(face->cycle, aColor);
+  uint32_t index = cycleIndexOfColor(face->cycle, aColor);
   assert(abFace == face->adjacentFaces[bColor]->adjacentFaces[aColor]);
   assert(abFace != face);
   CHECK_FAILURE(restrictAndPropogateCycles(
@@ -141,25 +142,27 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
 {
   uint32_t i, j;
   CYCLE cycle = face->cycle;
-  uint64_t cycleId = cycle - g_cycles;
+  uint64_t cycleId = cycle - Cycles;
   FAILURE failure;
   /* equality in the followign assertion is achieved in the Venn 3 case, where a
   single choice in any face determines all the faces. */
 #if FACE_DEBUG
   printf("Making choice (internal): ");
-  printFace(face);
+  dynamicFacePrint(face);
 #endif
   /* TODO: what order should these checks be done in. There are a lot of them.
    */
   assert(depth <= NFACES);
   for (i = 0; i < cycle->length - 1; i++) {
-    CHECK_FAILURE(
-        assignPoint(face, cycle->curves[i], cycle->curves[i + 1], depth));
+    CHECK_FAILURE(dynamicPointAssign(face, cycle->curves[i],
+                                     cycle->curves[i + 1], depth));
   }
-  CHECK_FAILURE(assignPoint(face, cycle->curves[i], cycle->curves[0], depth));
+  CHECK_FAILURE(
+      dynamicPointAssign(face, cycle->curves[i], cycle->curves[0], depth));
 
   for (i = 0; i < cycle->length; i++) {
-    CHECK_FAILURE(curveChecks(&face->edges[cycle->curves[i]], depth));
+    CHECK_FAILURE(
+        dynamicEdgeCurveChecks(&face->edges[cycle->curves[i]], depth));
   }
   for (i = 0; i < cycle->length; i++) {
     CHECK_FAILURE(propogateChoice(face, &face->edges[cycle->curves[i]], depth));
@@ -169,7 +172,7 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
       continue;
     }
     CHECK_FAILURE(restrictAndPropogateCycles(face->adjacentFaces[i],
-                                             omittingCycleSets[i], depth));
+                                             CycleSetOmittingOne[i], depth));
   }
 
   if (face->colors == 0 || face->colors == (NFACES - 1)) {
@@ -181,21 +184,21 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
   }
 
   if (face->colors != 0 && face->colors != (NFACES - 1)) {
-    assert(face->next != g_faces);
-    assert(face->previous != g_faces);
+    assert(face->next != Faces);
+    assert(face->previous != Faces);
   }
 
   for (i = 0; i < NCOLORS; i++) {
     for (j = i + 1; j < NCOLORS; j++) {
       if (memberOfColorSet(i, cycle->colors) &&
           memberOfColorSet(j, cycle->colors)) {
-        if (contains2(face->cycle, i, j)) {
+        if (cycleContainsAthenB(face->cycle, i, j)) {
           continue;
         }
       }
       CHECK_FAILURE(
           restrictAndPropogateCycles(face->adjacentFaces[i]->adjacentFaces[j],
-                                     omittingCycleSetPairs[i][j], depth));
+                                     CycleSetOmittingPair[i][j], depth));
     }
   }
 
@@ -207,42 +210,42 @@ static void setToSingletonCycleSet(FACE face, uint64_t cycleId)
   CYCLESET_DECLARE cycleSet;
   uint64_t i;
   memset(cycleSet, 0, sizeof(cycleSet));
-  addToCycleSet(cycleId, cycleSet);
+  initializeCycleSetAdd(cycleId, cycleSet);
   for (i = 0; i < CYCLESET_LENGTH; i++) {
-    maybeSetDynamicInt(&face->possibleCycles[i], cycleSet[i]);
+    dynamicTrailMaybeSetInt(&face->possibleCycles[i], cycleSet[i]);
   }
-  maybeSetDynamicInt(&face->cycleSetSize, 1);
+  dynamicTrailMaybeSetInt(&face->cycleSetSize, 1);
 }
 
-FAILURE makeChoice(FACE face)
+FAILURE dynamicFaceMakeChoice(FACE face)
 {
   FAILURE failure;
   COLOR completedColor;
   uint64_t cycleId;
-  cycleGuessCounter++;
-  completedColors = 0;
-  face->backtrack = trail;
+  DynamicCycleGuessCounter++;
+  DynamicColorCompleted = 0;
+  face->backtrack = DynamicTrail;
   assert(face->cycle != NULL);
-  cycleId = face->cycle - g_cycles;
+  cycleId = face->cycle - Cycles;
   assert(cycleId < NCYCLES);
   assert(cycleId >= 0);
-  assert(memberOfCycleSet(cycleId, face->possibleCycles));
+  assert(initializeCycleSetMember(cycleId, face->possibleCycles));
   setToSingletonCycleSet(face, cycleId);
 
 #if FACE_DEBUG
   printf("Making choice: ");
-  printFace(face);
+  dynamicFacePrint(face);
 #endif
 
   failure = makeChoiceInternal(face, 0);
   if (failure != NULL) {
     return failure;
   }
-  if (completedColors) {
+  if (DynamicColorCompleted) {
     for (completedColor = 0; completedColor < NCOLORS; completedColor++) {
-      if (memberOfColorSet(completedColor, completedColors)) {
-        if (!removeColorFromSearch(completedColor)) {
-          return disconnectedCurveFailure(0);
+      if (memberOfColorSet(completedColor, DynamicColorCompleted)) {
+        if (!dynamicColorRemoveFromSearch(completedColor)) {
+          return dynamicFailureDisconnectedCurve(0);
         }
       }
     }
@@ -250,15 +253,16 @@ FAILURE makeChoice(FACE face)
   return NULL;
 }
 
-bool removeColorFromSearch(COLOR color)
+bool dynamicColorRemoveFromSearch(COLOR color)
 {
   FACE f;
   uint32_t i;
-  for (i = 0, f = g_faces; i < NFACES; i++, f++) {
+  for (i = 0, f = Faces; i < NFACES; i++, f++) {
     if (f->cycle == NULL) {
       /* Discard failure, we will report a different one. */
       if (f->edges[color].to == NULL &&
-          restrictAndPropogateCycles(f, withoutColor[color], 0) != NULL) {
+          restrictAndPropogateCycles(f, CylesetWithoutColor[color], 0) !=
+              NULL) {
         return false;
       }
     }
@@ -268,7 +272,7 @@ bool removeColorFromSearch(COLOR color)
 
 void initializeDynamicCounters(void)
 {
-  newStatistic(&cycleGuessCounter, "?", "guesses");
-  newStatistic(&cycleForcedCounter, "+", "forced");
-  newStatistic(&cycleSetReducedCounter, "-", "reduced");
+  dynamicStatisticNew(&DynamicCycleGuessCounter, "?", "guesses");
+  dynamicStatisticNew(&cycleForcedCounter, "+", "forced");
+  dynamicStatisticNew(&cycleSetReducedCounter, "-", "reduced");
 }

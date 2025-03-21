@@ -8,12 +8,12 @@
 TODO: add graphml support.
 */
 
-extern void printSolution(FILE* fp);
+extern void dynamicSolutionPrint(FILE* fp);
 
 static char lastPrefix[128] = "";
 static int solutionNumber = 0;
 
-void writeSolution(char* prefix)
+void dynamicSolutionWrite(char* prefix)
 {
   EDGE corners[3][2];
   char filename[1024];
@@ -32,20 +32,20 @@ void writeSolution(char* prefix)
     perror("Failed to open file");
     exit(EXIT_FAILURE);
   }
-  printSolution(fp);
+  dynamicSolutionPrint(fp);
   for (COLOR a = 0; a < NCOLORS; a++) {
-    findCorners(a, corners);
+    dynamicEdgeFindCorners(a, corners);
     for (int i = 0; i < 3; i++) {
-      fprintf(fp, "{%c:%d} ", color2char(a), i);
+      fprintf(fp, "{%c:%d} ", dynamicColorToChar(a), i);
       if (corners[i][0] == NULL) {
-        EDGE edge = &g_faces[NFACES - 1].edges[a];
-        pLength = pathLength(edge, followEdgeBackwards(edge));
+        EDGE edge = &Faces[NFACES - 1].edges[a];
+        pLength = dynamicEdgePathLength(edge, dynamicEdgeFollowBackwards(edge));
         fprintf(fp, "NULL/%d ", pLength);
       } else {
-        pLength = pathLength(corners[i][0]->reversed, corners[i][1]);
+        pLength = dynamicEdgePathLength(corners[i][0]->reversed, corners[i][1]);
         buffer[0] = buffer[1] = 0;
-        fprintf(fp, "(%s => %s/%d) ", edge2str(buffer, corners[i][0]),
-                edge2str(buffer, corners[i][1]), pLength);
+        fprintf(fp, "(%s => %s/%d) ", dynamicEdgeToStr(buffer, corners[i][0]),
+                dynamicEdgeToStr(buffer, corners[i][1]), pLength);
       }
       numberOfVariations *= pLength;
       fprintf(fp, "\n");

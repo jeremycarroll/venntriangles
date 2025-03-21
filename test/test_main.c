@@ -6,7 +6,7 @@
 #include "../main.h"
 #include "unity.h"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-extern int main0(int argc, char *argv[]);
+extern int dynamicMain0(int argc, char *argv[]);
 
 void setUp(void)
 {
@@ -26,8 +26,8 @@ void test_log_message(void)
   FILE *oldStdout = stderr;
   stderr = stream;
 
-  log_level = LOG_DEBUG;
-  log_message(LOG_DEBUG, "Debug message\n");
+  DynamicLogLevel = LOG_DEBUG;
+  dynamicLogMessage(LOG_DEBUG, "Debug message\n");
   fflush(stream);
   TEST_ASSERT_EQUAL_STRING("Debug message\n", buffer);
 
@@ -47,7 +47,7 @@ int run(int argc, char *argv[])
   buffer[0] = 0;
   oldStdout = stderr;
   stderr = stream;
-  status = main0(argc, argv);
+  status = dynamicMain0(argc, argv);
   fflush(stream);
   // Reset stdout
   stderr = oldStdout;
@@ -78,15 +78,15 @@ void test_main_arguments(void)
   TEST_ASSERT_NOT_EQUAL_INT(0, run(argc5, argv5));
 }
 
-void full_search(void (*foundSolution)(void)) { /* stub for testing. */ }
+void dynamicSearchFull(void (*foundSolution)(void)) { /* stub for testing. */ }
 
-const char *d6FaceDegreeSignature(void) { return "stub"; }
+const char *dynamicFaceDegreeSignature(void) { return "stub"; }
 
-void writeSolution(const char *buffer) { /* stub for testing. */ }
+void dynamicSolutionWrite(const char *buffer) { /* stub for testing. */ }
 
 void initializeSequenceOrder() { /* stub for testing. */ }
 
-void initializeStatsLogging(char *filename, int frequency, int seconds)
+void initializeStatisticLogging(char *filename, int frequency, int seconds)
 { /* stub for testing. */ }
 
 int main(void)

@@ -12,15 +12,15 @@
 
 static char *targetFolder = NULL;
 
-void save_result(void)
+void dynamicSaveResult(void)
 {
   char buffer[1024];
   snprintf(buffer, sizeof(buffer), "%s/%s", targetFolder,
-           d6FaceDegreeSignature());
-  writeSolution(buffer);
+           dynamicFaceDegreeSignature());
+  dynamicSolutionWrite(buffer);
 }
 
-void setUpOutputFolder()
+void initializeOutputFolder()
 {
   struct stat st = {0};
 
@@ -39,20 +39,20 @@ void setUpOutputFolder()
   }
 }
 
-int main0(int argc, char *argv[])
+int dynamicMain0(int argc, char *argv[])
 {
   int opt;
   targetFolder = NULL;
   while ((opt = getopt(argc, argv, "dvqf:")) != -1) {
     switch (opt) {
       case 'd':
-        log_level = LOG_DEBUG;
+        DynamicLogLevel = LOG_DEBUG;
         break;
       case 'v':
-        log_level = LOG_VERBOSE;
+        DynamicLogLevel = LOG_VERBOSE;
         break;
       case 'q':
-        log_level = LOG_QUIET;
+        DynamicLogLevel = LOG_QUIET;
         break;
       case 'f':
         targetFolder = optarg;
@@ -68,11 +68,11 @@ int main0(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
-  log_message(LOG_DEBUG, "Debug mode enabled\n");
-  log_message(LOG_VERBOSE, "Verbose mode enabled\n");
+  dynamicLogMessage(LOG_DEBUG, "Debug mode enabled\n");
+  dynamicLogMessage(LOG_VERBOSE, "Verbose mode enabled\n");
 
-  setUpOutputFolder();
-  initializeStatsLogging("/dev/stdout", 200, 10);
-  full_search(save_result);
+  initializeOutputFolder();
+  initializeStatisticLogging("/dev/stdout", 200, 10);
+  dynamicSearchFull(dynamicSaveResult);
   return 0;
 }

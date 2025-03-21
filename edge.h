@@ -35,11 +35,11 @@ struct edge {
   STATIC struct directedPoint possiblyTo[NCOLORS];
 };
 
-extern EDGE followEdgeBackwards(EDGE edge);
-extern EDGE followEdgeForwards(EDGE edge);
-extern FAILURE curveChecks(EDGE edge, int depth);
-extern void findCorners(COLOR a, EDGE result[3][2]);
-extern int pathLength(EDGE from, EDGE to);
+extern EDGE dynamicEdgeFollowBackwards(EDGE edge);
+extern EDGE dynamicEdgeFollowForwards(EDGE edge);
+extern FAILURE dynamicEdgeCurveChecks(EDGE edge, int depth);
+extern void dynamicEdgeFindCorners(COLOR a, EDGE result[3][2]);
+extern int dynamicEdgePathLength(EDGE from, EDGE to);
 
 #define IS_PRIMARY_EDGE(edge) (memberOfColorSet((edge)->color, (edge)->colors))
 

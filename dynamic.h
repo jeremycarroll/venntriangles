@@ -8,12 +8,12 @@
 #include "point.h"
 #include "trail.h"
 
-extern COLORSET completedColors;
-extern uint64_t cycleGuessCounter;
+extern COLORSET DynamicColorCompleted;
+extern uint64_t DynamicCycleGuessCounter;
 
-void setupCentralFaces(int *faceDegrees);
-FAILURE makeChoice(FACE face);
-bool removeColorFromSearch(COLOR color);
+void initializeFaceSetupCentral(int *faceDegrees);
+FAILURE dynamicFaceMakeChoice(FACE face);
+bool dynamicColorRemoveFromSearch(COLOR color);
 void initializeDynamicCounters(void);
 
 #endif  // DYNAMIC_H

@@ -68,8 +68,8 @@ struct undirectedPoint {
 };
 
 extern void initializePoints(void);
-extern void clearPoints(void);
-extern UPOINT addToPoint(FACE face, EDGE incomingEdge, COLOR othercolor);
-extern FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth);
+extern void resetPoints(void);
+extern UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
+extern FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
 
 #endif  // POINT_H

@@ -7,51 +7,51 @@
 void setUp(void)
 {
   initialize();
-  initializeStatsLogging(NULL, 4, 1);
+  initializeStatisticLogging(NULL, 4, 1);
 }
 
 void tearDown(void)
 {
-  clearGlobals();
-  clearInitialize();
+  resetGlobals();
+  resetInitialize();
   resetTrail();
   resetStatistics();
 }
 
 static void test_outer_face()
 {
-  FACE face = g_faces;
+  FACE face = Faces;
   TEST_ASSERT_EQUAL(0, face->colors);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[0], g_faces + 1);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[1], g_faces + 2);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[2], g_faces + 4);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[0], Faces + 1);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[1], Faces + 2);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 4);
 }
 
 static void test_a_face()
 {
-  FACE face = g_faces + 1;
+  FACE face = Faces + 1;
   TEST_ASSERT_EQUAL(1, face->colors);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[0], g_faces);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[1], g_faces + 3);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[2], g_faces + 5);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[0], Faces);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[1], Faces + 3);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 5);
 }
 
 static void test_ab_face()
 {
-  FACE face = g_faces + 3;
+  FACE face = Faces + 3;
   TEST_ASSERT_EQUAL(3, face->colors);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[0], g_faces + 2);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[1], g_faces + 1);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[2], g_faces + 7);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[0], Faces + 2);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[1], Faces + 1);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 7);
 }
 
 static void test_abc_face()
 {
-  FACE face = g_faces + 7;
+  FACE face = Faces + 7;
   TEST_ASSERT_EQUAL(7, face->colors);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[0], g_faces + 6);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[1], g_faces + 5);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[2], g_faces + 3);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[0], Faces + 6);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[1], Faces + 5);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 3);
 }
 
 static void sanity_point(UPOINT point)
@@ -77,7 +77,7 @@ TODO add picture to justify the following test.
 */
 static void test_outer_a_edge()
 {
-  FACE face = g_faces;
+  FACE face = Faces;
   EDGE edge = &face->edges[0];
   TEST_ASSERT_FALSE(IS_PRIMARY_EDGE(edge));
   TEST_ASSERT_EQUAL(face->colors, edge->colors);
@@ -97,7 +97,7 @@ TODO add picture to justify the following test.
 */
 static void test_a_face_a_edge()
 {
-  FACE face = g_faces + 1;
+  FACE face = Faces + 1;
   EDGE edge = &face->edges[0];
   TEST_ASSERT_TRUE(IS_PRIMARY_EDGE(edge));
   TEST_ASSERT_EQUAL(face->colors, edge->colors);
@@ -117,7 +117,7 @@ TODO add picture to justify the following test.
 */
 static void test_ab_face_a_edge()
 {
-  FACE face = g_faces + 3;
+  FACE face = Faces + 3;
   EDGE edge = &face->edges[0];
   TEST_ASSERT_TRUE(IS_PRIMARY_EDGE(edge));
   TEST_ASSERT_EQUAL(face->colors, edge->colors);
@@ -137,7 +137,7 @@ TODO add picture to justify the following test.
 */
 static void test_abc_face_a_edge()
 {
-  FACE face = g_faces + 7;
+  FACE face = Faces + 7;
   EDGE edge = &face->edges[0];
   TEST_ASSERT_TRUE(IS_PRIMARY_EDGE(edge));
   TEST_ASSERT_EQUAL(face->colors, edge->colors);
@@ -157,11 +157,11 @@ static void verify_face_size(int size)
 {
   int i;
   for (i = 0; i < NFACES; i++) {
-    TEST_ASSERT_EQUAL(size, g_faces[i].cycleSetSize);
+    TEST_ASSERT_EQUAL(size, Faces[i].cycleSetSize);
     if (size == 1) {
-      TEST_ASSERT_NOT_NULL(g_faces[i].cycle);
+      TEST_ASSERT_NOT_NULL(Faces[i].cycle);
     } else {
-      TEST_ASSERT_NULL(g_faces[i].cycle);
+      TEST_ASSERT_NULL(Faces[i].cycle);
     }
   }
 }
@@ -170,24 +170,24 @@ static void test_choosing_and_backtracking()
 {
   int i;
   FACE face;
-  TRAIL startTrail = trail;
+  TRAIL startTrail = DynamicTrail;
   for (i = 0; i < NFACES; i++) {
-    TEST_ASSERT_EQUAL(startTrail, trail);
+    TEST_ASSERT_EQUAL(startTrail, DynamicTrail);
     verify_face_size(2);
-    face = g_faces + i;
-    face->cycle = g_cycles;
-    TEST_ASSERT_NULL(makeChoice(face));
+    face = Faces + i;
+    face->cycle = Cycles;
+    TEST_ASSERT_NULL(dynamicFaceMakeChoice(face));
 #if STATS
-    printStatisticsOneLine();
+    dynamicStatisticPrintOneLine();
 #endif
     verify_face_size(1);
-    backtrackTo(face->backtrack);
+    dynamicTrailBacktrackTo(face->backtrack);
     face->cycle = NULL;
   }
 #if STATS
-  printStatisticsFull();
+  dynamicStatisticPrintFull();
 #endif
-  TEST_ASSERT_EQUAL(8, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(8, DynamicCycleGuessCounter);
 }
 
 static int solution_count = 0;
@@ -195,7 +195,7 @@ static void found_solution() { solution_count++; }
 
 static void test_search()
 {
-  search(true, found_solution);
+  dynamicSearch(true, found_solution);
   TEST_ASSERT_EQUAL(2, solution_count);
 }
 

@@ -5,17 +5,16 @@
 #include "graph.h"
 #include "visible_for_testing.h"
 
-FACE chooseFace(bool smallestFirst)
+FACE dynamicFaceChoose(bool smallestFirst)
 {
   FACE face = NULL;
   int sign = smallestFirst ? 1 : -1;
   int64_t min = smallestFirst ? (NCYCLES + 1) : 0;
   int i;
   for (i = 0; i < NFACES; i++) {
-    if (sign * (int64_t)g_faces[i].cycleSetSize < min &&
-        g_faces[i].cycle == NULL) {
-      min = sign * (int64_t)g_faces[i].cycleSetSize;
-      face = g_faces + i;
+    if (sign * (int64_t)Faces[i].cycleSetSize < min && Faces[i].cycle == NULL) {
+      min = sign * (int64_t)Faces[i].cycleSetSize;
+      face = Faces + i;
     }
   }
   return face;
@@ -23,11 +22,11 @@ FACE chooseFace(bool smallestFirst)
 
 static CYCLE chooseCycle(FACE face, CYCLE cycle)
 {
-  return findNextCycleInSet(face->possibleCycles, cycle);
+  return initializeCycleSetFindNext(face->possibleCycles, cycle);
 }
 
 static int solution_count = 0;
-void search(bool smallestFirst, void (*foundSolution)(void))
+void dynamicSearch(bool smallestFirst, void (*foundSolution)(void))
 {
   FACE face;
   FACE chosenFaces[NFACES];
@@ -36,19 +35,19 @@ void search(bool smallestFirst, void (*foundSolution)(void))
   int position = 0;
   enum { NEXT_FACE, NEXT_CYCLE } state = NEXT_FACE;
   while (position >= 0) {
-    printStatisticsOneLine(position);
+    dynamicStatisticPrintOneLine(position);
     switch (state) {
       case NEXT_FACE:
-        face = chooseFace(smallestFirst);
+        face = dynamicFaceChoose(smallestFirst);
         if (face == NULL) {
-          if (finalCorrectnessChecks() == NULL) {
+          if (dynamicFaceFinalCorrectnessChecks() == NULL) {
             solution_count++;
             foundSolution();
           }
           position -= 1;
           state = NEXT_CYCLE;
         } else {
-          face->backtrack = trail;
+          face->backtrack = DynamicTrail;
           chosenFaces[position] = face;
           chosenCycles[position] = NULL;
           state = NEXT_CYCLE;
@@ -56,10 +55,10 @@ void search(bool smallestFirst, void (*foundSolution)(void))
         break;
       case NEXT_CYCLE:
         face = chosenFaces[position];
-        if (backtrackTo(face->backtrack)) {
+        if (dynamicTrailBacktrackTo(face->backtrack)) {
 #if BACKTRACK_DEBUG
           printf("Backtracking to ");
-          printFace(face);
+          dynamicFacePrint(face);
 #endif
         }
         cycle = chooseCycle(face, chosenCycles[position]);
@@ -71,7 +70,7 @@ void search(bool smallestFirst, void (*foundSolution)(void))
           /* suspect - because face->backtrack gets reset. */
           setDynamicPointer(&face->cycle, cycle);
           assert(face->cycle == cycle);
-          if (makeChoice(face) == NULL) {
+          if (dynamicFaceMakeChoice(face) == NULL) {
             position += 1;
             state = NEXT_FACE;
           } else {
@@ -85,9 +84,10 @@ void search(bool smallestFirst, void (*foundSolution)(void))
   }
 }
 
-void enumerateSolutions(FILE *(*fp)(char *signature, int soln, int subsoln))
+void dynamicSolutionEnumerate(FILE *(*fp)(char *signature, int soln,
+                                          int subsoln))
 {
-  char *signature = d6FaceDegreeSignature();
+  char *signature = dynamicFaceDegreeSignature();
 }
 
 static clock_t totalWastedTime = 0;
@@ -101,12 +101,12 @@ static void full_search_callback6(void *foundSolutionVoidPtr, int *args)
   int initialSolutionCount = solution_count;
   int i;
   void (*foundSolution)(void) = foundSolutionVoidPtr;
-  clearGlobals();
-  clearInitialize();
+  resetGlobals();
+  resetInitialize();
   resetTrail();
   initialize();
-  setupCentralFaces(args);
-  search(true, foundSolution);
+  initializeFaceSetupCentral(args);
+  dynamicSearch(true, foundSolution);
   used = clock() - now;
   if (solution_count != initialSolutionCount) {
     totalUsefulTime += used;
@@ -129,12 +129,12 @@ static void full_search_callback6(void *foundSolutionVoidPtr, int *args)
   }
 }
 
-void full_search(void (*foundSolution)(void))
+void dynamicSearchFull(void (*foundSolution)(void))
 {
   initializeSequenceOrder();
   solution_count = 0;
-  canoncialCallback(full_search_callback6, (void *)foundSolution);
+  dynamicFaceCanonicalCallback(full_search_callback6, (void *)foundSolution);
 #if STATS
-  printStatisticsFull();
+  dynamicStatisticPrintFull();
 #endif
 }

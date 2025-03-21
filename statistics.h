@@ -16,13 +16,13 @@ typedef struct {
   char* name;
 } Statistic;
 
-void newStatistic(uint64_t* counter, char* shortName, char* name);
-void newFailureStatistic(FAILURE failure);
+void dynamicStatisticNew(uint64_t* counter, char* shortName, char* name);
+void dynamicFailureStatisticNew(FAILURE failure);
 void resetStatistics(void);
-double calculateSearchSpace(void);
-int countChosen(void);
-void printStatisticsOneLine(int position);
-void printStatisticsFull(void);
-void initializeStatsLogging(char* filename, int frequency, int seconds);
+double dynamicStatisticCalculateSearchSpace(void);
+int dynamicStatisticCountChosen(void);
+void dynamicStatisticPrintOneLine(int position);
+void dynamicStatisticPrintFull(void);
+void initializeStatisticLogging(char* filename, int frequency, int seconds);
 
 #endif  // STATISTICS_H

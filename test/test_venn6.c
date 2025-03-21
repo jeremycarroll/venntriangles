@@ -11,17 +11,17 @@
 void setUp(void)
 {
   initialize();
-  initializeStatsLogging("/dev/stdout", 200, 10);
+  initializeStatisticLogging("/dev/stdout", 200, 10);
   initializeSequenceOrder();
 }
 
 void tearDown(void)
 {
 #if TEST_INFO
-  printStatisticsFull();
+  dynamicStatisticPrintFull();
 #endif
-  clearGlobals();
-  clearInitialize();
+  resetGlobals();
+  resetInitialize();
   resetTrail();
   resetStatistics();
 }
@@ -30,8 +30,8 @@ static int solution_count = 0;
 static void found_solution()
 {
 #if TEST_INFO
-  printSolution(NULL);
-  printStatisticsFull();
+  dynamicSolutionPrint(NULL);
+  dynamicStatisticPrintFull();
 #endif
   solution_count++;
 }
@@ -39,32 +39,32 @@ static void found_solution()
 static void test_search_for_best_solution()
 {
   solution_count = 0;
-  setupCentralFaces(intArray(5, 5, 5, 4, 4, 4));
-  search(true, found_solution);
+  initializeFaceSetupCentral(dynamicIntArray(5, 5, 5, 4, 4, 4));
+  dynamicSearch(true, found_solution);
 
   // TEST_ASSERT_EQUAL(80, solution_count);
 #if STATS
-  printStatisticsFull();
+  dynamicStatisticPrintFull();
 #endif
 }
 
 static void test_search_for_two_solutions()
 {
   solution_count = 0;
-  setupCentralFaces(intArray(5, 5, 5, 4, 4, 4));
-  addSpecificFace("c", "adbce");
+  initializeFaceSetupCentral(dynamicIntArray(5, 5, 5, 4, 4, 4));
+  dynamicFaceAddSpecific("c", "adbce");
   /* This is a short statement of the best solution.
-  addSpecificFace("a", "abed");
-  addSpecificFace("c", "adbce");
-  addSpecificFace("bde", "bfd");
-  addSpecificFace("bdf", "abf");
-  addSpecificFace("abce", "cef");
-  addSpecificFace("acdf", "aced");
-  addSpecificFace("cde", "adb");
-  addSpecificFace("b", "abcf");
-  addSpecificFace("f", "aefdc");
+  dynamicFaceAddSpecific("a", "abed");
+  dynamicFaceAddSpecific("c", "adbce");
+  dynamicFaceAddSpecific("bde", "bfd");
+  dynamicFaceAddSpecific("bdf", "abf");
+  dynamicFaceAddSpecific("abce", "cef");
+  dynamicFaceAddSpecific("acdf", "aced");
+  dynamicFaceAddSpecific("cde", "adb");
+  dynamicFaceAddSpecific("b", "abcf");
+  dynamicFaceAddSpecific("f", "aefdc");
   */
-  search(true, found_solution);
+  dynamicSearch(true, found_solution);
 
   // TEST_ASSERT_EQUAL(2, solution_count);
 }
@@ -79,12 +79,12 @@ static void full_search_callback6(int *args)
   clock_t used;
   int initialSolutionCount = solution_count;
   int i;
-  clearGlobals();
-  clearInitialize();
+  resetGlobals();
+  resetInitialize();
   resetTrail();
   initialize();
-  setupCentralFaces(args);
-  search(true, found_solution);
+  initializeFaceSetupCentral(args);
+  dynamicSearch(true, found_solution);
   used = clock() - now;
   if (solution_count != initialSolutionCount) {
     totalUsefulTime += used;
@@ -111,9 +111,9 @@ static void full_search_callback6(int *args)
 static void test_full_search(void)
 {
   solution_count = 0;
-  full_search(found_solution);
+  dynamicSearchFull(found_solution);
 #if STATS
-  printStatisticsFull();
+  dynamicStatisticPrintFull();
 #endif
   TEST_ASSERT_EQUAL(233, solution_count);
 }

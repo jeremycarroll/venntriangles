@@ -44,16 +44,16 @@ static char* getLookup(void)
 #endif
 }
 
-void printFace(FACE face)
+void dynamicFacePrint(FACE face)
 {
   char nBuffer[2048] = {0, 0};
-  printf("%s\n", face2str(nBuffer, face));
+  printf("%s\n", dynamicFaceToStr(nBuffer, face));
 }
 
-void printEdge(EDGE edge)
+void dynamicEdgePrint(EDGE edge)
 {
   char nBuffer[2048] = {0, 0};
-  printf("%s\n", edge2str(nBuffer, edge));
+  printf("%s\n", dynamicEdgeToStr(nBuffer, edge));
 }
 
 static char* nextSlot(char* buffer)
@@ -71,7 +71,7 @@ static char* returnSlot(char* buffer)
   return buffer;
 }
 
-char* colors2str(char* dbuffer, COLORSET colors)
+char* dynamicColorSetToStr(char* dbuffer, COLORSET colors)
 {
   uint32_t i;
   char* result = nextSlot(dbuffer);
@@ -88,9 +88,9 @@ char* colors2str(char* dbuffer, COLORSET colors)
   return returnSlot(result);
 }
 
-int color2char(COLOR c) { return getLookup()[c]; }
+int dynamicColorToChar(COLOR c) { return getLookup()[c]; }
 
-char* cycle2str(char* dbuffer, CYCLE cycle)
+char* dynamicCycleToStr(char* dbuffer, CYCLE cycle)
 {
   char* result = nextSlot(dbuffer);
   char* lookup = getLookup();
@@ -107,10 +107,10 @@ char* cycle2str(char* dbuffer, CYCLE cycle)
   return returnSlot(result);
 }
 
-char* face2str(char* dbuffer, FACE face)
+char* dynamicFaceToStr(char* dbuffer, FACE face)
 {
-  char* colors = colors2str(dbuffer, face->colors);
-  char* cycle = cycle2str(dbuffer, face->cycle);
+  char* colors = dynamicColorSetToStr(dbuffer, face->colors);
+  char* cycle = dynamicCycleToStr(dbuffer, face->cycle);
   char* result = nextSlot(dbuffer);
   char* cycleSetSizeBuf = result + sprintf(result, "%s%s", colors, cycle);
   if (face->cycleSetSize > 1) {
@@ -119,54 +119,54 @@ char* face2str(char* dbuffer, FACE face)
   return returnSlot(result);
 }
 
-char* upoint2str(char* dbuffer, UPOINT up)
+char* dynamicUPointToStr(char* dbuffer, UPOINT up)
 {
   char* lookup = getLookup();
-  char* colors = colors2str(dbuffer, up->colors);
+  char* colors = dynamicColorSetToStr(dbuffer, up->colors);
   char* result = nextSlot(dbuffer);
   sprintf(result, "%s(%c,%c)", colors, lookup[up->primary],
           lookup[up->secondary]);
   return returnSlot(result);
 }
 
-char* dpoint2str(char* dbuffer, DPOINT dp)
+char* dynamicDPointToStr(char* dbuffer, DPOINT dp)
 {
-  return upoint2str(dbuffer, dp->point);
+  return dynamicUPointToStr(dbuffer, dp->point);
 }
 
-char* edge2str(char* dbuffer, EDGE edge)
+char* dynamicEdgeToStr(char* dbuffer, EDGE edge)
 {
-  char color = color2char(edge->color);
-  char* colors = colors2str(dbuffer, edge->colors);
-  char* to = edge->to == NULL ? "***" : dpoint2str(dbuffer, edge->to);
+  char color = dynamicColorToChar(edge->color);
+  char* colors = dynamicColorSetToStr(dbuffer, edge->colors);
+  char* to = edge->to == NULL ? "***" : dynamicDPointToStr(dbuffer, edge->to);
   char* result = nextSlot(dbuffer);
   sprintf(result, "%c%c/%s[%s]", color, IS_PRIMARY_EDGE(edge) ? '+' : '-',
           colors, to);
   return returnSlot(result);
 }
 
-void printSelectedFaces(void)
+void dynamicFacePrintSelected(void)
 {
   uint32_t i;
   FACE face;
-  for (i = 0, face = g_faces; i < NFACES; i++, face++) {
+  for (i = 0, face = Faces; i < NFACES; i++, face++) {
     if (face->cycle || face->cycleSetSize < 2) {
-      printFace(face);
+      dynamicFacePrint(face);
     }
   }
 }
 
-uint32_t cycleIdFromColors(char* colors)
+uint32_t dynamicCycleIdFromColors(char* colors)
 {
   COLOR cycle[NCOLORS];
   int i;
   for (i = 0; *colors; i++, colors++) {
     cycle[i] = *colors - 'a';
   }
-  return findCycleId(cycle, i);
+  return cycleFindId(cycle, i);
 }
 
-FACE faceFromColors(char* colors)
+FACE dynamicFaceFromColors(char* colors)
 {
   int face_id = 0;
   while (true) {
@@ -176,10 +176,10 @@ FACE faceFromColors(char* colors)
     face_id |= (1 << (*colors - 'a'));
     colors++;
   }
-  return g_faces + face_id;
+  return Faces + face_id;
 }
 
-void printSolution(FILE* fp)
+void dynamicSolutionPrint(FILE* fp)
 {
   COLORSET colors = 0;
   if (fp == NULL) {
@@ -187,15 +187,15 @@ void printSolution(FILE* fp)
   }
 
   while (true) {
-    FACE face = g_faces + colors;
+    FACE face = Faces + colors;
     do {
       FACE next = face->next;
       COLORSET colorBeingDropped = face->colors & ~next->colors;
       COLORSET colorBeingAdded = next->colors & ~face->colors;
       char buffer[256] = {0, 0};
-      fprintf(fp, "%s [%c,%c] ", face2str(buffer, face),
-              colors2str(buffer, colorBeingDropped)[1],
-              colors2str(buffer, colorBeingAdded)[1]);
+      fprintf(fp, "%s [%c,%c] ", dynamicFaceToStr(buffer, face),
+              dynamicColorSetToStr(buffer, colorBeingDropped)[1],
+              dynamicColorSetToStr(buffer, colorBeingAdded)[1]);
       face = next;
     } while (face->colors != colors);
     fprintf(fp, "\n");
@@ -207,28 +207,29 @@ void printSolution(FILE* fp)
   fprintf(fp, "\n");
 }
 
-FACE addSpecificFace(char* colors, char* cycle)
+FACE dynamicFaceAddSpecific(char* colors, char* cycle)
 {
   FAILURE failure;
-  FACE face = faceFromColors(colors);
-  uint32_t cycleId = cycleIdFromColors(cycle);
-  TEST_ASSERT_TRUE(memberOfCycleSet(cycleId, face->possibleCycles));
+  FACE face = dynamicFaceFromColors(colors);
+  uint32_t cycleId = dynamicCycleIdFromColors(cycle);
+  TEST_ASSERT_TRUE(initializeCycleSetMember(cycleId, face->possibleCycles));
   if (face->cycleSetSize == 1) {
-    TEST_ASSERT_EQUAL(face->cycle, findFirstCycleInSet(face->possibleCycles));
-    TEST_ASSERT_EQUAL(face->cycle, g_cycles + cycleId);
+    TEST_ASSERT_EQUAL(face->cycle,
+                      initializeCycleSetFindFirst(face->possibleCycles));
+    TEST_ASSERT_EQUAL(face->cycle, Cycles + cycleId);
   } else {
-    face->cycle = g_cycles + cycleId;
-    failure = makeChoice(face);
+    face->cycle = Cycles + cycleId;
+    failure = dynamicFaceMakeChoice(face);
 #if STATS
-    printStatisticsOneLine(0);
+    dynamicStatisticPrintOneLine(0);
 #endif
 #if DEBUG
-    printSelectedFaces();
+    dynamicFacePrintSelected();
 #else
 
     if (failure != NULL) {
       printf("Failure: %s %s\n", failure->label, failure->shortLabel);
-      printSelectedFaces();
+      dynamicFacePrintSelected();
     }
 #endif
     TEST_ASSERT_NULL(failure);
@@ -236,7 +237,7 @@ FACE addSpecificFace(char* colors, char* cycle)
   return face;
 }
 
-int* intArray(int a, ...)
+int* dynamicIntArray(int a, ...)
 {
   static int result[NCOLORS];
   va_list ap;
@@ -251,14 +252,14 @@ int* intArray(int a, ...)
   return result;
 }
 
-void printCycle(CYCLE cycle)
+void dynamicCyclePrint(CYCLE cycle)
 {
   for (uint64_t i = 0; i < cycle->length; i++) {
     printf("%c", 'a' + cycle->curves[i]);
   }
 }
 /* returns false if cycleset has bits set past the last. */
-bool printCycleSet(CYCLESET cycleSet)
+bool dynamicCycleSetPrint(CYCLESET cycleSet)
 {
   uint32_t lastBit = (NCYCLES - 1) % BITS_PER_WORD;
   uint64_t faulty, i, j;
@@ -272,7 +273,7 @@ bool printCycleSet(CYCLESET cycleSet)
       for (j = 0; j < 64; j++) {
         if (cycleSet[i] & (1ul << j)) {
           putchar(' ');
-          printCycle(g_cycles + i * BITS_PER_WORD + j);
+          dynamicCyclePrint(Cycles + i * BITS_PER_WORD + j);
           putchar(',');
         }
       }

@@ -7,16 +7,16 @@
 void setUp(void)
 {
   initialize();
-  initializeStatsLogging("/dev/stdout", 20, 5);
+  initializeStatisticLogging("/dev/stdout", 20, 5);
 }
 
 void tearDown(void)
 {
 #if TEST_INFO
-  printStatisticsFull();
+  dynamicStatisticPrintFull();
 #endif
-  clearGlobals();
-  clearInitialize();
+  resetGlobals();
+  resetInitialize();
   resetTrail();
   resetStatistics();
 }
@@ -27,31 +27,31 @@ static void found_solution() { solution_count++; }
 static void test_search()
 {
   solution_count = 0;
-  search(false, found_solution);
+  dynamicSearch(false, found_solution);
   TEST_ASSERT_EQUAL(FACTORIAL4, solution_count);
 }
 
 static void test_search_abcd()
 {
   solution_count = 0;
-  setupCentralFaces(intArray(0, 0, 0, 0));
-  search(false, found_solution);
+  initializeFaceSetupCentral(dynamicIntArray(0, 0, 0, 0));
+  dynamicSearch(false, found_solution);
   TEST_ASSERT_EQUAL(4, solution_count);
 }
 
 static void test_search_4343()
 {
   solution_count = 0;
-  setupCentralFaces(intArray(4, 3, 4, 3));
-  search(false, found_solution);
+  initializeFaceSetupCentral(dynamicIntArray(4, 3, 4, 3));
+  dynamicSearch(false, found_solution);
   TEST_ASSERT_EQUAL(0, solution_count);
 }
 
 static void test_search_4433()
 {
   solution_count = 0;
-  setupCentralFaces(intArray(4, 4, 3, 3));
-  search(false, found_solution);
+  initializeFaceSetupCentral(dynamicIntArray(4, 4, 3, 3));
+  dynamicSearch(false, found_solution);
   TEST_ASSERT_EQUAL(1, solution_count);
 }
 

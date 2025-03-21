@@ -7,16 +7,16 @@
 void setUp(void)
 {
   initialize();
-  initializeStatsLogging("/dev/stdout", 20, 5);
+  initializeStatisticLogging("/dev/stdout", 20, 5);
 }
 
 void tearDown(void)
 {
 #if TEST_INFO
-  printStatisticsFull();
+  dynamicStatisticPrintFull();
 #endif
-  clearGlobals();
-  clearInitialize();
+  resetGlobals();
+  resetInitialize();
   resetTrail();
   resetStatistics();
 }
@@ -27,97 +27,97 @@ static void found_solution() { solution_count++; }
 static void test_search_abcde()
 {
   solution_count = 0;
-  setupCentralFaces(intArray(0, 0, 0, 0, 0));
-  search(false, found_solution);
+  initializeFaceSetupCentral(dynamicIntArray(0, 0, 0, 0, 0));
+  dynamicSearch(false, found_solution);
   TEST_ASSERT_EQUAL(152, solution_count);
 }
 
 static void test_specific()
 {
-  setupCentralFaces(intArray(0, 0, 0, 0, 0));
-  addSpecificFace("ab", "bdc");
-  addSpecificFace("bc", "aecb");
-  addSpecificFace("bd", "bde");
-  addSpecificFace("ae", "aec");
-  TEST_ASSERT_NULL(chooseFace(false));
+  initializeFaceSetupCentral(dynamicIntArray(0, 0, 0, 0, 0));
+  dynamicFaceAddSpecific("ab", "bdc");
+  dynamicFaceAddSpecific("bc", "aecb");
+  dynamicFaceAddSpecific("bd", "bde");
+  dynamicFaceAddSpecific("ae", "aec");
+  TEST_ASSERT_NULL(dynamicFaceChoose(false));
   found_solution();
 }
 
 static void test_specific2()
 {
-  setupCentralFaces(intArray(0, 0, 0, 0, 0));
-  addSpecificFace("ab", "bdc");
-  addSpecificFace("bc", "aecb");
-  addSpecificFace("abc", "abcde");
-  addSpecificFace("bd", "bde");
-  addSpecificFace("b", "bced");
-  addSpecificFace("bcd", "abe");
-  addSpecificFace("abcd", "aedcb");
-  addSpecificFace("abd", "bcd");
-  addSpecificFace("bcde", "aeb");
-  addSpecificFace("bde", "abed");
-  addSpecificFace("abde", "adcb");
-  addSpecificFace("be", "adec");
-  addSpecificFace("abe", "acd");
-  addSpecificFace("bce", "ace");
-  addSpecificFace("abce", "aedc");
-  addSpecificFace("ae", "aec");
-  addSpecificFace("", "aecbd");
-  addSpecificFace("a", "adbce");
-  addSpecificFace("e", "ace");
-  addSpecificFace("ace", "aced");
-  addSpecificFace("ce", "adec");
-  addSpecificFace("cde", "abed");
-  addSpecificFace("c", "abced");
-  addSpecificFace("ac", "adecb");
-  addSpecificFace("cd", "adeb");
-  addSpecificFace("d", "adbe");
-  addSpecificFace("ad", "aecbd");
-  addSpecificFace("de", "aeb");
-  addSpecificFace("acde", "adecb");
-  addSpecificFace("acd", "abced");
-  addSpecificFace("ade", "abce");
-  TEST_ASSERT_NULL(chooseFace(false));
+  initializeFaceSetupCentral(dynamicIntArray(0, 0, 0, 0, 0));
+  dynamicFaceAddSpecific("ab", "bdc");
+  dynamicFaceAddSpecific("bc", "aecb");
+  dynamicFaceAddSpecific("abc", "abcde");
+  dynamicFaceAddSpecific("bd", "bde");
+  dynamicFaceAddSpecific("b", "bced");
+  dynamicFaceAddSpecific("bcd", "abe");
+  dynamicFaceAddSpecific("abcd", "aedcb");
+  dynamicFaceAddSpecific("abd", "bcd");
+  dynamicFaceAddSpecific("bcde", "aeb");
+  dynamicFaceAddSpecific("bde", "abed");
+  dynamicFaceAddSpecific("abde", "adcb");
+  dynamicFaceAddSpecific("be", "adec");
+  dynamicFaceAddSpecific("abe", "acd");
+  dynamicFaceAddSpecific("bce", "ace");
+  dynamicFaceAddSpecific("abce", "aedc");
+  dynamicFaceAddSpecific("ae", "aec");
+  dynamicFaceAddSpecific("", "aecbd");
+  dynamicFaceAddSpecific("a", "adbce");
+  dynamicFaceAddSpecific("e", "ace");
+  dynamicFaceAddSpecific("ace", "aced");
+  dynamicFaceAddSpecific("ce", "adec");
+  dynamicFaceAddSpecific("cde", "abed");
+  dynamicFaceAddSpecific("c", "abced");
+  dynamicFaceAddSpecific("ac", "adecb");
+  dynamicFaceAddSpecific("cd", "adeb");
+  dynamicFaceAddSpecific("d", "adbe");
+  dynamicFaceAddSpecific("ad", "aecbd");
+  dynamicFaceAddSpecific("de", "aeb");
+  dynamicFaceAddSpecific("acde", "adecb");
+  dynamicFaceAddSpecific("acd", "abced");
+  dynamicFaceAddSpecific("ade", "abce");
+  TEST_ASSERT_NULL(dynamicFaceChoose(false));
   found_solution();
 }
 
 static void test_search_44444()
 {
   solution_count = 0;
-  setupCentralFaces(intArray(4, 4, 4, 4, 4));
-  search(false, found_solution);
+  initializeFaceSetupCentral(dynamicIntArray(4, 4, 4, 4, 4));
+  dynamicSearch(false, found_solution);
   TEST_ASSERT_EQUAL(2, solution_count);
 }
 
 static void test_search_55433()
 {
   solution_count = 0;
-  setupCentralFaces(intArray(5, 5, 4, 3, 3));
-  search(false, found_solution);
+  initializeFaceSetupCentral(dynamicIntArray(5, 5, 4, 3, 3));
+  dynamicSearch(false, found_solution);
   TEST_ASSERT_EQUAL(6, solution_count);
 }
 
 static void test_search_55343()
 {
   solution_count = 0;
-  setupCentralFaces(intArray(5, 5, 3, 4, 3));
-  search(false, found_solution);
+  initializeFaceSetupCentral(dynamicIntArray(5, 5, 3, 4, 3));
+  dynamicSearch(false, found_solution);
   TEST_ASSERT_EQUAL(0, solution_count);
 }
 
 static void test_search_54443()
 {
   solution_count = 0;
-  setupCentralFaces(intArray(5, 4, 4, 4, 3));
-  search(false, found_solution);
+  initializeFaceSetupCentral(dynamicIntArray(5, 4, 4, 4, 3));
+  dynamicSearch(false, found_solution);
   TEST_ASSERT_EQUAL(4, solution_count);
 }
 
 static void test_search_54434()
 {
   solution_count = 0;
-  setupCentralFaces(intArray(5, 4, 4, 3, 4));
-  search(false, found_solution);
+  initializeFaceSetupCentral(dynamicIntArray(5, 4, 4, 3, 4));
+  dynamicSearch(false, found_solution);
   TEST_ASSERT_EQUAL(5, solution_count);
 }
 

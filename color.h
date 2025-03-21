@@ -33,22 +33,23 @@ struct facial_cycle {
 
 #define memberOfColorSet(color, colorSet) (((colorSet) >> (color)) & 1u)
 
-extern CYCLESET_DECLARE omittingCycleSets[NCOLORS];
-extern CYCLESET_DECLARE omittingCycleSetPairs[NCOLORS][NCOLORS];
-extern CYCLESET_DECLARE withoutColor[NCOLORS];
-extern void addToCycleSet(uint32_t cycleId, CYCLESET cycleSet);
-extern void removeFromCycleSet(uint32_t cycleId, CYCLESET cycleSet);
-extern bool memberOfCycleSet(uint32_t cycleId, CYCLESET cycleSet);
-extern CYCLE findFirstCycleInSet(CYCLESET cycleSet);
-extern CYCLE findNextCycleInSet(CYCLESET cycleSet, CYCLE cycle);
-extern uint32_t sizeOfCycleSet(CYCLESET cycleSet);
-extern uint32_t findCycleId(uint32_t *cycle, uint32_t length);
-extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
-extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
-extern uint32_t indexInCycle(CYCLE cycle, COLOR color);
-extern struct facial_cycle g_cycles[NCYCLES];
-extern void clearWithoutColor(void);
-extern void initializeWithoutColor(void);
+extern CYCLESET_DECLARE CycleSetOmittingOne[NCOLORS];
+extern CYCLESET_DECLARE CycleSetOmittingPair[NCOLORS][NCOLORS];
+extern CYCLESET_DECLARE CylesetWithoutColor[NCOLORS];
+extern void initializeCycleSetAdd(uint32_t cycleId, CYCLESET cycleSet);
+extern void initializeCycleSetRemove(uint32_t cycleId, CYCLESET cycleSet);
+extern bool initializeCycleSetMember(uint32_t cycleId, CYCLESET cycleSet);
+extern CYCLE initializeCycleSetFindFirst(CYCLESET cycleSet);
+extern CYCLE initializeCycleSetFindNext(CYCLESET cycleSet, CYCLE cycle);
+extern uint32_t cycleSetSize(CYCLESET cycleSet);
+extern uint32_t cycleFindId(uint32_t *cycle, uint32_t length);
+extern bool cycleContainsAthenB(CYCLE cycle, uint32_t i, uint32_t j);
+extern bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t i, uint32_t j,
+                                     uint32_t k);
+extern uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color);
+extern struct facial_cycle Cycles[NCYCLES];
+extern void resetCyclesetWithoutColor(void);
+extern void initializeCyclesetWithoutColor(void);
 // Should have Dynamic in name, and be so.
 extern bool setCycleLength(uint32_t faceColors, uint32_t length);
 

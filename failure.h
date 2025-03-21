@@ -11,15 +11,15 @@ typedef struct {
   char* label;
 } Failure, *FAILURE;
 
-void newFailureStatistic(FAILURE failure);
-FAILURE noMatchingCyclesFailure(int depth);
-FAILURE crossingLimitFailure(int depth);
-FAILURE pointConflictFailure(int depth);
-FAILURE conflictingConstraintsFailure(int depth);
-FAILURE disconnectedCurveFailure(int depth);
-FAILURE tooManyCornersFailure(int depth);
-FAILURE disconnectedFacesFailure(int depth);
-FAILURE nonCanonicalFailure(void);
+void dynamicFailureStatisticNew(FAILURE failure);
+FAILURE dynamicFailureNoMatchingCycles(int depth);
+FAILURE dynamicFailureCrossingLimit(int depth);
+FAILURE dynamicFailurePointConflict(int depth);
+FAILURE dynamicFailureConflictingConstraints(int depth);
+FAILURE dynamicFailureDisconnectedCurve(int depth);
+FAILURE dynamicFailureTooManyCorners(int depth);
+FAILURE dynamicFailureDisconnectedFaces(int depth);
+FAILURE dynamicFailureNonCanonical(void);
 void initializeFailures(void);
 
 #endif  // FAILURE_H

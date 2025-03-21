@@ -13,8 +13,8 @@ typedef enum {
   LOG_QUIET
 } log_level_t;
 
-extern log_level_t log_level;
+extern log_level_t DynamicLogLevel;
 
-void log_message(log_level_t level, const char *format, ...);
+void dynamicLogMessage(log_level_t level, const char *format, ...);
 
 #endif  // LOGGING_H

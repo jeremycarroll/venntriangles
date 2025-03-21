@@ -17,9 +17,9 @@ typedef Failure *FAILURE;
 
 #define ASSUMPTION     \
   (sizeof(uint64_t) == \
-   sizeof(void *))  // we cast pointers to uint64_t in the trail.
+   sizeof(void *))  // we cast pointers to uint64_t in the DynamicTrail.
 typedef uint64_t uint_trail;  // Any non-pointer value that might go on the
-                              // trail, should be of this type, using a union.
+                              // DynamicTrail, should be of this type, using a union.
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 #define BITS_PER_WORD (sizeof(uint64_t) * 8)
 
@@ -54,7 +54,7 @@ typedef uint64_t uint_trail;  // Any non-pointer value that might go on the
 #define TRAIL_SIZE 1000000
 
 // In this file we add these keywords, with the given meanings.
-#define DYNAMIC  // This field is modified in the trail, i.e. after
+#define DYNAMIC  // This field is modified in the DynamicTrail, i.e. after
                  // initialization we track all changes.
 #define STATIC   // This field is initialized before we start and is then not
                  // modified.
@@ -72,7 +72,7 @@ typedef uint64_t CYCLESET_DECLARE[CYCLESET_LENGTH];
 typedef uint64_t *POINTSET;
 typedef uint64_t POINTSET_DECLARE[POINTSET_LENGTH];
 
-typedef struct trail *TRAIL;
+typedef struct DynamicTrail *TRAIL;
 
 /*
 All fields are null if the point is incoherent.
@@ -235,7 +235,7 @@ struct failure {
 };
 */
 
-struct trail {
+struct DynamicTrail {
   void *ptr;
   uint_trail value;
 };
@@ -248,7 +248,7 @@ typedef union {
 /*
  All DYNAMIC fields must be in this structure: during unit testing we reset this
  to zero. Also, any datum that can be the value of any DYNAMIC pointer must be
- in this structure, (this allows us to safely switch to a 32 bit trail if we
+ in this structure, (this allows us to safely switch to a 32 bit DynamicTrail if we
  choose).
  */
 struct global {
@@ -274,95 +274,98 @@ struct global {
 
 extern struct global globals;
 
-#define g_faces globals.faces
+#define Faces globals.faces
 #define g_points globals.points
 #define g_nextPoint globals.nextPoint
-#define g_cycles globals.cycles
-#define g_crossings globals.crossings
-#define g_edgeCount globals.edgeCount
-#define g_curveComplete globals.curveComplete
-#define g_lengthOfCycleOfFaces globals.lengthOfCycleOfFaces
+#define Cycles globals.cycles
+#define EdgeCrossingCounts globals.crossings
+#define EdgeCountsByDirectionAndColor globals.edgeCount
+#define EdgeCurvesComplete globals.curveComplete
+#define FaceSumOfFaceDegree globals.lengthOfCycleOfFaces
 
-extern CYCLESET_DECLARE omittingCycleSets[NCOLORS];
-extern CYCLESET_DECLARE omittingCycleSetPairs[NCOLORS][NCOLORS];
+extern CYCLESET_DECLARE CycleSetOmittingOne[NCOLORS];
+extern CYCLESET_DECLARE CycleSetOmittingPair[NCOLORS][NCOLORS];
 #endif
 
-extern TRAIL trail;
+extern TRAIL DynamicTrail;
 extern void initialize(void);
-extern void clearWithoutColor(void);
-extern void initializeWithoutColor(void);
+extern void resetCyclesetWithoutColor(void);
+extern void initializeCyclesetWithoutColor(void);
 extern void initializePoints(void);
-extern void clearPoints(void);
-extern void addToCycleSet(uint32_t cycleId, CYCLESET cycleSet);
-extern void removeFromCycleSet(uint32_t cycleId, CYCLESET cycleSet);
-extern bool memberOfCycleSet(uint32_t cycleId, CYCLESET cycleSet);
-extern CYCLE findFirstCycleInSet(CYCLESET cycleSet);
-extern CYCLE findNextCycleInSet(CYCLESET cycleSet, CYCLE cycle);
-extern uint32_t sizeOfCycleSet(CYCLESET cycleSet);
-extern uint32_t findCycleId(uint32_t *cycle, uint32_t length);
-extern bool contains2(CYCLE cycle, uint32_t i, uint32_t j);
-extern bool contains3(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
-extern uint32_t indexInCycle(CYCLE cycle, COLOR color);
-extern char *d6FaceDegreeSignature(void);
+extern void resetPoints(void);
+extern void initializeCycleSetAdd(uint32_t cycleId, CYCLESET cycleSet);
+extern void initializeCycleSetRemove(uint32_t cycleId, CYCLESET cycleSet);
+extern bool initializeCycleSetMember(uint32_t cycleId, CYCLESET cycleSet);
+extern CYCLE initializeCycleSetFindFirst(CYCLESET cycleSet);
+extern CYCLE initializeCycleSetFindNext(CYCLESET cycleSet, CYCLE cycle);
+extern uint32_t cycleSetSize(CYCLESET cycleSet);
+extern uint32_t cycleFindId(uint32_t *cycle, uint32_t length);
+extern bool cycleContainsAthenB(CYCLE cycle, uint32_t i, uint32_t j);
+extern bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t i, uint32_t j,
+                                     uint32_t k);
+extern uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color);
+extern char *dynamicFaceDegreeSignature(void);
 
-extern void setupCentralFaces(int *faceDegrees);
+extern void initializeFaceSetupCentral(int *faceDegrees);
 
-extern void setDynamicPointer_(void **ptr, void *value);
-#define setDynamicPointer(a, b) setDynamicPointer_((void **)a, b)
+extern void dynamicTrailSetPointer(void **ptr, void *value);
+#define setDynamicPointer(a, b) dynamicTrailSetPointer((void **)a, b)
 
-extern UPOINT addToPoint(FACE face, EDGE incomingEdge, COLOR othercolor);
-extern FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth);
-extern EDGE followEdgeBackwards(EDGE edge);
-extern EDGE followEdgeForwards(EDGE edge);
+extern UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
+extern FAILURE dynamicPointAssign(FACE face, COLOR aColor, COLOR bColor,
+                                  int depth);
+extern EDGE dynamicEdgeFollowBackwards(EDGE edge);
+extern EDGE dynamicEdgeFollowForwards(EDGE edge);
 
-extern void setDynamicInt(uint_trail *ptr, uint_trail value);
-extern bool backtrackTo(TRAIL backtrackPoint);
+extern void dynamicTrailSetInt(uint_trail *ptr, uint_trail value);
+extern bool dynamicTrailBacktrackTo(TRAIL backtrackPoint);
 extern bool setCycleLength(uint32_t faceColors, uint32_t length);
-extern void maybeSetDynamicInt(uint_trail *ptr, uint_trail value);
+extern void dynamicTrailMaybeSetInt(uint_trail *ptr, uint_trail value);
 
-extern FAILURE makeChoice(FACE face);
-extern FAILURE curveChecks(EDGE edge, int depth);
+extern FAILURE dynamicFaceMakeChoice(FACE face);
+extern FAILURE dynamicEdgeCurveChecks(EDGE edge, int depth);
 
-extern void search(bool smallestFirst, void (*foundSolution)(void));
+extern void dynamicSearch(bool smallestFirst, void (*foundSolution)(void));
 
-extern FAILURE nonCanonicalFailure(void);
+extern FAILURE dynamicFailureNonCanonical(void);
 extern void initializeFailures(void);
 /* Ordered crossing: we expect the same number of a-b crosses, as b-a crosses;
 and that number should be three or less. */
-extern FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth);
-extern bool removeColorFromSearch(COLOR color);
-extern FAILURE finalCorrectnessChecks(void);
-extern void findCorners(COLOR a, EDGE result[3][2]);
+extern FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
+extern bool dynamicColorRemoveFromSearch(COLOR color);
+extern FAILURE dynamicFaceFinalCorrectnessChecks(void);
+extern void dynamicEdgeFindCorners(COLOR a, EDGE result[3][2]);
 
-extern char *edge2str(char *dbuffer, EDGE edge);
-extern char *face2str(char *dbuffer, FACE face);
-extern char *colors2str(char *dbuffer, COLORSET colors);
-extern char *upoint2str(char *dbuffer, UPOINT up);
-extern int color2char(COLOR c);
-extern void printFace(FACE face);
-extern void printEdge(EDGE edge);
-extern void printSelectedFaces(void);
-extern void printSolution(FILE *fp);
-extern int pathLength(EDGE from, EDGE to);
+extern char *dynamicEdgeToStr(char *dbuffer, EDGE edge);
+extern char *dynamicFaceToStr(char *dbuffer, FACE face);
+extern char *dynamicColorSetToStr(char *dbuffer, COLORSET colors);
+extern char *dynamicUPointToStr(char *dbuffer, UPOINT up);
+extern int dynamicColorToChar(COLOR c);
+extern void dynamicFacePrint(FACE face);
+extern void dynamicEdgePrint(EDGE edge);
+extern void dynamicFacePrintSelected(void);
+extern void dynamicSolutionPrint(FILE *fp);
+extern int dynamicEdgePathLength(EDGE from, EDGE to);
 
-extern void newStatistic(uint64_t *counter, char *shortName, char *name);
-extern void newFailureStatistic(FAILURE failure);
-extern void printStatisticsOneLine(int position);
-extern void printStatisticsFull(void);
+extern void dynamicStatisticNew(uint64_t *counter, char *shortName, char *name);
+extern void dynamicFailureStatisticNew(FAILURE failure);
+extern void dynamicStatisticPrintOneLine(int position);
+extern void dynamicStatisticPrintFull(void);
 extern void initializeDynamicCounters(void);
-extern void initializeStatsLogging(char *filename, int frequency, int seconds);
-extern void full_search(void (*foundSolution)(void));
+extern void initializeStatisticLogging(char *filename, int frequency,
+                                       int seconds);
+extern void dynamicSearchFull(void (*foundSolution)(void));
 
-extern void newFailureStatistic(Failure *failure);
+extern void dynamicFailureStatisticNew(Failure *failure);
 
-extern FAILURE noMatchingCyclesFailure(int depth);
-extern FAILURE crossingLimitFailure(int depth);
-extern FAILURE pointConflictFailure(int depth);
-extern FAILURE conflictingConstraintsFailure(int depth);
-extern FAILURE disconnectedCurveFailure(int depth);
-extern FAILURE tooManyCornersFailure(int depth);
-extern FAILURE disconnectedFacesFailure(int depth);
-extern FAILURE nonCanonicalFailure(void);
+extern FAILURE dynamicFailureNoMatchingCycles(int depth);
+extern FAILURE dynamicFailureCrossingLimit(int depth);
+extern FAILURE dynamicFailurePointConflict(int depth);
+extern FAILURE dynamicFailureConflictingConstraints(int depth);
+extern FAILURE dynamicFailureDisconnectedCurve(int depth);
+extern FAILURE dynamicFailureTooManyCorners(int depth);
+extern FAILURE dynamicFailureDisconnectedFaces(int depth);
+extern FAILURE dynamicFailureNonCanonical(void);
 
 #define POINT_DEBUG 0
 #define EDGE_DEBUG 0

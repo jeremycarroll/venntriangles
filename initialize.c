@@ -23,17 +23,17 @@ static int nextSetOfCycleSets = 0;
 These cycleSets are accessed from cycles, with the pointers set up during
 initialization.
  */
-CYCLESET_DECLARE pairs2cycleSets[NCOLORS][NCOLORS];
-CYCLESET_DECLARE triples2cycleSets[NCOLORS][NCOLORS][NCOLORS];
-CYCLESET_DECLARE omittingCycleSets[NCOLORS];
-CYCLESET_DECLARE omittingCycleSetPairs[NCOLORS][NCOLORS];
-CYCLESET setsOfCycleSets[NCYCLE_ENTRIES * 2];
+CYCLESET_DECLARE InitializeCycleSetPairs[NCOLORS][NCOLORS];
+CYCLESET_DECLARE InitializeCycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
+CYCLESET_DECLARE CycleSetOmittingOne[NCOLORS];
+CYCLESET_DECLARE CycleSetOmittingPair[NCOLORS][NCOLORS];
+CYCLESET InitializeCycleSetSets[NCYCLE_ENTRIES * 2];
 
-STATIC struct face g_faces[NFACES];
-uint64_t g_edgeCount[2][NCOLORS];
-uint64_t g_lengthOfCycleOfFaces[NCOLORS + 1];
-uint64_t g_crossings[NCOLORS][NCOLORS];
-uint64_t g_curveComplete[NCOLORS];
+STATIC struct face Faces[NFACES];
+uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
+uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
+uint64_t EdgeCrossingCounts[NCOLORS][NCOLORS];
+uint64_t EdgeCurvesComplete[NCOLORS];
 
 static void initializeCycles(void);
 static void initializeCycleSets(void);
@@ -45,35 +45,36 @@ static void initializePossiblyTo(void);
 static void initializeLengthOfCycleOfFaces(void);
 static void applyMonotonicity(void);
 static void recomputeCountOfChoices(FACE face);
-void clearGlobals()
+void resetGlobals()
 {
-  memset(g_faces, 0, sizeof(g_faces));
-  memset(g_edgeCount, 0, sizeof(g_edgeCount));
-  memset(g_lengthOfCycleOfFaces, 0, sizeof(g_lengthOfCycleOfFaces));
-  memset(g_crossings, 0, sizeof(g_crossings));
-  memset(g_curveComplete, 0, sizeof(g_curveComplete));
+  memset(Faces, 0, sizeof(Faces));
+  memset(EdgeCountsByDirectionAndColor, 0,
+         sizeof(EdgeCountsByDirectionAndColor));
+  memset(FaceSumOfFaceDegree, 0, sizeof(FaceSumOfFaceDegree));
+  memset(EdgeCrossingCounts, 0, sizeof(EdgeCrossingCounts));
+  memset(EdgeCurvesComplete, 0, sizeof(EdgeCurvesComplete));
 }
-void clearInitialize()
+void resetInitialize()
 {
-  memset(pairs2cycleSets, 0, sizeof(pairs2cycleSets));
-  memset(triples2cycleSets, 0, sizeof(triples2cycleSets));
-  memset(setsOfCycleSets, 0, sizeof(setsOfCycleSets));
-  memset(omittingCycleSets, 0, sizeof(omittingCycleSets));
-  memset(omittingCycleSetPairs, 0, sizeof(omittingCycleSetPairs));
+  memset(InitializeCycleSetPairs, 0, sizeof(InitializeCycleSetPairs));
+  memset(InitializeCycleSetTriples, 0, sizeof(InitializeCycleSetTriples));
+  memset(InitializeCycleSetSets, 0, sizeof(InitializeCycleSetSets));
+  memset(CycleSetOmittingOne, 0, sizeof(CycleSetOmittingOne));
+  memset(CycleSetOmittingPair, 0, sizeof(CycleSetOmittingPair));
 
   nextCycle = 0;
   nextSetOfCycleSets = 0;
-  clearPoints();
-  clearWithoutColor();
+  resetPoints();
+  resetCyclesetWithoutColor();
 }
 
 void initialize()
 {
-  /* Not true on all architectures, but assumed in our trail. */
+  /* Not true on all architectures, but assumed in our DynamicTrail. */
   assert((sizeof(uint64_t) == sizeof(void *)));
   assert(nextCycle == 0);
   initializeCycles();
-  assert(nextCycle == ARRAY_LEN(g_cycles));
+  assert(nextCycle == ARRAY_LEN(Cycles));
   initializeCycleSets();
   initializeSameDirection();
   assert(nextSetOfCycleSets == NCYCLE_ENTRIES);
@@ -84,7 +85,7 @@ void initialize()
   initializeFacesAndEdges();
 #if POINT_DEBUG
   for (uint32_t i = 0; i < NFACES; i++) {
-    printFace(g_faces + i);
+    dynamicFacePrint(Faces + i);
   }
 #endif
   initializePossiblyTo();
@@ -92,17 +93,17 @@ void initialize()
   applyMonotonicity();
 
   initializeDynamicCounters();
-  initializeWithoutColor();
+  initializeCyclesetWithoutColor();
   initializeLengthOfCycleOfFaces();
 }
 
 static void initializeLengthOfCycleOfFaces(void)
 {
   uint32_t i;
-  g_lengthOfCycleOfFaces[0] = 1;
+  FaceSumOfFaceDegree[0] = 1;
   for (i = 0; i < NCOLORS; i++) {
-    g_lengthOfCycleOfFaces[i + 1] =
-        g_lengthOfCycleOfFaces[i] * (NCOLORS - i) / (i + 1);
+    FaceSumOfFaceDegree[i + 1] =
+        FaceSumOfFaceDegree[i] * (NCOLORS - i) / (i + 1);
   }
 }
 
@@ -110,7 +111,7 @@ static void addCycle(int length, ...)
 {
   uint32_t color;
   va_list ap;
-  CYCLE cycle = &g_cycles[nextCycle++];
+  CYCLE cycle = &Cycles[nextCycle++];
   int ix = 0;
   cycle->colors = 0;
   cycle->length = length;
@@ -165,8 +166,8 @@ static void initializeCycleSets(void)
         continue;
       }
       for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-        if (contains2(&g_cycles[cycleId], i, j)) {
-          addToCycleSet(cycleId, pairs2cycleSets[i][j]);
+        if (cycleContainsAthenB(&Cycles[cycleId], i, j)) {
+          initializeCycleSetAdd(cycleId, InitializeCycleSetPairs[i][j]);
         }
       }
       for (k = 0; k < NCOLORS; k++) {
@@ -174,8 +175,8 @@ static void initializeCycleSets(void)
           continue;
         }
         for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-          if (contains3(&g_cycles[cycleId], i, j, k)) {
-            addToCycleSet(cycleId, triples2cycleSets[i][j][k]);
+          if (cycleContainsAthenBthenC(&Cycles[cycleId], i, j, k)) {
+            initializeCycleSetAdd(cycleId, InitializeCycleSetTriples[i][j][k]);
           }
         }
       }
@@ -187,35 +188,35 @@ static void initializeSameDirection(void)
 {
   uint32_t i, j;
   CYCLE cycle;
-  for (i = 0, cycle = g_cycles; i < NCYCLES; i++, cycle++) {
-    cycle->sameDirection = &setsOfCycleSets[nextSetOfCycleSets];
+  for (i = 0, cycle = Cycles; i < NCYCLES; i++, cycle++) {
+    cycle->sameDirection = &InitializeCycleSetSets[nextSetOfCycleSets];
     nextSetOfCycleSets += cycle->length;
     for (j = 1; j < cycle->length; j++) {
       cycle->sameDirection[j - 1] =
-          pairs2cycleSets[cycle->curves[j - 1]][cycle->curves[j]];
+          InitializeCycleSetPairs[cycle->curves[j - 1]][cycle->curves[j]];
     }
     cycle->sameDirection[j - 1] =
-        pairs2cycleSets[cycle->curves[j - 1]][cycle->curves[0]];
+        InitializeCycleSetPairs[cycle->curves[j - 1]][cycle->curves[0]];
   }
 }
 static void initializeOppositeDirection(void)
 {
   uint32_t i, j;
   CYCLE cycle;
-  for (i = 0, cycle = g_cycles; i < NCYCLES; i++, cycle++) {
-    cycle->oppositeDirection = &setsOfCycleSets[nextSetOfCycleSets];
+  for (i = 0, cycle = Cycles; i < NCYCLES; i++, cycle++) {
+    cycle->oppositeDirection = &InitializeCycleSetSets[nextSetOfCycleSets];
     nextSetOfCycleSets += cycle->length;
     for (j = 2; j < cycle->length; j++) {
       cycle->oppositeDirection[j - 1] =
-          triples2cycleSets[cycle->curves[j]][cycle->curves[j - 1]]
-                           [cycle->curves[j - 2]];
+          InitializeCycleSetTriples[cycle->curves[j]][cycle->curves[j - 1]]
+                                   [cycle->curves[j - 2]];
     }
     cycle->oppositeDirection[j - 1] =
-        triples2cycleSets[cycle->curves[0]][cycle->curves[j - 1]]
-                         [cycle->curves[j - 2]];
+        InitializeCycleSetTriples[cycle->curves[0]][cycle->curves[j - 1]]
+                                 [cycle->curves[j - 2]];
     cycle->oppositeDirection[0] =
-        triples2cycleSets[cycle->curves[1]][cycle->curves[0]]
-                         [cycle->curves[j - 1]];
+        InitializeCycleSetTriples[cycle->curves[1]][cycle->curves[0]]
+                                 [cycle->curves[j - 1]];
   }
 }
 
@@ -224,18 +225,18 @@ static void initializeOmittingCycleSets()
   uint32_t i, j, cycleId;
   for (i = 0; i < NCOLORS; i++) {
     for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-      if (!memberOfColorSet(i, g_cycles[cycleId].colors)) {
-        addToCycleSet(cycleId, omittingCycleSets[i]);
+      if (!memberOfColorSet(i, Cycles[cycleId].colors)) {
+        initializeCycleSetAdd(cycleId, CycleSetOmittingOne[i]);
       }
     }
   }
   for (i = 0; i < NCOLORS; i++) {
     for (j = i + 1; j < NCOLORS; j++) {
       for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-        if (!(memberOfColorSet(i, g_cycles[cycleId].colors) &&
-              memberOfColorSet(j, g_cycles[cycleId].colors) &&
-              contains2(&g_cycles[cycleId], i, j))) {
-          addToCycleSet(cycleId, omittingCycleSetPairs[i][j]);
+        if (!(memberOfColorSet(i, Cycles[cycleId].colors) &&
+              memberOfColorSet(j, Cycles[cycleId].colors) &&
+              cycleContainsAthenB(&Cycles[cycleId], i, j))) {
+          initializeCycleSetAdd(cycleId, CycleSetOmittingPair[i][j]);
         }
       }
     }
@@ -250,7 +251,7 @@ static void initializeFacesAndEdges(void)
   uint32_t facecolors, color, j;
   FACE face, adjacent;
   EDGE edge;
-  for (facecolors = 0, face = g_faces; facecolors < NFACES;
+  for (facecolors = 0, face = Faces; facecolors < NFACES;
        facecolors++, face++) {
     face->colors = facecolors;
     for (j = 0; j < CYCLESET_LENGTH - 1; j++) {
@@ -260,7 +261,7 @@ static void initializeFacesAndEdges(void)
 
     for (color = 0; color < NCOLORS; color++) {
       uint32_t colorbit = (1 << color);
-      adjacent = g_faces + (facecolors ^ (colorbit));
+      adjacent = Faces + (facecolors ^ (colorbit));
       face->adjacentFaces[color] = adjacent;
       edge = &face->edges[color];
       edge->colors = face->colors;
@@ -276,10 +277,10 @@ static void initializePossiblyTo(void)
   uint32_t facecolors, color, othercolor;
   FACE face;
   EDGE edge;
-  for (facecolors = 0, face = g_faces; facecolors < NFACES;
+  for (facecolors = 0, face = Faces; facecolors < NFACES;
        facecolors++, face++) {
 #if POINT_DEBUG
-    printFace(face);
+    dynamicFacePrint(face);
 #endif
     for (color = 0; color < NCOLORS; color++) {
       edge = &face->edges[color];
@@ -287,7 +288,8 @@ static void initializePossiblyTo(void)
         if (othercolor == color) {
           continue;
         }
-        edge->possiblyTo[othercolor].point = addToPoint(face, edge, othercolor);
+        edge->possiblyTo[othercolor].point =
+            dynamicPointAdd(face, edge, othercolor);
       }
     }
   }
@@ -315,10 +317,10 @@ static void applyMonotonicity(void)
   /* The inner face is NFACES-1, with all the colors; the outer face is 0, with
    * no colors.
    */
-  for (colors = 1, face = g_faces + 1; colors < NFACES - 1; colors++, face++) {
-    for (cycleId = 0, cycle = g_cycles; cycleId < NCYCLES; cycleId++, cycle++) {
+  for (colors = 1, face = Faces + 1; colors < NFACES - 1; colors++, face++) {
+    for (cycleId = 0, cycle = Cycles; cycleId < NCYCLES; cycleId++, cycle++) {
       if ((cycle->colors & colors) == 0 || (cycle->colors & ~colors) == 0) {
-        removeFromCycleSet(cycleId, face->possibleCycles);
+        initializeCycleSetRemove(cycleId, face->possibleCycles);
       }
       previousFaceXor = nextFaceXor = 0;
       chainingCount = ONE_IN_ONE_OUT(cycle->curves[cycle->length - 1],
@@ -331,12 +333,12 @@ static void applyMonotonicity(void)
         }
       }
       if (chainingCount != 2) {
-        removeFromCycleSet(cycleId, face->possibleCycles);
+        initializeCycleSetRemove(cycleId, face->possibleCycles);
       } else {
         assert(previousFaceXor);
         assert(nextFaceXor);
-        face->nextByCycleId[cycleId] = g_faces + (colors ^ nextFaceXor);
-        face->previousByCycleId[cycleId] = g_faces + (colors ^ previousFaceXor);
+        face->nextByCycleId[cycleId] = Faces + (colors ^ nextFaceXor);
+        face->previousByCycleId[cycleId] = Faces + (colors ^ previousFaceXor);
       }
     }
     recomputeCountOfChoices(face);
@@ -347,26 +349,26 @@ static void applyMonotonicity(void)
 
 static void recomputeCountOfChoices(FACE face)
 {
-  setDynamicInt(&face->cycleSetSize, sizeOfCycleSet(face->possibleCycles));
+  dynamicTrailSetInt(&face->cycleSetSize, cycleSetSize(face->possibleCycles));
 }
 
 static void removeFromCycleSetWithTrail(uint32_t cycleId, CYCLESET cycleSet)
 {
   assert(cycleId < NCYCLES);
-  setDynamicInt(
+  dynamicTrailSetInt(
       &cycleSet[cycleId / BITS_PER_WORD],
       cycleSet[cycleId / BITS_PER_WORD] & ~(1ul << (cycleId % BITS_PER_WORD)));
 }
 
 bool setCycleLength(uint32_t faceColors, uint32_t length)
 {
-  FACE face = g_faces + (faceColors & (NFACES - 1));
+  FACE face = Faces + (faceColors & (NFACES - 1));
   CYCLE cycle;
   uint32_t cycleId;
   if (length == 0) {
     return true;
   }
-  for (cycleId = 0, cycle = g_cycles; cycleId < NCYCLES; cycleId++, cycle++) {
+  for (cycleId = 0, cycle = Cycles; cycleId < NCYCLES; cycleId++, cycle++) {
     if (cycle->length != length) {
       removeFromCycleSetWithTrail(cycleId, face->possibleCycles);
     }

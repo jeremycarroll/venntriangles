@@ -13,13 +13,13 @@
  * other values are left as null
  */
 static struct undirectedPoint* allUPointPointers[NFACES][NCOLORS][NCOLORS];
-struct undirectedPoint allUPoints[NPOINTS];
+struct undirectedPoint DynamicPointAllUPoints[NPOINTS];
 static int nextUPointId = 0;
 
-void clearPoints()
+void resetPoints()
 {
   memset(allUPointPointers, 0, sizeof(allUPointPointers));
-  memset(allUPoints, 0, sizeof(allUPoints));
+  memset(DynamicPointAllUPoints, 0, sizeof(DynamicPointAllUPoints));
   nextUPointId = 0;
 }
 
@@ -28,11 +28,11 @@ static UPOINT getPoint(COLORSET innerFace, COLOR a, COLOR b)
   assert(!memberOfColorSet(a, innerFace));
   assert(!memberOfColorSet(b, innerFace));
   if (allUPointPointers[innerFace][a][b] == NULL) {
-    allUPoints[nextUPointId].id = nextUPointId;
-    allUPointPointers[innerFace][a][b] = &allUPoints[nextUPointId];
-    allUPoints[nextUPointId].primary = a;
-    allUPoints[nextUPointId].secondary = b;
-    allUPoints[nextUPointId].colors = 1u << a | 1u << b;
+    DynamicPointAllUPoints[nextUPointId].id = nextUPointId;
+    allUPointPointers[innerFace][a][b] = &DynamicPointAllUPoints[nextUPointId];
+    DynamicPointAllUPoints[nextUPointId].primary = a;
+    DynamicPointAllUPoints[nextUPointId].secondary = b;
+    DynamicPointAllUPoints[nextUPointId].colors = 1u << a | 1u << b;
     nextUPointId++;
   }
   return allUPointPointers[innerFace][a][b];
@@ -84,14 +84,14 @@ void initializePoints(void)
 {
   uint32_t i, j, k;
   for (i = 0; i < NPOINTS; i++) {
-    UPOINT p = allUPoints + i;
+    UPOINT p = DynamicPointAllUPoints + i;
     linkOut(p->incomingEdges[0], p->incomingEdges[1], p->incomingEdges[2],
             p->incomingEdges[3]);
     linkOut(p->incomingEdges[2], p->incomingEdges[3], p->incomingEdges[0],
             p->incomingEdges[1]);
   }
   for (i = 0; i < NFACES; i++) {
-    FACE f = g_faces + i;
+    FACE f = Faces + i;
     for (j = 0; j < NCOLORS; j++) {
       for (k = 0; k < NCOLORS; k++) {
         assert(j == f->edges[j].color);
@@ -109,7 +109,7 @@ void initializePoints(void)
   }
 }
 
-EDGE followEdgeForwards(EDGE edge)
+EDGE dynamicEdgeFollowForwards(EDGE edge)
 {
   if (edge->to == NULL) {
     return NULL;
@@ -117,9 +117,9 @@ EDGE followEdgeForwards(EDGE edge)
   return edge->to->out[0];
 }
 
-EDGE followEdgeBackwards(EDGE edge)
+EDGE dynamicEdgeFollowBackwards(EDGE edge)
 {
-  EDGE reversedNext = followEdgeForwards(edge->reversed);
+  EDGE reversedNext = dynamicEdgeFollowForwards(edge->reversed);
   return reversedNext == NULL ? NULL : reversedNext->reversed;
 }
 
@@ -127,7 +127,7 @@ EDGE followEdgeBackwards(EDGE edge)
    The curve colored A crosses from inside the curve colored B to outside it.
    The curve colored B crosses from outside the curve colored A to inside it.
 */
-UPOINT addToPoint(FACE face, EDGE incomingEdge, COLOR othercolor)
+UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor)
 {
   COLORSET insideColor =
       incomingEdge->colors & ~(1u << othercolor) & ~(1u << incomingEdge->color);
@@ -168,12 +168,13 @@ UPOINT addToPoint(FACE face, EDGE incomingEdge, COLOR othercolor)
       assert(0);
   }
 #if POINT_DEBUG
-  printf("addToPoint(%s[%c,%c], f: %s, e: %s, r: %s, %c, %d)\n",
-         colors2str(dbuffer, insideColor), color2char(dbuffer, a),
-         color2char(dbuffer, b), face2str(dbuffer, face),
-         edge2str(dbuffer, incomingEdge),
-         edge2str(dbuffer, incomingEdge->reversed),
-         color2char(dbuffer, othercolor), ix);
+  printf("dynamicPointAdd(%s[%c,%c], f: %s, e: %s, r: %s, %c, %d)\n",
+         dynamicColorSetToStr(dbuffer, insideColor),
+         dynamicColorToChar(dbuffer, a), dynamicColorToChar(dbuffer, b),
+         dynamicFaceToStr(dbuffer, face),
+         dynamicEdgeToStr(dbuffer, incomingEdge),
+         dynamicEdgeToStr(dbuffer, incomingEdge->reversed),
+         dynamicColorToChar(dbuffer, othercolor), ix);
 #endif
 
   point = getPoint(insideColor, a, b);
@@ -203,7 +204,7 @@ UPOINT addToPoint(FACE face, EDGE incomingEdge, COLOR othercolor)
 TODO: rename vars , the A B problem ...
 Either return the point, or return NULL and set the value of failureReturn.
 */
-FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
+FAILURE dynamicPointAssign(FACE face, COLOR aColor, COLOR bColor, int depth)
 {
   FAILURE crossingLimit;
   UPOINT upoint;
@@ -213,19 +214,21 @@ FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
 
   if (face->edges[aColor].to != NULL) {
 #if EDGE_DEBUG
-    printf("Assigned edge %c %c: ", color2char(aColor), color2char(bColor));
-    printEdge(&face->edges[aColor]);
+    printf("Assigned edge %c %c: ", dynamicColorToChar(aColor),
+           dynamicColorToChar(bColor));
+    dynamicEdgePrint(&face->edges[aColor]);
 #endif
 
     assert(face->edges[aColor].to != &face->edges[aColor].possiblyTo[aColor]);
     if (face->edges[aColor].to != &face->edges[aColor].possiblyTo[bColor]) {
-      return pointConflictFailure(depth);
+      return dynamicFailurePointConflict(depth);
     }
     assert(face->edges[aColor].to == &face->edges[aColor].possiblyTo[bColor]);
     return NULL;
   }
   upoint = face->edges[aColor].possiblyTo[bColor].point;
-  crossingLimit = checkCrossingLimit(upoint->primary, upoint->secondary, depth);
+  crossingLimit =
+      dynamicEdgeCheckCrossingLimit(upoint->primary, upoint->secondary, depth);
   if (crossingLimit != NULL) {
     return crossingLimit;
   }
@@ -240,26 +243,27 @@ FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth)
     assert(edge->color != colors[1 - ((i & 2) >> 1)]);
     if (edge->to != NULL) {
 #if EDGE_DEBUG
-      printf("Edge already assigned  %c %c: ", color2char(colors[0]),
-             color2char(colors[1]));
-      printEdge(edge);
+      printf("Edge already assigned  %c %c: ", dynamicColorToChar(colors[0]),
+             dynamicColorToChar(colors[1]));
+      dynamicEdgePrint(edge);
 #endif
       if (edge->to != &edge->possiblyTo[colors[(i & 2) >> 1]]) {
-        return pointConflictFailure(depth);
+        return dynamicFailurePointConflict(depth);
       }
       assert(edge->to == &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
     } else {
       setDynamicPointer(&edge->to,
                         &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
 #if EDGE_DEBUG
-      printEdge(edge);
+      dynamicEdgePrint(edge);
 #endif
     }
 
     assert(edge->to != &edge->possiblyTo[edge->color]);
     // Count edge
-    edgeCountPtr = &g_edgeCount[IS_PRIMARY_EDGE(edge)][edge->color];
-    setDynamicInt(edgeCountPtr, (*edgeCountPtr) + 1);
+    edgeCountPtr =
+        &EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color];
+    dynamicTrailSetInt(edgeCountPtr, (*edgeCountPtr) + 1);
   }
   for (int i = 0; i < 4; i++) {
     assert(upoint->incomingEdges[i]->to != NULL);

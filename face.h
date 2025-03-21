@@ -29,18 +29,19 @@ struct face {
   STATIC FACE nextByCycleId[NCYCLES];
 };
 
-extern STATIC struct face g_faces[NFACES];
-extern uint64_t g_edgeCount[2][NCOLORS];
-extern uint64_t g_lengthOfCycleOfFaces[NCOLORS + 1];
-extern uint64_t g_crossings[NCOLORS][NCOLORS];
-extern uint64_t g_curveComplete[NCOLORS];
-extern STATIC struct facial_cycle g_cycles[NCYCLES];
+extern STATIC struct face Faces[NFACES];
+extern uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
+extern uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
+extern uint64_t EdgeCrossingCounts[NCOLORS][NCOLORS];
+extern uint64_t EdgeCurvesComplete[NCOLORS];
+extern STATIC struct facial_cycle Cycles[NCYCLES];
 
-extern FAILURE makeChoice(FACE face);
-extern FAILURE finalCorrectnessChecks(void);
-extern void setupCentralFaces(int *faceDegrees);
+extern FAILURE dynamicFaceMakeChoice(FACE face);
+extern FAILURE dynamicFaceFinalCorrectnessChecks(void);
+extern void initializeFaceSetupCentral(int *faceDegrees);
 extern void initializeGraph(void);
 extern void initialize(void);
-extern FAILURE assignPoint(FACE face, COLOR aColor, COLOR bColor, int depth);
+extern FAILURE dynamicPointAssign(FACE face, COLOR aColor, COLOR bColor,
+                                  int depth);
 
 #endif  // FACE_H

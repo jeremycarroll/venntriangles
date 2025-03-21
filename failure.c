@@ -59,49 +59,49 @@ static Failure NonCanoncialFailure = {
     .count = {0},
 };
 
-FAILURE noMatchingCyclesFailure(int depth)
+FAILURE dynamicFailureNoMatchingCycles(int depth)
 {
   NoMatchFailure.count[depth]++;
   return &NoMatchFailure;
 }
 
-FAILURE crossingLimitFailure(int depth)
+FAILURE dynamicFailureCrossingLimit(int depth)
 {
   CrossingLimitFailure.count[depth]++;
   return &CrossingLimitFailure;
 }
 
-FAILURE pointConflictFailure(int depth)
+FAILURE dynamicFailurePointConflict(int depth)
 {
   PointConflictFailure.count[depth]++;
   return &PointConflictFailure;
 }
 
-FAILURE conflictingConstraintsFailure(int depth)
+FAILURE dynamicFailureConflictingConstraints(int depth)
 {
   ConflictingConstraintsFailure.count[depth]++;
   return &ConflictingConstraintsFailure;
 }
 
-FAILURE disconnectedCurveFailure(int depth)
+FAILURE dynamicFailureDisconnectedCurve(int depth)
 {
   DisconnectedCurveFailure.count[depth]++;
   return &DisconnectedCurveFailure;
 }
 
-FAILURE tooManyCornersFailure(int depth)
+FAILURE dynamicFailureTooManyCorners(int depth)
 {
   TooManyCornersFailure.count[depth]++;
   return &TooManyCornersFailure;
 }
 
-FAILURE disconnectedFacesFailure(int depth)
+FAILURE dynamicFailureDisconnectedFaces(int depth)
 {
   DisconnectedFacesFailure.count[depth]++;
   return &DisconnectedFacesFailure;
 }
 
-FAILURE nonCanonicalFailure(void)
+FAILURE dynamicFailureNonCanonical(void)
 {
   NonCanoncialFailure.count[0]++;
   return &NonCanoncialFailure;
@@ -109,12 +109,12 @@ FAILURE nonCanonicalFailure(void)
 
 void initializeFailures(void)
 {
-  newFailureStatistic(&NoMatchFailure);
-  newFailureStatistic(&CrossingLimitFailure);
-  newFailureStatistic(&DisconnectedCurveFailure);
-  newFailureStatistic(&TooManyCornersFailure);
-  newFailureStatistic(&PointConflictFailure);
-  newFailureStatistic(&ConflictingConstraintsFailure);
-  newFailureStatistic(&DisconnectedFacesFailure);
-  newFailureStatistic(&NonCanoncialFailure);
+  dynamicFailureStatisticNew(&NoMatchFailure);
+  dynamicFailureStatisticNew(&CrossingLimitFailure);
+  dynamicFailureStatisticNew(&DisconnectedCurveFailure);
+  dynamicFailureStatisticNew(&TooManyCornersFailure);
+  dynamicFailureStatisticNew(&PointConflictFailure);
+  dynamicFailureStatisticNew(&ConflictingConstraintsFailure);
+  dynamicFailureStatisticNew(&DisconnectedFacesFailure);
+  dynamicFailureStatisticNew(&NonCanoncialFailure);
 }

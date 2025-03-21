@@ -14,13 +14,13 @@
 /*
 This file is responsible for checking that a set of edges can make a triangle.
 */
-extern COLORSET completedColors;
+extern COLORSET DynamicColorCompleted;
 static uint_trail curveLength(EDGE edge)
 {
   EDGE current;
   int result;
-  for (result = 1, current = followEdgeForwards(edge); current != edge;
-       result++, current = followEdgeForwards(current)) {
+  for (result = 1, current = dynamicEdgeFollowForwards(edge); current != edge;
+       result++, current = dynamicEdgeFollowForwards(current)) {
     assert(current != NULL);
   }
   return result;
@@ -29,7 +29,7 @@ static uint_trail curveLength(EDGE edge)
 static EDGE findStartOfCurve(EDGE edge)
 {
   EDGE next, current = edge;
-  while ((next = followEdgeBackwards(current)) != edge) {
+  while ((next = dynamicEdgeFollowBackwards(current)) != edge) {
     if (next == NULL) {
       return current;
     }
@@ -45,15 +45,17 @@ static FAILURE checkForDisconnectedCurve(EDGE edge, int depth)
   if (edge->reversed->to != NULL) {
     // We have a colored cycle in the FISC.
     length = curveLength(edge);
-    if (length < g_edgeCount[IS_PRIMARY_EDGE(edge)][edge->color]) {
-      return disconnectedCurveFailure(depth);
+    if (length <
+        EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color]) {
+      return dynamicFailureDisconnectedCurve(depth);
     }
-    assert(length == g_edgeCount[IS_PRIMARY_EDGE(edge)][edge->color]);
-    if (completedColors & 1u << edge->color) {
+    assert(length ==
+           EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color]);
+    if (DynamicColorCompleted & 1u << edge->color) {
       return NULL;
     }
-    completedColors |= 1u << edge->color;
-    setDynamicInt(&g_curveComplete[edge->color], 1);
+    DynamicColorCompleted |= 1u << edge->color;
+    dynamicTrailSetInt(&EdgeCurvesComplete[edge->color], 1);
   }
   return NULL;
 }
@@ -120,7 +122,7 @@ static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn)
       outside = outside & ~other;
       if (other & passed) {
         if (counter >= MAX_CORNERS) {
-          return tooManyCornersFailure(depth);
+          return dynamicFailureTooManyCorners(depth);
         }
         cornersReturn[counter++] = current;
         passed = 0;
@@ -137,7 +139,7 @@ static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn)
   return NULL;
 }
 
-FAILURE cornerCheck(EDGE start, int depth)
+FAILURE dynamicEdgeCornerCheck(EDGE start, int depth)
 {
 #if NCOLORS == 4
   /* test_venn4.c does not like the normal code - not an issue. */
@@ -146,31 +148,31 @@ FAILURE cornerCheck(EDGE start, int depth)
   EDGE ignore[MAX_CORNERS * 100];
   if (start->reversed->to != NULL) {
     // we have a complete curve.
-    start = &g_faces[NFACES - 1].edges[start->color];
+    start = &Faces[NFACES - 1].edges[start->color];
   }
   return cornerCheckInternal(start, depth, ignore);
 #endif
 }
 
-int pathLength(EDGE from, EDGE to)
+int dynamicEdgePathLength(EDGE from, EDGE to)
 {
   int i = 1;
   for (; from != to; i++) {
-    from = followEdgeForwards(from);
+    from = dynamicEdgeFollowForwards(from);
     assert(from != NULL);
   }
   return i;
 }
 
-void findCorners(COLOR a, EDGE result[3][2])
+void dynamicEdgeFindCorners(COLOR a, EDGE result[3][2])
 {
   int i, j;
   EDGE clockWiseCorners[MAX_CORNERS];
   EDGE counterClockWiseCorners[MAX_CORNERS];
   FAILURE failure =
-      cornerCheckInternal(&g_faces[NFACES - 1].edges[a], 0, clockWiseCorners);
+      cornerCheckInternal(&Faces[NFACES - 1].edges[a], 0, clockWiseCorners);
   assert(failure == NULL);
-  failure = cornerCheckInternal(g_faces[NFACES - 1].edges[a].reversed, 0,
+  failure = cornerCheckInternal(Faces[NFACES - 1].edges[a].reversed, 0,
                                 counterClockWiseCorners);
   assert(failure == NULL);
   assert((clockWiseCorners[2] == NULL) == (counterClockWiseCorners[2] == NULL));
@@ -197,31 +199,31 @@ void findCorners(COLOR a, EDGE result[3][2])
     return failure;         \
   }
 
-FAILURE curveChecks(EDGE edge, int depth)
+FAILURE dynamicEdgeCurveChecks(EDGE edge, int depth)
 {
   FAILURE failure;
-  if (g_curveComplete[edge->color]) {
+  if (EdgeCurvesComplete[edge->color]) {
     return NULL;
   }
   EDGE start = findStartOfCurve(edge);
   CHECK_FAILURE(checkForDisconnectedCurve(start, depth));
-  return cornerCheck(start, depth);
+  return dynamicEdgeCornerCheck(start, depth);
 }
 
-FAILURE checkCrossingLimit(COLOR a, COLOR b, int depth)
+FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth)
 {
-  uint_trail* crossing = &g_crossings[a][b];
+  uint_trail* crossing = &EdgeCrossingCounts[a][b];
   if (*crossing + 1 > MAX_ONE_WAY_CURVE_CROSSINGS) {
-    return crossingLimitFailure(depth);
+    return dynamicFailureCrossingLimit(depth);
   }
-  setDynamicInt(crossing, *crossing + 1);
+  dynamicTrailSetInt(crossing, *crossing + 1);
   return NULL;
 }
 
 static FAILURE checkLengthOfCycleOfFaces(FACE face)
 {
   uint32_t i = 0,
-           expected = g_lengthOfCycleOfFaces[__builtin_popcount(face->colors)];
+           expected = FaceSumOfFaceDegree[__builtin_popcount(face->colors)];
   FACE f = face;
   /* Don't call this with inner or outer face. */
   assert(expected != 1);
@@ -231,7 +233,7 @@ static FAILURE checkLengthOfCycleOfFaces(FACE face)
     assert(i <= expected);
     if (f == face) {
       if (i != expected) {
-        return disconnectedFacesFailure(0);
+        return dynamicFailureDisconnectedFaces(0);
       }
       return NULL;
       ;
@@ -240,15 +242,15 @@ static FAILURE checkLengthOfCycleOfFaces(FACE face)
   assert(0);
 }
 
-FAILURE finalCorrectnessChecks(void)
+FAILURE dynamicFaceFinalCorrectnessChecks(void)
 {
   FAILURE failure;
   COLORSET colors = 1;
   FACE face;
 #if NCOLORS == 6
-  switch (d6SymmetryTypeFaces()) {
+  switch (dynamicSymmetryTypeFaces()) {
     case NON_CANONICAL:
-      return nonCanonicalFailure();
+      return dynamicFailureNonCanonical();
     case EQUIVOCAL:
       /* Does not happen? But not deeply problematic if it does. */
       assert(0); /* could fall through, but will get duplicate solutions. */
@@ -258,7 +260,7 @@ FAILURE finalCorrectnessChecks(void)
   }
 #endif
   for (colors = 1; colors < (NFACES - 1); colors |= face->previous->colors) {
-    face = g_faces + colors;
+    face = Faces + colors;
     CHECK_FAILURE(checkLengthOfCycleOfFaces(face));
   }
   return NULL;
