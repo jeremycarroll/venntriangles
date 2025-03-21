@@ -46,4 +46,12 @@ extern FAILURE dynamicPointAssign(FACE face, COLOR aColor, COLOR bColor,
 extern void dynamicSearchFull(void (*foundSolution)(void));
 extern void dynamicSearch(bool smallestFirst, void (*foundSolution)(void));
 
+extern void initializeFaceSetupCentral(int *faceDegrees);
+extern FAILURE dynamicFaceMakeChoice(FACE face);
+extern bool dynamicColorRemoveFromSearch(COLOR color);
+
+extern COLORSET DynamicColorCompleted;
+
+extern uint64_t DynamicCycleGuessCounter;
+
 #endif  // FACE_H

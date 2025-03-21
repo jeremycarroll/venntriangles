@@ -2,8 +2,6 @@
   structures. These are hence the mechanics of dynamicSearch.
 */
 
-#include "dynamic.h"
-
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>

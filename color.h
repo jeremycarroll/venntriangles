@@ -52,5 +52,6 @@ extern void resetCyclesetWithoutColor(void);
 extern void initializeCyclesetWithoutColor(void);
 // Should have Dynamic in name, and be so.
 extern bool setCycleLength(uint32_t faceColors, uint32_t length);
+VISIBLE_FOR_TESTING uint32_t dynamicCycleIdFromColors(char *colors);
 
 #endif  // COLOR_H
