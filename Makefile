@@ -1,7 +1,7 @@
 CC		  = gcc
 CFLAGS	  = -g -Wall -Wextra -std=c11 -MMD
 UNITY_DIR   = ../Unity
-TEST_CFLAGS = -I$(UNITY_DIR)/src
+TEST_CFLAGS = -I$(UNITY_DIR)/src -I.
 TEST_SRC	=  test/test_initialize.c test/test_main.c test/test_venn4.c test/test_known_solution.c test/test_venn3.c \
 			  test/test_d6.c  test/test_venn5.c test/test_venn6.c
 TEST_BIN	= $(TEST_SRC:test/%.c=bin/%)
@@ -10,7 +10,7 @@ SRC		 = main.c initialize.c trail.c dynamic.c failure.c color.c \
 			  point.c triangles.c debug.c statistics.c search.c d6.c output.c logging.c
 XSRC		= entrypoint.c
 HDR			= color.h edge.h logging.h statistics.h core.h face.h main.h trail.h \
-			  d6.h failure.h output.h venn.h dynamic.h graph.h point.h visible_for_testing.h
+			  d6.h failure.h output.h venn.h dynamic.h graph.h point.h
 OBJ3		= $(SRC:%.c=objs3/%.o)
 OBJ4		= $(SRC:%.c=objs4/%.o)
 OBJ5		= $(SRC:%.c=objs5/%.o)

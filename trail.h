@@ -4,10 +4,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef struct DynamicTrail *TRAIL;
+typedef struct trail *TRAIL;
 typedef uint64_t uint_trail;
 
-struct DynamicTrail {
+struct trail {
   void *ptr;
   uint_trail value;
 };
@@ -23,5 +23,7 @@ extern void dynamicTrailSetPointer(void **ptr, void *value);
 extern void dynamicTrailSetInt(uint_trail *ptr, uint_trail value);
 extern bool dynamicTrailBacktrackTo(TRAIL backtrackPoint);
 extern void dynamicTrailMaybeSetInt(uint_trail *ptr, uint_trail value);
+
+extern void resetTrail(void);
 
 #endif  // TRAIL_H

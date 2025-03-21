@@ -3,7 +3,8 @@
 
 #include "d6.h"
 #include "graph.h"
-#include "visible_for_testing.h"
+#include "trail.h"
+#include "utils.h"
 
 FACE dynamicFaceChoose(bool smallestFirst)
 {

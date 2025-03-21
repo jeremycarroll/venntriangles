@@ -1,6 +1,8 @@
-#include "../venn.h"
-#include "../visible_for_testing.h"
+
+#include "face.h"
+#include "statistics.h"
 #include "unity.h"
+#include "utils.h"
 
 #define STATS 0
 

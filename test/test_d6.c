@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../d6.h"
-#include "../visible_for_testing.h"
+#include "d6.h"
 #include "unity.h"
+#include "utils.h"
 #define DEBUG_CANONICAL_SOLUTIONS 0
 
 void setUp(void) { initializeSequenceOrder(); }

@@ -1,9 +1,10 @@
 #include <time.h>
 
-#include "../d6.h"
-#include "../venn.h"
-#include "../visible_for_testing.h"
+#include "d6.h"
+#include "face.h"
+#include "statistics.h"
 #include "unity.h"
+#include "utils.h"
 
 #define STATS 1
 #define TEST_INFO 0

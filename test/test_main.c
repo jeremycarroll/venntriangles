@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../main.h"
+#include "main.h"
 #include "unity.h"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 extern int dynamicMain0(int argc, char *argv[]);

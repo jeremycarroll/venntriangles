@@ -1,6 +1,6 @@
 #include "trail.h"
 
-struct DynamicTrail DynamicTrailArray[TRAIL_SIZE];
+struct trail DynamicTrailArray[TRAIL_SIZE];
 TRAIL DynamicTrail = DynamicTrailArray;
 
 void dynamicTrailSetPointer(void** ptr, void* value)

@@ -40,8 +40,9 @@ extern FAILURE dynamicFaceMakeChoice(FACE face);
 extern FAILURE dynamicFaceFinalCorrectnessChecks(void);
 extern void initializeFaceSetupCentral(int *faceDegrees);
 extern void initializeGraph(void);
-extern void initialize(void);
 extern FAILURE dynamicPointAssign(FACE face, COLOR aColor, COLOR bColor,
                                   int depth);
+extern void dynamicSearchFull(void (*foundSolution)(void));
+extern void dynamicSearch(bool smallestFirst, void (*foundSolution)(void));
 
 #endif  // FACE_H

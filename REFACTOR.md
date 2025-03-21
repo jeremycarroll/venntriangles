@@ -6,7 +6,7 @@ Two to-do items are:
 
 Issues to be addressed in refactoring:
 - [ ] Modularization: which functions and variables should be in which files and why.
-- [ ] Replace monolithic header file with (approximately) one per source file?
+- [x] Replace monolithic header file with (approximately) one per source file?
 - [ ] Order include statements appropriately
 - [ ] Better use of -I in the Makefile
 - [ ] Use of #include <> vs #include ""
@@ -29,8 +29,8 @@ Issues to be addressed in refactoring:
 - [ ] improve TRAIL_SIZE, add maxTrail to stats
 - [x] https://stackoverflow.com/questions/2394609/makefile-header-dependencies
 - [ ] more clearly separating code that is for testing only.
-- [ ] withoutColor - via function? - rename
-- [ ] omittingCycleSets - move - rename
+- [x] withoutColor - via function? - rename
+- [x] omittingCycleSets - move - rename
 - [ ] include order as per https://stackoverflow.com/a/2762596
 - [ ] names matching (|dynamic|initialize|reset)(Point|Color|ColorSet|Edge|Face|Cycle|CycleSet|Failure|Trail)[A-Z][a-z]*
 - [x] break up graph into edge and face
