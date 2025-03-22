@@ -46,13 +46,13 @@ static char* getLookup(void)
 void dynamicFacePrint(FACE face)
 {
   char nBuffer[2048] = {0, 0};
-  printf("%s\n", dynamicFaceToStr(nBuffer, face));
+  printf("%s\n", faceToStr(nBuffer, face));
 }
 
 void dynamicEdgePrint(EDGE edge)
 {
   char nBuffer[2048] = {0, 0};
-  printf("%s\n", dynamicEdgeToStr(nBuffer, edge));
+  printf("%s\n", edgeToStr(nBuffer, edge));
 }
 
 static char* nextSlot(char* buffer)
@@ -70,7 +70,7 @@ static char* returnSlot(char* buffer)
   return buffer;
 }
 
-char* dynamicColorSetToStr(char* dbuffer, COLORSET colors)
+char* colorSetToStr(char* dbuffer, COLORSET colors)
 {
   uint32_t i;
   char* result = nextSlot(dbuffer);
@@ -87,7 +87,7 @@ char* dynamicColorSetToStr(char* dbuffer, COLORSET colors)
   return returnSlot(result);
 }
 
-int dynamicColorToChar(COLOR c) { return getLookup()[c]; }
+int colorToChar(COLOR c) { return getLookup()[c]; }
 
 char* dynamicCycleToStr(char* dbuffer, CYCLE cycle)
 {
@@ -106,9 +106,9 @@ char* dynamicCycleToStr(char* dbuffer, CYCLE cycle)
   return returnSlot(result);
 }
 
-char* dynamicFaceToStr(char* dbuffer, FACE face)
+char* faceToStr(char* dbuffer, FACE face)
 {
-  char* colors = dynamicColorSetToStr(dbuffer, face->colors);
+  char* colors = colorSetToStr(dbuffer, face->colors);
   char* cycle = dynamicCycleToStr(dbuffer, face->cycle);
   char* result = nextSlot(dbuffer);
   char* cycleSetSizeBuf = result + sprintf(result, "%s%s", colors, cycle);
@@ -118,10 +118,10 @@ char* dynamicFaceToStr(char* dbuffer, FACE face)
   return returnSlot(result);
 }
 
-char* dynamicUPointToStr(char* dbuffer, UPOINT up)
+char* uPointToStr(char* dbuffer, UPOINT up)
 {
   char* lookup = getLookup();
-  char* colors = dynamicColorSetToStr(dbuffer, up->colors);
+  char* colors = colorSetToStr(dbuffer, up->colors);
   char* result = nextSlot(dbuffer);
   sprintf(result, "%s(%c,%c)", colors, lookup[up->primary],
           lookup[up->secondary]);
@@ -130,13 +130,13 @@ char* dynamicUPointToStr(char* dbuffer, UPOINT up)
 
 char* dynamicDPointToStr(char* dbuffer, DPOINT dp)
 {
-  return dynamicUPointToStr(dbuffer, dp->point);
+  return uPointToStr(dbuffer, dp->point);
 }
 
-char* dynamicEdgeToStr(char* dbuffer, EDGE edge)
+char* edgeToStr(char* dbuffer, EDGE edge)
 {
-  char color = dynamicColorToChar(edge->color);
-  char* colors = dynamicColorSetToStr(dbuffer, edge->colors);
+  char color = colorToChar(edge->color);
+  char* colors = colorSetToStr(dbuffer, edge->colors);
   char* to = edge->to == NULL ? "***" : dynamicDPointToStr(dbuffer, edge->to);
   char* result = nextSlot(dbuffer);
   sprintf(result, "%c%c/%s[%s]", color, IS_PRIMARY_EDGE(edge) ? '+' : '-',
@@ -155,7 +155,7 @@ void dynamicFacePrintSelected(void)
   }
 }
 
-uint32_t dynamicCycleIdFromColors(char* colors)
+uint32_t cycleIdFromColors(char* colors)
 {
   COLOR cycle[NCOLORS];
   int i;
@@ -192,9 +192,9 @@ void dynamicSolutionPrint(FILE* fp)
       COLORSET colorBeingDropped = face->colors & ~next->colors;
       COLORSET colorBeingAdded = next->colors & ~face->colors;
       char buffer[256] = {0, 0};
-      fprintf(fp, "%s [%c,%c] ", dynamicFaceToStr(buffer, face),
-              dynamicColorSetToStr(buffer, colorBeingDropped)[1],
-              dynamicColorSetToStr(buffer, colorBeingAdded)[1]);
+      fprintf(fp, "%s [%c,%c] ", faceToStr(buffer, face),
+              colorSetToStr(buffer, colorBeingDropped)[1],
+              colorSetToStr(buffer, colorBeingAdded)[1]);
       face = next;
     } while (face->colors != colors);
     fprintf(fp, "\n");
@@ -210,17 +210,16 @@ FACE dynamicFaceAddSpecific(char* colors, char* cycle)
 {
   FAILURE failure;
   FACE face = dynamicFaceFromColors(colors);
-  uint32_t cycleId = dynamicCycleIdFromColors(cycle);
-  TEST_ASSERT_TRUE(initializeCycleSetMember(cycleId, face->possibleCycles));
+  uint32_t cycleId = cycleIdFromColors(cycle);
+  TEST_ASSERT_TRUE(cycleSetMember(cycleId, face->possibleCycles));
   if (face->cycleSetSize == 1) {
-    TEST_ASSERT_EQUAL(face->cycle,
-                      initializeCycleSetFindFirst(face->possibleCycles));
+    TEST_ASSERT_EQUAL(face->cycle, cycleSetFindFirst(face->possibleCycles));
     TEST_ASSERT_EQUAL(face->cycle, Cycles + cycleId);
   } else {
     face->cycle = Cycles + cycleId;
     failure = dynamicFaceMakeChoice(face);
 #if STATS
-    dynamicStatisticPrintOneLine(0);
+    statisticPrintOneLine(0);
 #endif
 #if DEBUG
     dynamicFacePrintSelected();

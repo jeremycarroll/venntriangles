@@ -16,13 +16,13 @@ struct trail {
  */
 #define TRAIL_SIZE 1000000
 
-extern TRAIL DynamicTrail;
-extern void dynamicTrailSetPointer(void **ptr, void *value);
-#define setDynamicPointer(a, b) dynamicTrailSetPointer((void **)a, b)
+extern TRAIL Trail;
+extern void trailSetPointer(void **ptr, void *value);
+#define setDynamicPointer(a, b) trailSetPointer((void **)a, b)
 
-extern void dynamicTrailSetInt(uint_trail *ptr, uint_trail value);
-extern bool dynamicTrailBacktrackTo(TRAIL backtrackPoint);
-extern void dynamicTrailMaybeSetInt(uint_trail *ptr, uint_trail value);
+extern void trailSetInt(uint_trail *ptr, uint_trail value);
+extern bool trailBacktrackTo(TRAIL backtrackPoint);
+extern void trailMaybeSetInt(uint_trail *ptr, uint_trail value);
 
 extern void resetTrail(void);
 

@@ -34,7 +34,9 @@ Issues to be addressed in refactoring:
 - [ ] include order as per https://stackoverflow.com/a/2762596
 - [ ] names matching (|dynamic|initialize|reset)(Point|Color|ColorSet|Edge|Face|Cycle|CycleSet|Failure|Trail)[A-Z][a-z]*
 - [x] break up graph into edge and face
-- [ ] revisit static/dynamic macros ...
+- [x] revisit static/dynamic macros ...
+- [ ] remove logging stuff - unused
+- [ ] simplify output, e.g. just use stdout
 
 
 Naming is not quite there yet ... the empty case is for global constants; we need to look at the exceptions

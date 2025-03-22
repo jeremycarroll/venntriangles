@@ -24,7 +24,7 @@ FACE dynamicFaceChoose(bool smallestFirst)
 
 static CYCLE chooseCycle(FACE face, CYCLE cycle)
 {
-  return initializeCycleSetFindNext(face->possibleCycles, cycle);
+  return cycleSetFindNext(face->possibleCycles, cycle);
 }
 
 static int solution_count = 0;
@@ -37,7 +37,7 @@ void dynamicSearch(bool smallestFirst, void (*foundSolution)(void))
   int position = 0;
   enum { NEXT_FACE, NEXT_CYCLE } state = NEXT_FACE;
   while (position >= 0) {
-    dynamicStatisticPrintOneLine(position);
+    statisticPrintOneLine(position);
     switch (state) {
       case NEXT_FACE:
         face = dynamicFaceChoose(smallestFirst);
@@ -49,7 +49,7 @@ void dynamicSearch(bool smallestFirst, void (*foundSolution)(void))
           position -= 1;
           state = NEXT_CYCLE;
         } else {
-          face->backtrack = DynamicTrail;
+          face->backtrack = Trail;
           chosenFaces[position] = face;
           chosenCycles[position] = NULL;
           state = NEXT_CYCLE;
@@ -57,7 +57,7 @@ void dynamicSearch(bool smallestFirst, void (*foundSolution)(void))
         break;
       case NEXT_CYCLE:
         face = chosenFaces[position];
-        if (dynamicTrailBacktrackTo(face->backtrack)) {
+        if (trailBacktrackTo(face->backtrack)) {
 #if BACKTRACK_DEBUG
           printf("Backtracking to ");
           dynamicFacePrint(face);
@@ -137,6 +137,6 @@ void dynamicSearchFull(void (*foundSolution)(void))
   solution_count = 0;
   dynamicFaceCanonicalCallback(full_search_callback6, (void *)foundSolution);
 #if STATS
-  dynamicStatisticPrintFull();
+  statisticPrintFull();
 #endif
 }

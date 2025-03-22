@@ -33,14 +33,14 @@ struct facial_cycle {
 
 #define memberOfColorSet(color, colorSet) (((colorSet) >> (color)) & 1u)
 
-extern CYCLESET_DECLARE CycleSetOmittingOne[NCOLORS];
-extern CYCLESET_DECLARE CycleSetOmittingPair[NCOLORS][NCOLORS];
-extern CYCLESET_DECLARE CylesetWithoutColor[NCOLORS];
+extern CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
+extern CYCLESET_DECLARE CycleSetOmittingColorPair[NCOLORS][NCOLORS];
+extern CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
 extern void initializeCycleSetAdd(uint32_t cycleId, CYCLESET cycleSet);
 extern void initializeCycleSetRemove(uint32_t cycleId, CYCLESET cycleSet);
-extern bool initializeCycleSetMember(uint32_t cycleId, CYCLESET cycleSet);
-extern CYCLE initializeCycleSetFindFirst(CYCLESET cycleSet);
-extern CYCLE initializeCycleSetFindNext(CYCLESET cycleSet, CYCLE cycle);
+extern bool cycleSetMember(uint32_t cycleId, CYCLESET cycleSet);
+extern CYCLE cycleSetFindFirst(CYCLESET cycleSet);
+extern CYCLE cycleSetFindNext(CYCLESET cycleSet, CYCLE cycle);
 extern uint32_t cycleSetSize(CYCLESET cycleSet);
 extern uint32_t cycleFindId(uint32_t *cycle, uint32_t length);
 extern bool cycleContainsAthenB(CYCLE cycle, uint32_t i, uint32_t j);
@@ -48,12 +48,12 @@ extern bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t i, uint32_t j,
                                      uint32_t k);
 extern uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color);
 extern struct facial_cycle Cycles[NCYCLES];
-extern void resetCyclesetWithoutColor(void);
-extern void initializeCyclesetWithoutColor(void);
+extern void deleteme(void);
+extern void deleteme(void);
 // Should have Dynamic in name, and be so.
 extern bool setCycleLength(uint32_t faceColors, uint32_t length);
-extern uint32_t dynamicCycleIdFromColors(char *colors);
-extern int dynamicColorToChar(COLOR c);
-extern char *dynamicColorSetToStr(char *dbuffer, COLORSET colors);
+extern uint32_t cycleIdFromColors(char *colors);
+extern int colorToChar(COLOR c);
+extern char *colorSetToStr(char *dbuffer, COLORSET colors);
 
 #endif  // COLOR_H

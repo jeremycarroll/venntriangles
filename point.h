@@ -71,6 +71,6 @@ extern void initializePoints(void);
 extern void resetPoints(void);
 extern UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
 extern FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
-extern char* dynamicUPointToStr(char* dbuffer, UPOINT up);
+extern char* uPointToStr(char* dbuffer, UPOINT up);
 
 #endif  // POINT_H

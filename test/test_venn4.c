@@ -14,7 +14,7 @@ void setUp(void)
 void tearDown(void)
 {
 #if TEST_INFO
-  dynamicStatisticPrintFull();
+  statisticPrintFull();
 #endif
   resetGlobals();
   resetInitialize();

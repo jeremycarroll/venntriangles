@@ -15,7 +15,7 @@ static int secondsBetweenLogs = 10;
 static int checkCountDown = 0;
 static FILE* logFile = NULL;
 
-void dynamicStatisticNew(uint64_t* counter, char* shortName, char* name)
+void statisticNew(uint64_t* counter, char* shortName, char* name)
 {
   for (int i = 0; i < MAX_STATISTICS; i++) {
     if (statistics[i].countPtr == counter) {
@@ -31,7 +31,7 @@ void dynamicStatisticNew(uint64_t* counter, char* shortName, char* name)
   assert(false);
 }
 
-void dynamicFailureStatisticNew(Failure* failure)
+void initializeFailureStatistic(Failure* failure)
 {
   for (int i = 0; i < MAX_STATISTICS; i++) {
     if (failures[i].count[0] == 0) {
@@ -59,7 +59,7 @@ void resetStatistics(void)
   }
 }
 
-double dynamicStatisticCalculateSearchSpace(void)
+double statisticCalculateSearchSpace(void)
 {
   double result = 0.0;
   for (uint32_t i = 0; i < NFACES; i++) {
@@ -70,7 +70,7 @@ double dynamicStatisticCalculateSearchSpace(void)
   return result;
 }
 
-int dynamicStatisticCountChosen(void)
+int statisticCountChosen(void)
 {
   int result = 0;
   for (uint32_t i = 0; i < NFACES; i++) {
@@ -81,7 +81,7 @@ int dynamicStatisticCountChosen(void)
   return result;
 }
 
-void dynamicStatisticPrintOneLine(int position)
+void statisticPrintOneLine(int position)
 {
   if (--checkCountDown <= 0) {
     time_t now = time(NULL);
@@ -92,8 +92,7 @@ void dynamicStatisticPrintOneLine(int position)
       timestr[19] = 0;
       fprintf(logFile, "%s %ld:%02.2ld:%02.2ld %d %.1f ", timestr + 11,
               elapsed / 3600, (elapsed / 60) % 60, elapsed % 60,
-              dynamicStatisticCountChosen(),
-              dynamicStatisticCalculateSearchSpace());
+              statisticCountChosen(), statisticCalculateSearchSpace());
 
       fprintf(logFile, "p %d ", position);
       for (int i = 0; i < MAX_STATISTICS; i++) {
@@ -129,20 +128,19 @@ void dynamicStatisticPrintOneLine(int position)
   }
 }
 
-void dynamicStatisticPrintFull(void)
+void statisticPrintFull(void)
 {
   time_t now = time(NULL);
   char* timestr = asctime(localtime(&now));
   time_t elapsed = now - startTime;
-  double searchSpaceLogSize = dynamicStatisticCalculateSearchSpace();
+  double searchSpaceLogSize = statisticCalculateSearchSpace();
   fprintf(logFile,
           "%sRuntime: %ld:%02.2ld:%02.2ld\nChosen faces: %d\nOpen Search Space "
           "Size: Log = %.2f "
           "; i.e. "
           "%6.3g\n",
           timestr, elapsed / 3600, (elapsed / 60) % 60, elapsed % 60,
-          dynamicStatisticCountChosen(), searchSpaceLogSize,
-          exp(searchSpaceLogSize));
+          statisticCountChosen(), searchSpaceLogSize, exp(searchSpaceLogSize));
   fprintf(logFile, "%30s %30s\n", "Counter", "Value(s)");
   for (int i = 0; i < MAX_STATISTICS; i++) {
     if (statistics[i].countPtr == NULL) {

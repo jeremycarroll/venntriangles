@@ -19,8 +19,8 @@ static uint_trail curveLength(EDGE edge)
 {
   EDGE current;
   int result;
-  for (result = 1, current = dynamicEdgeFollowForwards(edge); current != edge;
-       result++, current = dynamicEdgeFollowForwards(current)) {
+  for (result = 1, current = edgeFollowForwards(edge); current != edge;
+       result++, current = edgeFollowForwards(current)) {
     assert(current != NULL);
   }
   return result;
@@ -29,7 +29,7 @@ static uint_trail curveLength(EDGE edge)
 static EDGE findStartOfCurve(EDGE edge)
 {
   EDGE next, current = edge;
-  while ((next = dynamicEdgeFollowBackwards(current)) != edge) {
+  while ((next = edgeFollowBackwards(current)) != edge) {
     if (next == NULL) {
       return current;
     }
@@ -47,7 +47,7 @@ static FAILURE checkForDisconnectedCurve(EDGE edge, int depth)
     length = curveLength(edge);
     if (length <
         EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color]) {
-      return dynamicFailureDisconnectedCurve(depth);
+      return failureDisconnectedCurve(depth);
     }
     assert(length ==
            EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color]);
@@ -55,7 +55,7 @@ static FAILURE checkForDisconnectedCurve(EDGE edge, int depth)
       return NULL;
     }
     DynamicColorCompleted |= 1u << edge->color;
-    dynamicTrailSetInt(&EdgeCurvesComplete[edge->color], 1);
+    trailSetInt(&EdgeCurvesComplete[edge->color], 1);
   }
   return NULL;
 }
@@ -122,7 +122,7 @@ static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn)
       outside = outside & ~other;
       if (other & passed) {
         if (counter >= MAX_CORNERS) {
-          return dynamicFailureTooManyCorners(depth);
+          return failureTooManyCorners(depth);
         }
         cornersReturn[counter++] = current;
         passed = 0;
@@ -154,17 +154,17 @@ FAILURE dynamicEdgeCornerCheck(EDGE start, int depth)
 #endif
 }
 
-int dynamicEdgePathLength(EDGE from, EDGE to)
+int edgePathLength(EDGE from, EDGE to)
 {
   int i = 1;
   for (; from != to; i++) {
-    from = dynamicEdgeFollowForwards(from);
+    from = edgeFollowForwards(from);
     assert(from != NULL);
   }
   return i;
 }
 
-void dynamicEdgeFindCorners(COLOR a, EDGE result[3][2])
+void edgeFindCorners(COLOR a, EDGE result[3][2])
 {
   int i, j;
   EDGE clockWiseCorners[MAX_CORNERS];
@@ -214,9 +214,9 @@ FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth)
 {
   uint_trail* crossing = &EdgeCrossingCounts[a][b];
   if (*crossing + 1 > MAX_ONE_WAY_CURVE_CROSSINGS) {
-    return dynamicFailureCrossingLimit(depth);
+    return failureCrossingLimit(depth);
   }
-  dynamicTrailSetInt(crossing, *crossing + 1);
+  trailSetInt(crossing, *crossing + 1);
   return NULL;
 }
 
@@ -233,7 +233,7 @@ static FAILURE checkLengthOfCycleOfFaces(FACE face)
     assert(i <= expected);
     if (f == face) {
       if (i != expected) {
-        return dynamicFailureDisconnectedFaces(0);
+        return failureDisconnectedFaces(0);
       }
       return NULL;
       ;
@@ -250,7 +250,7 @@ FAILURE dynamicFaceFinalCorrectnessChecks(void)
 #if NCOLORS == 6
   switch (dynamicSymmetryTypeFaces()) {
     case NON_CANONICAL:
-      return dynamicFailureNonCanonical();
+      return failureNonCanonical();
     case EQUIVOCAL:
       /* Does not happen? But not deeply problematic if it does. */
       assert(0); /* could fall through, but will get duplicate solutions. */

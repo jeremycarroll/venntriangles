@@ -109,7 +109,7 @@ void initializePoints(void)
   }
 }
 
-EDGE dynamicEdgeFollowForwards(EDGE edge)
+EDGE edgeFollowForwards(EDGE edge)
 {
   if (edge->to == NULL) {
     return NULL;
@@ -117,9 +117,9 @@ EDGE dynamicEdgeFollowForwards(EDGE edge)
   return edge->to->out[0];
 }
 
-EDGE dynamicEdgeFollowBackwards(EDGE edge)
+EDGE edgeFollowBackwards(EDGE edge)
 {
-  EDGE reversedNext = dynamicEdgeFollowForwards(edge->reversed);
+  EDGE reversedNext = edgeFollowForwards(edge->reversed);
   return reversedNext == NULL ? NULL : reversedNext->reversed;
 }
 
@@ -169,12 +169,11 @@ UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor)
   }
 #if POINT_DEBUG
   printf("dynamicPointAdd(%s[%c,%c], f: %s, e: %s, r: %s, %c, %d)\n",
-         dynamicColorSetToStr(dbuffer, insideColor),
-         dynamicColorToChar(dbuffer, a), dynamicColorToChar(dbuffer, b),
-         dynamicFaceToStr(dbuffer, face),
-         dynamicEdgeToStr(dbuffer, incomingEdge),
-         dynamicEdgeToStr(dbuffer, incomingEdge->reversed),
-         dynamicColorToChar(dbuffer, othercolor), ix);
+         colorSetToStr(dbuffer, insideColor), colorToChar(dbuffer, a),
+         colorToChar(dbuffer, b), faceToStr(dbuffer, face),
+         edgeToStr(dbuffer, incomingEdge),
+         edgeToStr(dbuffer, incomingEdge->reversed),
+         colorToChar(dbuffer, othercolor), ix);
 #endif
 
   point = getPoint(insideColor, a, b);
@@ -204,7 +203,8 @@ UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor)
 TODO: rename vars , the A B problem ...
 Either return the point, or return NULL and set the value of failureReturn.
 */
-FAILURE dynamicPointAssign(FACE face, COLOR aColor, COLOR bColor, int depth)
+FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
+                                int depth)
 {
   FAILURE crossingLimit;
   UPOINT upoint;
@@ -214,14 +214,13 @@ FAILURE dynamicPointAssign(FACE face, COLOR aColor, COLOR bColor, int depth)
 
   if (face->edges[aColor].to != NULL) {
 #if EDGE_DEBUG
-    printf("Assigned edge %c %c: ", dynamicColorToChar(aColor),
-           dynamicColorToChar(bColor));
+    printf("Assigned edge %c %c: ", colorToChar(aColor), colorToChar(bColor));
     dynamicEdgePrint(&face->edges[aColor]);
 #endif
 
     assert(face->edges[aColor].to != &face->edges[aColor].possiblyTo[aColor]);
     if (face->edges[aColor].to != &face->edges[aColor].possiblyTo[bColor]) {
-      return dynamicFailurePointConflict(depth);
+      return failurePointConflict(depth);
     }
     assert(face->edges[aColor].to == &face->edges[aColor].possiblyTo[bColor]);
     return NULL;
@@ -243,12 +242,12 @@ FAILURE dynamicPointAssign(FACE face, COLOR aColor, COLOR bColor, int depth)
     assert(edge->color != colors[1 - ((i & 2) >> 1)]);
     if (edge->to != NULL) {
 #if EDGE_DEBUG
-      printf("Edge already assigned  %c %c: ", dynamicColorToChar(colors[0]),
-             dynamicColorToChar(colors[1]));
+      printf("Edge already assigned  %c %c: ", colorToChar(colors[0]),
+             colorToChar(colors[1]));
       dynamicEdgePrint(edge);
 #endif
       if (edge->to != &edge->possiblyTo[colors[(i & 2) >> 1]]) {
-        return dynamicFailurePointConflict(depth);
+        return failurePointConflict(depth);
       }
       assert(edge->to == &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
     } else {
@@ -263,7 +262,7 @@ FAILURE dynamicPointAssign(FACE face, COLOR aColor, COLOR bColor, int depth)
     // Count edge
     edgeCountPtr =
         &EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color];
-    dynamicTrailSetInt(edgeCountPtr, (*edgeCountPtr) + 1);
+    trailSetInt(edgeCountPtr, (*edgeCountPtr) + 1);
   }
   for (int i = 0; i < 4; i++) {
     assert(upoint->incomingEdges[i]->to != NULL);

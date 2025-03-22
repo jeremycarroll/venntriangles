@@ -4,8 +4,8 @@
 #include "logging.h"  // Include logging.h for log_level_t
 
 // Declare functions used in main.c
-const char* dynamicFaceDegreeSignature(void);
-void dynamicSolutionWrite(const char* buffer);
-void dynamicSearchFull(void (*foundSolution)(void));
+extern const char* dynamicFaceDegreeSignature(void);
+extern void dynamicSolutionWrite(const char* buffer);
+extern void dynamicSearchFull(void (*foundSolution)(void));
 
 #endif  // MAIN_H

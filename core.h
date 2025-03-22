@@ -61,8 +61,6 @@
 typedef struct edge *EDGE;
 typedef struct face *FACE;
 
-#define VISIBLE_FOR_TESTING extern
-
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>

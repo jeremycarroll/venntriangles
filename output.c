@@ -33,18 +33,18 @@ void dynamicSolutionWrite(char* prefix)
   }
   dynamicSolutionPrint(fp);
   for (COLOR a = 0; a < NCOLORS; a++) {
-    dynamicEdgeFindCorners(a, corners);
+    edgeFindCorners(a, corners);
     for (int i = 0; i < 3; i++) {
-      fprintf(fp, "{%c:%d} ", dynamicColorToChar(a), i);
+      fprintf(fp, "{%c:%d} ", colorToChar(a), i);
       if (corners[i][0] == NULL) {
         EDGE edge = &Faces[NFACES - 1].edges[a];
-        pLength = dynamicEdgePathLength(edge, dynamicEdgeFollowBackwards(edge));
+        pLength = edgePathLength(edge, edgeFollowBackwards(edge));
         fprintf(fp, "NULL/%d ", pLength);
       } else {
-        pLength = dynamicEdgePathLength(corners[i][0]->reversed, corners[i][1]);
+        pLength = edgePathLength(corners[i][0]->reversed, corners[i][1]);
         buffer[0] = buffer[1] = 0;
-        fprintf(fp, "(%s => %s/%d) ", dynamicEdgeToStr(buffer, corners[i][0]),
-                dynamicEdgeToStr(buffer, corners[i][1]), pLength);
+        fprintf(fp, "(%s => %s/%d) ", edgeToStr(buffer, corners[i][0]),
+                edgeToStr(buffer, corners[i][1]), pLength);
       }
       numberOfVariations *= pLength;
       fprintf(fp, "\n");

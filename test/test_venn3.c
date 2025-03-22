@@ -172,22 +172,22 @@ static void test_choosing_and_backtracking()
 {
   int i;
   FACE face;
-  TRAIL startTrail = DynamicTrail;
+  TRAIL startTrail = Trail;
   for (i = 0; i < NFACES; i++) {
-    TEST_ASSERT_EQUAL(startTrail, DynamicTrail);
+    TEST_ASSERT_EQUAL(startTrail, Trail);
     verify_face_size(2);
     face = Faces + i;
     face->cycle = Cycles;
     TEST_ASSERT_NULL(dynamicFaceMakeChoice(face));
 #if STATS
-    dynamicStatisticPrintOneLine();
+    statisticPrintOneLine();
 #endif
     verify_face_size(1);
-    dynamicTrailBacktrackTo(face->backtrack);
+    trailBacktrackTo(face->backtrack);
     face->cycle = NULL;
   }
 #if STATS
-  dynamicStatisticPrintFull();
+  statisticPrintFull();
 #endif
   TEST_ASSERT_EQUAL(8, DynamicCycleGuessCounter);
 }

@@ -1,40 +1,40 @@
 #include "trail.h"
 
 struct trail DynamicTrailArray[TRAIL_SIZE];
-TRAIL DynamicTrail = DynamicTrailArray;
+TRAIL Trail = DynamicTrailArray;
 
-void dynamicTrailSetPointer(void** ptr, void* value)
+void trailSetPointer(void** ptr, void* value)
 {
-  DynamicTrail->ptr = ptr;
-  DynamicTrail->value = (uint_trail)*ptr;
-  DynamicTrail++;
+  Trail->ptr = ptr;
+  Trail->value = (uint_trail)*ptr;
+  Trail++;
   *ptr = value;
 }
 
-void dynamicTrailMaybeSetInt(uint_trail* ptr, uint_trail value)
+void trailMaybeSetInt(uint_trail* ptr, uint_trail value)
 {
   if (*ptr != value) {
-    dynamicTrailSetInt(ptr, value);
+    trailSetInt(ptr, value);
   }
 }
 
-void dynamicTrailSetInt(uint_trail* ptr, uint_trail value)
+void trailSetInt(uint_trail* ptr, uint_trail value)
 {
-  DynamicTrail->ptr = ptr;
-  DynamicTrail->value = *ptr;
-  DynamicTrail++;
+  Trail->ptr = ptr;
+  Trail->value = *ptr;
+  Trail++;
   *ptr = value;
 }
 
-bool dynamicTrailBacktrackTo(TRAIL backtrackPoint)
+bool trailBacktrackTo(TRAIL backtrackPoint)
 {
   bool result = false;
-  while (DynamicTrail > backtrackPoint) {
+  while (Trail > backtrackPoint) {
     result = true;
-    DynamicTrail--;
-    *(uint_trail*)DynamicTrail->ptr = DynamicTrail->value;
+    Trail--;
+    *(uint_trail*)Trail->ptr = Trail->value;
   }
   return result;
 }
 
-void resetTrail() { DynamicTrail = DynamicTrailArray; }
+void resetTrail() { Trail = DynamicTrailArray; }

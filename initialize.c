@@ -26,8 +26,8 @@ initialization.
  */
 CYCLESET_DECLARE InitializeCycleSetPairs[NCOLORS][NCOLORS];
 CYCLESET_DECLARE InitializeCycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
-CYCLESET_DECLARE CycleSetOmittingOne[NCOLORS];
-CYCLESET_DECLARE CycleSetOmittingPair[NCOLORS][NCOLORS];
+CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
+CYCLESET_DECLARE CycleSetOmittingColorPair[NCOLORS][NCOLORS];
 CYCLESET InitializeCycleSetSets[NCYCLE_ENTRIES * 2];
 
 STATIC struct face Faces[NFACES];
@@ -64,18 +64,17 @@ void resetInitialize()
   memset(InitializeCycleSetPairs, 0, sizeof(InitializeCycleSetPairs));
   memset(InitializeCycleSetTriples, 0, sizeof(InitializeCycleSetTriples));
   memset(InitializeCycleSetSets, 0, sizeof(InitializeCycleSetSets));
-  memset(CycleSetOmittingOne, 0, sizeof(CycleSetOmittingOne));
-  memset(CycleSetOmittingPair, 0, sizeof(CycleSetOmittingPair));
+  memset(CycleSetOmittingOneColor, 0, sizeof(CycleSetOmittingOneColor));
+  memset(CycleSetOmittingColorPair, 0, sizeof(CycleSetOmittingColorPair));
 
   nextCycle = 0;
   nextSetOfCycleSets = 0;
   resetPoints();
-  resetCyclesetWithoutColor();
 }
 
 void initialize()
 {
-  /* Not true on all architectures, but assumed in our DynamicTrail. */
+  /* Not true on all architectures, but assumed in our Trail. */
   assert((sizeof(uint64_t) == sizeof(void *)));
   assert(nextCycle == 0);
   initializeCycles();
@@ -98,7 +97,6 @@ void initialize()
   applyMonotonicity();
 
   initializeDynamicCounters();
-  initializeCyclesetWithoutColor();
   initializeLengthOfCycleOfFaces();
 }
 
@@ -231,7 +229,7 @@ static void initializeOmittingCycleSets()
   for (i = 0; i < NCOLORS; i++) {
     for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
       if (!memberOfColorSet(i, Cycles[cycleId].colors)) {
-        initializeCycleSetAdd(cycleId, CycleSetOmittingOne[i]);
+        initializeCycleSetAdd(cycleId, CycleSetOmittingOneColor[i]);
       }
     }
   }
@@ -241,7 +239,7 @@ static void initializeOmittingCycleSets()
         if (!(memberOfColorSet(i, Cycles[cycleId].colors) &&
               memberOfColorSet(j, Cycles[cycleId].colors) &&
               cycleContainsAthenB(&Cycles[cycleId], i, j))) {
-          initializeCycleSetAdd(cycleId, CycleSetOmittingPair[i][j]);
+          initializeCycleSetAdd(cycleId, CycleSetOmittingColorPair[i][j]);
         }
       }
     }
@@ -354,13 +352,13 @@ static void applyMonotonicity(void)
 
 static void recomputeCountOfChoices(FACE face)
 {
-  dynamicTrailSetInt(&face->cycleSetSize, cycleSetSize(face->possibleCycles));
+  trailSetInt(&face->cycleSetSize, cycleSetSize(face->possibleCycles));
 }
 
 static void removeFromCycleSetWithTrail(uint32_t cycleId, CYCLESET cycleSet)
 {
   assert(cycleId < NCYCLES);
-  dynamicTrailSetInt(
+  trailSetInt(
       &cycleSet[cycleId / BITS_PER_WORD],
       cycleSet[cycleId / BITS_PER_WORD] & ~(1ul << (cycleId % BITS_PER_WORD)));
 }

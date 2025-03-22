@@ -286,7 +286,7 @@ void tearDown(void)
 {
 #if STATS
   if (DynamicCycleGuessCounter > 1) {
-    dynamicStatisticPrintFull();
+    statisticPrintFull();
   }
 #endif
   resetGlobals();
@@ -303,14 +303,14 @@ static void addFacesFromTestData(char* testData[][2], int length)
   FAILURE failure;
   for (i = 0; i < length; i++) {
     face = dynamicFaceFromColors(testData[i][0]);
-    cycleId = dynamicCycleIdFromColors(testData[i][1]);
-    TEST_ASSERT_TRUE(initializeCycleSetMember(cycleId, face->possibleCycles));
+    cycleId = cycleIdFromColors(testData[i][1]);
+    TEST_ASSERT_TRUE(cycleSetMember(cycleId, face->possibleCycles));
     if (face->cycleSetSize == 1) {
 #if DEBUG
       printf("!\n");
 #endif
       TEST_ASSERT_EQUAL(Cycles + cycleId,
-                        initializeCycleSetFindFirst(face->possibleCycles));
+                        cycleSetFindFirst(face->possibleCycles));
       TEST_ASSERT_EQUAL(face->cycle, Cycles + cycleId);
     } else {
       face->cycle = Cycles + cycleId;
@@ -321,7 +321,7 @@ static void addFacesFromTestData(char* testData[][2], int length)
       failure = dynamicFaceMakeChoice(face);
 
 #if STATS
-      dynamicStatisticPrintOneLine(0);
+      statisticPrintOneLine(0);
 #endif
       if (failure != NULL) {
         printf("Failure: %s %s\n", failure->label, failure->shortLabel);
@@ -443,28 +443,27 @@ static void test_DE_1(void)
 {
   FACE ab = dynamicFaceFromColors("ab");
   FACE abc = dynamicFaceFromColors("abc");
-  uint32_t cycleId = dynamicCycleIdFromColors("afceb");
-  TEST_ASSERT_TRUE(initializeCycleSetMember(cycleId, ab->possibleCycles));
+  uint32_t cycleId = cycleIdFromColors("afceb");
+  TEST_ASSERT_TRUE(cycleSetMember(cycleId, ab->possibleCycles));
   addFaceFromTestData("abc");
 #if DEBUG
   dynamicCycleSetPrint(abc->cycle->oppositeDirection[0]);
 #endif
-  TEST_ASSERT_TRUE(
-      initializeCycleSetMember(cycleId, abc->cycle->oppositeDirection[0]));
-  TEST_ASSERT_TRUE(initializeCycleSetMember(cycleId, ab->possibleCycles));
+  TEST_ASSERT_TRUE(cycleSetMember(cycleId, abc->cycle->oppositeDirection[0]));
+  TEST_ASSERT_TRUE(cycleSetMember(cycleId, ab->possibleCycles));
   addFaceFromTestData("abce");
-  TEST_ASSERT_TRUE(initializeCycleSetMember(cycleId, ab->possibleCycles));
+  TEST_ASSERT_TRUE(cycleSetMember(cycleId, ab->possibleCycles));
 }
 
 static void test_DE_2(void)
 {
   FACE ab = dynamicFaceFromColors("ab");
-  uint32_t cycleId = dynamicCycleIdFromColors("afceb");
-  TEST_ASSERT_TRUE(initializeCycleSetMember(cycleId, ab->possibleCycles));
+  uint32_t cycleId = cycleIdFromColors("afceb");
+  TEST_ASSERT_TRUE(cycleSetMember(cycleId, ab->possibleCycles));
   addFaceFromTestData("abce");
-  TEST_ASSERT_TRUE(initializeCycleSetMember(cycleId, ab->possibleCycles));
+  TEST_ASSERT_TRUE(cycleSetMember(cycleId, ab->possibleCycles));
   addFaceFromTestData("abc");
-  TEST_ASSERT_TRUE(initializeCycleSetMember(cycleId, ab->possibleCycles));
+  TEST_ASSERT_TRUE(cycleSetMember(cycleId, ab->possibleCycles));
 }
 
 int main(void)

@@ -35,12 +35,16 @@ struct edge {
   STATIC struct directedPoint possiblyTo[NCOLORS];
 };
 
-extern EDGE dynamicEdgeFollowBackwards(EDGE edge);
-extern EDGE dynamicEdgeFollowForwards(EDGE edge);
+extern uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
+extern uint64_t EdgeCrossingCounts[NCOLORS][NCOLORS];
+extern uint64_t EdgeCurvesComplete[NCOLORS];
+
+extern EDGE edgeFollowBackwards(EDGE edge);
+extern EDGE edgeFollowForwards(EDGE edge);
 extern FAILURE dynamicEdgeCurveChecks(EDGE edge, int depth);
-extern void dynamicEdgeFindCorners(COLOR a, EDGE result[3][2]);
-extern int dynamicEdgePathLength(EDGE from, EDGE to);
-extern char* dynamicEdgeToStr(char* dbuffer, EDGE edge);
+extern void edgeFindCorners(COLOR a, EDGE result[3][2]);
+extern int edgePathLength(EDGE from, EDGE to);
+extern char* edgeToStr(char* dbuffer, EDGE edge);
 
 #define IS_PRIMARY_EDGE(edge) (memberOfColorSet((edge)->color, (edge)->colors))
 

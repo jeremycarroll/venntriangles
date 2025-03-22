@@ -59,49 +59,49 @@ static Failure NonCanoncialFailure = {
     .count = {0},
 };
 
-FAILURE dynamicFailureNoMatchingCycles(int depth)
+FAILURE failureNoMatchingCycles(int depth)
 {
   NoMatchFailure.count[depth]++;
   return &NoMatchFailure;
 }
 
-FAILURE dynamicFailureCrossingLimit(int depth)
+FAILURE failureCrossingLimit(int depth)
 {
   CrossingLimitFailure.count[depth]++;
   return &CrossingLimitFailure;
 }
 
-FAILURE dynamicFailurePointConflict(int depth)
+FAILURE failurePointConflict(int depth)
 {
   PointConflictFailure.count[depth]++;
   return &PointConflictFailure;
 }
 
-FAILURE dynamicFailureConflictingConstraints(int depth)
+FAILURE failureConflictingConstraints(int depth)
 {
   ConflictingConstraintsFailure.count[depth]++;
   return &ConflictingConstraintsFailure;
 }
 
-FAILURE dynamicFailureDisconnectedCurve(int depth)
+FAILURE failureDisconnectedCurve(int depth)
 {
   DisconnectedCurveFailure.count[depth]++;
   return &DisconnectedCurveFailure;
 }
 
-FAILURE dynamicFailureTooManyCorners(int depth)
+FAILURE failureTooManyCorners(int depth)
 {
   TooManyCornersFailure.count[depth]++;
   return &TooManyCornersFailure;
 }
 
-FAILURE dynamicFailureDisconnectedFaces(int depth)
+FAILURE failureDisconnectedFaces(int depth)
 {
   DisconnectedFacesFailure.count[depth]++;
   return &DisconnectedFacesFailure;
 }
 
-FAILURE dynamicFailureNonCanonical(void)
+FAILURE failureNonCanonical(void)
 {
   NonCanoncialFailure.count[0]++;
   return &NonCanoncialFailure;
@@ -109,12 +109,12 @@ FAILURE dynamicFailureNonCanonical(void)
 
 void initializeFailures(void)
 {
-  dynamicFailureStatisticNew(&NoMatchFailure);
-  dynamicFailureStatisticNew(&CrossingLimitFailure);
-  dynamicFailureStatisticNew(&DisconnectedCurveFailure);
-  dynamicFailureStatisticNew(&TooManyCornersFailure);
-  dynamicFailureStatisticNew(&PointConflictFailure);
-  dynamicFailureStatisticNew(&ConflictingConstraintsFailure);
-  dynamicFailureStatisticNew(&DisconnectedFacesFailure);
-  dynamicFailureStatisticNew(&NonCanoncialFailure);
+  initializeFailureStatistic(&NoMatchFailure);
+  initializeFailureStatistic(&CrossingLimitFailure);
+  initializeFailureStatistic(&DisconnectedCurveFailure);
+  initializeFailureStatistic(&TooManyCornersFailure);
+  initializeFailureStatistic(&PointConflictFailure);
+  initializeFailureStatistic(&ConflictingConstraintsFailure);
+  initializeFailureStatistic(&DisconnectedFacesFailure);
+  initializeFailureStatistic(&NonCanoncialFailure);
 }

@@ -10,7 +10,7 @@ void initializeCycleSetAdd(uint32_t cycleId, CYCLESET cycleSet)
   cycleSet[cycleId / BITS_PER_WORD] |= 1ul << (cycleId % BITS_PER_WORD);
 }
 
-bool initializeCycleSetMember(uint32_t cycleId, CYCLESET cycleSet)
+bool cycleSetMember(uint32_t cycleId, CYCLESET cycleSet)
 {
   assert(cycleId < NCYCLES);
   return (cycleSet[cycleId / BITS_PER_WORD] >> (cycleId % BITS_PER_WORD)) & 1ul;
@@ -22,12 +22,12 @@ void initializeCycleSetRemove(uint32_t cycleId, CYCLESET cycleSet)
   cycleSet[cycleId / BITS_PER_WORD] &= ~(1ul << (cycleId % BITS_PER_WORD));
 }
 
-CYCLE initializeCycleSetFindFirst(CYCLESET cycleSet)
+CYCLE cycleSetFindFirst(CYCLESET cycleSet)
 {
-  return initializeCycleSetFindNext(cycleSet, NULL);
+  return cycleSetFindNext(cycleSet, NULL);
 }
 
-CYCLE initializeCycleSetFindNext(CYCLESET cycleSet, CYCLE cycle)
+CYCLE cycleSetFindNext(CYCLESET cycleSet, CYCLE cycle)
 {
   uint64_t i;
   int64_t j;
@@ -110,23 +110,4 @@ uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color)
   assert(NULL == "Unreachable");
 }
 
-CYCLESET_DECLARE CylesetWithoutColor[NCOLORS];
-
-void resetCyclesetWithoutColor()
-{
-  memset(CylesetWithoutColor, 0, sizeof(CylesetWithoutColor));
-}
-
-void initializeCyclesetWithoutColor()
-{
-  COLOR color;
-  CYCLE cycle;
-  uint32_t i;
-  for (color = 0; color < NCOLORS; color++) {
-    for (i = 0, cycle = Cycles; i < NCYCLES; i++, cycle++) {
-      if (!memberOfColorSet(color, cycle->colors)) {
-        initializeCycleSetAdd(i, CylesetWithoutColor[color]);
-      }
-    }
-  }
-}
+CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];

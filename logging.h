@@ -15,6 +15,6 @@ typedef enum {
 
 extern log_level_t DynamicLogLevel;
 
-void dynamicLogMessage(log_level_t level, const char *format, ...);
+extern void dynamicLogMessage(log_level_t level, const char *format, ...);
 
 #endif  // LOGGING_H

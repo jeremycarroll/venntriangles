@@ -19,7 +19,7 @@ void setUp(void)
 void tearDown(void)
 {
 #if TEST_INFO
-  dynamicStatisticPrintFull();
+  statisticPrintFull();
 #endif
   resetGlobals();
   resetInitialize();
@@ -32,7 +32,7 @@ static void found_solution()
 {
 #if TEST_INFO
   dynamicSolutionPrint(NULL);
-  dynamicStatisticPrintFull();
+  statisticPrintFull();
 #endif
   solution_count++;
 }
@@ -45,7 +45,7 @@ static void test_search_for_best_solution()
 
   // TEST_ASSERT_EQUAL(80, solution_count);
 #if STATS
-  dynamicStatisticPrintFull();
+  statisticPrintFull();
 #endif
 }
 
@@ -114,7 +114,7 @@ static void test_full_search(void)
   solution_count = 0;
   dynamicSearchFull(found_solution);
 #if STATS
-  dynamicStatisticPrintFull();
+  statisticPrintFull();
 #endif
   TEST_ASSERT_EQUAL(233, solution_count);
 }

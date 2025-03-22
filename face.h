@@ -31,28 +31,28 @@ struct face {
 
 extern void initializeGraph(void);
 extern STATIC struct face Faces[NFACES];
-extern uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
 extern uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
-extern uint64_t EdgeCrossingCounts[NCOLORS][NCOLORS];
-extern uint64_t EdgeCurvesComplete[NCOLORS];
 extern STATIC struct facial_cycle Cycles[NCYCLES];
 
 extern FAILURE dynamicFaceMakeChoice(FACE face);
 extern FAILURE dynamicFaceFinalCorrectnessChecks(void);
 extern void initializeFaceSetupCentral(int *faceDegrees);
-extern void initializeGraph(void);
-extern FAILURE dynamicPointAssign(FACE face, COLOR aColor, COLOR bColor,
-                                  int depth);
+extern FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
+                                       int depth);
 extern void dynamicSearchFull(void (*foundSolution)(void));
 extern void dynamicSearch(bool smallestFirst, void (*foundSolution)(void));
 
 extern void initializeFaceSetupCentral(int *faceDegrees);
-extern FAILURE dynamicFaceMakeChoice(FACE face);
 extern bool dynamicColorRemoveFromSearch(COLOR color);
 
 extern COLORSET DynamicColorCompleted;
 
 extern uint64_t DynamicCycleGuessCounter;
-extern char *dynamicFaceToStr(char *dbuffer, FACE face);
+extern char *faceToStr(char *dbuffer, FACE face);
+
+extern FACE dynamicFaceChoose(bool smallestFirst);
+extern FACE dynamicFaceFromColors(char *colors);
+extern FACE dynamicFaceAddSpecific(char *colors, char *cycle);
+extern void dynamicFacePrintSelected(void);
 
 #endif  // FACE_H

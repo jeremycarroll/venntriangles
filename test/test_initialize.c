@@ -114,10 +114,8 @@ void test_same_and_opposite_directions(void)
   initialize();
   for (cycleId = 0, cycle = Cycles; cycleId < NCYCLES; cycleId++, cycle++) {
     for (j = 0; j < cycle->length; j++) {
-      TEST_ASSERT_TRUE(
-          initializeCycleSetMember(cycleId, cycle->sameDirection[j]));
-      TEST_ASSERT_FALSE(
-          initializeCycleSetMember(cycleId, cycle->oppositeDirection[j]));
+      TEST_ASSERT_TRUE(cycleSetMember(cycleId, cycle->sameDirection[j]));
+      TEST_ASSERT_FALSE(cycleSetMember(cycleId, cycle->oppositeDirection[j]));
     }
   }
 }
@@ -132,12 +130,11 @@ void test_opposite_directions(void)
     for (j = 0; j < cycle->length; j++) {
       for (oppositeCycleId = 0, oppositeCycle = Cycles;
            oppositeCycleId < NCYCLES; oppositeCycleId++, oppositeCycle++) {
-        if (initializeCycleSetMember(oppositeCycleId,
-                                     cycle->oppositeDirection[j])) {
+        if (cycleSetMember(oppositeCycleId, cycle->oppositeDirection[j])) {
           for (k = 0; k < oppositeCycle->length; k++) {
             if (oppositeCycle->curves[k] == cycle->curves[j]) {
-              TEST_ASSERT_TRUE(initializeCycleSetMember(
-                  cycleId, oppositeCycle->oppositeDirection[k]));
+              TEST_ASSERT_TRUE(
+                  cycleSetMember(cycleId, oppositeCycle->oppositeDirection[k]));
               goto ok;
             }
           }
@@ -170,7 +167,7 @@ void test_next_cycle(void)
   CYCLE cycle = NULL;
   initialize();
   do {
-    cycle = initializeCycleSetFindNext(face->possibleCycles, cycle);
+    cycle = cycleSetFindNext(face->possibleCycles, cycle);
     counter++;
   } while (cycle != NULL);
 
