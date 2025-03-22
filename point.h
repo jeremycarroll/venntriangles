@@ -3,8 +3,8 @@
 
 #include "color.h"
 
-typedef struct directedPoint *DPOINT;
-typedef struct undirectedPoint *UPOINT;
+typedef struct directedPoint* DPOINT;
+typedef struct undirectedPoint* UPOINT;
 
 struct directedPoint {
   /* This DPOINT is at the end of one edge only.
@@ -71,5 +71,6 @@ extern void initializePoints(void);
 extern void resetPoints(void);
 extern UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
 extern FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
+extern char* dynamicUPointToStr(char* dbuffer, UPOINT up);
 
 #endif  // POINT_H

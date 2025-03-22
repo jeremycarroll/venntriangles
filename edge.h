@@ -9,7 +9,7 @@
 #include "point.h"
 #include "trail.h"
 
-typedef struct edge *EDGE;
+typedef struct edge* EDGE;
 
 struct edge {
   /* The label on the edge. */
@@ -40,6 +40,7 @@ extern EDGE dynamicEdgeFollowForwards(EDGE edge);
 extern FAILURE dynamicEdgeCurveChecks(EDGE edge, int depth);
 extern void dynamicEdgeFindCorners(COLOR a, EDGE result[3][2]);
 extern int dynamicEdgePathLength(EDGE from, EDGE to);
+extern char* dynamicEdgeToStr(char* dbuffer, EDGE edge);
 
 #define IS_PRIMARY_EDGE(edge) (memberOfColorSet((edge)->color, (edge)->colors))
 

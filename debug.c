@@ -1,7 +1,7 @@
 
 #include <stdarg.h>
 
-#include "output.h"
+#include "face.h"
 #include "unity.h"
 
 /* Use the lettering from the 2000 diagram of six triangles (ABCDEF round the

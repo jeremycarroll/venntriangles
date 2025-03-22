@@ -53,5 +53,6 @@ extern bool dynamicColorRemoveFromSearch(COLOR color);
 extern COLORSET DynamicColorCompleted;
 
 extern uint64_t DynamicCycleGuessCounter;
+extern char *dynamicFaceToStr(char *dbuffer, FACE face);
 
 #endif  // FACE_H

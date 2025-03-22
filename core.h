@@ -66,6 +66,7 @@ typedef struct face *FACE;
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #endif  // CORE_H
