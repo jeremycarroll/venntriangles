@@ -32,10 +32,10 @@ Issues to be addressed in refactoring:
 - [x] withoutColor - via function? - rename
 - [x] omittingCycleSets - move - rename
 - [ ] include order as per https://stackoverflow.com/a/2762596
-- [ ] names matching (|dynamic|initialize|reset)(Point|Color|ColorSet|Edge|Face|Cycle|CycleSet|Failure|Trail)[A-Z][a-z]*
+- [x] names matching (|dynamic|initialize|reset)(Point|Color|ColorSet|Edge|Face|Cycle|CycleSet|Failure|Trail)[A-Z][a-z]*
 - [x] break up graph into edge and face
 - [x] revisit static/dynamic macros ...
-- [ ] remove logging stuff - unused
+- [x] remove logging stuff - unused
 - [ ] simplify output, e.g. just use stdout
 
 

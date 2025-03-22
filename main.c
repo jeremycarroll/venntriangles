@@ -7,7 +7,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "logging.h"
 #include "statistics.h"
 
 static char *targetFolder = NULL;
@@ -43,33 +42,21 @@ int dynamicMain0(int argc, char *argv[])
 {
   int opt;
   targetFolder = NULL;
-  while ((opt = getopt(argc, argv, "dvqf:")) != -1) {
+  while ((opt = getopt(argc, argv, "f:")) != -1) {
     switch (opt) {
-      case 'd':
-        DynamicLogLevel = LOG_DEBUG;
-        break;
-      case 'v':
-        DynamicLogLevel = LOG_VERBOSE;
-        break;
-      case 'q':
-        DynamicLogLevel = LOG_QUIET;
-        break;
       case 'f':
         targetFolder = optarg;
         break;
       default:
-        fprintf(stderr, "Usage: %s [-d] [-v] [-q] -f outputFolder\n", argv[0]);
+        fprintf(stderr, "Usage: %s -f outputFolder\n", argv[0]);
         return EXIT_FAILURE;
     }
   }
 
   if (optind != argc || targetFolder == NULL) {
-    fprintf(stderr, "Usage: %s [-d] [-v] [-q] -f outputFolder\n", argv[0]);
+    fprintf(stderr, "Usage: %s -f outputFolder\n", argv[0]);
     return EXIT_FAILURE;
   }
-
-  dynamicLogMessage(LOG_DEBUG, "Debug mode enabled\n");
-  dynamicLogMessage(LOG_VERBOSE, "Verbose mode enabled\n");
 
   initializeOutputFolder();
   initializeStatisticLogging("/dev/stdout", 200, 10);

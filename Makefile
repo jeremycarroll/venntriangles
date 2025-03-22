@@ -7,9 +7,9 @@ TEST_SRC	=  test/test_initialize.c test/test_main.c test/test_venn4.c test/test_
 TEST_BIN	= $(TEST_SRC:test/%.c=bin/%)
 # Do not include entrypoint.c in the test builds, it contains the main function, which is also in the test files.
 SRC		 = main.c initialize.c trail.c dynamic.c failure.c color.c \
-			  point.c triangles.c debug.c statistics.c search.c d6.c output.c logging.c
+			  point.c triangles.c debug.c statistics.c search.c d6.c output.c
 XSRC		= entrypoint.c
-HDR			= color.h edge.h logging.h statistics.h core.h face.h main.h trail.h \
+HDR			= color.h edge.h statistics.h core.h face.h main.h trail.h \
 			  d6.h failure.h point.h
 OBJ3		= $(SRC:%.c=objs3/%.o)
 OBJ4		= $(SRC:%.c=objs4/%.o)
@@ -37,7 +37,7 @@ bin/test_venn5: objsv/test_venn5.o $(UNITY_DIR)/src/unity.c $(OBJ5)
 	@mkdir -p $(@D)
 	$(CC) $(TEST_CFLAGS) -o $@ $^
 
-bin/test_main: objst/test_main.o $(UNITY_DIR)/src/unity.c objs6/main.o objs6/logging.o
+bin/test_main: objst/test_main.o $(UNITY_DIR)/src/unity.c objs6/main.o
 	@mkdir -p $(@D)
 	$(CC) $(TEST_CFLAGS) -o $@ $^
 
