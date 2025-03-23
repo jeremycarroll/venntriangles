@@ -293,6 +293,7 @@ void tearDown(void)
   resetInitialize();
   resetTrail();
   resetStatistics();
+  resetPoints();
 }
 
 static void addFacesFromTestData(char* testData[][2], int length)

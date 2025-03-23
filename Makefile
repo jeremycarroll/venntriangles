@@ -6,7 +6,7 @@ TEST_SRC	=  test/test_initialize.c test/test_main.c test/test_venn4.c test/test_
 			  test/test_d6.c  test/test_venn5.c test/test_venn6.c
 TEST_BIN	= $(TEST_SRC:test/%.c=bin/%)
 # Do not include entrypoint.c in the test builds, it contains the main function, which is also in the test files.
-SRC		    = main.c initialize.c trail.c dynamic.c failure.c color.c \
+SRC		    = main.c trail.c dynamic.c failure.c color.c edge.c \
 			  point.c triangles.c debug.c statistics.c search.c d6.c output.c face.c utils.c
 XSRC		= entrypoint.c
 HDR			= color.h edge.h statistics.h core.h face.h main.h trail.h \

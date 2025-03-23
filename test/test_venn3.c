@@ -18,6 +18,7 @@ void tearDown(void)
   resetInitialize();
   resetTrail();
   resetStatistics();
+  resetPoints();
 }
 
 static void test_outer_face()

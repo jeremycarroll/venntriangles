@@ -1,6 +1,9 @@
 
 #include "face.h"
 
+struct face Faces[NFACES];
+uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
+
 static void recomputeCountOfChoices(FACE face);
 static void initializePossiblyTo(void);
 /*
