@@ -20,6 +20,7 @@ void tearDown(void)
   resetInitialize();
   resetTrail();
   resetStatistics();
+  resetPoints();
 }
 
 static int solution_count = 0;

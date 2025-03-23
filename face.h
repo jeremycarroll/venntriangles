@@ -54,5 +54,7 @@ extern FACE dynamicFaceChoose(bool smallestFirst);
 extern FACE dynamicFaceFromColors(char *colors);
 extern FACE dynamicFaceAddSpecific(char *colors, char *cycle);
 extern void dynamicFacePrintSelected(void);
-
+// Should have Dynamic in name, and be so.
+extern bool setCycleLength(uint32_t faceColors, uint32_t length);
+extern void initializeFacesAndEdges(void);
 #endif  // FACE_H

@@ -39,6 +39,15 @@ Issues to be addressed in refactoring:
 - [ ] simplify output, e.g. just use stdout
 
 
+Misnamed:
+- setCycleLength
+- removeFromCycleSetWithTrail
+- InitializeCycleSetPairs
+- InitializeCycleSetTriples
+- InitializeCycleSetSets
+
+globals starting Dynamic ?
+
 Naming is not quite there yet ... the empty case is for global constants; we need to look at the exceptions
 to these too.
 

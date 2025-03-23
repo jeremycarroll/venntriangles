@@ -13,6 +13,7 @@ void tearDown(void)
   resetGlobals();
   resetInitialize();
   resetStatistics();
+  resetPoints();
 }
 
 void test_initialize(void)

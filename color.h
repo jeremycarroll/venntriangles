@@ -48,12 +48,10 @@ extern bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t i, uint32_t j,
                                      uint32_t k);
 extern uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color);
 extern struct facial_cycle Cycles[NCYCLES];
-extern void deleteme(void);
-extern void deleteme(void);
-// Should have Dynamic in name, and be so.
-extern bool setCycleLength(uint32_t faceColors, uint32_t length);
 extern uint32_t cycleIdFromColors(char *colors);
 extern int colorToChar(COLOR c);
 extern char *colorSetToStr(char *dbuffer, COLORSET colors);
-
+extern void removeFromCycleSetWithTrail(uint32_t cycleId, CYCLESET cycleSet);
+extern void initializeCycleSets(void);
+extern void resetCycles(void);
 #endif  // COLOR_H

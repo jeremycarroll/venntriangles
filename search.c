@@ -106,6 +106,7 @@ static void full_search_callback6(void *foundSolutionVoidPtr, int *args)
   resetGlobals();
   resetInitialize();
   resetTrail();
+  resetPoints();
   initialize();
   initializeFaceSetupCentral(args);
   dynamicSearch(true, foundSolution);
