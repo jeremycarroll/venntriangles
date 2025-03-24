@@ -1,6 +1,7 @@
 #include "utils.h"
 
 #include "face.h"
+#include "statistics.h"
 
 void resetGlobals()
 {
@@ -24,4 +25,11 @@ void initialize()
   initializePoints();
 
   initializeDynamicCounters();
+}
+
+void initializeDynamicCounters(void)
+{
+  statisticNew(&DynamicCycleGuessCounter, "?", "guesses");
+  statisticNew(&cycleForcedCounter, "+", "forced");
+  statisticNew(&cycleSetReducedCounter, "-", "reduced");
 }
