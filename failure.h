@@ -11,6 +11,14 @@ typedef struct {
   char* label;
 } Failure, *FAILURE;
 
+/* Can only be used when there is an appropriate local varaible 'failure'
+   in scope. */
+#define CHECK_FAILURE(call) \
+  failure = (call);         \
+  if (failure != NULL) {    \
+    return failure;         \
+  }
+
 extern FAILURE failureNoMatchingCycles(int depth);
 extern FAILURE failureCrossingLimit(int depth);
 extern FAILURE failurePointConflict(int depth);

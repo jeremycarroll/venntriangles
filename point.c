@@ -109,20 +109,6 @@ void initializePoints(void)
   }
 }
 
-EDGE edgeFollowForwards(EDGE edge)
-{
-  if (edge->to == NULL) {
-    return NULL;
-  }
-  return edge->to->out[0];
-}
-
-EDGE edgeFollowBackwards(EDGE edge)
-{
-  EDGE reversedNext = edgeFollowForwards(edge->reversed);
-  return reversedNext == NULL ? NULL : reversedNext->reversed;
-}
-
 /*
    The curve colored A crosses from inside the curve colored B to outside it.
    The curve colored B crosses from outside the curve colored A to inside it.

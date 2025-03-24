@@ -56,6 +56,8 @@
 #define DYNAMIC
 #endif
 
+#define MAX_CORNERS 3
+
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 
 typedef struct edge *EDGE;
