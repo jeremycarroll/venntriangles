@@ -57,12 +57,7 @@ void dynamicSearch(bool smallestFirst, void (*foundSolution)(void))
         break;
       case NEXT_CYCLE:
         face = chosenFaces[position];
-        if (trailBacktrackTo(face->backtrack)) {
-#if BACKTRACK_DEBUG
-          printf("Backtracking to ");
-          dynamicFacePrint(face);
-#endif
-        }
+        trailBacktrackTo(face->backtrack);
         cycle = chooseCycle(face, chosenCycles[position]);
         if (cycle == NULL) {
           position -= 1;
@@ -137,7 +132,4 @@ void dynamicSearchFull(void (*foundSolution)(void))
   initializeSequenceOrder();
   solution_count = 0;
   dynamicFaceCanonicalCallback(full_search_callback6, (void *)foundSolution);
-#if STATS
-  statisticPrintFull();
-#endif
 }

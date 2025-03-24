@@ -21,11 +21,6 @@ void initialize()
   initializeCycleSets();
 
   initializeFacesAndEdges();
-#if POINT_DEBUG
-  for (uint32_t i = 0; i < NFACES; i++) {
-    dynamicFacePrint(Faces + i);
-  }
-#endif
   initializePoints();
 
   initializeDynamicCounters();

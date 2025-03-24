@@ -3,8 +3,6 @@
 #include "unity.h"
 #include "utils.h"
 
-#define STATS 0
-
 void setUp(void)
 {
   initialize();
@@ -13,9 +11,6 @@ void setUp(void)
 
 void tearDown(void)
 {
-#if TEST_INFO
-  statisticPrintFull();
-#endif
   resetGlobals();
   resetInitialize();
   resetTrail();

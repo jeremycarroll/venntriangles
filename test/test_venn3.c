@@ -4,8 +4,6 @@
 #include "unity.h"
 #include "utils.h"
 
-#define STATS 0
-
 void setUp(void)
 {
   initialize();
@@ -180,16 +178,10 @@ static void test_choosing_and_backtracking()
     face = Faces + i;
     face->cycle = Cycles;
     TEST_ASSERT_NULL(dynamicFaceMakeChoice(face));
-#if STATS
-    statisticPrintOneLine();
-#endif
     verify_face_size(1);
     trailBacktrackTo(face->backtrack);
     face->cycle = NULL;
   }
-#if STATS
-  statisticPrintFull();
-#endif
   TEST_ASSERT_EQUAL(8, DynamicCycleGuessCounter);
 }
 

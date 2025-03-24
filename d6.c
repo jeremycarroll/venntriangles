@@ -1,7 +1,6 @@
 #include "d6.h"
 
 #include "face.h"
-#define D6_DEBUG 0
 #define TOTAL_5FACE_DEGREE 27
 static COLORSET sequenceOrder[NFACES];
 static COLORSET inverseSequenceOrder[NFACES];
@@ -75,13 +74,6 @@ static SYMMETRY_TYPE d6SymmetryType64(int *sizes)
 {
   int permuted[12][NFACES];
   int i, j;
-#if D6_DEBUG
-  printf("+\n");
-  printf("%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\n", sizes[0], sizes[1], sizes[2],
-         sizes[3], sizes[4], sizes[5], sizes[6], sizes[7], sizes[8], sizes[9],
-         sizes[10], sizes[11]);
-  printf("+\n");
-#endif
   for (i = 0; i < 12; i++) {
     for (j = 0; j < NFACES; j++) {
       permuted[i][j] = sizes[inverseSequenceOrder[dynamicColorSetPermute(
@@ -89,27 +81,7 @@ static SYMMETRY_TYPE d6SymmetryType64(int *sizes)
     }
   }
   assert(memcmp(permuted[0], sizes, sizeof(permuted[0])) == 0);
-#if D6_DEBUG
-  printf("*\n");
-  for (i = 0; i < 12; i++) {
-    printf("%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\n", permuted[i][0],
-           permuted[i][1], permuted[i][2], permuted[i][3], permuted[i][4],
-           permuted[i][5], permuted[i][6], permuted[i][7], permuted[i][8],
-           permuted[i][9], permuted[i][10], permuted[i][11]);
-  }
-  printf("*\n");
-#endif
   qsort(permuted, 12, sizeof(permuted[0]), compareUint8);
-#if D6_DEBUG
-  printf("=\n");
-  for (i = 0; i < 12; i++) {
-    printf("%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\n", permuted[i][0],
-           permuted[i][1], permuted[i][2], permuted[i][3], permuted[i][4],
-           permuted[i][5], permuted[i][6], permuted[i][7], permuted[i][8],
-           permuted[i][9], permuted[i][10], permuted[i][11]);
-  }
-  printf("=\n");
-#endif
   if (memcmp(permuted[0], sizes, sizeof(permuted[0])) != 0) {
     return NON_CANONICAL;
   }

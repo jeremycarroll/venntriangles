@@ -6,7 +6,6 @@
 #include "d6.h"
 #include "unity.h"
 #include "utils.h"
-#define DEBUG_CANONICAL_SOLUTIONS 0
 
 void setUp(void) { initializeSequenceOrder(); }
 
@@ -26,22 +25,7 @@ void test_canonical6()
 }
 
 int count6;
-static void countSolutions(
-#if DEBUG_CANONICAL_SOLUTIONS
-    void* mustBeNull, int* args
-#endif
-)
-{
-#if DEBUG_CANONICAL_SOLUTIONS
-  int i;
-  assert(mustBeNull == NULL);
-  for (i = 0; i < NCOLORS; i++) {
-    printf("%d ", args[i]);
-  }
-  printf("\n");
-#endif
-  count6++;
-}
+static void countSolutions() { count6++; }
 
 void test_callback()
 {

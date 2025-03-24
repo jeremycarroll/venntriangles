@@ -132,9 +132,6 @@ static void initializePossiblyTo(void)
   EDGE edge;
   for (facecolors = 0, face = Faces; facecolors < NFACES;
        facecolors++, face++) {
-#if POINT_DEBUG
-    dynamicFacePrint(face);
-#endif
     for (color = 0; color < NCOLORS; color++) {
       edge = &face->edges[color];
       for (othercolor = 0; othercolor < NCOLORS; othercolor++) {

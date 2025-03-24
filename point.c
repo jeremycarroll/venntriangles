@@ -133,9 +133,6 @@ UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor)
     }
   }
 
-#if POINT_DEBUG
-  char dbuffer[1024] = {0, 0};
-#endif
   assert(othercolor != incomingEdge->color);
   switch (ix) {
     case 0:
@@ -151,14 +148,6 @@ UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor)
     default:
       assert(0);
   }
-#if POINT_DEBUG
-  printf("dynamicPointAdd(%s[%c,%c], f: %s, e: %s, r: %s, %c, %d)\n",
-         colorSetToStr(dbuffer, insideColor), colorToChar(dbuffer, a),
-         colorToChar(dbuffer, b), faceToStr(dbuffer, face),
-         edgeToStr(dbuffer, incomingEdge),
-         edgeToStr(dbuffer, incomingEdge->reversed),
-         colorToChar(dbuffer, othercolor), ix);
-#endif
 
   point = getPoint(incomingEdge->colors, a, b);
   assert(point->incomingEdges[ix] == NULL);
@@ -197,11 +186,6 @@ FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
   uint_trail* edgeCountPtr;
 
   if (face->edges[aColor].to != NULL) {
-#if EDGE_DEBUG
-    printf("Assigned edge %c %c: ", colorToChar(aColor), colorToChar(bColor));
-    dynamicEdgePrint(&face->edges[aColor]);
-#endif
-
     assert(face->edges[aColor].to != &face->edges[aColor].possiblyTo[aColor]);
     if (face->edges[aColor].to != &face->edges[aColor].possiblyTo[bColor]) {
       return failurePointConflict(depth);
@@ -217,19 +201,11 @@ FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
   }
   colors[0] = upoint->primary;
   colors[1] = upoint->secondary;
-#if EDGE_DEBUG
-  printf("Assigning edges:\n");
-#endif
   for (int i = 0; i < 4; i++) {
     edge = upoint->incomingEdges[i];
     assert(edge->color == colors[(i & 2) >> 1]);
     assert(edge->color != colors[1 - ((i & 2) >> 1)]);
     if (edge->to != NULL) {
-#if EDGE_DEBUG
-      printf("Edge already assigned  %c %c: ", colorToChar(colors[0]),
-             colorToChar(colors[1]));
-      dynamicEdgePrint(edge);
-#endif
       if (edge->to != &edge->possiblyTo[colors[(i & 2) >> 1]]) {
         return failurePointConflict(depth);
       }
@@ -237,9 +213,6 @@ FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
     } else {
       setDynamicPointer(&edge->to,
                         &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
-#if EDGE_DEBUG
-      dynamicEdgePrint(edge);
-#endif
     }
 
     assert(edge->to != &edge->possiblyTo[edge->color]);

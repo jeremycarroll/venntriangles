@@ -4,9 +4,6 @@
 #include "unity.h"
 #include "utils.h"
 
-#define DEBUG 0
-#define STATS 0
-
 static char* testData3[][2] = {
     {
         "ac",
@@ -284,11 +281,6 @@ void setUp(void)
 
 void tearDown(void)
 {
-#if STATS
-  if (DynamicCycleGuessCounter > 1) {
-    statisticPrintFull();
-  }
-#endif
   resetGlobals();
   resetInitialize();
   resetTrail();
@@ -307,23 +299,12 @@ static void addFacesFromTestData(char* testData[][2], int length)
     cycleId = cycleIdFromColors(testData[i][1]);
     TEST_ASSERT_TRUE(cycleSetMember(cycleId, face->possibleCycles));
     if (face->cycleSetSize == 1) {
-#if DEBUG
-      printf("!\n");
-#endif
       TEST_ASSERT_EQUAL(Cycles + cycleId,
                         cycleSetFindFirst(face->possibleCycles));
       TEST_ASSERT_EQUAL(face->cycle, Cycles + cycleId);
     } else {
       face->cycle = Cycles + cycleId;
-#if DEBUG
-      printf("+\n");
-      dynamicFacePrintSelected();
-#endif
       failure = dynamicFaceMakeChoice(face);
-
-#if STATS
-      statisticPrintOneLine(0);
-#endif
       if (failure != NULL) {
         printf("Failure: %s %s\n", failure->label, failure->shortLabel);
         dynamicFacePrintSelected();

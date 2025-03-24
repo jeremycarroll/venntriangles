@@ -4,45 +4,6 @@
 #include "face.h"
 #include "unity.h"
 
-/* Use the lettering from the 2000 diagram of six triangles (ABCDEF round the
- * outer face) */
-#define LEGACY_LETTERS 0
-
-/*
-Utilities for printing items when debugging. These are not intended to be
-efficient.
-
-The caller provides a long buffer, the utilities print into the buffer
-and return points into the buffer.
-
-The buffer is organized as
-
-null-terminated-string, 0, null-terminated-string, 0, etc.
-
-LEGACY_LETTERS must be 0 to use the obvious a,b,c,d,e,f coloring; or 1
-to use the D E F C A B coloring used in the picture from 2000.
-(Which has A, B,C, D, E, F round the outer face)
-
-This means that we are typically looking for double null terminated strings to
-find the next slot in the buffer.
-
-The buffer must be initialized to either 0,0 or 0,0.
-
-When adding a string, the new string is added over the second zero.
-So that the buffer always starts with a 0.
-
-We provide no protection for buffer overflow.
-*/
-
-static char* getLookup(void)
-{
-#if LEGACY_LETTERS
-  return "DEFCAB";
-#else
-  return "abcdef";
-#endif
-}
-
 void dynamicFacePrint(FACE face)
 {
   char nBuffer[2048] = {0, 0};
@@ -74,12 +35,11 @@ char* colorSetToStr(char* dbuffer, COLORSET colors)
 {
   uint32_t i;
   char* result = nextSlot(dbuffer);
-  char* lookup = getLookup();
   char* p = result;
   *p++ = '|';
   for (i = 0; i < NCOLORS; i++) {
     if (colors & (1u << i)) {
-      *p++ = lookup[i];
+      *p++ = 'a' + i;
     }
   }
   *p++ = '|';
@@ -87,19 +47,18 @@ char* colorSetToStr(char* dbuffer, COLORSET colors)
   return returnSlot(result);
 }
 
-int colorToChar(COLOR c) { return getLookup()[c]; }
+int colorToChar(COLOR c) { return 'a' + c; }
 
 char* dynamicCycleToStr(char* dbuffer, CYCLE cycle)
 {
   char* result = nextSlot(dbuffer);
-  char* lookup = getLookup();
   char* p = result;
   if (cycle == NULL) {
     return "(NULL)";
   }
   *p++ = '(';
   for (uint32_t i = 0; i < cycle->length; i++) {
-    *p++ = lookup[cycle->curves[i]];
+    *p++ = 'a' + cycle->curves[i];
   }
   *p++ = ')';
   *p = '\0';
@@ -120,11 +79,9 @@ char* faceToStr(char* dbuffer, FACE face)
 
 char* uPointToStr(char* dbuffer, UPOINT up)
 {
-  char* lookup = getLookup();
   char* colors = colorSetToStr(dbuffer, up->colors);
   char* result = nextSlot(dbuffer);
-  sprintf(result, "%s(%c,%c)", colors, lookup[up->primary],
-          lookup[up->secondary]);
+  sprintf(result, "%s(%c,%c)", colors, 'a' + up->primary, 'a' + up->secondary);
   return returnSlot(result);
 }
 
@@ -218,18 +175,11 @@ FACE dynamicFaceAddSpecific(char* colors, char* cycle)
   } else {
     face->cycle = Cycles + cycleId;
     failure = dynamicFaceMakeChoice(face);
-#if STATS
-    statisticPrintOneLine(0);
-#endif
-#if DEBUG
-    dynamicFacePrintSelected();
-#else
 
     if (failure != NULL) {
       printf("Failure: %s %s\n", failure->label, failure->shortLabel);
       dynamicFacePrintSelected();
     }
-#endif
     TEST_ASSERT_NULL(failure);
   }
   return face;

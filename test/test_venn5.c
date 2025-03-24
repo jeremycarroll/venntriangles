@@ -3,8 +3,6 @@
 #include "unity.h"
 #include "utils.h"
 
-#define STATS 0
-
 void setUp(void)
 {
   initialize();
@@ -13,9 +11,6 @@ void setUp(void)
 
 void tearDown(void)
 {
-#if TEST_INFO
-  statisticPrintFull();
-#endif
   resetGlobals();
   resetInitialize();
   resetTrail();
@@ -32,55 +27,6 @@ static void test_search_abcde()
   initializeFaceSetupCentral(dynamicIntArray(0, 0, 0, 0, 0));
   dynamicSearch(false, found_solution);
   TEST_ASSERT_EQUAL(152, solution_count);
-}
-
-static void test_specific()
-{
-  initializeFaceSetupCentral(dynamicIntArray(0, 0, 0, 0, 0));
-  dynamicFaceAddSpecific("ab", "bdc");
-  dynamicFaceAddSpecific("bc", "aecb");
-  dynamicFaceAddSpecific("bd", "bde");
-  dynamicFaceAddSpecific("ae", "aec");
-  TEST_ASSERT_NULL(dynamicFaceChoose(false));
-  found_solution();
-}
-
-static void test_specific2()
-{
-  initializeFaceSetupCentral(dynamicIntArray(0, 0, 0, 0, 0));
-  dynamicFaceAddSpecific("ab", "bdc");
-  dynamicFaceAddSpecific("bc", "aecb");
-  dynamicFaceAddSpecific("abc", "abcde");
-  dynamicFaceAddSpecific("bd", "bde");
-  dynamicFaceAddSpecific("b", "bced");
-  dynamicFaceAddSpecific("bcd", "abe");
-  dynamicFaceAddSpecific("abcd", "aedcb");
-  dynamicFaceAddSpecific("abd", "bcd");
-  dynamicFaceAddSpecific("bcde", "aeb");
-  dynamicFaceAddSpecific("bde", "abed");
-  dynamicFaceAddSpecific("abde", "adcb");
-  dynamicFaceAddSpecific("be", "adec");
-  dynamicFaceAddSpecific("abe", "acd");
-  dynamicFaceAddSpecific("bce", "ace");
-  dynamicFaceAddSpecific("abce", "aedc");
-  dynamicFaceAddSpecific("ae", "aec");
-  dynamicFaceAddSpecific("", "aecbd");
-  dynamicFaceAddSpecific("a", "adbce");
-  dynamicFaceAddSpecific("e", "ace");
-  dynamicFaceAddSpecific("ace", "aced");
-  dynamicFaceAddSpecific("ce", "adec");
-  dynamicFaceAddSpecific("cde", "abed");
-  dynamicFaceAddSpecific("c", "abced");
-  dynamicFaceAddSpecific("ac", "adecb");
-  dynamicFaceAddSpecific("cd", "adeb");
-  dynamicFaceAddSpecific("d", "adbe");
-  dynamicFaceAddSpecific("ad", "aecbd");
-  dynamicFaceAddSpecific("de", "aeb");
-  dynamicFaceAddSpecific("acde", "adecb");
-  dynamicFaceAddSpecific("acd", "abced");
-  dynamicFaceAddSpecific("ade", "abce");
-  TEST_ASSERT_NULL(dynamicFaceChoose(false));
-  found_solution();
 }
 
 static void test_search_44444()
@@ -126,10 +72,6 @@ static void test_search_54434()
 int main(void)
 {
   UNITY_BEGIN();
-  if (0) {
-    RUN_TEST(test_specific);
-    RUN_TEST(test_specific2);
-  }
   RUN_TEST(test_search_abcde);
   RUN_TEST(test_search_44444);
   RUN_TEST(test_search_55343);

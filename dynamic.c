@@ -141,12 +141,8 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
   CYCLE cycle = face->cycle;
   uint64_t cycleId = cycle - Cycles;
   FAILURE failure;
-  /* equality in the followign assertion is achieved in the Venn 3 case, where a
+  /* equality in the following assertion is achieved in the Venn 3 case, where a
   single choice in any face determines all the faces. */
-#if FACE_DEBUG
-  printf("Making choice (internal): ");
-  dynamicFacePrint(face);
-#endif
   /* TODO: what order should these checks be done in. There are a lot of them.
    */
   assert(depth <= NFACES);
@@ -228,11 +224,6 @@ FAILURE dynamicFaceMakeChoice(FACE face)
   assert(cycleId >= 0);
   assert(cycleSetMember(cycleId, face->possibleCycles));
   setToSingletonCycleSet(face, cycleId);
-
-#if FACE_DEBUG
-  printf("Making choice: ");
-  dynamicFacePrint(face);
-#endif
 
   failure = makeChoiceInternal(face, 0);
   if (failure != NULL) {

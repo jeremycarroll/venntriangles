@@ -6,9 +6,6 @@
 #include "unity.h"
 #include "utils.h"
 
-#define STATS 1
-#define TEST_INFO 0
-
 void setUp(void)
 {
   initialize();
@@ -18,9 +15,6 @@ void setUp(void)
 
 void tearDown(void)
 {
-#if TEST_INFO
-  statisticPrintFull();
-#endif
   resetGlobals();
   resetInitialize();
   resetTrail();
@@ -29,14 +23,7 @@ void tearDown(void)
 }
 
 static int solution_count = 0;
-static void found_solution()
-{
-#if TEST_INFO
-  dynamicSolutionPrint(NULL);
-  statisticPrintFull();
-#endif
-  solution_count++;
-}
+static void found_solution() { solution_count++; }
 
 static void test_central_face_edge(void)
 {
@@ -55,10 +42,7 @@ static void test_search_for_best_solution()
   initializeFaceSetupCentral(dynamicIntArray(5, 5, 5, 4, 4, 4));
   dynamicSearch(true, found_solution);
 
-  // TEST_ASSERT_EQUAL(80, solution_count);
-#if STATS
-  statisticPrintFull();
-#endif
+  TEST_ASSERT_EQUAL(80, solution_count);
 }
 
 static void test_search_for_two_solutions()
@@ -79,55 +63,13 @@ static void test_search_for_two_solutions()
   */
   dynamicSearch(true, found_solution);
 
-  // TEST_ASSERT_EQUAL(2, solution_count);
+  TEST_ASSERT_EQUAL(2, solution_count);
 }
-#if 0
-static clock_t totalWastedTime = 0;
-static clock_t totalUsefulTime = 0;
-static int wastedSearchCount = 0;
-static int usefulSearchCount = 0;
-static void full_search_callback6(int *args)
-{
-  clock_t now = clock();
-  clock_t used;
-  int initialSolutionCount = solution_count;
-  int i;
-  resetGlobals();
-  resetInitialize();
-  resetTrail();
-  initialize();
-  initializeFaceSetupCentral(args);
-  dynamicSearch(true, found_solution);
-  used = clock() - now;
-  if (solution_count != initialSolutionCount) {
-    totalUsefulTime += used;
-    usefulSearchCount += 1;
-
-#define PRINT_TIME(clockValue, counter)                        \
-  printf("[%1lu.%6.6lu (%d)] ", (clockValue) / CLOCKS_PER_SEC, \
-         (clockValue) % CLOCKS_PER_SEC, counter)
-    PRINT_TIME(used, 0);
-    PRINT_TIME(totalUsefulTime, usefulSearchCount);
-    PRINT_TIME(totalWastedTime, wastedSearchCount);
-    for (i = 0; i < NCOLORS; i++) {
-      printf("%d ", args[i]);
-    }
-    printf(" gives %d new solutions\n", solution_count - initialSolutionCount);
-  } else {
-    wastedSearchCount += 1;
-
-    totalWastedTime += used;
-  }
-}
-#endif
 
 static void test_full_search(void)
 {
   solution_count = 0;
   dynamicSearchFull(found_solution);
-#if STATS
-  statisticPrintFull();
-#endif
   TEST_ASSERT_EQUAL(233, solution_count);
 }
 
