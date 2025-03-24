@@ -46,11 +46,11 @@ struct undirectedPoint {
   STATIC FACE faces[4];
   /*
   If the point is between crossing of curve A and curve B,
-  and color(A) < color(B),
-  then edge[0] is of color A and runs into the point
-  edge[1] is the counterclockwise edge of color A that runs into the point
-  edge[2] is of color B and runs into the point
-  edge[3] is the counterclockwise edge of color B that runs into the point
+  and A is primary, and B is secondary.
+  then incomingEdges[0] is of color A and runs into the point
+  incomingEdges[1] is the counterclockwise edge of color A that runs into the
+  point incomingEdges[2] is of color B and runs into the point incomingEdges[3]
+  is the counterclockwise edge of color B that runs into the point
 
   The outgoing edges are found by reversing the incoming edges
   */
@@ -72,5 +72,6 @@ extern void resetPoints(void);
 extern UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
 extern FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
 extern char* uPointToStr(char* dbuffer, UPOINT up);
+extern EDGE edgeOnCentralFace(COLOR a);
 
 #endif  // POINT_H

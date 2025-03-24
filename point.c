@@ -23,19 +23,19 @@ void resetPoints()
   nextUPointId = 0;
 }
 
-static UPOINT getPoint(COLORSET innerFace, COLOR a, COLOR b)
+static UPOINT getPoint(COLORSET colorsOfFace, COLOR a, COLOR b)
 {
-  assert(!memberOfColorSet(a, innerFace));
-  assert(!memberOfColorSet(b, innerFace));
-  if (allUPointPointers[innerFace][a][b] == NULL) {
+  COLORSET outsideColor = colorsOfFace & ~(1u << a) & ~(1u << b);
+  if (allUPointPointers[outsideColor][a][b] == NULL) {
     DynamicPointAllUPoints[nextUPointId].id = nextUPointId;
-    allUPointPointers[innerFace][a][b] = &DynamicPointAllUPoints[nextUPointId];
+    allUPointPointers[outsideColor][a][b] =
+        &DynamicPointAllUPoints[nextUPointId];
     DynamicPointAllUPoints[nextUPointId].primary = a;
     DynamicPointAllUPoints[nextUPointId].secondary = b;
     DynamicPointAllUPoints[nextUPointId].colors = 1u << a | 1u << b;
     nextUPointId++;
   }
-  return allUPointPointers[innerFace][a][b];
+  return allUPointPointers[outsideColor][a][b];
 }
 
 /*
@@ -109,14 +109,21 @@ void initializePoints(void)
   }
 }
 
+EDGE edgeOnCentralFace(COLOR a)
+{
+  COLOR b = (a + 1) % NCOLORS;
+  UPOINT uPoint = getPoint(NFACES - 1, a, b);
+  return uPoint->incomingEdges[0];
+}
+
+
+
 /*
    The curve colored A crosses from inside the curve colored B to outside it.
    The curve colored B crosses from outside the curve colored A to inside it.
 */
 UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor)
 {
-  COLORSET insideColor =
-      incomingEdge->colors & ~(1u << othercolor) & ~(1u << incomingEdge->color);
   UPOINT point;
   COLOR a, b;
   uint32_t ix, faceIx;
@@ -162,7 +169,7 @@ UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor)
          colorToChar(dbuffer, othercolor), ix);
 #endif
 
-  point = getPoint(insideColor, a, b);
+  point = getPoint(incomingEdge->colors, a, b);
   assert(point->incomingEdges[ix] == NULL);
   assert(point->colors == 0 || point->colors == ((1u << a) | (1u << b)));
   assert(incomingEdge->color == (ix < 2 ? point->primary : point->secondary));

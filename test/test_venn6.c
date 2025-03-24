@@ -38,6 +38,17 @@ static void found_solution()
   solution_count++;
 }
 
+static void test_central_face_edge(void)
+{
+  COLOR a;
+  initializeFaceSetupCentral(dynamicIntArray(0, 0, 0, 0, 0, 0));
+  for (a = 0; a < NCOLORS; a++) {
+    EDGE edge = &Faces[NFACES - 1].edges[a];
+    EDGE edge2 = edgeOnCentralFace(a);
+    TEST_ASSERT_EQUAL(edge, edge2);
+  }
+}
+
 static void test_search_for_best_solution()
 {
   solution_count = 0;
@@ -123,6 +134,7 @@ static void test_full_search(void)
 int main(void)
 {
   UNITY_BEGIN();
+  RUN_TEST(test_central_face_edge);
   RUN_TEST(test_search_for_best_solution);
   RUN_TEST(test_search_for_two_solutions);
   RUN_TEST(test_full_search);
