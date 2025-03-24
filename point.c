@@ -23,7 +23,7 @@ void resetPoints()
   nextUPointId = 0;
 }
 
-static UPOINT getPoint(COLORSET colorsOfFace, COLOR a, COLOR b)
+UPOINT getPoint(COLORSET colorsOfFace, COLOR a, COLOR b)
 {
   COLORSET outsideColor = colorsOfFace & ~(1u << a) & ~(1u << b);
   if (allUPointPointers[outsideColor][a][b] == NULL) {
@@ -108,15 +108,6 @@ void initializePoints(void)
     }
   }
 }
-
-EDGE edgeOnCentralFace(COLOR a)
-{
-  COLOR b = (a + 1) % NCOLORS;
-  UPOINT uPoint = getPoint(NFACES - 1, a, b);
-  return uPoint->incomingEdges[0];
-}
-
-
 
 /*
    The curve colored A crosses from inside the curve colored B to outside it.

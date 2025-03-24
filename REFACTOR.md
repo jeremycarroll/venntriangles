@@ -45,6 +45,7 @@ Misnamed:
 - InitializeCycleSetPairs
 - InitializeCycleSetTriples
 - InitializeCycleSetSets
+- getPoint
 
 globals starting Dynamic ?
 

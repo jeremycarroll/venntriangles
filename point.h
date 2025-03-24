@@ -73,5 +73,6 @@ extern UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
 extern FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
 extern char* uPointToStr(char* dbuffer, UPOINT up);
 extern EDGE edgeOnCentralFace(COLOR a);
+extern UPOINT getPoint(COLORSET colorsOfFace, COLOR a, COLOR b);
 
 #endif  // POINT_H
