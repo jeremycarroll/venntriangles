@@ -22,14 +22,19 @@
 
 #define MAX_ONE_WAY_CURVE_CROSSINGS 3
 
+/* Output-related variables */
+static char lastPrefix[128] = "";
+static int solutionNumber = 0;
+
+/* Edge-related variables */
+static uint64_t EdgeCrossingCounts[NCOLORS][NCOLORS];
+static uint64_t EdgeCurvesComplete[NCOLORS];
+uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
+
 /*
 This file is responsible for checking that a set of edges can make a triangle,
 and for outputting solutions.
 */
-
-/* Output-related variables */
-static char lastPrefix[128] = "";
-static int solutionNumber = 0;
 
 /*
 This file is responsible for checking that a set of edges can make a triangle.
@@ -66,10 +71,6 @@ static FAILURE checkForDisconnectedCurve(EDGE edge, int depth)
   }
   return NULL;
 }
-
-uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
-uint64_t EdgeCrossingCounts[NCOLORS][NCOLORS];
-uint64_t EdgeCurvesComplete[NCOLORS];
 
 EDGE edgeFollowForwards(EDGE edge)
 {

@@ -38,8 +38,6 @@ struct edge {
 };
 
 extern uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
-extern uint64_t EdgeCrossingCounts[NCOLORS][NCOLORS];
-extern uint64_t EdgeCurvesComplete[NCOLORS];
 
 extern EDGE edgeFollowBackwards(EDGE edge);
 extern EDGE edgeFollowForwards(EDGE edge);
@@ -48,9 +46,8 @@ extern void edgeFindCorners(COLOR a, EDGE result[3][2]);
 extern int edgePathLength(EDGE from, EDGE to);
 extern char* edgeToStr(char* dbuffer, EDGE edge);
 
-/* Solution output functions */
-extern void dynamicSolutionPrint(FILE* fp);
-
+extern EDGE edgeOnCentralFace(COLOR a);
+extern void dynamicSolutionWrite(char* prefix);
 extern void resetEdges(void);
 
 extern FAILURE dynamicEdgeCornerCheck(EDGE start, int depth);
