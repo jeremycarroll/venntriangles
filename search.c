@@ -83,12 +83,6 @@ void dynamicSearch(bool smallestFirst, void (*foundSolution)(void))
   }
 }
 
-void dynamicSolutionEnumerate(FILE *(*fp)(char *signature, int soln,
-                                          int subsoln))
-{
-  char *signature = dynamicFaceDegreeSignature();
-}
-
 static clock_t totalWastedTime = 0;
 static clock_t totalUsefulTime = 0;
 static int wastedSearchCount = 0;

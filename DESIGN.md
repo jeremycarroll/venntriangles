@@ -1,4 +1,13 @@
 
+## Backtracking, Initialization and Naming
+
+We have multiple global variables which constitute a scratch area with details
+of a single, partial, simple Venn diagrams, of 6 curves, each curve is labelled with one
+of six colors, each face is labelled with a subset of these. Each face has a facial cycle,
+initial unset, chosen from one of a set of possible facial cycles. There are a few hundred
+to choose from, being all possible sequences (understood as a cycle) from 0,..,5 of length 3 to 6, 
+where each color occurs at most once.
+
 ## Guidance about Algorithm And Code Layout
 
 
