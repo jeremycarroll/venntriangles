@@ -53,12 +53,11 @@ extern char *faceToStr(char *dbuffer, FACE face);
 extern FACE dynamicFaceFromColors(char *colors);
 extern FACE dynamicFaceAddSpecific(char *colors, char *cycle);
 extern void dynamicFacePrintSelected(void);
+extern void dynamicFacePrint(FACE face);
 // Should have Dynamic in name, and be so.
 extern bool dynamicFaceSetCycleLength(uint32_t faceColors, uint32_t length);
 extern void initializeFacesAndEdges(void);
 
 extern void resetFaces(void);
-
-extern uint32_t cycleIdFromColors(char *colors);
 
 #endif  // FACE_H

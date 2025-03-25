@@ -53,6 +53,9 @@ extern void dynamicSolutionPrint(FILE* fp);
 
 extern void resetEdges(void);
 
+extern FAILURE dynamicEdgeCornerCheck(EDGE start, int depth);
+extern FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
+
 #define IS_PRIMARY_EDGE(edge) (memberOfColorSet((edge)->color, (edge)->colors))
 
 #endif  // EDGE_H

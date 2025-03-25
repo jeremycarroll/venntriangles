@@ -26,4 +26,8 @@ typedef void (*UseFaceDegrees)(void* data, int* faceDegrees);
 extern void dynamicFaceCanonicalCallback(UseFaceDegrees callback, void* data);
 extern char* dynamicFaceDegreeSignature(void);
 
+extern COLOR dynamicColorPermute(COLOR color, PERMUTATION permutation);
+extern COLORSET dynamicColorSetPermute(COLORSET colorSet,
+                                       PERMUTATION permutation);
+
 #endif  // D6_H

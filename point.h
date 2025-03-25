@@ -76,10 +76,10 @@ struct undirectedPoint {
 extern void initializePoints(void);
 extern void resetPoints(void);
 extern UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
-extern FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
 extern char* uPointToStr(char* dbuffer, UPOINT up);
 extern char* dynamicDPointToStr(char* dbuffer, DPOINT dp);
 extern EDGE edgeOnCentralFace(COLOR a);
 extern UPOINT getPoint(COLORSET colorsOfFace, COLOR a, COLOR b);
+extern FAILURE dynamicPointCheckCrossingLimit(DPOINT point, int depth);
 
 #endif  // POINT_H
