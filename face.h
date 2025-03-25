@@ -41,13 +41,13 @@ extern STATIC struct facial_cycle Cycles[NCYCLES];
 
 extern FAILURE dynamicFaceMakeChoice(FACE face);
 extern FAILURE dynamicFaceFinalCorrectnessChecks(void);
-extern void initializeFaceSetupCentral(int *faceDegrees);
+extern void dynamicFaceSetupCentral(int *faceDegrees);
 extern FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
                                        int depth);
 extern void dynamicSearchFull(void (*foundSolution)(void));
 extern void dynamicSearch(bool smallestFirst, void (*foundSolution)(void));
 
-extern void initializeFaceSetupCentral(int *faceDegrees);
+extern void dynamicFaceSetupCentral(int *faceDegrees);
 extern bool dynamicColorRemoveFromSearch(COLOR color);
 
 extern COLORSET DynamicColorCompleted;

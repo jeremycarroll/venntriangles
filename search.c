@@ -103,7 +103,7 @@ static void full_search_callback6(void *foundSolutionVoidPtr, int *args)
   resetTrail();
   resetPoints();
   initialize();
-  initializeFaceSetupCentral(args);
+  dynamicFaceSetupCentral(args);
   dynamicSearch(true, foundSolution);
   used = clock() - now;
   if (solution_count != initialSolutionCount) {

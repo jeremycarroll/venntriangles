@@ -1,5 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "face.h"
 #include "statistics.h"
+#include "test_helpers.h"
 #include "unity.h"
 #include "utils.h"
 
@@ -31,7 +35,7 @@ static void test_search()
 static void test_search_abcd()
 {
   solution_count = 0;
-  initializeFaceSetupCentral(dynamicIntArray(0, 0, 0, 0));
+  dynamicFaceSetupCentral(dynamicIntArray(0, 0, 0, 0));
   dynamicSearch(false, found_solution);
   TEST_ASSERT_EQUAL(4, solution_count);
 }
@@ -39,7 +43,7 @@ static void test_search_abcd()
 static void test_search_4343()
 {
   solution_count = 0;
-  initializeFaceSetupCentral(dynamicIntArray(4, 3, 4, 3));
+  dynamicFaceSetupCentral(dynamicIntArray(4, 3, 4, 3));
   dynamicSearch(false, found_solution);
   TEST_ASSERT_EQUAL(0, solution_count);
 }
@@ -47,7 +51,7 @@ static void test_search_4343()
 static void test_search_4433()
 {
   solution_count = 0;
-  initializeFaceSetupCentral(dynamicIntArray(4, 4, 3, 3));
+  dynamicFaceSetupCentral(dynamicIntArray(4, 4, 3, 3));
   dynamicSearch(false, found_solution);
   TEST_ASSERT_EQUAL(1, solution_count);
 }

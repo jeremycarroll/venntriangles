@@ -207,7 +207,7 @@ uint64_t DynamicCycleGuessCounter = 0;
 uint64_t cycleForcedCounter = 0;
 uint64_t cycleSetReducedCounter = 0;
 
-void initializeFaceSetupCentral(int* faceDegrees)
+void dynamicFaceSetupCentral(int* faceDegrees)
 {
   CYCLE cycle;
   uint64_t i;

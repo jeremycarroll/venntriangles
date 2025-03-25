@@ -1,8 +1,11 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include "d6.h"
 #include "face.h"
 #include "statistics.h"
+#include "test_helpers.h"
 #include "unity.h"
 #include "utils.h"
 
@@ -28,7 +31,7 @@ static void found_solution() { solution_count++; }
 static void test_central_face_edge(void)
 {
   COLOR a;
-  initializeFaceSetupCentral(dynamicIntArray(0, 0, 0, 0, 0, 0));
+  dynamicFaceSetupCentral(dynamicIntArray(0, 0, 0, 0, 0, 0));
   for (a = 0; a < NCOLORS; a++) {
     EDGE edge = &Faces[NFACES - 1].edges[a];
     EDGE edge2 = edgeOnCentralFace(a);
@@ -39,7 +42,7 @@ static void test_central_face_edge(void)
 static void test_search_for_best_solution()
 {
   solution_count = 0;
-  initializeFaceSetupCentral(dynamicIntArray(5, 5, 5, 4, 4, 4));
+  dynamicFaceSetupCentral(dynamicIntArray(5, 5, 5, 4, 4, 4));
   dynamicSearch(true, found_solution);
 
   TEST_ASSERT_EQUAL(80, solution_count);
@@ -48,7 +51,7 @@ static void test_search_for_best_solution()
 static void test_search_for_two_solutions()
 {
   solution_count = 0;
-  initializeFaceSetupCentral(dynamicIntArray(5, 5, 5, 4, 4, 4));
+  dynamicFaceSetupCentral(dynamicIntArray(5, 5, 5, 4, 4, 4));
   dynamicFaceAddSpecific("c", "adbce");
   /* This is a short statement of the best solution.
   dynamicFaceAddSpecific("a", "abed");

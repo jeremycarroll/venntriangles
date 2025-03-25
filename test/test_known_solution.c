@@ -1,6 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "face.h"
 #include "statistics.h"
+#include "test_helpers.h"
 #include "unity.h"
 #include "utils.h"
 
@@ -276,7 +279,7 @@ void setUp(void)
   int args[] = {5, 5, 5, 4, 4, 4};
   initialize();
   initializeStatisticLogging("/dev/stdout", 20, 5);
-  initializeFaceSetupCentral(args);
+  dynamicFaceSetupCentral(args);
 }
 
 void tearDown(void)
