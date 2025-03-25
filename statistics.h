@@ -25,5 +25,6 @@ extern void statisticPrintOneLine(int position);
 extern void statisticPrintFull(void);
 extern void initializeStatisticLogging(char* filename, int frequency,
                                        int seconds);
+extern void initializeDynamicCounters(void);
 
 #endif  // STATISTICS_H

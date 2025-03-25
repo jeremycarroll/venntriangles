@@ -20,7 +20,7 @@ void dynamicSaveResult(void)
   dynamicSolutionWrite(buffer);
 }
 
-void initializeOutputFolder()
+static void initializeOutputFolder()
 {
   struct stat st = {0};
 

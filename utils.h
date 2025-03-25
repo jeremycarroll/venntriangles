@@ -6,7 +6,6 @@
 extern  void resetGlobals(void);
 extern  void resetInitialize(void);
 extern void initialize(void);
-extern void initializeDynamicCounters(void);
 
 extern  int* dynamicIntArray(int a, ...);
 
