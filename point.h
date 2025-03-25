@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 #include "color.h"
-#include "core.h"
 #include "failure.h"
 #include "trail.h"
 
@@ -78,7 +77,6 @@ extern void resetPoints(void);
 extern UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
 extern char* uPointToStr(char* dbuffer, UPOINT up);
 extern char* dynamicDPointToStr(char* dbuffer, DPOINT dp);
-extern EDGE edgeOnCentralFace(COLOR a);
 extern UPOINT getPoint(COLORSET colorsOfFace, COLOR a, COLOR b);
 extern FAILURE dynamicPointCheckCrossingLimit(DPOINT point, int depth);
 

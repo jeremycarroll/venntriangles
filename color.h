@@ -6,6 +6,7 @@
 
 #include "core.h"
 #include "failure.h"
+#include "trail.h"
 
 typedef uint32_t COLOR;
 typedef uint32_t COLORSET;
@@ -33,9 +34,13 @@ struct facial_cycle {
 
 #define memberOfColorSet(color, colorSet) (((colorSet) >> (color)) & 1u)
 
+/* These cycleSets are accessed from cycles, with the pointers set up during
+   initialization. */
+extern CYCLESET_DECLARE InitializeCycleSetPairs[NCOLORS][NCOLORS];
+extern CYCLESET_DECLARE InitializeCycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
 extern CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
 extern CYCLESET_DECLARE CycleSetOmittingColorPair[NCOLORS][NCOLORS];
-extern CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
+
 extern void initializeCycleSetAdd(uint32_t cycleId, CYCLESET cycleSet);
 extern void initializeCycleSetRemove(uint32_t cycleId, CYCLESET cycleSet);
 extern bool cycleSetMember(uint32_t cycleId, CYCLESET cycleSet);

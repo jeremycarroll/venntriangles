@@ -1,12 +1,7 @@
 #ifndef EDGE_H
 #define EDGE_H
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-
 #include "color.h"
-#include "core.h"
 #include "failure.h"
 #include "point.h"
 #include "trail.h"

@@ -1,7 +1,9 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+#include "d6.h"
 #include "face.h"
+#include "search.h"
 #include "statistics.h"
 #include "test_helpers.h"
 #include "unity.h"

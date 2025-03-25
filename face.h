@@ -1,15 +1,8 @@
 #ifndef FACE_H
 #define FACE_H
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-
-#include "color.h"
-#include "core.h"
 #include "edge.h"
 #include "failure.h"
-#include "point.h"
 #include "trail.h"
 
 typedef struct face *FACE;
@@ -54,6 +47,7 @@ extern FACE dynamicFaceFromColors(char *colors);
 extern FACE dynamicFaceAddSpecific(char *colors, char *cycle);
 extern void dynamicFacePrintSelected(void);
 extern void dynamicFacePrint(FACE face);
+extern void dynamicSolutionPrint(FILE *fp);
 // Should have Dynamic in name, and be so.
 extern bool dynamicFaceSetCycleLength(uint32_t faceColors, uint32_t length);
 extern void initializeFacesAndEdges(void);
