@@ -14,8 +14,9 @@ typedef struct undirectedPoint* UPOINT;
 struct directedPoint {
   /* This DPOINT is at the end of one edge only.
      To find that edge, if the to field here is not NULL, then:
-     it is: out[0]->reversed->to->out[0]->reversed
+     it is: next->reversed->to->next->reversed
   */
+  EDGE next;
   EDGE out[2];
   UPOINT point;
 };
@@ -26,7 +27,7 @@ struct directedPoint {
    for each i.
     a) all 4 of them or none of them are
     b) incomingEdges[i]->to->point = this point
-    c) incomingEdges[i]->to->out[0]->reversed is the other incomingEdge of the
+    c) incomingEdges[i]->to->next->reversed is the other incomingEdge of the
    same color d) incomingEdges[i]->to->out[1]->reversed is an incomingEdge of
    the other color e) incomingEdges[i]->to->out[j]->reversed->to->point is this
    point f) incomingEdges[i]->to->out[j]->reversed->to->out[j]->reversed =
@@ -68,7 +69,7 @@ extern void resetPoints(void);
 extern UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
 extern char* uPointToStr(char* dbuffer, UPOINT up);
 extern char* dynamicDPointToStr(char* dbuffer, DPOINT dp);
-extern UPOINT getPoint(COLORSET colorsOfFace, COLOR a, COLOR b);
+extern UPOINT getPoint(COLORSET colorsOfFace, COLOR primary, COLOR secondary);
 extern FAILURE dynamicPointCheckCrossingLimit(DPOINT point, int depth);
 
 #endif  // POINT_H

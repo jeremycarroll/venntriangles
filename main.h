@@ -6,7 +6,7 @@
 // Declare functions used in main.c
 extern const char* dynamicFaceDegreeSignature(void);
 extern int dynamicMain0(int argc, char* argv[]);
-extern void dynamicSolutionWrite(char* prefix);
+extern void dynamicSolutionWrite(const char* prefix);
 extern void dynamicSearchFull(void (*foundSolution)(void));
 
 #endif  // MAIN_H

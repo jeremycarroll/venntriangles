@@ -42,7 +42,7 @@ extern int edgePathLength(EDGE from, EDGE to);
 extern char* edgeToStr(char* dbuffer, EDGE edge);
 
 extern EDGE edgeOnCentralFace(COLOR a);
-extern void dynamicSolutionWrite(char* prefix);
+extern void dynamicSolutionWrite(const char* prefix);
 extern void resetEdges(void);
 
 extern FAILURE dynamicEdgeCornerCheck(EDGE start, int depth);

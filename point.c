@@ -23,26 +23,27 @@ void resetPoints()
   nextUPointId = 0;
 }
 
-UPOINT getPoint(COLORSET colorsOfFace, COLOR a, COLOR b)
+UPOINT getPoint(COLORSET colorsOfFace, COLOR primary, COLOR secondary)
 {
-  COLORSET outsideColor = colorsOfFace & ~(1u << a) & ~(1u << b);
-  if (allUPointPointers[outsideColor][a][b] == NULL) {
+  COLORSET outsideColor = colorsOfFace & ~(1u << primary) & ~(1u << secondary);
+  if (allUPointPointers[outsideColor][primary][secondary] == NULL) {
     DynamicPointAllUPoints[nextUPointId].id = nextUPointId;
-    allUPointPointers[outsideColor][a][b] =
+    allUPointPointers[outsideColor][primary][secondary] =
         &DynamicPointAllUPoints[nextUPointId];
-    DynamicPointAllUPoints[nextUPointId].primary = a;
-    DynamicPointAllUPoints[nextUPointId].secondary = b;
-    DynamicPointAllUPoints[nextUPointId].colors = 1u << a | 1u << b;
+    DynamicPointAllUPoints[nextUPointId].primary = primary;
+    DynamicPointAllUPoints[nextUPointId].secondary = secondary;
+    DynamicPointAllUPoints[nextUPointId].colors =
+        1u << primary | 1u << secondary;
     nextUPointId++;
   }
-  return allUPointPointers[outsideColor][a][b];
+  return allUPointPointers[outsideColor][primary][secondary];
 }
 
 /*
-Set up the out values for edge1 and edge2 that have the same color.
+Set up the next values for edge1 and edge2 that have the same color.
 All four edges meet at the same point.
 The edge3 and edge4 have the other color.
-The out[0] value for both  edge1 and edge2  for the other color is set to
+The next value for both  edge1 and edge2  for the other color is set to
 the reverse of the other edge.
 The out[1] value is set to the reverse of edge3 or edge4 maintaining the level.
 */
@@ -55,13 +56,13 @@ static void linkOut(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
   uint32_t level4 = edge4->reversed->level;
 
   assert(edge1->color == edge2->color);
-  assert(edge1->possiblyTo[other].out[0] == NULL);
-  assert(edge2->possiblyTo[other].out[0] == NULL);
+  assert(edge1->possiblyTo[other].next == NULL);
+  assert(edge2->possiblyTo[other].next == NULL);
   assert(edge1->possiblyTo[other].point == edge2->possiblyTo[other].point);
   assert(edge1->possiblyTo[other].point->colors =
              (1u << edge1->color | 1u << other));
-  edge1->possiblyTo[other].out[0] = edge2->reversed;
-  edge2->possiblyTo[other].out[0] = edge1->reversed;
+  edge1->possiblyTo[other].next = edge2->reversed;
+  edge2->possiblyTo[other].next = edge1->reversed;
   if (level1 == level3) {
     edge1->possiblyTo[other].out[1] = edge3->reversed;
     edge2->possiblyTo[other].out[1] = edge4->reversed;
@@ -75,7 +76,7 @@ static void linkOut(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
 }
 
 /*
-Set up out[0] on every possiblyTo.
+Set up next on every possiblyTo.
 
 It must be the same color, and the reverse of the other edge of that color at
 the point.
@@ -99,11 +100,10 @@ void initializePoints(void)
           continue;
         }
         assert(f->edges[j].possiblyTo[k].point != NULL);
-        assert(f->edges[j].possiblyTo[k].out[0] != NULL);
-        assert(f->edges[j].possiblyTo[k].out[0]->color == j);
-        assert(
-            f->edges[j].possiblyTo[k].out[0]->reversed->possiblyTo[k].point ==
-            f->edges[j].possiblyTo[k].point);
+        assert(f->edges[j].possiblyTo[k].next != NULL);
+        assert(f->edges[j].possiblyTo[k].next->color == j);
+        assert(f->edges[j].possiblyTo[k].next->reversed->possiblyTo[k].point ==
+               f->edges[j].possiblyTo[k].point);
       }
     }
   }
@@ -116,7 +116,7 @@ void initializePoints(void)
 UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor)
 {
   UPOINT point;
-  COLOR a, b;
+  COLOR primary, secondary;
   uint32_t ix;
 
   if (IS_PRIMARY_EDGE(incomingEdge)) {
@@ -137,25 +137,26 @@ UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor)
   switch (ix) {
     case 0:
     case 1:
-      a = incomingEdge->color;
-      b = othercolor;
+      primary = incomingEdge->color;
+      secondary = othercolor;
       break;
     case 2:
     case 3:
-      a = othercolor;
-      b = incomingEdge->color;
+      primary = othercolor;
+      secondary = incomingEdge->color;
       break;
     default:
       assert(0);
   }
 
-  point = getPoint(incomingEdge->colors, a, b);
+  point = getPoint(incomingEdge->colors, primary, secondary);
   assert(point->incomingEdges[ix] == NULL);
-  assert(point->colors == 0 || point->colors == ((1u << a) | (1u << b)));
-  assert(incomingEdge->color == (ix < 2 ? point->primary : point->secondary));
+  assert(point->colors == 0 ||
+         point->colors == ((1u << primary) | (1u << secondary)));
+  assert(incomingEdge->color == (ix < 2 ? primary : secondary));
   point->incomingEdges[ix] = incomingEdge;
 
-  assert(point->colors == ((1u << a) | (1u << b)));
+  assert(point->colors == ((1u << primary) | (1u << secondary)));
   return point;
 }
 

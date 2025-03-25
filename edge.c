@@ -77,7 +77,7 @@ EDGE edgeFollowForwards(EDGE edge)
   if (edge->to == NULL) {
     return NULL;
   }
-  return edge->to->out[0];
+  return edge->to->next;
 }
 
 EDGE edgeFollowBackwards(EDGE edge)
@@ -167,7 +167,7 @@ static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn)
       passed |= other;
       outside |= other;
     }
-    current = p->out[0];
+    current = p->next;
   } while (current->to != NULL && current != start);
   while (counter < MAX_CORNERS) {
     cornersReturn[counter++] = NULL;
@@ -192,8 +192,9 @@ FAILURE dynamicEdgeCornerCheck(EDGE start, int depth)
 
 EDGE edgeOnCentralFace(COLOR a)
 {
-  COLOR b = (a + 1) % NCOLORS;
-  UPOINT uPoint = getPoint(NFACES - 1, a, b);
+  COLOR primary = a;
+  COLOR secondary = (a + 1) % NCOLORS;
+  UPOINT uPoint = getPoint(NFACES - 1, primary, secondary);
   return uPoint->incomingEdges[0];
 }
 
@@ -277,7 +278,7 @@ char* edgeToStr(char* dbuffer, EDGE edge)
   return dbuffer;
 }
 
-void dynamicSolutionWrite(char* prefix)
+void dynamicSolutionWrite(const char* prefix)
 {
   EDGE corners[3][2];
   char filename[1024];

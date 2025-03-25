@@ -78,12 +78,12 @@ static void test_outer_a_edge()
   TEST_ASSERT_NULL(edge->to);
   TEST_ASSERT_EQUAL(0, edge->color);
   TEST_ASSERT_NULL(edge->possiblyTo[0].point);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].out[0]);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].next);
   TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->primary);
   TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->secondary);
   TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].out[0]->color);
-  TEST_ASSERT_EQUAL(2, edge->possiblyTo[1].out[0]->colors);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
+  TEST_ASSERT_EQUAL(2, edge->possiblyTo[1].next->colors);
   sanity_point(edge->possiblyTo[1].point);
 }
 /*
@@ -98,12 +98,12 @@ static void test_a_face_a_edge()
   TEST_ASSERT_NULL(edge->to);
   TEST_ASSERT_EQUAL(0, edge->color);
   TEST_ASSERT_NULL(edge->possiblyTo[0].point);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].out[0]);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->primary);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].next);
   TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->secondary);
+  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->primary);
   TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].out[0]->color);
-  TEST_ASSERT_EQUAL(3, edge->possiblyTo[1].out[0]->colors);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
+  TEST_ASSERT_EQUAL(3, edge->possiblyTo[1].next->colors);
   sanity_point(edge->possiblyTo[1].point);
 }
 /*
@@ -118,12 +118,12 @@ static void test_ab_face_a_edge()
   TEST_ASSERT_NULL(edge->to);
   TEST_ASSERT_EQUAL(0, edge->color);
   TEST_ASSERT_NULL(edge->possiblyTo[0].point);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].out[0]);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].next);
   TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->primary);
   TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->secondary);
   TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].out[0]->color);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].out[0]->colors);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
+  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].next->colors);
   sanity_point(edge->possiblyTo[1].point);
 }
 /*
@@ -138,12 +138,12 @@ static void test_abc_face_a_edge()
   TEST_ASSERT_NULL(edge->to);
   TEST_ASSERT_EQUAL(0, edge->color);
   TEST_ASSERT_NULL(edge->possiblyTo[0].point);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].out[0]);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].next);
   TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->primary);
   TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->secondary);
   TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].out[0]->color);
-  TEST_ASSERT_EQUAL(5, edge->possiblyTo[1].out[0]->colors);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
+  TEST_ASSERT_EQUAL(5, edge->possiblyTo[1].next->colors);
   sanity_point(edge->possiblyTo[1].point);
 }
 
