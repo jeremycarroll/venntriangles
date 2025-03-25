@@ -49,11 +49,10 @@ extern int edgePathLength(EDGE from, EDGE to);
 extern char* edgeToStr(char* dbuffer, EDGE edge);
 
 /* Solution output functions */
-extern void dynamicSolutionWrite(char* prefix);
 extern void dynamicSolutionPrint(FILE* fp);
 
-#define IS_PRIMARY_EDGE(edge) (memberOfColorSet((edge)->color, (edge)->colors))
-
 extern void resetEdges(void);
+
+#define IS_PRIMARY_EDGE(edge) (memberOfColorSet((edge)->color, (edge)->colors))
 
 #endif  // EDGE_H

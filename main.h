@@ -1,9 +1,12 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#include "face.h"
+
 // Declare functions used in main.c
 extern const char* dynamicFaceDegreeSignature(void);
-extern void dynamicSolutionWrite(const char* buffer);
+extern int dynamicMain0(int argc, char* argv[]);
+extern void dynamicSolutionWrite(char* prefix);
 extern void dynamicSearchFull(void (*foundSolution)(void));
 
 #endif  // MAIN_H

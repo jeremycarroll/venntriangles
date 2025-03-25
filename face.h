@@ -61,6 +61,5 @@ extern void initializeFacesAndEdges(void);
 extern void resetFaces(void);
 
 extern uint32_t cycleIdFromColors(char *colors);
-extern FACE dynamicFaceFromColors(char *colors);
 
 #endif  // FACE_H
