@@ -17,7 +17,6 @@ struct directedPoint {
      it is: next->reversed->to->next->reversed
   */
   EDGE next;
-  EDGE out[2];
   UPOINT point;
 };
 
@@ -28,9 +27,9 @@ struct directedPoint {
     a) all 4 of them or none of them are
     b) incomingEdges[i]->to->point = this point
     c) incomingEdges[i]->to->next->reversed is the other incomingEdge of the
-   same color d) incomingEdges[i]->to->out[1]->reversed is an incomingEdge of
-   the other color e) incomingEdges[i]->to->out[j]->reversed->to->point is this
-   point f) incomingEdges[i]->to->out[j]->reversed->to->out[j]->reversed =
+   same color d) incomingEdges[i]->to->next->reversed is an incomingEdge of
+   the other color e) incomingEdges[i]->to->next->reversed->to->point is this
+   point f) incomingEdges[i]->to->next->reversed->to->next->reversed =
    incomingEdges[i]
 
    The point is between the crossing of two curves, one colored A

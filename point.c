@@ -45,7 +45,6 @@ All four edges meet at the same point.
 The edge3 and edge4 have the other color.
 The next value for both  edge1 and edge2  for the other color is set to
 the reverse of the other edge.
-The out[1] value is set to the reverse of edge3 or edge4 maintaining the level.
 */
 static void linkOut(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
 {
@@ -64,12 +63,8 @@ static void linkOut(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
   edge1->possiblyTo[other].next = edge2->reversed;
   edge2->possiblyTo[other].next = edge1->reversed;
   if (level1 == level3) {
-    edge1->possiblyTo[other].out[1] = edge3->reversed;
-    edge2->possiblyTo[other].out[1] = edge4->reversed;
     assert(level2 == level4);
   } else {
-    edge1->possiblyTo[other].out[1] = edge4->reversed;
-    edge2->possiblyTo[other].out[1] = edge3->reversed;
     assert(level1 == level4);
     assert(level2 == level3);
   }
