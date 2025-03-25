@@ -117,7 +117,7 @@ UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor)
 {
   UPOINT point;
   COLOR a, b;
-  uint32_t ix, faceIx;
+  uint32_t ix;
 
   if (IS_PRIMARY_EDGE(incomingEdge)) {
     if (memberOfColorSet(othercolor, face->colors)) {
@@ -155,19 +155,6 @@ UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor)
   assert(incomingEdge->color == (ix < 2 ? point->primary : point->secondary));
   point->incomingEdges[ix] = incomingEdge;
 
-  if (face->colors & (1u << point->primary)) {
-    if (face->colors & (1u << point->secondary)) {
-      faceIx = 3;
-    } else {
-      faceIx = 1;
-    }
-  } else if (face->colors & (1u << point->secondary)) {
-    faceIx = 2;
-  } else {
-    faceIx = 0;
-  }
-  assert(point->faces[faceIx] == NULL);
-  point->faces[faceIx] = face;
   assert(point->colors == ((1u << a) | (1u << b)));
   return point;
 }

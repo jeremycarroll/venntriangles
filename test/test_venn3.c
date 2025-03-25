@@ -62,15 +62,8 @@ static void sanity_point(UPOINT point)
   for (int i = 0; i < 4; i++) {
     for (int j = i + 1; j < 4; j++) {
       TEST_ASSERT_NOT_EQUAL(point->incomingEdges[i], point->incomingEdges[j]);
-      TEST_ASSERT_NOT_EQUAL(point->faces[i], point->faces[j]);
     }
   }
-  TEST_ASSERT_EQUAL(0, point->faces[0]->colors & point->colors);
-  TEST_ASSERT_EQUAL(1u << point->secondary,
-                    point->faces[2]->colors & point->colors);
-  TEST_ASSERT_EQUAL(1u << point->primary,
-                    point->faces[1]->colors & point->colors);
-  TEST_ASSERT_EQUAL(point->colors, point->faces[3]->colors & point->colors);
 }
 
 /*

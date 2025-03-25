@@ -41,15 +41,6 @@ struct directedPoint {
  */
 struct undirectedPoint {
   /*
-  TODO: logically redundant, is this helpful?
-  If the point is between crossing of curve A and curve B,
-  then face[0] is inside neither curve
-  face[1] is inside A but not B
-  face[2] is inside B but not A
-  face[3] is inside both A and B
-  */
-  STATIC FACE faces[4];
-  /*
   If the point is between crossing of curve A and curve B,
   and A is primary, and B is secondary.
   then incomingEdges[0] is of color A and runs into the point
