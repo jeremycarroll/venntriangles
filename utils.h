@@ -1,5 +1,5 @@
-#ifndef _UTILS_H
-#define _UTILS_H
+#ifndef UTILS_H
+#define UTILS_H
 
 #include "core.h"
 
@@ -10,6 +10,4 @@ extern void initializeDynamicCounters(void);
 
 extern  int* dynamicIntArray(int a, ...);
 
-extern  uint64_t DynamicCycleGuessCounter;
-
-#endif  // _UTILS_H
+#endif  // UTILS_H

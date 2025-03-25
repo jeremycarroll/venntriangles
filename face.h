@@ -37,7 +37,6 @@ extern uint64_t cycleSetReducedCounter;
 extern void initializeGraph(void);
 extern STATIC struct face Faces[NFACES];
 extern uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
-extern STATIC struct facial_cycle Cycles[NCYCLES];
 
 extern FAILURE dynamicFaceMakeChoice(FACE face);
 extern FAILURE dynamicFaceFinalCorrectnessChecks(void);

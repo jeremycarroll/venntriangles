@@ -1,9 +1,16 @@
 #include "edge.h"
 
+#include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "color.h"
+#include "core.h"
 #include "face.h"
+#include "failure.h"
+#include "point.h"
+#include "trail.h"
 
 #define MAX_ONE_WAY_CURVE_CROSSINGS 3
 #define MAX_CORNERS 3
@@ -19,8 +26,6 @@
 This file is responsible for checking that a set of edges can make a triangle,
 and for outputting solutions.
 */
-
-extern COLORSET DynamicColorCompleted;
 
 /* Output-related variables */
 static char lastPrefix[128] = "";
