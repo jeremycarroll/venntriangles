@@ -1,14 +1,19 @@
-
 #include "face.h"
 
+#include <assert.h>
+#include <stddef.h>
+#include <string.h>
+
 #include "d6.h"
+#include "edge.h"
+#include "point.h"
 
 struct face Faces[NFACES];
 uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
 
 static void recomputeCountOfChoices(FACE face);
 static void initializePossiblyTo(void);
-static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn);
+
 /*
 A FISC is isomorphic to a convex FISC if and only if it is monotone.
 A FISC is monotone if its dual has a unique source (no incoming edges) and a
@@ -428,4 +433,92 @@ bool dynamicColorRemoveFromSearch(COLOR color)
     }
   }
   return true;
+}
+
+char* faceToStr(char* dbuffer, FACE face)
+{
+  char colorBuf[256];
+  char cycleBuf[256];
+  colorSetToStr(colorBuf, face->colors);
+  dynamicCycleToStr(cycleBuf, face->cycle);
+  if (face->cycleSetSize > 1) {
+    sprintf(dbuffer, "%s%s^%llu", colorBuf, cycleBuf, face->cycleSetSize);
+  } else {
+    sprintf(dbuffer, "%s%s", colorBuf, cycleBuf);
+  }
+  return dbuffer;
+}
+
+void dynamicFacePrint(FACE face)
+{
+  char buffer[2048];
+  printf("%s\n", faceToStr(buffer, face));
+}
+
+void dynamicFacePrintSelected(void)
+{
+  uint32_t i;
+  FACE face;
+  for (i = 0, face = Faces; i < NFACES; i++, face++) {
+    if (face->cycle || face->cycleSetSize < 2) {
+      dynamicFacePrint(face);
+    }
+  }
+}
+
+void dynamicSolutionPrint(FILE* fp)
+{
+  COLORSET colors = 0;
+  if (fp == NULL) {
+    fp = stdout;
+  }
+
+  while (true) {
+    FACE face = Faces + colors;
+    do {
+      FACE next = face->next;
+      COLORSET colorBeingDropped = face->colors & ~next->colors;
+      COLORSET colorBeingAdded = next->colors & ~face->colors;
+      char buffer[256];
+      fprintf(fp, "%s [%c,%c] ", faceToStr(buffer, face),
+              colorToChar(ffs(colorBeingDropped) - 1),
+              colorToChar(ffs(colorBeingAdded) - 1));
+      face = next;
+    } while (face->colors != colors);
+    fprintf(fp, "\n");
+    if (colors == (NFACES - 1)) {
+      break;
+    }
+    colors |= (face->previous->colors | 1);
+  }
+  fprintf(fp, "\n");
+}
+
+void resetFaces()
+{
+  memset(Faces, 0, sizeof(Faces));
+  memset(FaceSumOfFaceDegree, 0, sizeof(FaceSumOfFaceDegree));
+}
+
+uint32_t cycleIdFromColors(char* colors)
+{
+  COLOR cycle[NCOLORS];
+  int i;
+  for (i = 0; *colors; i++, colors++) {
+    cycle[i] = *colors - 'a';
+  }
+  return cycleFindId(cycle, i);
+}
+
+FACE dynamicFaceFromColors(char* colors)
+{
+  int face_id = 0;
+  while (true) {
+    if (*colors == 0) {
+      break;
+    }
+    face_id |= (1 << (*colors - 'a'));
+    colors++;
+  }
+  return Faces + face_id;
 }

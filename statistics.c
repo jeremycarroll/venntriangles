@@ -188,3 +188,10 @@ void initializeStatisticLogging(char* filename, int frequency, int seconds)
   checkCountDown = checkFrequency;
   initializeFailures();
 }
+
+void initializeDynamicCounters(void)
+{
+  statisticNew(&DynamicCycleGuessCounter, "?", "guesses");
+  statisticNew(&cycleForcedCounter, "+", "forced");
+  statisticNew(&cycleSetReducedCounter, "-", "reduced");
+}

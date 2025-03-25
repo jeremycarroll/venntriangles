@@ -1,13 +1,15 @@
 The program is essentially complete. The best feature is that it is very fast.
 
-Two to-do items are:
+A to-do items are:
 - graphml output
-- appropriate use of log methods to proviode variable levels of output.
 
 Issues to be addressed in refactoring:
 - [ ] Modularization: which functions and variables should be in which files and why.
 - [x] Replace monolithic header file with (approximately) one per source file?
 - [ ] Order include statements appropriately
+- [ ] Revist function names
+- [ ] Order of declarations within files
+- [ ] Decide how to deal with globals
 - [x] Better use of -I in the Makefile
 - [ ] Use of #include <> vs #include ""
 - [ ] naming conventions: when to use camelCase, snake_case, all caps etc.

@@ -1,6 +1,7 @@
 #ifndef EDGE_H
 #define EDGE_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "color.h"
@@ -47,5 +48,7 @@ extern int edgePathLength(EDGE from, EDGE to);
 extern char* edgeToStr(char* dbuffer, EDGE edge);
 
 #define IS_PRIMARY_EDGE(edge) (memberOfColorSet((edge)->color, (edge)->colors))
+
+extern void resetEdges(void);
 
 #endif  // EDGE_H

@@ -226,3 +226,15 @@ FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
   }
   return NULL;
 }
+
+char* uPointToStr(char* dbuffer, UPOINT up)
+{
+  char* colors = colorSetToStr(dbuffer, up->colors);
+  sprintf(dbuffer, "%s(%c,%c)", colors, 'a' + up->primary, 'a' + up->secondary);
+  return dbuffer;
+}
+
+char* dynamicDPointToStr(char* dbuffer, DPOINT dp)
+{
+  return uPointToStr(dbuffer, dp->point);
+}

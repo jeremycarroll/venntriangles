@@ -298,3 +298,35 @@ static void initializeOmittingCycleSets()
     }
   }
 }
+
+int colorToChar(COLOR c) { return 'a' + c; }
+
+char* colorSetToStr(char* dbuffer, COLORSET colors)
+{
+  uint32_t i;
+  char* p = dbuffer;
+  *p++ = '|';
+  for (i = 0; i < NCOLORS; i++) {
+    if (colors & (1u << i)) {
+      *p++ = 'a' + i;
+    }
+  }
+  *p++ = '|';
+  *p = '\0';
+  return dbuffer;
+}
+
+char* dynamicCycleToStr(char* dbuffer, CYCLE cycle)
+{
+  char* p = dbuffer;
+  if (cycle == NULL) {
+    return "(NULL)";
+  }
+  *p++ = '(';
+  for (uint32_t i = 0; i < cycle->length; i++) {
+    *p++ = 'a' + cycle->curves[i];
+  }
+  *p++ = ')';
+  *p = '\0';
+  return dbuffer;
+}

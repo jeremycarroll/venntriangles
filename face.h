@@ -1,7 +1,9 @@
 #ifndef FACE_H
 #define FACE_H
 
+#include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "color.h"
 #include "core.h"
@@ -60,4 +62,10 @@ extern void dynamicFacePrintSelected(void);
 // Should have Dynamic in name, and be so.
 extern bool setCycleLength(uint32_t faceColors, uint32_t length);
 extern void initializeFacesAndEdges(void);
+
+extern void resetFaces(void);
+
+extern uint32_t cycleIdFromColors(char *colors);
+extern FACE dynamicFaceFromColors(char *colors);
+
 #endif  // FACE_H

@@ -1,7 +1,13 @@
 #ifndef POINT_H
 #define POINT_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "color.h"
+#include "core.h"
+#include "failure.h"
+#include "trail.h"
 
 typedef struct directedPoint* DPOINT;
 typedef struct undirectedPoint* UPOINT;
@@ -72,6 +78,7 @@ extern void resetPoints(void);
 extern UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
 extern FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
 extern char* uPointToStr(char* dbuffer, UPOINT up);
+extern char* dynamicDPointToStr(char* dbuffer, DPOINT dp);
 extern EDGE edgeOnCentralFace(COLOR a);
 extern UPOINT getPoint(COLORSET colorsOfFace, COLOR a, COLOR b);
 

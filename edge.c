@@ -237,3 +237,21 @@ void edgeFindCorners(COLOR a, EDGE result[3][2])
     result[i - 1 - j][1] = counterClockWiseCorners[j];
   }
 }
+
+void resetEdges()
+{
+  memset(EdgeCountsByDirectionAndColor, 0,
+         sizeof(EdgeCountsByDirectionAndColor));
+  memset(EdgeCrossingCounts, 0, sizeof(EdgeCrossingCounts));
+  memset(EdgeCurvesComplete, 0, sizeof(EdgeCurvesComplete));
+}
+
+char* edgeToStr(char* dbuffer, EDGE edge)
+{
+  char color = colorToChar(edge->color);
+  char* colors = colorSetToStr(dbuffer, edge->colors);
+  char* to = edge->to == NULL ? "***" : dynamicDPointToStr(dbuffer, edge->to);
+  sprintf(dbuffer, "%c%c/%s[%s]", color, IS_PRIMARY_EDGE(edge) ? '+' : '-',
+          colors, to);
+  return dbuffer;
+}
