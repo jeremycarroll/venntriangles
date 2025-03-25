@@ -1,3 +1,5 @@
+#include "search.h"
+
 #include <stdio.h>
 #include <time.h>
 
@@ -91,6 +93,7 @@ static clock_t totalWastedTime = 0;
 static clock_t totalUsefulTime = 0;
 static int wastedSearchCount = 0;
 static int usefulSearchCount = 0;
+static TRAIL startPoint;
 static void full_search_callback6(void *foundSolutionVoidPtr, int *args)
 {
   clock_t now = clock();
@@ -98,11 +101,7 @@ static void full_search_callback6(void *foundSolutionVoidPtr, int *args)
   int initialSolutionCount = solution_count;
   int i;
   void (*foundSolution)(void) = foundSolutionVoidPtr;
-  resetGlobals();
-  resetInitialize();
-  resetTrail();
-  resetPoints();
-  initialize();
+  trailBacktrackTo(startPoint);  // Start with backtracking
   dynamicFaceSetupCentral(args);
   dynamicSearch(true, foundSolution);
   used = clock() - now;
@@ -130,6 +129,8 @@ static void full_search_callback6(void *foundSolutionVoidPtr, int *args)
 void dynamicSearchFull(void (*foundSolution)(void))
 {
   initializeSequenceOrder();
+  initialize();
+  startPoint = Trail;
   solution_count = 0;
   dynamicFaceCanonicalCallback(full_search_callback6, (void *)foundSolution);
 }

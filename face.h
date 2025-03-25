@@ -44,10 +44,6 @@ extern FAILURE dynamicFaceFinalCorrectnessChecks(void);
 extern void dynamicFaceSetupCentral(int *faceDegrees);
 extern FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
                                        int depth);
-extern void dynamicSearchFull(void (*foundSolution)(void));
-extern void dynamicSearch(bool smallestFirst, void (*foundSolution)(void));
-
-extern void dynamicFaceSetupCentral(int *faceDegrees);
 extern bool dynamicColorRemoveFromSearch(COLOR color);
 
 extern COLORSET DynamicColorCompleted;
@@ -55,7 +51,6 @@ extern COLORSET DynamicColorCompleted;
 extern uint64_t DynamicCycleGuessCounter;
 extern char *faceToStr(char *dbuffer, FACE face);
 
-extern FACE dynamicFaceChoose(bool smallestFirst);
 extern FACE dynamicFaceFromColors(char *colors);
 extern FACE dynamicFaceAddSpecific(char *colors, char *cycle);
 extern void dynamicFacePrintSelected(void);
