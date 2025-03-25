@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "color.h"
 #include "core.h"
@@ -46,6 +47,10 @@ extern FAILURE dynamicEdgeCurveChecks(EDGE edge, int depth);
 extern void edgeFindCorners(COLOR a, EDGE result[3][2]);
 extern int edgePathLength(EDGE from, EDGE to);
 extern char* edgeToStr(char* dbuffer, EDGE edge);
+
+/* Solution output functions */
+extern void dynamicSolutionWrite(char* prefix);
+extern void dynamicSolutionPrint(FILE* fp);
 
 #define IS_PRIMARY_EDGE(edge) (memberOfColorSet((edge)->color, (edge)->colors))
 

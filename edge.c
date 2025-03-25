@@ -1,5 +1,10 @@
 #include "edge.h"
 
+#include <stdlib.h>
+#include <string.h>
+
+#include "face.h"
+
 #define MAX_ONE_WAY_CURVE_CROSSINGS 3
 #define MAX_CORNERS 3
 
@@ -11,9 +16,19 @@
 #define MAX_ONE_WAY_CURVE_CROSSINGS 3
 
 /*
+This file is responsible for checking that a set of edges can make a triangle,
+and for outputting solutions.
+*/
+
+extern COLORSET DynamicColorCompleted;
+
+/* Output-related variables */
+static char lastPrefix[128] = "";
+static int solutionNumber = 0;
+
+/*
 This file is responsible for checking that a set of edges can make a triangle.
 */
-extern COLORSET DynamicColorCompleted;
 static uint_trail curveLength(EDGE edge)
 {
   EDGE current;
@@ -248,10 +263,52 @@ void resetEdges()
 
 char* edgeToStr(char* dbuffer, EDGE edge)
 {
-  char color = colorToChar(edge->color);
-  char* colors = colorSetToStr(dbuffer, edge->colors);
-  char* to = edge->to == NULL ? "***" : dynamicDPointToStr(dbuffer, edge->to);
-  sprintf(dbuffer, "%c%c/%s[%s]", color, IS_PRIMARY_EDGE(edge) ? '+' : '-',
-          colors, to);
+  if (edge == NULL) {
+    strcpy(dbuffer, "NULL");
+  } else {
+    sprintf(dbuffer, "%c%d", colorToChar(edge->color), edge->colors);
+  }
   return dbuffer;
+}
+
+void dynamicSolutionWrite(char* prefix)
+{
+  EDGE corners[3][2];
+  char filename[1024];
+  char buffer[1024];
+  int numberOfVariations = 1;
+  int pLength;
+  FILE* fp;
+  if (strcmp(prefix, lastPrefix) != 0) {
+    strcpy(lastPrefix, prefix);
+    solutionNumber = 1;
+  }
+  snprintf(filename, sizeof(filename), "%s-%2.2d.txt", prefix,
+           solutionNumber++);
+  fp = fopen(filename, "w");
+  if (fp == NULL) {
+    perror("Failed to open file");
+    exit(EXIT_FAILURE);
+  }
+  dynamicSolutionPrint(fp);
+  for (COLOR a = 0; a < NCOLORS; a++) {
+    edgeFindCorners(a, corners);
+    for (int i = 0; i < 3; i++) {
+      fprintf(fp, "{%c:%d} ", colorToChar(a), i);
+      if (corners[i][0] == NULL) {
+        EDGE edge = edgeOnCentralFace(a);
+        pLength = edgePathLength(edge, edgeFollowBackwards(edge));
+        fprintf(fp, "NULL/%d ", pLength);
+      } else {
+        pLength = edgePathLength(corners[i][0]->reversed, corners[i][1]);
+        buffer[0] = buffer[1] = 0;
+        fprintf(fp, "(%s => %s/%d) ", edgeToStr(buffer, corners[i][0]),
+                edgeToStr(buffer, corners[i][1]), pLength);
+      }
+      numberOfVariations *= pLength;
+      fprintf(fp, "\n");
+    }
+  }
+  fprintf(fp, "\n\nVariations = %d\n", numberOfVariations);
+  fclose(fp);
 }

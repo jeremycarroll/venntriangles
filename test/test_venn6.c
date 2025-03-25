@@ -71,6 +71,8 @@ static void test_search_for_two_solutions()
 
 static void test_full_search(void)
 {
+  /* dyanmicSearchFull includes initialization, so we undo our own setUp. */
+  tearDown();
   solution_count = 0;
   dynamicSearchFull(found_solution);
   TEST_ASSERT_EQUAL(233, solution_count);
