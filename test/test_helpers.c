@@ -1,8 +1,8 @@
-#include <stdarg.h>
-
 #include "face.h"
-#include "unity.h"
 #include "utils.h"
+#include "unity.h"
+
+#include <stdarg.h>
 
 FACE dynamicFaceAddSpecific(char* colors, char* cycle)
 {
