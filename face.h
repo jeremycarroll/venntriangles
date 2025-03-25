@@ -60,7 +60,7 @@ extern FACE dynamicFaceFromColors(char *colors);
 extern FACE dynamicFaceAddSpecific(char *colors, char *cycle);
 extern void dynamicFacePrintSelected(void);
 // Should have Dynamic in name, and be so.
-extern bool setCycleLength(uint32_t faceColors, uint32_t length);
+extern bool dynamicFaceSetCycleLength(uint32_t faceColors, uint32_t length);
 extern void initializeFacesAndEdges(void);
 
 extern void resetFaces(void);

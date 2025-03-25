@@ -62,8 +62,8 @@ static void applyMonotonicity(void)
     }
     recomputeCountOfChoices(face);
   }
-  setCycleLength(0, NCOLORS);
-  setCycleLength(~0, NCOLORS);
+  dynamicFaceSetCycleLength(0, NCOLORS);
+  dynamicFaceSetCycleLength(~0, NCOLORS);
 }
 
 static void recomputeCountOfChoices(FACE face)
@@ -71,7 +71,7 @@ static void recomputeCountOfChoices(FACE face)
   trailSetInt(&face->cycleSetSize, cycleSetSize(face->possibleCycles));
 }
 
-bool setCycleLength(uint32_t faceColors, uint32_t length)
+bool dynamicFaceSetCycleLength(uint32_t faceColors, uint32_t length)
 {
   FACE face = Faces + (faceColors & (NFACES - 1));
   CYCLE cycle;
@@ -213,7 +213,7 @@ void initializeFaceSetupCentral(int* faceDegrees)
   uint64_t i;
   FACE centralFace = Faces + (NFACES - 1);
   for (i = 0; i < NCOLORS; i++) {
-    setCycleLength(~(1 << i), faceDegrees[i]);
+    dynamicFaceSetCycleLength(~(1 << i), faceDegrees[i]);
   }
   for (cycle = Cycles;; cycle++) {
     if (cycle->length != NCOLORS) {
