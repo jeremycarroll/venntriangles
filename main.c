@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "search.h"
 #include "statistics.h"
 
 static char *targetFolder = NULL;
