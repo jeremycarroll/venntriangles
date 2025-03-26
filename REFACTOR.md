@@ -4,9 +4,9 @@ A to-do items are:
 - graphml output
 
 Issues to be addressed in refactoring:
-- [ ] Modularization: which functions and variables should be in which files and why.
+- [x] Modularization: which functions and variables should be in which files and why.
 - [x] Replace monolithic header file with (approximately) one per source file?
-- [ ] Order include statements appropriately
+- [x] Order include statements appropriately
 - [ ] Revist function names
 - [ ] Order of declarations within files
 - [ ] Decide how to deal with globals
@@ -15,10 +15,10 @@ Issues to be addressed in refactoring:
 - [ ] naming conventions: when to use camelCase, snake_case, all caps etc.
 - [x] naming conventions when to use prefixes to provide some namespacing
 - [ ] ensuring most files are between 100 and 500 lines long
-- [ ] removing unused functions
-- [ ] removing unused struct fields
-- [ ] replacing the EDGE out[] field in struct directedPoint with a single EDGE out field (I never used the second entry)
-- [ ] ensuring setupCentralFaces uses the trail, so that we don't need to reinitialize in full_search_callback6 but can simply backtrack
+- [x] removing unused functions
+- [x] removing unused struct fields
+- [x] replacing the EDGE out[] field in struct directedPoint with a single EDGE out field (I never used the second entry)
+- [x] ensuring setupCentralFaces uses the trail, so that we don't need to reinitialize in full_search_callback6 but can simply backtrack
 - [ ] ensure toplevel documentation adequately describes the goal and approach
 - [ ] rationalize initialization; maybe use more lazy initialization
 - [x] ensure visible_for_testing.h is doing the right thing - i.e. only exposing functions and variables to the test files as appropriate

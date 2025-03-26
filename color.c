@@ -21,7 +21,7 @@ CYCLESET_DECLARE InitializeCycleSetPairs[NCOLORS][NCOLORS];
 CYCLESET_DECLARE InitializeCycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
 CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
 CYCLESET_DECLARE CycleSetOmittingColorPair[NCOLORS][NCOLORS];
-CYCLESET InitializeCycleSetSets[NCYCLE_ENTRIES * 2];
+static CYCLESET InitializeCycleSetSets[NCYCLE_ENTRIES * 2];
 
 struct facial_cycle Cycles[NCYCLES];
 

@@ -11,8 +11,11 @@
 struct face Faces[NFACES];
 uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
 
+uint64_t DynamicCycleGuessCounter = 0;
+
 static void recomputeCountOfChoices(FACE face);
 static void initializePossiblyTo(void);
+static FAILURE makeChoiceInternal(FACE face, int depth);
 
 /*
 A FISC is isomorphic to a convex FISC if and only if it is monotone.
@@ -202,8 +205,6 @@ FAILURE dynamicFaceFinalCorrectnessChecks(void)
    be in the Trail.
  */
 COLORSET DynamicColorCompleted;
-static FAILURE makeChoiceInternal(FACE face, int depth);
-uint64_t DynamicCycleGuessCounter = 0;
 uint64_t cycleForcedCounter = 0;
 uint64_t cycleSetReducedCounter = 0;
 
