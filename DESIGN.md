@@ -21,12 +21,11 @@ We use a large array called the trail to record the dynamic choices so that back
 is trivial.
 
 We use the following naming conventions:
-- global variables, and file scope variables that are part of the scratch area 
-  have names starting with Scratch...
 - functions that modify the Scratch area before we begin the search start with
   initialize...
 - functions that modify the Scratch area during the dynamic search, recording
   the changes on the trail start with dynamic...
+- functions that reset the Scratch area during testing, start with reset...
 
 ## Guidance about Algorithm And Code Layout
 
@@ -37,7 +36,7 @@ We use the following naming conventions:
 | ColorSet | color.c, color.h | Face Label, used as proxy forward reference to FACE |
 | Cycle | color.c, color.h | Sequence of Edge colors around a Face |
 | CycleSet | color.c, color.h | Possible Sequences of Edge colors around a Face |
-| ArrowHead | edge.h | The pointy end of an edge, where it meets a vertex, forward reference to EDGE and POINT |
+| Link in Curve | edge.h | The pointy end of an edge, where it meets a vertex, forward reference to EDGE and POINT |
 | Edge | edge.c, edge.h | A directed, labelled side of a face, between two points, one of which is called out as the arrowhead |
 | Curve | edge.c, edge.h | a connected sequence of edges with the same label |
 | Point | point.c, point.h | A possible oriented point between 4 specific faces, forward reference to EDGE |
@@ -58,3 +57,23 @@ Functions of any scope are in camelCase.
 Non-static local variables are in camelCase.
 
 Macros are in UPPER_SNAKE_CASE.
+
+## File Layout Conventions
+
+Most of the files correspond to geometric concepts with both a .c file and .h file.
+Sometimes we put more than one geometric concept into one .c file.
+
+We have additional files for the trail concept, for the top level search primitives, for the dihedral group D6,
+which we use to avoid computing symmetries, without loss of generality, and for utils.
+
+Each .c file has the following layout:
+
+- includes
+- global variables: first globally scoped then file scope
+- declaration of any file scoped static functions
+- externally linked functions in the following sections
+    - initialize... functions
+    - dyanmic... functions
+    - reset... functions
+    - other functions (in alphabetical order)
+- file scoped static functions
