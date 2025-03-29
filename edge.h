@@ -56,6 +56,7 @@ extern void resetEdges(void);
 
 extern FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
 
-#define IS_PRIMARY_EDGE(edge) (memberOfColorSet((edge)->color, (edge)->colors))
+#define IS_PRIMARY_EDGE(edge) \
+  (COLOR_SET_HAS_MEMBER((edge)->color, (edge)->colors))
 
 #endif  // EDGE_H

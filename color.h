@@ -27,7 +27,7 @@ struct facialCycle {
   COLOR curves[NCOLORS];
 };
 
-#define memberOfColorSet(color, colorSet) (((colorSet) >> (color)) & 1u)
+#define COLOR_SET_HAS_MEMBER(color, colorSet) (((colorSet) >> (color)) & 1u)
 
 /* These cycleSets are accessed from cycles, with the pointers set up during
    initialization. */

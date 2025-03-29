@@ -67,7 +67,7 @@ void dynamicSearch(bool smallestFirst, void (*foundSolution)(void))
         } else {
           chosenCycles[position] = cycle;
           /* suspect - because face->backtrack gets reset. */
-          setDynamicPointer(&face->cycle, cycle);
+          TRAIL_SET_POINTER(&face->cycle, cycle);
           assert(face->cycle == cycle);
           if (dynamicFaceMakeChoice(face) == NULL) {
             position += 1;

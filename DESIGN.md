@@ -48,3 +48,13 @@ The geometric files are in the sequence above, with each header file including t
 and each c file including the corresponding header file, so that face.h and face.c include everything.
 
 color.h includes core.h which defines various constants needed.
+
+## Naming Conventions
+
+Static variables of any scope (function, file, global) are in PascalCase.
+
+Functions of any scope are in camelCase.
+
+Non-static local variables are in camelCase.
+
+Macros are in UPPER_SNAKE_CASE.

@@ -281,7 +281,7 @@ static void initializeOmittingCycleSets()
   uint32_t i, j, cycleId;
   for (i = 0; i < NCOLORS; i++) {
     for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-      if (!memberOfColorSet(i, Cycles[cycleId].colors)) {
+      if (!COLOR_SET_HAS_MEMBER(i, Cycles[cycleId].colors)) {
         initializeCycleSetAdd(cycleId, CycleSetOmittingOneColor[i]);
       }
     }
@@ -289,8 +289,8 @@ static void initializeOmittingCycleSets()
   for (i = 0; i < NCOLORS; i++) {
     for (j = i + 1; j < NCOLORS; j++) {
       for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-        if (!(memberOfColorSet(i, Cycles[cycleId].colors) &&
-              memberOfColorSet(j, Cycles[cycleId].colors) &&
+        if (!(COLOR_SET_HAS_MEMBER(i, Cycles[cycleId].colors) &&
+              COLOR_SET_HAS_MEMBER(j, Cycles[cycleId].colors) &&
               cycleContainsAthenB(&Cycles[cycleId], i, j))) {
           initializeCycleSetAdd(cycleId, CycleSetOmittingColorPair[i][j]);
         }

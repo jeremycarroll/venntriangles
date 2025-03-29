@@ -53,7 +53,7 @@ COLORSET dynamicColorSetPermute(COLORSET colorSet, PERMUTATION permutation)
 {
   COLORSET result = 0;
   for (COLOR color = 0; color < NCOLORS; color++) {
-    if (memberOfColorSet(color, colorSet)) {
+    if (COLOR_SET_HAS_MEMBER(color, colorSet)) {
       result |= 1u << permutation[color];
     }
   }
@@ -110,11 +110,11 @@ SYMMETRY_TYPE dynamicSymmetryType6(int *args)
 
 static int *d6FaceDegrees()
 {
-  static int faceDegrees[NFACES];
+  static int FaceDegrees[NFACES];
   for (int i = 0; i < NFACES; i++) {
-    faceDegrees[i] = Faces[SequenceOrder[i]].cycle->length;
+    FaceDegrees[i] = Faces[SequenceOrder[i]].cycle->length;
   }
-  return faceDegrees;
+  return FaceDegrees;
 }
 
 SYMMETRY_TYPE dynamicSymmetryTypeFaces(void)
@@ -124,13 +124,13 @@ SYMMETRY_TYPE dynamicSymmetryTypeFaces(void)
 
 char *dynamicFaceDegreeSignature(void)
 {
-  static char result[NCOLORS + 1];
+  static char Result[NCOLORS + 1];
   int *faceDegrees = d6FaceDegrees();
   for (int i = 0; i < NCOLORS; i++) {
-    result[i] = '0' + faceDegrees[i];
+    Result[i] = '0' + faceDegrees[i];
   }
-  result[NCOLORS] = '\0';
-  return result;
+  Result[NCOLORS] = '\0';
+  return Result;
 }
 
 static void canoncialCallbackImpl(int depth, int sum, int *args,

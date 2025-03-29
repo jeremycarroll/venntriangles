@@ -272,7 +272,7 @@ static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
     return failureNoMatchingCycles(depth);
   }
   if (face->cycleSetSize == 1) {
-    setDynamicPointer(&face->cycle, cycleSetFindFirst(face->possibleCycles));
+    TRAIL_SET_POINTER(&face->cycle, cycleSetFindFirst(face->possibleCycles));
     CycleForcedCounter++;
     return makeChoiceInternal(face, depth + 1);
   }
@@ -340,7 +340,7 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
     CHECK_FAILURE(propogateChoice(face, &face->edges[cycle->curves[i]], depth));
   }
   for (i = 0; i < NCOLORS; i++) {
-    if (memberOfColorSet(i, cycle->colors)) {
+    if (COLOR_SET_HAS_MEMBER(i, cycle->colors)) {
       continue;
     }
     CHECK_FAILURE(restrictAndPropogateCycles(
@@ -348,11 +348,11 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
   }
 
   if (face->colors == 0 || face->colors == (NFACES - 1)) {
-    setDynamicPointer(&face->next, face);
-    setDynamicPointer(&face->previous, face);
+    TRAIL_SET_POINTER(&face->next, face);
+    TRAIL_SET_POINTER(&face->previous, face);
   } else {
-    setDynamicPointer(&face->next, face->nextByCycleId[cycleId]);
-    setDynamicPointer(&face->previous, face->previousByCycleId[cycleId]);
+    TRAIL_SET_POINTER(&face->next, face->nextByCycleId[cycleId]);
+    TRAIL_SET_POINTER(&face->previous, face->previousByCycleId[cycleId]);
   }
 
   if (face->colors != 0 && face->colors != (NFACES - 1)) {
@@ -362,8 +362,8 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
 
   for (i = 0; i < NCOLORS; i++) {
     for (j = i + 1; j < NCOLORS; j++) {
-      if (memberOfColorSet(i, cycle->colors) &&
-          memberOfColorSet(j, cycle->colors)) {
+      if (COLOR_SET_HAS_MEMBER(i, cycle->colors) &&
+          COLOR_SET_HAS_MEMBER(j, cycle->colors)) {
         if (cycleContainsAthenB(face->cycle, i, j)) {
           continue;
         }
@@ -410,7 +410,7 @@ FAILURE dynamicFaceMakeChoice(FACE face)
   }
   if (ColorCompleted) {
     for (completedColor = 0; completedColor < NCOLORS; completedColor++) {
-      if (memberOfColorSet(completedColor, ColorCompleted)) {
+      if (COLOR_SET_HAS_MEMBER(completedColor, ColorCompleted)) {
         if (!dynamicColorRemoveFromSearch(completedColor)) {
           return failureDisconnectedCurve(0);
         }
@@ -671,7 +671,7 @@ FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
       }
       assert(edge->to == &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
     } else {
-      setDynamicPointer(&edge->to,
+      TRAIL_SET_POINTER(&edge->to,
                         &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
     }
 

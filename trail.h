@@ -18,7 +18,7 @@ struct trail {
 
 extern TRAIL Trail;
 extern void trailSetPointer(void **ptr, void *value);
-#define setDynamicPointer(a, b) trailSetPointer((void **)a, b)
+#define TRAIL_SET_POINTER(a, b) trailSetPointer((void **)a, b)
 
 extern void trailSetInt(uint_trail *ptr, uint_trail value);
 extern bool trailBacktrackTo(TRAIL backtrackPoint);
