@@ -88,7 +88,7 @@ static clock_t TotalUsefulTime = 0;
 static int WastedSearchCount = 0;
 static int UsefulSearchCount = 0;
 static TRAIL StartPoint;
-static void full_search_callback6(void *foundSolutionVoidPtr, int *args)
+static void fullSearchCallback(void *foundSolutionVoidPtr, int *args)
 {
   clock_t now = clock();
   clock_t used;
@@ -126,5 +126,5 @@ void dynamicSearchFull(void (*foundSolution)(void))
   initialize();
   StartPoint = Trail;
   SolutionCount = 0;
-  dynamicFaceCanonicalCallback(full_search_callback6, (void *)foundSolution);
+  dynamicFaceCanonicalCallback(fullSearchCallback, (void *)foundSolution);
 }

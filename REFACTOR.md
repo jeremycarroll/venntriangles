@@ -9,7 +9,7 @@ Issues to be addressed in refactoring:
 - [x] Order include statements appropriately
 - [ ] Revist function names
 - [ ] Order of declarations within files
-- [ ] Decide how to deal with globals
+- [x] Decide how to deal with globals
 - [x] Better use of -I in the Makefile
 - [x] Use of #include <> vs #include ""
 - [ ] naming conventions: when to use camelCase, snake_case, all caps etc.

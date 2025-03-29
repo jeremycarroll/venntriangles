@@ -23,7 +23,7 @@ CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
 CYCLESET_DECLARE CycleSetOmittingColorPair[NCOLORS][NCOLORS];
 static CYCLESET CycleSetSets[NCYCLE_ENTRIES * 2];
 
-struct facial_cycle Cycles[NCYCLES];
+struct facialCycle Cycles[NCYCLES];
 
 void initializeCycleSetAdd(uint32_t cycleId, CYCLESET cycleSet)
 {

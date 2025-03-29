@@ -8,7 +8,7 @@ typedef struct face *FACE;
 
 struct face {
   // cycle must be null if cycleSetSize is not 1.
-  DYNAMIC struct facial_cycle *cycle;
+  DYNAMIC struct facialCycle *cycle;
   DYNAMIC TRAIL backtrack;
   /* We point to previous and next with the same number of colors. */
   DYNAMIC FACE previous;

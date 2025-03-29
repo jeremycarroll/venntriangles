@@ -514,15 +514,15 @@ uint32_t cycleIdFromColors(char* colors)
 
 FACE dynamicFaceFromColors(char* colors)
 {
-  int face_id = 0;
+  int faceId = 0;
   while (true) {
     if (*colors == 0) {
       break;
     }
-    face_id |= (1 << (*colors - 'a'));
+    faceId |= (1 << (*colors - 'a'));
     colors++;
   }
-  return Faces + face_id;
+  return Faces + faceId;
 }
 
 void dynamicSolutionWrite(const char* prefix)

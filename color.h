@@ -9,9 +9,9 @@ typedef uint32_t COLORSET;
 typedef uint64_t *CYCLESET;
 typedef uint64_t CYCLESET_DECLARE[CYCLESET_LENGTH];
 
-typedef struct facial_cycle *CYCLE;
+typedef struct facialCycle *CYCLE;
 
-struct facial_cycle {
+struct facialCycle {
   uint32_t length;
   COLORSET colors;
   /*
@@ -47,7 +47,7 @@ extern bool cycleContainsAthenB(CYCLE cycle, uint32_t i, uint32_t j);
 extern bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t i, uint32_t j,
                                      uint32_t k);
 extern uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color);
-extern struct facial_cycle Cycles[NCYCLES];
+extern struct facialCycle Cycles[NCYCLES];
 extern uint32_t cycleIdFromColors(char *colors);
 extern int colorToChar(COLOR c);
 extern char *colorSetToStr(char *dbuffer, COLORSET colors);
