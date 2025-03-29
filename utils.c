@@ -6,12 +6,16 @@
 #include "point.h"
 #include "statistics.h"
 #include "trail.h"
+
+/* Constants */
 #define TOTAL_BUFFER_SIZE 16384
 #define BUFFER_SIZE 64
 
+/* Global variables (file scoped static) */
 static uint64_t GetBufferCounter = 0;
 static uint64_t MaxBufferSize = 0;
 
+/* Externally linked functions */
 void resetGlobals()
 {
   resetFaces();

@@ -6,6 +6,7 @@
 #include <math.h>
 #include <string.h>
 
+/* Global variables (file scoped static) */
 static Statistic Statistics[MAX_STATISTICS];
 static Failure Failures[MAX_STATISTICS];
 static time_t StartTime;
@@ -15,6 +16,7 @@ static int SecondsBetweenLogs = 10;
 static int CheckCountDown = 0;
 static FILE* LogFile = NULL;
 
+/* Externally linked functions */
 void statisticIncludeInteger(uint64_t* counter, char* shortName, char* name)
 {
   for (int i = 0; i < MAX_STATISTICS; i++) {
