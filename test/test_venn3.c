@@ -20,7 +20,7 @@ void tearDown(void)
   resetPoints();
 }
 
-static void test_outer_face()
+static void testOuterFace()
 {
   FACE face = Faces;
   TEST_ASSERT_EQUAL(0, face->colors);
@@ -29,7 +29,7 @@ static void test_outer_face()
   TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 4);
 }
 
-static void test_a_face()
+static void testAFace()
 {
   FACE face = Faces + 1;
   TEST_ASSERT_EQUAL(1, face->colors);
@@ -38,7 +38,7 @@ static void test_a_face()
   TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 5);
 }
 
-static void test_ab_face()
+static void testAbFace()
 {
   FACE face = Faces + 3;
   TEST_ASSERT_EQUAL(3, face->colors);
@@ -47,7 +47,7 @@ static void test_ab_face()
   TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 7);
 }
 
-static void test_abc_face()
+static void testAbcFace()
 {
   FACE face = Faces + 7;
   TEST_ASSERT_EQUAL(7, face->colors);
@@ -56,7 +56,7 @@ static void test_abc_face()
   TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 3);
 }
 
-static void sanity_point(POINT point)
+static void sanityPoint(POINT point)
 {
   TEST_ASSERT_EQUAL(1u << point->primary | 1u << point->secondary,
                     point->colors);
@@ -70,7 +70,7 @@ static void sanity_point(POINT point)
 /*
 TODO add picture to justify the following test.
 */
-static void test_outer_a_edge()
+static void testOuterAEdge()
 {
   FACE face = Faces;
   EDGE edge = &face->edges[0];
@@ -85,12 +85,12 @@ static void test_outer_a_edge()
   TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
   TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
   TEST_ASSERT_EQUAL(2, edge->possiblyTo[1].next->colors);
-  sanity_point(edge->possiblyTo[1].point);
+  sanityPoint(edge->possiblyTo[1].point);
 }
 /*
 TODO add picture to justify the following test.
 */
-static void test_a_face_a_edge()
+static void testAFaceAEdge()
 {
   FACE face = Faces + 1;
   EDGE edge = &face->edges[0];
@@ -105,12 +105,12 @@ static void test_a_face_a_edge()
   TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
   TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
   TEST_ASSERT_EQUAL(3, edge->possiblyTo[1].next->colors);
-  sanity_point(edge->possiblyTo[1].point);
+  sanityPoint(edge->possiblyTo[1].point);
 }
 /*
 TODO add picture to justify the following test.
 */
-static void test_ab_face_a_edge()
+static void testAbFaceAEdge()
 {
   FACE face = Faces + 3;
   EDGE edge = &face->edges[0];
@@ -125,12 +125,12 @@ static void test_ab_face_a_edge()
   TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
   TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
   TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].next->colors);
-  sanity_point(edge->possiblyTo[1].point);
+  sanityPoint(edge->possiblyTo[1].point);
 }
 /*
 TODO add picture to justify the following test.
 */
-static void test_abc_face_a_edge()
+static void testAbcFaceAEdge()
 {
   FACE face = Faces + 7;
   EDGE edge = &face->edges[0];
@@ -145,10 +145,10 @@ static void test_abc_face_a_edge()
   TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
   TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
   TEST_ASSERT_EQUAL(5, edge->possiblyTo[1].next->colors);
-  sanity_point(edge->possiblyTo[1].point);
+  sanityPoint(edge->possiblyTo[1].point);
 }
 
-static void verify_face_size(int size)
+static void verifyFaceSize(int size)
 {
   int i;
   for (i = 0; i < NFACES; i++) {
@@ -161,18 +161,18 @@ static void verify_face_size(int size)
   }
 }
 
-static void test_choosing_and_backtracking()
+static void testChoosingAndBacktracking()
 {
   int i;
   FACE face;
   TRAIL startTrail = Trail;
   for (i = 0; i < NFACES; i++) {
     TEST_ASSERT_EQUAL(startTrail, Trail);
-    verify_face_size(2);
+    verifyFaceSize(2);
     face = Faces + i;
     face->cycle = Cycles;
     TEST_ASSERT_NULL(dynamicFaceMakeChoice(face));
-    verify_face_size(1);
+    verifyFaceSize(1);
     trailBacktrackTo(face->backtrack);
     face->cycle = NULL;
   }
@@ -180,26 +180,26 @@ static void test_choosing_and_backtracking()
 }
 
 static int SolutionCount = 0;
-static void found_solution() { SolutionCount++; }
+static void foundSolution() { SolutionCount++; }
 
-static void test_search()
+static void testSearch()
 {
-  dynamicSearch(true, found_solution);
+  dynamicSearch(true, foundSolution);
   TEST_ASSERT_EQUAL(2, SolutionCount);
 }
 
 int main(void)
 {
   UNITY_BEGIN();
-  RUN_TEST(test_outer_face);
-  RUN_TEST(test_a_face);
-  RUN_TEST(test_ab_face);
-  RUN_TEST(test_abc_face);
-  RUN_TEST(test_outer_a_edge);
-  RUN_TEST(test_a_face_a_edge);
-  RUN_TEST(test_ab_face_a_edge);
-  RUN_TEST(test_abc_face_a_edge);
-  RUN_TEST(test_choosing_and_backtracking);
-  RUN_TEST(test_search);
+  RUN_TEST(testOuterFace);
+  RUN_TEST(testAFace);
+  RUN_TEST(testAbFace);
+  RUN_TEST(testAbcFace);
+  RUN_TEST(testOuterAEdge);
+  RUN_TEST(testAFaceAEdge);
+  RUN_TEST(testAbFaceAEdge);
+  RUN_TEST(testAbcFaceAEdge);
+  RUN_TEST(testChoosingAndBacktracking);
+  RUN_TEST(testSearch);
   return UNITY_END();
 }

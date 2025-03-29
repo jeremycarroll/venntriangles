@@ -10,7 +10,7 @@
 
 static char *TargetFolder = NULL;
 
-void dynamicSaveResult(void)
+static void saveResult(void)
 {
   char *buffer = getBuffer();
   snprintf(buffer, sizeof(buffer), "%s/%s", TargetFolder,
@@ -59,7 +59,7 @@ int dynamicMain0(int argc, char *argv[])
 
   initializeOutputFolder();
   initializeStatisticLogging("/dev/stdout", 200, 10);
-  dynamicSearchFull(dynamicSaveResult);
+  dynamicSearchFull(saveResult);
   statisticPrintFull();
   return 0;
 }

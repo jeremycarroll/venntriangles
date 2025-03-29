@@ -320,7 +320,7 @@ static void addFacesFromTestData(char* testData[][2], int length)
   }
 }
 
-static void test_faceFromColors()
+static void testFaceFromColors()
 {
   TEST_ASSERT_EQUAL(Faces, dynamicFaceFromColors(""));
   TEST_ASSERT_EQUAL(Faces + 1, dynamicFaceFromColors("a"));
@@ -333,7 +333,7 @@ static void test_faceFromColors()
   TEST_ASSERT_EQUAL(Faces + NFACES - 1, dynamicFaceFromColors("abcdef"));
 }
 
-static void test_3_4_5_6(void)
+static void test3456(void)
 {
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
@@ -342,7 +342,7 @@ static void test_3_4_5_6(void)
   TEST_ASSERT_EQUAL(14, CycleGuessCounter);
 }
 
-static void test_4_3_5_6(void)
+static void test4356(void)
 {
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
@@ -351,7 +351,7 @@ static void test_4_3_5_6(void)
   TEST_ASSERT_EQUAL(11, CycleGuessCounter);
 }
 
-static void test_6_5_4_3(void)
+static void test6543(void)
 {
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
@@ -360,7 +360,7 @@ static void test_6_5_4_3(void)
   TEST_ASSERT_EQUAL(12, CycleGuessCounter);
 }
 
-static void test_5_3_6_4(void)
+static void test5364(void)
 {
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
@@ -369,7 +369,7 @@ static void test_5_3_6_4(void)
   TEST_ASSERT_EQUAL(11, CycleGuessCounter);
 }
 
-static void test_in_order(bool smallestFirst)
+static void testInOrder(bool smallestFirst)
 {
   FACE face;
   char colors[7];
@@ -386,15 +386,15 @@ static void test_in_order(bool smallestFirst)
   }
 }
 
-static void test_in_best_order(void)
+static void testInBestOrder(void)
 {
-  test_in_order(true);
+  testInOrder(true);
   TEST_ASSERT_EQUAL(26, CycleGuessCounter);
 }
 
-static void test_in_worst_order(void)
+static void testInWorstOrder(void)
 {
-  test_in_order(false);
+  testInOrder(false);
   TEST_ASSERT_EQUAL(10, CycleGuessCounter);
 }
 
@@ -427,7 +427,7 @@ static FACE addFaceFromTestData(char* colors)
   return dynamicFaceAddSpecific(colors, cycle);
 }
 
-static void test_DE_1(void)
+static void testDE1(void)
 {
   FACE ab = dynamicFaceFromColors("ab");
   FACE abc = dynamicFaceFromColors("abc");
@@ -443,7 +443,7 @@ static void test_DE_1(void)
   TEST_ASSERT_TRUE(cycleSetMember(cycleId, ab->possibleCycles));
 }
 
-static void test_DE_2(void)
+static void testDE2(void)
 {
   FACE ab = dynamicFaceFromColors("ab");
   uint32_t cycleId = cycleIdFromColors("afceb");
@@ -457,14 +457,14 @@ static void test_DE_2(void)
 int main(void)
 {
   UNITY_BEGIN();
-  RUN_TEST(test_faceFromColors);
-  RUN_TEST(test_3_4_5_6);
-  RUN_TEST(test_4_3_5_6);
-  RUN_TEST(test_6_5_4_3);
-  RUN_TEST(test_5_3_6_4);
-  RUN_TEST(test_DE_1);
-  RUN_TEST(test_DE_2);
-  RUN_TEST(test_in_best_order);
-  RUN_TEST(test_in_worst_order);
+  RUN_TEST(testFaceFromColors);
+  RUN_TEST(test3456);
+  RUN_TEST(test4356);
+  RUN_TEST(test6543);
+  RUN_TEST(test5364);
+  RUN_TEST(testDE1);
+  RUN_TEST(testDE2);
+  RUN_TEST(testInBestOrder);
+  RUN_TEST(testInWorstOrder);
   return UNITY_END();
 }

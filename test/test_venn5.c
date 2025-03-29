@@ -24,65 +24,65 @@ void tearDown(void)
 }
 
 static int SolutionCount = 0;
-static void found_solution() { SolutionCount++; }
+static void foundSolution() { SolutionCount++; }
 
-static void test_search_abcde()
+static void testSearchAbcde()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(dynamicIntArray(0, 0, 0, 0, 0));
-  dynamicSearch(false, found_solution);
+  dynamicSearch(false, foundSolution);
   TEST_ASSERT_EQUAL(152, SolutionCount);
 }
 
-static void test_search_44444()
+static void testSearch44444()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(dynamicIntArray(4, 4, 4, 4, 4));
-  dynamicSearch(false, found_solution);
+  dynamicSearch(false, foundSolution);
   TEST_ASSERT_EQUAL(2, SolutionCount);
 }
 
-static void test_search_55433()
+static void testSearch55433()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(dynamicIntArray(5, 5, 4, 3, 3));
-  dynamicSearch(false, found_solution);
+  dynamicSearch(false, foundSolution);
   TEST_ASSERT_EQUAL(6, SolutionCount);
 }
 
-static void test_search_55343()
+static void testSearch55343()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(dynamicIntArray(5, 5, 3, 4, 3));
-  dynamicSearch(false, found_solution);
+  dynamicSearch(false, foundSolution);
   TEST_ASSERT_EQUAL(0, SolutionCount);
 }
 
-static void test_search_54443()
+static void testSearch54443()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(dynamicIntArray(5, 4, 4, 4, 3));
-  dynamicSearch(false, found_solution);
+  dynamicSearch(false, foundSolution);
   TEST_ASSERT_EQUAL(4, SolutionCount);
 }
 
-static void test_search_54434()
+static void testSearch54434()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(dynamicIntArray(5, 4, 4, 3, 4));
-  dynamicSearch(false, found_solution);
+  dynamicSearch(false, foundSolution);
   TEST_ASSERT_EQUAL(5, SolutionCount);
 }
 
 int main(void)
 {
   UNITY_BEGIN();
-  RUN_TEST(test_search_abcde);
-  RUN_TEST(test_search_44444);
-  RUN_TEST(test_search_55343);
-  RUN_TEST(test_search_55433);
-  RUN_TEST(test_search_54443);
-  RUN_TEST(test_search_54434);
+  RUN_TEST(testSearchAbcde);
+  RUN_TEST(testSearch44444);
+  RUN_TEST(testSearch55343);
+  RUN_TEST(testSearch55433);
+  RUN_TEST(testSearch54443);
+  RUN_TEST(testSearch54434);
 
   return UNITY_END();
 }

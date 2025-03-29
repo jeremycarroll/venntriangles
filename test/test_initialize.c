@@ -17,7 +17,7 @@ void tearDown(void)
   resetPoints();
 }
 
-void test_initialize(void)
+static void testInitialize(void)
 {
   uint32_t j;
   initialize();
@@ -29,14 +29,14 @@ void test_initialize(void)
 }
 
 /* Tightly coupled with the order of generation. */
-void test_first_cycles(void)
+static void testFirstCycles(void)
 {
   initialize();
   TEST_ASSERT_EQUAL(
       0, bcmp(Cycles[0].curves, (uint32_t[]){0, 1, 2}, 3 * sizeof(uint32_t)));
 }
 
-void test_contains2(void)
+static void testContains2(void)
 {
   CYCLE cycle = &Cycles[0];
   cycle->length = 3;
@@ -51,7 +51,7 @@ void test_contains2(void)
   TEST_ASSERT_FALSE(cycleContainsAthenB(cycle, 2, 1));
 }
 
-void test_contains3(void)
+static void testContains3(void)
 {
   CYCLE cycle = &Cycles[0];
   cycle->length = 3;
@@ -66,7 +66,7 @@ void test_contains3(void)
   TEST_ASSERT_FALSE(cycleContainsAthenBthenC(cycle, 5, 4, 3));
 }
 
-void test_sizeOfCycleSet(void)
+static void testSizeOfCycleSet(void)
 {
   CYCLESET_DECLARE cycleSet;
   memset(cycleSet, 0, sizeof(cycleSet));
@@ -85,7 +85,7 @@ void test_sizeOfCycleSet(void)
   TEST_ASSERT_EQUAL(1, cycleSetSize(cycleSet));
 }
 
-void test_cycleset(void)
+static void testCycleset(void)
 {
   uint32_t i, j, k;
   initialize();
@@ -109,7 +109,7 @@ void test_cycleset(void)
   }
 }
 
-void test_same_and_opposite_directions(void)
+static void testSameAndOppositeDirections(void)
 {
   uint32_t cycleId, j;
   CYCLE cycle;
@@ -122,7 +122,7 @@ void test_same_and_opposite_directions(void)
   }
 }
 
-void test_opposite_directions(void)
+static void testOppositeDirections(void)
 {
   uint32_t cycleId, j, k, oppositeCycleId;
   CYCLE cycle;
@@ -149,7 +149,7 @@ void test_opposite_directions(void)
   }
 }
 
-void test_face_choice_count(void)
+static void testFaceChoiceCount(void)
 {
   uint32_t faceColors;
   FACE face;
@@ -162,7 +162,7 @@ void test_face_choice_count(void)
   }
 }
 
-void test_next_cycle(void)
+static void testNextCycle(void)
 {
   FACE face = Faces;
   int counter = 0;
@@ -179,15 +179,15 @@ void test_next_cycle(void)
 int main(void)
 {
   UNITY_BEGIN();
-  RUN_TEST(test_initialize);
-  RUN_TEST(test_contains2);
-  RUN_TEST(test_contains3);
-  RUN_TEST(test_cycleset);
-  RUN_TEST(test_sizeOfCycleSet);
-  RUN_TEST(test_first_cycles);
-  RUN_TEST(test_same_and_opposite_directions);
-  RUN_TEST(test_face_choice_count);
-  RUN_TEST(test_opposite_directions);
-  RUN_TEST(test_next_cycle);
+  RUN_TEST(testInitialize);
+  RUN_TEST(testContains2);
+  RUN_TEST(testContains3);
+  RUN_TEST(testCycleset);
+  RUN_TEST(testSizeOfCycleSet);
+  RUN_TEST(testFirstCycles);
+  RUN_TEST(testSameAndOppositeDirections);
+  RUN_TEST(testFaceChoiceCount);
+  RUN_TEST(testOppositeDirections);
+  RUN_TEST(testNextCycle);
   return UNITY_END();
 }

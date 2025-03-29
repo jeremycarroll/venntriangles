@@ -1,5 +1,5 @@
 CC		  = gcc
-CFLAGS	  = -g -Wall -Wextra -std=c11 -MMD
+CFLAGS	  = -g -Wall -Wextra -std=c11 -MMD -Wmissing-prototypes -Wmissing-declarations -Wshadow
 UNITY_DIR   = ../Unity
 TEST_CFLAGS = -I$(UNITY_DIR)/src -I.
 TEST_SRC	=  test/test_initialize.c test/test_main.c test/test_venn4.c test/test_known_solution.c test/test_venn3.c \

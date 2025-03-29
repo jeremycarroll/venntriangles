@@ -26,9 +26,9 @@ void tearDown(void)
 }
 
 static int SolutionCount = 0;
-static void found_solution() { SolutionCount++; }
+static void foundSolution() { SolutionCount++; }
 
-static void test_central_face_edge(void)
+static void testCentralFaceEdge(void)
 {
   COLOR a;
   dynamicFaceSetupCentral(dynamicIntArray(0, 0, 0, 0, 0, 0));
@@ -39,16 +39,16 @@ static void test_central_face_edge(void)
   }
 }
 
-static void test_search_for_best_solution()
+static void testSearchForBestSolution()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(dynamicIntArray(5, 5, 5, 4, 4, 4));
-  dynamicSearch(true, found_solution);
+  dynamicSearch(true, foundSolution);
 
   TEST_ASSERT_EQUAL(80, SolutionCount);
 }
 
-static void test_search_for_two_solutions()
+static void testSearchForTwoSolutions()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(dynamicIntArray(5, 5, 5, 4, 4, 4));
@@ -64,26 +64,26 @@ static void test_search_for_two_solutions()
   dynamicFaceAddSpecific("b", "abcf");
   dynamicFaceAddSpecific("f", "aefdc");
   */
-  dynamicSearch(true, found_solution);
+  dynamicSearch(true, foundSolution);
 
   TEST_ASSERT_EQUAL(2, SolutionCount);
 }
 
-static void test_full_search(void)
+static void testFullSearch(void)
 {
   /* dyanmicSearchFull includes initialization, so we undo our own setUp. */
   tearDown();
   SolutionCount = 0;
-  dynamicSearchFull(found_solution);
+  dynamicSearchFull(foundSolution);
   TEST_ASSERT_EQUAL(233, SolutionCount);
 }
 
 int main(void)
 {
   UNITY_BEGIN();
-  RUN_TEST(test_central_face_edge);
-  RUN_TEST(test_search_for_best_solution);
-  RUN_TEST(test_search_for_two_solutions);
-  RUN_TEST(test_full_search);
+  RUN_TEST(testCentralFaceEdge);
+  RUN_TEST(testSearchForBestSolution);
+  RUN_TEST(testSearchForTwoSolutions);
+  RUN_TEST(testFullSearch);
   return UNITY_END();
 }

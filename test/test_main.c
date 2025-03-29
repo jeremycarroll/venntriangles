@@ -18,15 +18,14 @@ void tearDown(void)
   // Tear down code if needed
 }
 
-static char buffer[1024];
-
-int run(int argc, char *argv[])
+static int run(int argc, char *argv[])
 {
   FILE *oldStdout = stderr;
+  char buffer[1024];
+  buffer[0] = 0;
   FILE *stream = fmemopen(buffer, sizeof(buffer), "w");
   int status;
   optind = 1;
-  buffer[0] = 0;
   oldStdout = stderr;
   stderr = stream;
   status = dynamicMain0(argc, argv);
@@ -36,7 +35,7 @@ int run(int argc, char *argv[])
   return status;
 }
 
-void test_main_arguments(void)
+static void testMainArguments(void)
 {
   char *argv1[] = {"program", "-f", "foo"};
   int argc1 = sizeof(argv1) / sizeof(argv1[0]);
@@ -51,13 +50,15 @@ void test_main_arguments(void)
   TEST_ASSERT_NOT_EQUAL_INT(0, run(argc5, argv5));
 }
 
-void dynamicSearchFull(void (*foundSolution)(void)) { /* stub for testing. */ }
+int main(void)
+{
+  UNITY_BEGIN();
+  RUN_TEST(testMainArguments);
+  return UNITY_END();
+}
 
-const char *dynamicFaceDegreeSignature(void) { return "stub"; }
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
 
-void dynamicSolutionWrite(const char *buffer) { /* stub for testing. */ }
-
-char *getBuffer() { return NULL; }
 char *usingBuffer(char *buffer) { return NULL; }
 void statisticPrintFull(void) { /* stub for testing. */ }
 
@@ -66,9 +67,10 @@ void initializeSequenceOrder() { /* stub for testing. */ }
 void initializeStatisticLogging(char *filename, int frequency, int seconds)
 { /* stub for testing. */ }
 
-int main(void)
-{
-  UNITY_BEGIN();
-  RUN_TEST(test_main_arguments);
-  return UNITY_END();
-}
+void dynamicSearchFull(void (*foundSolution)(void)) { /* stub for testing. */ }
+
+const char *dynamicFaceDegreeSignature(void) { return "stub"; }
+
+void dynamicSolutionWrite(const char *buffer) { /* stub for testing. */ }
+
+char *getBuffer() { return NULL; }

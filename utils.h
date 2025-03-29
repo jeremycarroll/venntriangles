@@ -8,7 +8,7 @@ extern  void resetInitialize(void);
 extern void initialize(void);
 
 extern  int* dynamicIntArray(int a, ...);
-extern  char * getBuffer();
+extern  char * getBuffer(void);
 extern  char * usingBuffer(char * buffer);
 
 #endif  // UTILS_H
