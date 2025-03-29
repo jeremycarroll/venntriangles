@@ -1,8 +1,8 @@
 #include "color.h"
 
-#include <stdarg.h>
-
 #include "trail.h"
+
+#include <stdarg.h>
 
 static void initializeCycles(void);
 void initializeCycleSets(void);

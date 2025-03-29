@@ -1,10 +1,10 @@
 #include "statistics.h"
 
+#include "face.h"
+
 #include <assert.h>
 #include <math.h>
 #include <string.h>
-
-#include "face.h"
 
 static Statistic statistics[MAX_STATISTICS];
 static Failure failures[MAX_STATISTICS];

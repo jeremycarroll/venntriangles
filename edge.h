@@ -1,10 +1,7 @@
 #ifndef EDGE_H
 #define EDGE_H
 
-#include "color.h"
-#include "failure.h"
 #include "point.h"
-#include "trail.h"
 
 typedef struct edge* EDGE;
 

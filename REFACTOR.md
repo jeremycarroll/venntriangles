@@ -30,7 +30,7 @@ Issues to be addressed in refactoring:
 - [x] delete globals.c
 - [ ] improve TRAIL_SIZE, add maxTrail to stats
 - [x] https://stackoverflow.com/questions/2394609/makefile-header-dependencies
-- [ ] more clearly separating code that is for testing only.
+- [x] more clearly separating code that is for testing only.
 - [x] withoutColor - via function? - rename
 - [x] omittingCycleSets - move - rename
 - [ ] include order as per https://stackoverflow.com/a/2762596

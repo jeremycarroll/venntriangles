@@ -2,7 +2,6 @@
 #define FACE_H
 
 #include "edge.h"
-#include "failure.h"
 #include "trail.h"
 
 typedef struct face *FACE;

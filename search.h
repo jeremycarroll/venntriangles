@@ -1,10 +1,10 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
+#include "face.h"
+
 #include <stdbool.h>
 #include <stdio.h>
-
-#include "face.h"
 
 extern FACE dynamicFaceChoose(bool smallestFirst);
 extern void dynamicSearch(bool smallestFirst, void (*foundSolution)(void));

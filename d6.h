@@ -1,8 +1,6 @@
 #ifndef D6_H
 #define D6_H
 
-#include <stdint.h>
-
 #include "color.h"
 
 typedef int PERMUTATION[NCOLORS];

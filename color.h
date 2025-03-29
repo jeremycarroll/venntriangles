@@ -1,12 +1,7 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-#include <stdbool.h>
-#include <stdint.h>
-
 #include "core.h"
-#include "failure.h"
-#include "trail.h"
 
 typedef uint32_t COLOR;
 typedef uint32_t COLORSET;

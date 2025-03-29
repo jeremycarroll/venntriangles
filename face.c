@@ -1,17 +1,15 @@
 #include "face.h"
 
-#include <assert.h>
-#include <stddef.h>
-#include <string.h>
-
 #include "d6.h"
-#include "edge.h"
-#include "point.h"
 
+#include <stdlib.h>
 struct face Faces[NFACES];
 uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
 
 uint64_t DynamicCycleGuessCounter = 0;
+/* Output-related variables */
+static int solutionNumber = 0;
+static char lastPrefix[128] = "";
 
 static void recomputeCountOfChoices(FACE face);
 static void initializePossiblyTo(void);
@@ -204,7 +202,7 @@ FAILURE dynamicFaceFinalCorrectnessChecks(void)
    of view it is local to the dynamicFaceMakeChoice method, so does not need to
    be in the Trail.
  */
-COLORSET DynamicColorCompleted;
+static FAILURE makeChoiceInternal(FACE face, int depth);
 uint64_t cycleForcedCounter = 0;
 uint64_t cycleSetReducedCounter = 0;
 
@@ -522,4 +520,111 @@ FACE dynamicFaceFromColors(char* colors)
     colors++;
   }
   return Faces + face_id;
+}
+
+void dynamicSolutionWrite(const char* prefix)
+{
+  EDGE corners[3][2];
+  char filename[1024];
+  char buffer[1024];
+  int numberOfVariations = 1;
+  int pLength;
+  FILE* fp;
+  if (strcmp(prefix, lastPrefix) != 0) {
+    strcpy(lastPrefix, prefix);
+    solutionNumber = 1;
+  }
+  snprintf(filename, sizeof(filename), "%s-%2.2d.txt", prefix,
+           solutionNumber++);
+  fp = fopen(filename, "w");
+  if (fp == NULL) {
+    perror(filename);
+    exit(EXIT_FAILURE);
+  }
+  dynamicSolutionPrint(fp);
+  for (COLOR a = 0; a < NCOLORS; a++) {
+    edgeFindCorners(a, corners);
+    for (int i = 0; i < 3; i++) {
+      fprintf(fp, "{%c:%d} ", colorToChar(a), i);
+      if (corners[i][0] == NULL) {
+        EDGE edge = edgeOnCentralFace(a);
+        pLength = edgePathLength(edge, edgeFollowBackwards(edge));
+        fprintf(fp, "NULL/%d ", pLength);
+      } else {
+        pLength = edgePathLength(corners[i][0]->reversed, corners[i][1]);
+        buffer[0] = buffer[1] = 0;
+        fprintf(fp, "(%s => %s/%d) ", edgeToStr(buffer, corners[i][0]),
+                edgeToStr(buffer, corners[i][1]), pLength);
+      }
+      numberOfVariations *= pLength;
+      fprintf(fp, "\n");
+    }
+  }
+  fprintf(fp, "\n\nVariations = %d\n", numberOfVariations);
+  fclose(fp);
+}
+
+/*
+Set up the next values for edge1 and edge2 that have the same color.
+All four edges meet at the same point.
+The edge3 and edge4 have the other color.
+The next value for both  edge1 and edge2  for the other color is set to
+the reverse of the other edge.
+*/
+static void linkOut(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
+{
+  COLOR other = edge3->color;
+  uint32_t level1 = edge1->level;
+  uint32_t level2 = edge2->level;
+  uint32_t level3 = edge3->reversed->level;
+  uint32_t level4 = edge4->reversed->level;
+
+  assert(edge1->color == edge2->color);
+  assert(edge1->possiblyTo[other].next == NULL);
+  assert(edge2->possiblyTo[other].next == NULL);
+  assert(edge1->possiblyTo[other].point == edge2->possiblyTo[other].point);
+  assert(edge1->possiblyTo[other].point->colors =
+             (1u << edge1->color | 1u << other));
+  edge1->possiblyTo[other].next = edge2->reversed;
+  edge2->possiblyTo[other].next = edge1->reversed;
+  if (level1 == level3) {
+    assert(level2 == level4);
+  } else {
+    assert(level1 == level4);
+    assert(level2 == level3);
+  }
+}
+
+/*
+Set up next on every possiblyTo.
+
+It must be the same color, and the reverse of the other edge of that color at
+the point.
+*/
+void initializePoints(void)
+{
+  uint32_t i, j, k;
+  for (i = 0; i < NPOINTS; i++) {
+    UPOINT p = DynamicPointAllUPoints + i;
+    linkOut(p->incomingEdges[0], p->incomingEdges[1], p->incomingEdges[2],
+            p->incomingEdges[3]);
+    linkOut(p->incomingEdges[2], p->incomingEdges[3], p->incomingEdges[0],
+            p->incomingEdges[1]);
+  }
+  for (i = 0; i < NFACES; i++) {
+    FACE f = Faces + i;
+    for (j = 0; j < NCOLORS; j++) {
+      for (k = 0; k < NCOLORS; k++) {
+        assert(j == f->edges[j].color);
+        if (k == j) {
+          continue;
+        }
+        assert(f->edges[j].possiblyTo[k].point != NULL);
+        assert(f->edges[j].possiblyTo[k].next != NULL);
+        assert(f->edges[j].possiblyTo[k].next->color == j);
+        assert(f->edges[j].possiblyTo[k].next->reversed->possiblyTo[k].point ==
+               f->edges[j].possiblyTo[k].point);
+      }
+    }
+  }
 }

@@ -1,12 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "d6.h"
 #include "face.h"
 #include "test_helpers.h"
 #include "unity.h"
 #include "utils.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 void setUp(void) { initializeSequenceOrder(); }
 

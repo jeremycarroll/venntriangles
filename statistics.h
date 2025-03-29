@@ -1,12 +1,12 @@
 #ifndef STATISTICS_H
 #define STATISTICS_H
 
+#include "core.h"
+#include "failure.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
-
-#include "core.h"
-#include "failure.h"
 
 #define MAX_STATISTICS 10
 

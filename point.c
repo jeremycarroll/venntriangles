@@ -1,10 +1,9 @@
 #include "point.h"
 
-#include <assert.h>
-#include <stddef.h>
-#include <string.h>
-
 #include "face.h"
+#include "trail.h"
+
+#include <stddef.h>
 
 /*
  * Only a few of these are actually used, the look up table is easier this way.
@@ -12,9 +11,9 @@
  * [n][i][j] is used if i != j, and the i and j are not in n.
  * other values are left as null
  */
-static struct undirectedPoint* allUPointPointers[NFACES][NCOLORS][NCOLORS];
 struct undirectedPoint DynamicPointAllUPoints[NPOINTS];
 static int nextUPointId = 0;
+static struct undirectedPoint* allUPointPointers[NFACES][NCOLORS][NCOLORS];
 
 void resetPoints()
 {
@@ -37,71 +36,6 @@ UPOINT getPoint(COLORSET colorsOfFace, COLOR primary, COLOR secondary)
     nextUPointId++;
   }
   return allUPointPointers[outsideColor][primary][secondary];
-}
-
-/*
-Set up the next values for edge1 and edge2 that have the same color.
-All four edges meet at the same point.
-The edge3 and edge4 have the other color.
-The next value for both  edge1 and edge2  for the other color is set to
-the reverse of the other edge.
-*/
-static void linkOut(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
-{
-  COLOR other = edge3->color;
-  uint32_t level1 = edge1->level;
-  uint32_t level2 = edge2->level;
-  uint32_t level3 = edge3->reversed->level;
-  uint32_t level4 = edge4->reversed->level;
-
-  assert(edge1->color == edge2->color);
-  assert(edge1->possiblyTo[other].next == NULL);
-  assert(edge2->possiblyTo[other].next == NULL);
-  assert(edge1->possiblyTo[other].point == edge2->possiblyTo[other].point);
-  assert(edge1->possiblyTo[other].point->colors =
-             (1u << edge1->color | 1u << other));
-  edge1->possiblyTo[other].next = edge2->reversed;
-  edge2->possiblyTo[other].next = edge1->reversed;
-  if (level1 == level3) {
-    assert(level2 == level4);
-  } else {
-    assert(level1 == level4);
-    assert(level2 == level3);
-  }
-}
-
-/*
-Set up next on every possiblyTo.
-
-It must be the same color, and the reverse of the other edge of that color at
-the point.
-*/
-void initializePoints(void)
-{
-  uint32_t i, j, k;
-  for (i = 0; i < NPOINTS; i++) {
-    UPOINT p = DynamicPointAllUPoints + i;
-    linkOut(p->incomingEdges[0], p->incomingEdges[1], p->incomingEdges[2],
-            p->incomingEdges[3]);
-    linkOut(p->incomingEdges[2], p->incomingEdges[3], p->incomingEdges[0],
-            p->incomingEdges[1]);
-  }
-  for (i = 0; i < NFACES; i++) {
-    FACE f = Faces + i;
-    for (j = 0; j < NCOLORS; j++) {
-      for (k = 0; k < NCOLORS; k++) {
-        assert(j == f->edges[j].color);
-        if (k == j) {
-          continue;
-        }
-        assert(f->edges[j].possiblyTo[k].point != NULL);
-        assert(f->edges[j].possiblyTo[k].next != NULL);
-        assert(f->edges[j].possiblyTo[k].next->color == j);
-        assert(f->edges[j].possiblyTo[k].next->reversed->possiblyTo[k].point ==
-               f->edges[j].possiblyTo[k].point);
-      }
-    }
-  }
 }
 
 /*

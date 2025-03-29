@@ -1,12 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "face.h"
 #include "search.h"
 #include "statistics.h"
 #include "test_helpers.h"
 #include "unity.h"
 #include "utils.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 void setUp(void)
 {

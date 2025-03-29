@@ -1,12 +1,11 @@
 #include "main.h"
 
-#include <getopt.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
 #include "search.h"
 #include "statistics.h"
+#include <sys/stat.h>
+
+#include <getopt.h>
+#include <stdlib.h>
 
 static char *targetFolder = NULL;
 

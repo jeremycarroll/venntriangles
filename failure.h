@@ -1,9 +1,9 @@
 #ifndef FAILURE_H
 #define FAILURE_H
 
-#include <stdint.h>
-
 #include "core.h"
+
+#include <stdint.h>
 
 typedef struct {
   uint64_t count[NFACES];
