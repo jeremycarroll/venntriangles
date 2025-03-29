@@ -15,6 +15,10 @@ struct Point PointAllUPoints[NPOINTS];
 static int NextUPointId = 0;
 static struct Point* AllUPointPointers[NFACES][NCOLORS][NCOLORS];
 
+/* Declaration of file scoped static functions */
+static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn);
+
+/* Externally linked functions */
 void resetPoints()
 {
   memset(AllUPointPointers, 0, sizeof(AllUPointPointers));
@@ -141,42 +145,6 @@ start must either be an edge of the central face, or be an incomplete end.
 cornerReturn is a pointer to an array of length at least 3.
 */
 
-static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn)
-{
-  EDGE current = start;
-  COLORSET
-  notMyColor = ~(1u << start->color),
-  /* the curves we have crossed outside of since the last corner. */
-      passed = 0,
-  /* the curves we are currently outside. */
-      outside = ~start->colors;
-  int counter = 0;
-  assert(start->reversed->to == NULL ||
-         (start->colors & notMyColor) == ((NFACES - 1) & notMyColor));
-  do {
-    CURVELINK p = current->to;
-    COLORSET other = p->point->colors & notMyColor;
-    if (other & outside) {
-      outside = outside & ~other;
-      if (other & passed) {
-        if (counter >= MAX_CORNERS) {
-          return failureTooManyCorners(depth);
-        }
-        cornersReturn[counter++] = current;
-        passed = 0;
-      }
-    } else {
-      passed |= other;
-      outside |= other;
-    }
-    current = p->next;
-  } while (current->to != NULL && current != start);
-  while (counter < MAX_CORNERS) {
-    cornersReturn[counter++] = NULL;
-  }
-  return NULL;
-}
-
 #if NCOLORS == 4
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -232,4 +200,41 @@ void edgeFindCorners(COLOR a, EDGE result[3][2])
     assert(i - 1 - j < 3);
     result[i - 1 - j][1] = counterClockWiseCorners[j];
   }
+}
+
+/* File scoped static functions */
+static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn)
+{
+  EDGE current = start;
+  COLORSET
+  notMyColor = ~(1u << start->color),
+  /* the curves we have crossed outside of since the last corner. */
+      passed = 0,
+  /* the curves we are currently outside. */
+      outside = ~start->colors;
+  int counter = 0;
+  assert(start->reversed->to == NULL ||
+         (start->colors & notMyColor) == ((NFACES - 1) & notMyColor));
+  do {
+    CURVELINK p = current->to;
+    COLORSET other = p->point->colors & notMyColor;
+    if (other & outside) {
+      outside = outside & ~other;
+      if (other & passed) {
+        if (counter >= MAX_CORNERS) {
+          return failureTooManyCorners(depth);
+        }
+        cornersReturn[counter++] = current;
+        passed = 0;
+      }
+    } else {
+      passed |= other;
+      outside |= other;
+    }
+    current = p->next;
+  } while (current->to != NULL && current != start);
+  while (counter < MAX_CORNERS) {
+    cornersReturn[counter++] = NULL;
+  }
+  return NULL;
 }
