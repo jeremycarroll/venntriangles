@@ -30,16 +30,17 @@ static CYCLE chooseCycle(FACE face, CYCLE cycle)
 }
 
 static int SolutionCount = 0;
+static int position = 0;
 void dynamicSearch(bool smallestFirst, void (*foundSolution)(void))
 {
   FACE face;
   FACE chosenFaces[NFACES];
   CYCLE chosenCycles[NFACES];
   CYCLE cycle;
-  int position = 0;
   enum { NEXT_FACE, NEXT_CYCLE } state = NEXT_FACE;
+  position = 0;
   while (position >= 0) {
-    statisticPrintOneLine(position);
+    statisticPrintOneLine(position, false);
     switch (state) {
       case NEXT_FACE:
         face = dynamicFaceChoose(smallestFirst);
@@ -113,6 +114,7 @@ static void fullSearchCallback(void *foundSolutionVoidPtr, int *args)
       printf("%d ", args[i]);
     }
     printf(" gives %d new solutions\n", SolutionCount - initialSolutionCount);
+    statisticPrintOneLine(position, true);
   } else {
     WastedSearchCount += 1;
 

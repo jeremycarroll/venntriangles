@@ -109,12 +109,12 @@ FAILURE failureNonCanonical(void)
 
 void initializeFailures(void)
 {
-  initializeFailureStatistic(&NoMatchFailure);
-  initializeFailureStatistic(&CrossingLimitFailure);
-  initializeFailureStatistic(&DisconnectedCurveFailure);
-  initializeFailureStatistic(&TooManyCornersFailure);
-  initializeFailureStatistic(&PointConflictFailure);
-  initializeFailureStatistic(&ConflictingConstraintsFailure);
-  initializeFailureStatistic(&DisconnectedFacesFailure);
-  initializeFailureStatistic(&NonCanoncialFailure);
+  statisticIncludeFailure(&NoMatchFailure);
+  statisticIncludeFailure(&CrossingLimitFailure);
+  statisticIncludeFailure(&DisconnectedCurveFailure);
+  statisticIncludeFailure(&TooManyCornersFailure);
+  statisticIncludeFailure(&PointConflictFailure);
+  statisticIncludeFailure(&ConflictingConstraintsFailure);
+  statisticIncludeFailure(&DisconnectedFacesFailure);
+  statisticIncludeFailure(&NonCanoncialFailure);
 }

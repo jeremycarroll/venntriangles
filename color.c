@@ -6,7 +6,6 @@
 #include <stdarg.h>
 
 static void initializeCycles(void);
-void initializeCycleSets(void);
 static void initializeSameDirection(void);
 static void initializeOppositeDirection(void);
 static void initializeOmittingCycleSets(void);
@@ -26,7 +25,7 @@ static CYCLESET CycleSetSets[NCYCLE_ENTRIES * 2];
 
 struct facialCycle Cycles[NCYCLES];
 
-void initializeCycleSetAdd(uint32_t cycleId, CYCLESET cycleSet)
+void cycleSetAdd(uint32_t cycleId, CYCLESET cycleSet)
 {
   assert(cycleId < NCYCLES);
   cycleSet[cycleId / BITS_PER_WORD] |= 1ul << (cycleId % BITS_PER_WORD);
@@ -38,7 +37,7 @@ bool cycleSetMember(uint32_t cycleId, CYCLESET cycleSet)
   return (cycleSet[cycleId / BITS_PER_WORD] >> (cycleId % BITS_PER_WORD)) & 1ul;
 }
 
-void initializeCycleSetRemove(uint32_t cycleId, CYCLESET cycleSet)
+void cycleSetRemove(uint32_t cycleId, CYCLESET cycleSet)
 {
   assert(cycleId < NCYCLES);
   cycleSet[cycleId / BITS_PER_WORD] &= ~(1ul << (cycleId % BITS_PER_WORD));
@@ -217,7 +216,7 @@ void initializeCycleSets(void)
       }
       for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
         if (cycleContainsAthenB(&Cycles[cycleId], i, j)) {
-          initializeCycleSetAdd(cycleId, CycleSetPairs[i][j]);
+          cycleSetAdd(cycleId, CycleSetPairs[i][j]);
         }
       }
       for (k = 0; k < NCOLORS; k++) {
@@ -226,7 +225,7 @@ void initializeCycleSets(void)
         }
         for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
           if (cycleContainsAthenBthenC(&Cycles[cycleId], i, j, k)) {
-            initializeCycleSetAdd(cycleId, CycleSetTriples[i][j][k]);
+            cycleSetAdd(cycleId, CycleSetTriples[i][j][k]);
           }
         }
       }
@@ -283,7 +282,7 @@ static void initializeOmittingCycleSets()
   for (i = 0; i < NCOLORS; i++) {
     for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
       if (!COLORSET_HAS_MEMBER(i, Cycles[cycleId].colors)) {
-        initializeCycleSetAdd(cycleId, CycleSetOmittingOneColor[i]);
+        cycleSetAdd(cycleId, CycleSetOmittingOneColor[i]);
       }
     }
   }
@@ -293,7 +292,7 @@ static void initializeOmittingCycleSets()
         if (!(COLORSET_HAS_MEMBER(i, Cycles[cycleId].colors) &&
               COLORSET_HAS_MEMBER(j, Cycles[cycleId].colors) &&
               cycleContainsAthenB(&Cycles[cycleId], i, j))) {
-          initializeCycleSetAdd(cycleId, CycleSetOmittingColorPair[i][j]);
+          cycleSetAdd(cycleId, CycleSetOmittingColorPair[i][j]);
         }
       }
     }

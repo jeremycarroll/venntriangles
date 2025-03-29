@@ -36,8 +36,8 @@ extern CYCLESET_DECLARE CycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
 extern CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
 extern CYCLESET_DECLARE CycleSetOmittingColorPair[NCOLORS][NCOLORS];
 
-extern void initializeCycleSetAdd(uint32_t cycleId, CYCLESET cycleSet);
-extern void initializeCycleSetRemove(uint32_t cycleId, CYCLESET cycleSet);
+extern void cycleSetAdd(uint32_t cycleId, CYCLESET cycleSet);
+extern void cycleSetRemove(uint32_t cycleId, CYCLESET cycleSet);
 extern bool cycleSetMember(uint32_t cycleId, CYCLESET cycleSet);
 extern CYCLE cycleSetFindFirst(CYCLESET cycleSet);
 extern CYCLE cycleSetFindNext(CYCLESET cycleSet, CYCLE cycle);

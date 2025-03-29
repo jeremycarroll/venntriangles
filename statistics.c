@@ -15,7 +15,7 @@ static int SecondsBetweenLogs = 10;
 static int CheckCountDown = 0;
 static FILE* LogFile = NULL;
 
-void statisticNew(uint64_t* counter, char* shortName, char* name)
+void statisticIncludeInteger(uint64_t* counter, char* shortName, char* name)
 {
   for (int i = 0; i < MAX_STATISTICS; i++) {
     if (Statistics[i].countPtr == counter) {
@@ -31,7 +31,7 @@ void statisticNew(uint64_t* counter, char* shortName, char* name)
   assert(false);
 }
 
-void initializeFailureStatistic(Failure* failure)
+void statisticIncludeFailure(Failure* failure)
 {
   for (int i = 0; i < MAX_STATISTICS; i++) {
     if (Failures[i].count[0] == 0) {
@@ -81,12 +81,12 @@ int statisticCountChosen(void)
   return result;
 }
 
-void statisticPrintOneLine(int position)
+void statisticPrintOneLine(int position, bool force)
 {
-  if (--CheckCountDown <= 0) {
+  if (--CheckCountDown <= 0 || force) {
     time_t now = time(NULL);
     double seconds = difftime(now, LastLogTime);
-    if (seconds >= SecondsBetweenLogs) {
+    if (seconds >= SecondsBetweenLogs || force) {
       char* timestr = asctime(localtime(&now));
       time_t elapsed = now - StartTime;
       timestr[19] = 0;
@@ -187,11 +187,4 @@ void initializeStatisticLogging(char* filename, int frequency, int seconds)
   LastLogTime = StartTime;
   CheckCountDown = CheckFrequency;
   initializeFailures();
-}
-
-void initializeDynamicCounters(void)
-{
-  statisticNew(&CycleGuessCounter, "?", "guesses");
-  statisticNew(&CycleForcedCounter, "+", "forced");
-  statisticNew(&CycleSetReducedCounter, "-", "reduced");
 }

@@ -44,6 +44,9 @@ bool trailBacktrackTo(TRAIL backtrackPoint)
   return result;
 }
 
-void initializeTrail() { statisticNew(&MaxTrailSize, "$", "MaxTrail"); }
+void initializeTrail()
+{
+  statisticIncludeInteger(&MaxTrailSize, "$", "MaxTrail");
+}
 
 void resetTrail() { Trail = TrailArray; }

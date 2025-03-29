@@ -81,7 +81,7 @@ void test_sizeOfCycleSet(void)
   cycleSet[1] = 0x8000000000000001;
   TEST_ASSERT_EQUAL(4, cycleSetSize(cycleSet));
   memset(cycleSet, 0, sizeof(cycleSet));
-  initializeCycleSetAdd(NCYCLES - 1, cycleSet);
+  cycleSetAdd(NCYCLES - 1, cycleSet);
   TEST_ASSERT_EQUAL(1, cycleSetSize(cycleSet));
 }
 

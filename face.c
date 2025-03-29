@@ -1,6 +1,7 @@
 #include "face.h"
 
 #include "d6.h"
+#include "statistics.h"
 #include "utils.h"
 
 #include <stdlib.h>
@@ -42,7 +43,7 @@ static void applyMonotonicity(void)
   for (colors = 1, face = Faces + 1; colors < NFACES - 1; colors++, face++) {
     for (cycleId = 0, cycle = Cycles; cycleId < NCYCLES; cycleId++, cycle++) {
       if ((cycle->colors & colors) == 0 || (cycle->colors & ~colors) == 0) {
-        initializeCycleSetRemove(cycleId, face->possibleCycles);
+        cycleSetRemove(cycleId, face->possibleCycles);
       }
       previousFaceXor = nextFaceXor = 0;
       chainingCount = ONE_IN_ONE_OUT(cycle->curves[cycle->length - 1],
@@ -55,7 +56,7 @@ static void applyMonotonicity(void)
         }
       }
       if (chainingCount != 2) {
-        initializeCycleSetRemove(cycleId, face->possibleCycles);
+        cycleSetRemove(cycleId, face->possibleCycles);
       } else {
         assert(previousFaceXor);
         assert(nextFaceXor);
@@ -106,6 +107,10 @@ void initializeFacesAndEdges(void)
   uint32_t facecolors, color;
   FACE face, adjacent;
   EDGE edge;
+
+  statisticIncludeInteger(&CycleGuessCounter, "?", "guesses");
+  statisticIncludeInteger(&CycleForcedCounter, "+", "forced");
+  statisticIncludeInteger(&CycleSetReducedCounter, "-", "reduced");
   initializeLengthOfCycleOfFaces();
   for (facecolors = 0, face = Faces; facecolors < NFACES;
        facecolors++, face++) {
@@ -377,7 +382,7 @@ static void setToSingletonCycleSet(FACE face, uint64_t cycleId)
   CYCLESET_DECLARE cycleSet;
   uint64_t i;
   memset(cycleSet, 0, sizeof(cycleSet));
-  initializeCycleSetAdd(cycleId, cycleSet);
+  cycleSetAdd(cycleId, cycleSet);
   for (i = 0; i < CYCLESET_LENGTH; i++) {
     trailMaybeSetInt(&face->possibleCycles[i], cycleSet[i]);
   }

@@ -29,10 +29,9 @@ void initialize()
   initializeCycleSets();
   initializeFacesAndEdges();
   initializePoints();
-  initializeDynamicCounters();
   initializeTrail();
-  statisticNew(&GetBufferCounter, "@", "Buffers");
-  statisticNew(&MaxBufferSize, "^", "MaxBuffer");
+  statisticIncludeInteger(&GetBufferCounter, "@", "Buffers");
+  statisticIncludeInteger(&MaxBufferSize, "^", "MaxBuffer");
 }
 
 char *getBuffer()
