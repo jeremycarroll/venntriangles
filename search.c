@@ -9,35 +9,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
 /* Output-related variables */
 static int SolutionNumber = 0;
 static char LastPrefix[128] = "";
+static int SolutionCount = 0;
+static int position = 0;
+static clock_t TotalWastedTime = 0;
+static clock_t TotalUsefulTime = 0;
+static int WastedSearchCount = 0;
+static int UsefulSearchCount = 0;
+static TRAIL StartPoint;
 
-static void setToSingletonCycleSet(FACE face, uint64_t cycleId)
-{
-  CYCLESET_DECLARE cycleSet;
-  uint64_t i;
-  memset(cycleSet, 0, sizeof(cycleSet));
-  cycleSetAdd(cycleId, cycleSet);
-  for (i = 0; i < CYCLESET_LENGTH; i++) {
-    trailMaybeSetInt(&face->possibleCycles[i], cycleSet[i]);
-  }
-  trailMaybeSetInt(&face->cycleSetSize, 1);
-}
+/* Declaration of file scoped static functions */
+static void setToSingletonCycleSet(FACE face, uint64_t cycleId);
+static CYCLE chooseCycle(FACE face, CYCLE cycle);
+static void fullSearchCallback(void* foundSolutionVoidPtr, int* args);
 
-/*
-We have just set the value of the cycle on this face.
-We need to:
-- allocate the points for edges that don't have them
-- add the other faces to the new points
-- attach the points to the edges and vice versa
-- check for crossing limit (3 for each ordered pair)
-- modify the possible cycles of the adjacent faces (including diagonally)
-- if any of the adjacent faces now have zero possible cycles return false
-- if any of the adjacent faces now have one possible cycle, set the cycle on
-that face, and make that choice (if that choice fails with a false, then so do
-we)
-*/
+/* Externally linked functions */
 FAILURE dynamicFaceChoice(FACE face, int depth)
 {
   uint32_t i, j;
@@ -148,13 +137,6 @@ FACE chooseNextFaceForSearch(bool smallestFirst)
   return face;
 }
 
-static CYCLE chooseCycle(FACE face, CYCLE cycle)
-{
-  return cycleSetNext(face->possibleCycles, cycle);
-}
-
-static int SolutionCount = 0;
-static int position = 0;
 void searchHere(bool smallestFirst, void (*foundSolution)(void))
 {
   FACE face;
@@ -205,44 +187,6 @@ void searchHere(bool smallestFirst, void (*foundSolution)(void))
         }
         break;
     }
-  }
-}
-
-static clock_t TotalWastedTime = 0;
-static clock_t TotalUsefulTime = 0;
-static int WastedSearchCount = 0;
-static int UsefulSearchCount = 0;
-static TRAIL StartPoint;
-static void fullSearchCallback(void* foundSolutionVoidPtr, int* args)
-{
-  clock_t now = clock();
-  clock_t used;
-  int initialSolutionCount = SolutionCount;
-  int i;
-  void (*foundSolution)(void) = foundSolutionVoidPtr;
-  trailBacktrackTo(StartPoint);  // Start with backtracking
-  dynamicFaceSetupCentral(args);
-  searchHere(true, foundSolution);
-  used = clock() - now;
-  if (SolutionCount != initialSolutionCount) {
-    TotalUsefulTime += used;
-    UsefulSearchCount += 1;
-
-#define PRINT_TIME(clockValue, counter)                        \
-  printf("[%1lu.%6.6lu (%d)] ", (clockValue) / CLOCKS_PER_SEC, \
-         (clockValue) % CLOCKS_PER_SEC, counter)
-    PRINT_TIME(used, 0);
-    PRINT_TIME(TotalUsefulTime, UsefulSearchCount);
-    PRINT_TIME(TotalWastedTime, WastedSearchCount);
-    for (i = 0; i < NCOLORS; i++) {
-      printf("%d ", args[i]);
-    }
-    printf(" gives %d new solutions\n", SolutionCount - initialSolutionCount);
-    statisticPrintOneLine(position, true);
-  } else {
-    WastedSearchCount += 1;
-
-    TotalWastedTime += used;
   }
 }
 
@@ -320,4 +264,55 @@ void solutionWrite(const char* prefix)
   }
   fprintf(fp, "\n\nVariations = %d\n", numberOfVariations);
   fclose(fp);
+}
+
+/* File scoped static functions */
+static void setToSingletonCycleSet(FACE face, uint64_t cycleId)
+{
+  CYCLESET_DECLARE cycleSet;
+  uint64_t i;
+  memset(cycleSet, 0, sizeof(cycleSet));
+  cycleSetAdd(cycleId, cycleSet);
+  for (i = 0; i < CYCLESET_LENGTH; i++) {
+    trailMaybeSetInt(&face->possibleCycles[i], cycleSet[i]);
+  }
+  trailMaybeSetInt(&face->cycleSetSize, 1);
+}
+
+static CYCLE chooseCycle(FACE face, CYCLE cycle)
+{
+  return cycleSetNext(face->possibleCycles, cycle);
+}
+
+static void fullSearchCallback(void* foundSolutionVoidPtr, int* args)
+{
+  clock_t now = clock();
+  clock_t used;
+  int initialSolutionCount = SolutionCount;
+  int i;
+  void (*foundSolution)(void) = foundSolutionVoidPtr;
+  trailBacktrackTo(StartPoint);  // Start with backtracking
+  dynamicFaceSetupCentral(args);
+  searchHere(true, foundSolution);
+  used = clock() - now;
+  if (SolutionCount != initialSolutionCount) {
+    TotalUsefulTime += used;
+    UsefulSearchCount += 1;
+
+#define PRINT_TIME(clockValue, counter)                        \
+  printf("[%1lu.%6.6lu (%d)] ", (clockValue) / CLOCKS_PER_SEC, \
+         (clockValue) % CLOCKS_PER_SEC, counter)
+    PRINT_TIME(used, 0);
+    PRINT_TIME(TotalUsefulTime, UsefulSearchCount);
+    PRINT_TIME(TotalWastedTime, WastedSearchCount);
+    for (i = 0; i < NCOLORS; i++) {
+      printf("%d ", args[i]);
+    }
+    printf(" gives %d new solutions\n", SolutionCount - initialSolutionCount);
+    statisticPrintOneLine(position, true);
+  } else {
+    WastedSearchCount += 1;
+
+    TotalWastedTime += used;
+  }
 }
