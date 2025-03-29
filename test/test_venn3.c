@@ -171,7 +171,7 @@ static void testChoosingAndBacktracking()
     verifyFaceSize(2);
     face = Faces + i;
     face->cycle = Cycles;
-    TEST_ASSERT_NULL(dynamicFaceMakeChoice(face));
+    TEST_ASSERT_NULL(dynamicFaceBacktrackableChoice(face));
     verifyFaceSize(1);
     trailBacktrackTo(face->backtrack);
     face->cycle = NULL;

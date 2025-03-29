@@ -17,7 +17,7 @@ FACE dynamicFaceAddSpecific(char* colors, char* cycle)
     TEST_ASSERT_EQUAL(face->cycle, Cycles + cycleId);
   } else {
     face->cycle = Cycles + cycleId;
-    failure = dynamicFaceMakeChoice(face);
+    failure = dynamicFaceBacktrackableChoice(face);
 
     if (failure != NULL) {
       printf("Failure: %s %s\n", failure->label, failure->shortLabel);

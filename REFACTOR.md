@@ -13,7 +13,6 @@ Issues to be addressed in refactoring:
 - [ ] Order of declarations within files
 - [ ] ensure toplevel documentation adequately describes the goal and approach
 - [ ] ensure coding conventions are documented
-- [ ] ensure no use of // comments.
 - [ ] ensure copyright header in every file.
 - [x] Modularization: which functions and variables should be in which files and why.
 - [x] Replace monolithic header file with (approximately) one per source file?

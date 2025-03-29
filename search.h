@@ -12,4 +12,6 @@ extern void searchFull(void (*foundSolution)(void));
 extern void dynamicSolutionEnumerate(FILE *(*fp)(char *signature, int soln,
                                                  int subsoln));
 
+extern void solutionPrint(FILE *fp);
+extern void solutionWrite(const char *prefix);
 #endif  // SEARCH_H

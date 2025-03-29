@@ -341,3 +341,13 @@ void initializeCycleSetUniversal(CYCLESET cycleSet)
   }
   cycleSet[i] = FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET;
 }
+
+uint32_t cycleIdFromColors(char* colors)
+{
+  COLOR cycle[NCOLORS];
+  int i;
+  for (i = 0; *colors; i++, colors++) {
+    cycle[i] = *colors - 'a';
+  }
+  return cycleId(cycle, i);
+}

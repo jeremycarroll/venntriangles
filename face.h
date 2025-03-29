@@ -29,7 +29,7 @@ extern uint64_t CycleSetReducedCounter;
 extern STATIC struct face Faces[NFACES];
 extern uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
 
-extern FAILURE dynamicFaceMakeChoice(FACE face);
+extern FAILURE dynamicFaceBacktrackableChoice(FACE face);
 extern FAILURE faceFinalCorrectnessChecks(void);
 extern void dynamicFaceSetupCentral(int *faceDegrees);
 extern FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
@@ -45,11 +45,13 @@ extern FACE faceFromColors(char *colors);
 extern FACE dynamicFaceAddSpecific(char *colors, char *cycle);
 extern void facePrintSelected(void);
 extern void facePrint(FACE face);
-extern void solutionPrint(FILE *fp);
 // Should have Dynamic in name, and be so.
 extern bool dynamicFaceSetCycleLength(uint32_t faceColors, uint32_t length);
 extern void initializeFacesAndEdges(void);
-
+extern FAILURE dynamicFaceChoice(FACE face, int depth);
 extern void resetFaces(void);
+extern FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
+                                          int depth);
+extern FAILURE propogateChoice(FACE face, EDGE edge, int depth);
 
 #endif  // FACE_H

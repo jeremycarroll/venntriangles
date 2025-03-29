@@ -51,7 +51,6 @@ extern int edgePathLength(EDGE from, EDGE to);
 extern char* edgeToStr(EDGE edge);
 
 extern EDGE edgeOnCentralFace(COLOR a);
-extern void solutionWrite(const char* prefix);
 extern void resetEdges(void);
 
 extern FAILURE edgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
