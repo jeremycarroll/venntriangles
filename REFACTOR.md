@@ -9,8 +9,8 @@ Issues to be addressed in refactoring:
 - [x] improve TRAIL_SIZE, add maxTrail to stats
 - [x] rationalize initialization; maybe use more lazy initialization
 - [x] Revist function names
-- [ ] ensuring most files are between 100 and 500 lines long
-- [ ] Order of declarations within files
+- [x] ensuring most files are between 100 and 500 lines long
+- [x] Order of declarations within files
 - [ ] ensure toplevel documentation adequately describes the goal and approach
 - [ ] ensure coding conventions are documented
 - [ ] ensure copyright header in every file.

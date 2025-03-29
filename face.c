@@ -4,71 +4,22 @@
 #include "statistics.h"
 #include "utils.h"
 
+/* Global variables - globally scoped */
 struct face Faces[NFACES];
 uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
-
 uint64_t CycleGuessCounter = 0;
+uint64_t CycleForcedCounter = 0;
+uint64_t CycleSetReducedCounter = 0;
 
+/* Declaration of file scoped static functions */
 static void recomputeCountOfChoices(FACE face);
 static void initializePossiblyTo(void);
+static void applyMonotonicity(void);
+static void initializeLengthOfCycleOfFaces(void);
+static void restrictCycles(FACE face, CYCLESET cycleSet);
+static FAILURE checkLengthOfCycleOfFaces(FACE face);
 
-/*
-A FISC is isomorphic to a convex FISC if and only if it is monotone.
-A FISC is monotone if its dual has a unique source (no incoming edges) and a
-unique sink (no out-going edges).
-*/
-static void applyMonotonicity(void)
-{
-  uint32_t colors, cycleId;
-  FACE face;
-  CYCLE cycle;
-  uint32_t chainingCount, i;
-  uint64_t currentXor, previousFaceXor, nextFaceXor;
-#define ONE_IN_ONE_OUT_CORE(a, b, colors)                              \
-  (__builtin_popcountll((currentXor = ((1ll << (a)) | (1ll << (b)))) & \
-                        colors) == 1)
-#define ONE_IN_ONE_OUT(a, b, colors)                               \
-  (!ONE_IN_ONE_OUT_CORE(a, b, colors) ? 0                          \
-   : ((1 << (a)) & colors)            ? (nextFaceXor = currentXor) \
-                                      : (previousFaceXor = currentXor))
-  /* The inner face is NFACES-1, with all the colors; the outer face is 0, with
-   * no colors.
-   */
-  for (colors = 1, face = Faces + 1; colors < NFACES - 1; colors++, face++) {
-    for (cycleId = 0, cycle = Cycles; cycleId < NCYCLES; cycleId++, cycle++) {
-      if ((cycle->colors & colors) == 0 || (cycle->colors & ~colors) == 0) {
-        cycleSetRemove(cycleId, face->possibleCycles);
-      }
-      previousFaceXor = nextFaceXor = 0;
-      chainingCount = ONE_IN_ONE_OUT(cycle->curves[cycle->length - 1],
-                                     cycle->curves[0], colors)
-                          ? 1
-                          : 0;
-      for (i = 1; i < cycle->length; i++) {
-        if (ONE_IN_ONE_OUT(cycle->curves[i - 1], cycle->curves[i], colors)) {
-          chainingCount++;
-        }
-      }
-      if (chainingCount != 2) {
-        cycleSetRemove(cycleId, face->possibleCycles);
-      } else {
-        assert(previousFaceXor);
-        assert(nextFaceXor);
-        face->nextByCycleId[cycleId] = Faces + (colors ^ nextFaceXor);
-        face->previousByCycleId[cycleId] = Faces + (colors ^ previousFaceXor);
-      }
-    }
-    recomputeCountOfChoices(face);
-  }
-  dynamicFaceSetCycleLength(0, NCOLORS);
-  dynamicFaceSetCycleLength(~0, NCOLORS);
-}
-
-static void recomputeCountOfChoices(FACE face)
-{
-  trailSetInt(&face->cycleSetSize, cycleSetSize(face->possibleCycles));
-}
-
+/* Externally linked functions */
 bool dynamicFaceSetCycleLength(uint32_t faceColors, uint32_t length)
 {
   FACE face = Faces + (faceColors & (NFACES - 1));
@@ -84,16 +35,6 @@ bool dynamicFaceSetCycleLength(uint32_t faceColors, uint32_t length)
   }
   recomputeCountOfChoices(face);
   return face->cycleSetSize != 0;
-}
-
-static void initializeLengthOfCycleOfFaces(void)
-{
-  uint32_t i;
-  FaceSumOfFaceDegree[0] = 1;
-  for (i = 0; i < NCOLORS; i++) {
-    FaceSumOfFaceDegree[i + 1] =
-        FaceSumOfFaceDegree[i] * (NCOLORS - i) / (i + 1);
-  }
 }
 
 void initializeFacesAndEdges(void)
@@ -126,48 +67,6 @@ void initializeFacesAndEdges(void)
   initializePossiblyTo();
 }
 
-static void initializePossiblyTo(void)
-{
-  uint32_t facecolors, color, othercolor;
-  FACE face;
-  EDGE edge;
-  for (facecolors = 0, face = Faces; facecolors < NFACES;
-       facecolors++, face++) {
-    for (color = 0; color < NCOLORS; color++) {
-      edge = &face->edges[color];
-      for (othercolor = 0; othercolor < NCOLORS; othercolor++) {
-        if (othercolor == color) {
-          continue;
-        }
-        edge->possiblyTo[othercolor].point =
-            initializePointIncomingEdge(face->colors, edge, othercolor);
-      }
-    }
-  }
-}
-
-static FAILURE checkLengthOfCycleOfFaces(FACE face)
-{
-  uint32_t i = 0,
-           expected = FaceSumOfFaceDegree[__builtin_popcount(face->colors)];
-  FACE f = face;
-  /* Don't call this with inner or outer face. */
-  assert(expected != 1);
-  do {
-    f = f->next;
-    i++;
-    assert(i <= expected);
-    if (f == face) {
-      if (i != expected) {
-        return failureDisconnectedFaces(0);
-      }
-      return NULL;
-      ;
-    }
-  } while (f != NULL);
-  assert(0);
-}
-
 FAILURE faceFinalCorrectnessChecks(void)
 {
   FAILURE failure;
@@ -192,14 +91,6 @@ FAILURE faceFinalCorrectnessChecks(void)
   return NULL;
 }
 
-/* We use this global to defer removing colors from the searchHere space
-   until we have completed computing consequential changes. From a design point
-   of view it is local to the dynamicFaceBacktrackableChoice method, so does not
-   need to be in the Trail.
- */
-uint64_t CycleForcedCounter = 0;
-uint64_t CycleSetReducedCounter = 0;
-
 void dynamicFaceSetupCentral(int* faceDegrees)
 {
   CYCLE cycle;
@@ -223,27 +114,6 @@ void dynamicFaceSetupCentral(int* faceDegrees)
     continue;
   }
   dynamicFaceBacktrackableChoice(centralFace);
-}
-
-static void restrictCycles(FACE face, CYCLESET cycleSet)
-{
-  uint32_t i;
-  uint_trail toBeCleared;
-  uint_trail newCycleSetSize = face->cycleSetSize;
-
-  for (i = 0; i < CYCLESET_LENGTH; i++) {
-    toBeCleared = face->possibleCycles[i] & ~cycleSet[i];
-    if (toBeCleared == 0) {
-      continue;
-    }
-    trailSetInt(&face->possibleCycles[i],
-                face->possibleCycles[i] & cycleSet[i]);
-    newCycleSetSize -= __builtin_popcountll(toBeCleared);
-  }
-  if (newCycleSetSize < face->cycleSetSize) {
-    CycleSetReducedCounter++;
-    trailSetInt(&face->cycleSetSize, newCycleSetSize);
-  }
 }
 
 FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet, int depth)
@@ -354,12 +224,6 @@ FACE faceFromColors(char* colors)
   return Faces + faceId;
 }
 
-/*
-Set up next on every possiblyTo.
-
-It must be the same color, and the reverse of the other edge of that color at
-the point.
-*/
 void initializePoints(void)
 {
   uint32_t i, j, k;
@@ -388,10 +252,6 @@ void initializePoints(void)
   }
 }
 
-/*
-TODO: rename vars , the A B problem ...
-Either return the point, or return NULL and set the value of failureReturn.
-*/
 FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
                                 int depth)
 {
@@ -441,4 +301,130 @@ FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
     assert(point->incomingEdges[i]->to != NULL);
   }
   return NULL;
+}
+
+/* File scoped static functions */
+static void recomputeCountOfChoices(FACE face)
+{
+  trailSetInt(&face->cycleSetSize, cycleSetSize(face->possibleCycles));
+}
+
+static void initializePossiblyTo(void)
+{
+  uint32_t facecolors, color, othercolor;
+  FACE face;
+  EDGE edge;
+  for (facecolors = 0, face = Faces; facecolors < NFACES;
+       facecolors++, face++) {
+    for (color = 0; color < NCOLORS; color++) {
+      edge = &face->edges[color];
+      for (othercolor = 0; othercolor < NCOLORS; othercolor++) {
+        if (othercolor == color) {
+          continue;
+        }
+        edge->possiblyTo[othercolor].point =
+            initializePointIncomingEdge(face->colors, edge, othercolor);
+      }
+    }
+  }
+}
+
+static void applyMonotonicity(void)
+{
+  uint32_t colors, cycleId;
+  FACE face;
+  CYCLE cycle;
+  uint32_t chainingCount, i;
+  uint64_t currentXor, previousFaceXor, nextFaceXor;
+#define ONE_IN_ONE_OUT_CORE(a, b, colors)                              \
+  (__builtin_popcountll((currentXor = ((1ll << (a)) | (1ll << (b)))) & \
+                        colors) == 1)
+#define ONE_IN_ONE_OUT(a, b, colors)                               \
+  (!ONE_IN_ONE_OUT_CORE(a, b, colors) ? 0                          \
+   : ((1 << (a)) & colors)            ? (nextFaceXor = currentXor) \
+                                      : (previousFaceXor = currentXor))
+  /* The inner face is NFACES-1, with all the colors; the outer face is 0, with
+   * no colors.
+   */
+  for (colors = 1, face = Faces + 1; colors < NFACES - 1; colors++, face++) {
+    for (cycleId = 0, cycle = Cycles; cycleId < NCYCLES; cycleId++, cycle++) {
+      if ((cycle->colors & colors) == 0 || (cycle->colors & ~colors) == 0) {
+        cycleSetRemove(cycleId, face->possibleCycles);
+      }
+      previousFaceXor = nextFaceXor = 0;
+      chainingCount = ONE_IN_ONE_OUT(cycle->curves[cycle->length - 1],
+                                     cycle->curves[0], colors)
+                          ? 1
+                          : 0;
+      for (i = 1; i < cycle->length; i++) {
+        if (ONE_IN_ONE_OUT(cycle->curves[i - 1], cycle->curves[i], colors)) {
+          chainingCount++;
+        }
+      }
+      if (chainingCount != 2) {
+        cycleSetRemove(cycleId, face->possibleCycles);
+      } else {
+        assert(previousFaceXor);
+        assert(nextFaceXor);
+        face->nextByCycleId[cycleId] = Faces + (colors ^ nextFaceXor);
+        face->previousByCycleId[cycleId] = Faces + (colors ^ previousFaceXor);
+      }
+    }
+    recomputeCountOfChoices(face);
+  }
+  dynamicFaceSetCycleLength(0, NCOLORS);
+  dynamicFaceSetCycleLength(~0, NCOLORS);
+}
+
+static void initializeLengthOfCycleOfFaces(void)
+{
+  uint32_t i;
+  FaceSumOfFaceDegree[0] = 1;
+  for (i = 0; i < NCOLORS; i++) {
+    FaceSumOfFaceDegree[i + 1] =
+        FaceSumOfFaceDegree[i] * (NCOLORS - i) / (i + 1);
+  }
+}
+
+static void restrictCycles(FACE face, CYCLESET cycleSet)
+{
+  uint32_t i;
+  uint_trail toBeCleared;
+  uint_trail newCycleSetSize = face->cycleSetSize;
+
+  for (i = 0; i < CYCLESET_LENGTH; i++) {
+    toBeCleared = face->possibleCycles[i] & ~cycleSet[i];
+    if (toBeCleared == 0) {
+      continue;
+    }
+    trailSetInt(&face->possibleCycles[i],
+                face->possibleCycles[i] & cycleSet[i]);
+    newCycleSetSize -= __builtin_popcountll(toBeCleared);
+  }
+  if (newCycleSetSize < face->cycleSetSize) {
+    CycleSetReducedCounter++;
+    trailSetInt(&face->cycleSetSize, newCycleSetSize);
+  }
+}
+
+static FAILURE checkLengthOfCycleOfFaces(FACE face)
+{
+  uint32_t i = 0,
+           expected = FaceSumOfFaceDegree[__builtin_popcount(face->colors)];
+  FACE f = face;
+  /* Don't call this with inner or outer face. */
+  assert(expected != 1);
+  do {
+    f = f->next;
+    i++;
+    assert(i <= expected);
+    if (f == face) {
+      if (i != expected) {
+        return failureDisconnectedFaces(0);
+      }
+      return NULL;
+      ;
+    }
+  } while (f != NULL);
+  assert(0);
 }

@@ -5,58 +5,27 @@
 
 #include <stdlib.h>
 
-#define MAX_ONE_WAY_CURVE_CROSSINGS 3
-#define MAX_CORNERS 3
-
-#define MAX_ONE_WAY_CURVE_CROSSINGS 3
-
-/* Edge-related variables */
-static uint64_t EdgeCrossingCounts[NCOLORS][NCOLORS];
-static uint64_t EdgeCurvesComplete[NCOLORS];
+/* Global variables - globally scoped */
 uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
 COLORSET ColorCompleted;
+
+/* Global variables - file scoped */
+#define MAX_ONE_WAY_CURVE_CROSSINGS 3
+#define MAX_CORNERS 3
+static uint64_t EdgeCrossingCounts[NCOLORS][NCOLORS];
+static uint64_t EdgeCurvesComplete[NCOLORS];
 
 /*
 This file is responsible for checking that a set of edges can make a triangle,
 and for outputting solutions.
 */
 
-/*
-This file is responsible for checking that a set of edges can make a triangle.
-*/
-static uint_trail curveLength(EDGE edge)
-{
-  EDGE current;
-  int result;
-  for (result = 1, current = edgeFollowForwards(edge); current != edge;
-       result++, current = edgeFollowForwards(current)) {
-    assert(current != NULL);
-  }
-  return result;
-}
+/* Declaration of file scoped static functions */
+static uint_trail curveLength(EDGE edge);
+static FAILURE checkForDisconnectedCurve(EDGE edge, int depth);
+static EDGE findStartOfCurve(EDGE edge);
 
-static FAILURE checkForDisconnectedCurve(EDGE edge, int depth)
-{
-  uint_trail length;
-  // TODO: needs named macro!
-  if (edge->reversed->to != NULL) {
-    // We have a colored cycle in the FISC.
-    length = curveLength(edge);
-    if (length <
-        EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color]) {
-      return failureDisconnectedCurve(depth);
-    }
-    assert(length ==
-           EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color]);
-    if (ColorCompleted & 1u << edge->color) {
-      return NULL;
-    }
-    ColorCompleted |= 1u << edge->color;
-    trailSetInt(&EdgeCurvesComplete[edge->color], 1);
-  }
-  return NULL;
-}
-
+/* Externally linked functions */
 EDGE edgeFollowForwards(EDGE edge)
 {
   if (edge->to == NULL) {
@@ -79,18 +48,6 @@ int edgePathLength(EDGE from, EDGE to)
     assert(from != NULL);
   }
   return i;
-}
-
-static EDGE findStartOfCurve(EDGE edge)
-{
-  EDGE next, current = edge;
-  while ((next = edgeFollowBackwards(current)) != edge) {
-    if (next == NULL) {
-      return current;
-    }
-    current = next;
-  }
-  return edge;
 }
 
 FAILURE edgeCurveChecks(EDGE edge, int depth)
@@ -158,4 +115,50 @@ void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
     assert(level1 == level4);
     assert(level2 == level3);
   }
+}
+
+/* File scoped static functions */
+static uint_trail curveLength(EDGE edge)
+{
+  EDGE current;
+  int result;
+  for (result = 1, current = edgeFollowForwards(edge); current != edge;
+       result++, current = edgeFollowForwards(current)) {
+    assert(current != NULL);
+  }
+  return result;
+}
+
+static FAILURE checkForDisconnectedCurve(EDGE edge, int depth)
+{
+  uint_trail length;
+  // TODO: needs named macro!
+  if (edge->reversed->to != NULL) {
+    // We have a colored cycle in the FISC.
+    length = curveLength(edge);
+    if (length <
+        EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color]) {
+      return failureDisconnectedCurve(depth);
+    }
+    assert(length ==
+           EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color]);
+    if (ColorCompleted & 1u << edge->color) {
+      return NULL;
+    }
+    ColorCompleted |= 1u << edge->color;
+    trailSetInt(&EdgeCurvesComplete[edge->color], 1);
+  }
+  return NULL;
+}
+
+static EDGE findStartOfCurve(EDGE edge)
+{
+  EDGE next, current = edge;
+  while ((next = edgeFollowBackwards(current)) != edge) {
+    if (next == NULL) {
+      return current;
+    }
+    current = next;
+  }
+  return edge;
 }
