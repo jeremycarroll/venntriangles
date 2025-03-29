@@ -5,6 +5,7 @@
 
 #include <unity.h>
 
+/* Test setup and teardown */
 void setUp(void)
 {
   initialize();
@@ -20,6 +21,32 @@ void tearDown(void)
   resetPoints();
 }
 
+/* Helper functions */
+static void sanityPoint(POINT point)
+{
+  TEST_ASSERT_EQUAL(1u << point->primary | 1u << point->secondary,
+                    point->colors);
+  for (int i = 0; i < 4; i++) {
+    for (int j = i + 1; j < 4; j++) {
+      TEST_ASSERT_NOT_EQUAL(point->incomingEdges[i], point->incomingEdges[j]);
+    }
+  }
+}
+
+static void verifyFaceSize(int size)
+{
+  int i;
+  for (i = 0; i < NFACES; i++) {
+    TEST_ASSERT_EQUAL(size, Faces[i].cycleSetSize);
+    if (size == 1) {
+      TEST_ASSERT_NOT_NULL(Faces[i].cycle);
+    } else {
+      TEST_ASSERT_NULL(Faces[i].cycle);
+    }
+  }
+}
+
+/* Test functions */
 static void testOuterFace()
 {
   FACE face = Faces;
@@ -56,17 +83,6 @@ static void testAbcFace()
   TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 3);
 }
 
-static void sanityPoint(POINT point)
-{
-  TEST_ASSERT_EQUAL(1u << point->primary | 1u << point->secondary,
-                    point->colors);
-  for (int i = 0; i < 4; i++) {
-    for (int j = i + 1; j < 4; j++) {
-      TEST_ASSERT_NOT_EQUAL(point->incomingEdges[i], point->incomingEdges[j]);
-    }
-  }
-}
-
 /*
 TODO add picture to justify the following test.
 */
@@ -87,6 +103,7 @@ static void testOuterAEdge()
   TEST_ASSERT_EQUAL(2, edge->possiblyTo[1].next->colors);
   sanityPoint(edge->possiblyTo[1].point);
 }
+
 /*
 TODO add picture to justify the following test.
 */
@@ -107,6 +124,7 @@ static void testAFaceAEdge()
   TEST_ASSERT_EQUAL(3, edge->possiblyTo[1].next->colors);
   sanityPoint(edge->possiblyTo[1].point);
 }
+
 /*
 TODO add picture to justify the following test.
 */
@@ -127,6 +145,7 @@ static void testAbFaceAEdge()
   TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].next->colors);
   sanityPoint(edge->possiblyTo[1].point);
 }
+
 /*
 TODO add picture to justify the following test.
 */
@@ -148,19 +167,6 @@ static void testAbcFaceAEdge()
   sanityPoint(edge->possiblyTo[1].point);
 }
 
-static void verifyFaceSize(int size)
-{
-  int i;
-  for (i = 0; i < NFACES; i++) {
-    TEST_ASSERT_EQUAL(size, Faces[i].cycleSetSize);
-    if (size == 1) {
-      TEST_ASSERT_NOT_NULL(Faces[i].cycle);
-    } else {
-      TEST_ASSERT_NULL(Faces[i].cycle);
-    }
-  }
-}
-
 static void testChoosingAndBacktracking()
 {
   int i;
@@ -179,15 +185,20 @@ static void testChoosingAndBacktracking()
   TEST_ASSERT_EQUAL(8, CycleGuessCounter);
 }
 
+/* Global variables */
 static int SolutionCount = 0;
+
+/* Callback functions */
 static void foundSolution() { SolutionCount++; }
 
+/* Test functions */
 static void testSearch()
 {
   searchHere(true, foundSolution);
   TEST_ASSERT_EQUAL(2, SolutionCount);
 }
 
+/* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();

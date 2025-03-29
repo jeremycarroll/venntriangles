@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include <unity.h>
 
+/* Helper functions */
 FACE dynamicFaceAddSpecific(char* colors, char* cycle)
 {
   FAILURE failure;
@@ -43,7 +44,7 @@ int* intArray(int a, ...)
   return result;
 }
 
-/* returns false if cycleset has bits set past the last. */
+/* Debug functions */
 bool dynamicCycleSetPrint(CYCLESET cycleSet)
 {
   uint32_t lastBit = (NCYCLES - 1) % BITS_PER_WORD;

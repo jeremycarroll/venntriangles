@@ -9,6 +9,7 @@
 #include <time.h>
 #include <unity.h>
 
+/* Test setup and teardown */
 void setUp(void)
 {
   initialize();
@@ -25,9 +26,13 @@ void tearDown(void)
   resetPoints();
 }
 
+/* Global variables */
 static int SolutionCount = 0;
+
+/* Callback functions */
 static void foundSolution() { SolutionCount++; }
 
+/* Test functions */
 static void testCentralFaceEdge(void)
 {
   COLOR a;
@@ -78,6 +83,7 @@ static void testFullSearch(void)
   TEST_ASSERT_EQUAL(233, SolutionCount);
 }
 
+/* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();

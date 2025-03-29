@@ -5,9 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unity.h>
+
+/* External declarations */
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 extern int dynamicMain0(int argc, char *argv[]);
 
+/* Test setup and teardown */
 void setUp(void)
 {
   // Set up code if needed
@@ -18,6 +21,7 @@ void tearDown(void)
   // Tear down code if needed
 }
 
+/* Helper functions */
 static int run(int argc, char *argv[])
 {
   FILE *oldStdout = stderr;
@@ -35,6 +39,7 @@ static int run(int argc, char *argv[])
   return status;
 }
 
+/* Test functions */
 static void testMainArguments(void)
 {
   char *argv1[] = {"program", "-f", "foo"};
@@ -50,6 +55,7 @@ static void testMainArguments(void)
   TEST_ASSERT_NOT_EQUAL_INT(0, run(argc5, argv5));
 }
 
+/* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();
@@ -57,6 +63,7 @@ int main(void)
   return UNITY_END();
 }
 
+/* Stub functions for testing */
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 
 char *usingBuffer(char *buffer) { return NULL; }
