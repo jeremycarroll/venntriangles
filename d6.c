@@ -1,10 +1,11 @@
 #include "d6.h"
 
 #include "face.h"
+
+/* Global variables - file scoped */
 #define TOTAL_5FACE_DEGREE 27
 static COLORSET SequenceOrder[NFACES];
 static COLORSET InverseSequenceOrder[NFACES];
-
 static PERMUTATION group[] = {
 #if NCOLORS == 6
     {0, 1, 2, 3, 4, 5}, {1, 2, 3, 4, 5, 0}, {2, 3, 4, 5, 0, 1},
@@ -14,6 +15,15 @@ static PERMUTATION group[] = {
 #endif
 };
 
+/* Declaration of file scoped static functions */
+static int compareUint8(const void *a, const void *b);
+static SYMMETRY_TYPE d6SymmetryType64(int *sizes);
+static SYMMETRY_TYPE d6SymmetryTypeN(int n, int *args);
+static int *d6FaceDegrees(void);
+static void canoncialCallbackImpl(int depth, int sum, int *args,
+                                  UseFaceDegrees callback, void *data);
+
+/* Externally linked functions */
 void initializeSequenceOrder(void)
 {
   int ix = 0, i;
@@ -60,6 +70,31 @@ COLORSET colorSetPermute(COLORSET colorSet, PERMUTATION permutation)
   return result;
 }
 
+SYMMETRY_TYPE symmetryType6(int *args) { return d6SymmetryTypeN(6, args); }
+
+SYMMETRY_TYPE symmetryTypeFaces(void)
+{
+  return d6SymmetryType64(d6FaceDegrees());
+}
+
+char *faceDegreeSignature(void)
+{
+  static char Result[NCOLORS + 1];
+  int *faceDegrees = d6FaceDegrees();
+  for (int i = 0; i < NCOLORS; i++) {
+    Result[i] = '0' + faceDegrees[i];
+  }
+  Result[NCOLORS] = '\0';
+  return Result;
+}
+
+void canonicalCallback(UseFaceDegrees callback, void *data)
+{
+  int args[NCOLORS];
+  canoncialCallbackImpl(0, 0, args, callback, data);
+}
+
+/* File scoped static functions */
 static int compareUint8(const void *a, const void *b)
 {
   return -memcmp(a, b, sizeof(int) * NFACES);
@@ -103,8 +138,6 @@ static SYMMETRY_TYPE d6SymmetryTypeN(int n, int *args)
   return d6SymmetryType64(sizes);
 }
 
-SYMMETRY_TYPE symmetryType6(int *args) { return d6SymmetryTypeN(6, args); }
-
 static int *d6FaceDegrees()
 {
   static int FaceDegrees[NFACES];
@@ -112,22 +145,6 @@ static int *d6FaceDegrees()
     FaceDegrees[i] = Faces[SequenceOrder[i]].cycle->length;
   }
   return FaceDegrees;
-}
-
-SYMMETRY_TYPE symmetryTypeFaces(void)
-{
-  return d6SymmetryType64(d6FaceDegrees());
-}
-
-char *faceDegreeSignature(void)
-{
-  static char Result[NCOLORS + 1];
-  int *faceDegrees = d6FaceDegrees();
-  for (int i = 0; i < NCOLORS; i++) {
-    Result[i] = '0' + faceDegrees[i];
-  }
-  Result[NCOLORS] = '\0';
-  return Result;
 }
 
 static void canoncialCallbackImpl(int depth, int sum, int *args,
@@ -153,10 +170,4 @@ static void canoncialCallbackImpl(int depth, int sum, int *args,
     args[depth] = i;
     canoncialCallbackImpl(depth + 1, sum + i, args, callback, data);
   }
-}
-
-void canonicalCallback(UseFaceDegrees callback, void *data)
-{
-  int args[NCOLORS];
-  canoncialCallbackImpl(0, 0, args, callback, data);
 }
