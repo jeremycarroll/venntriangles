@@ -5,26 +5,74 @@
 
 #include <stdarg.h>
 
-static void initializeCycles(void);
-static void initializeSameDirection(void);
-static void initializeOppositeDirection(void);
-static void initializeOmittingCycleSets(void);
+/* Global variables - globally scoped */
+CYCLESET_DECLARE CycleSetPairs[NCOLORS][NCOLORS];
+CYCLESET_DECLARE CycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
+CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
+CYCLESET_DECLARE CycleSetOmittingColorPair[NCOLORS][NCOLORS];
+struct facialCycle Cycles[NCYCLES];
 
+/* Global variables - file scoped */
 static int NextCycle = 0;
 static int NextSetOfCycleSets = 0;
+static CYCLESET CycleSetSets[NCYCLE_ENTRIES * 2];
 
 /*
 These cycleSets are accessed from cycles, with the pointers set up during
 initialization.
  */
-CYCLESET_DECLARE CycleSetPairs[NCOLORS][NCOLORS];
-CYCLESET_DECLARE CycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
-CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
-CYCLESET_DECLARE CycleSetOmittingColorPair[NCOLORS][NCOLORS];
-static CYCLESET CycleSetSets[NCYCLE_ENTRIES * 2];
 
-struct facialCycle Cycles[NCYCLES];
+/* Declaration of file scoped static functions */
+static void initializeCycles(void);
+static void initializeSameDirection(void);
+static void initializeOppositeDirection(void);
+static void initializeOmittingCycleSets(void);
 
+/* Externally linked functions - initialize... */
+void initializeCycleSets(void)
+{
+  initializeCycles();
+  uint32_t i, j, k, cycleId;
+  for (i = 0; i < NCOLORS; i++) {
+    for (j = 0; j < NCOLORS; j++) {
+      if (i == j) {
+        continue;
+      }
+      for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
+        if (cycleContainsAthenB(&Cycles[cycleId], i, j)) {
+          cycleSetAdd(cycleId, CycleSetPairs[i][j]);
+        }
+      }
+      for (k = 0; k < NCOLORS; k++) {
+        if (i == k || j == k) {
+          continue;
+        }
+        for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
+          if (cycleContainsAthenBthenC(&Cycles[cycleId], i, j, k)) {
+            cycleSetAdd(cycleId, CycleSetTriples[i][j][k]);
+          }
+        }
+      }
+    }
+  }
+  initializeSameDirection();
+  initializeOppositeDirection();
+  initializeOmittingCycleSets();
+}
+
+#define FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET \
+  ((1ul << (NCYCLES % BITS_PER_WORD)) - 1ul)
+
+void initializeCycleSetUniversal(CYCLESET cycleSet)
+{
+  uint32_t i;
+  for (i = 0; i < CYCLESET_LENGTH - 1; i++) {
+    cycleSet[i] = ~0;
+  }
+  cycleSet[i] = FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET;
+}
+
+/* Externally linked functions - cycleSet... */
 void cycleSetAdd(uint32_t cycleId, CYCLESET cycleSet)
 {
   assert(cycleId < NCYCLES);
@@ -62,6 +110,17 @@ CYCLE cycleSetNext(CYCLESET cycleSet, CYCLE cycle)
   return NULL;
 }
 
+/* See https://en.wikichip.org/wiki/population_count#Software_support */
+uint32_t cycleSetSize(CYCLESET cycleSet)
+{
+  uint32_t size = 0;
+  for (uint32_t i = 0; i < CYCLESET_LENGTH; i++) {
+    size += __builtin_popcountll(cycleSet[i]);
+  }
+  return size;
+}
+
+/* Externally linked functions - cycle... */
 bool cycleContainsAthenB(CYCLE cycle, uint32_t i, uint32_t j)
 {
   uint64_t ix;
@@ -86,16 +145,6 @@ bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k)
           cycle->curves[1] == k) ||
          (cycle->curves[ix - 2] == i && cycle->curves[ix - 1] == j &&
           cycle->curves[0] == k);
-}
-
-/* See https://en.wikichip.org/wiki/population_count#Software_support */
-uint32_t cycleSetSize(CYCLESET cycleSet)
-{
-  uint32_t size = 0;
-  for (uint32_t i = 0; i < CYCLESET_LENGTH; i++) {
-    size += __builtin_popcountll(cycleSet[i]);
-  }
-  return size;
 }
 
 uint32_t cycleId(COLOR* cycle, uint32_t length)
@@ -128,8 +177,6 @@ uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color)
   assert(NULL == "Unreachable");
 }
 
-CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
-
 void removeFromCycleSetWithTrail(uint32_t cycleId, CYCLESET cycleSet)
 {
   assert(cycleId < NCYCLES);
@@ -150,6 +197,52 @@ void resetCycles()
   NextSetOfCycleSets = 0;
 }
 
+/* Externally linked functions - color... */
+int colorToChar(COLOR c) { return 'a' + c; }
+
+char* colorSetToStr(COLORSET colors)
+{
+  uint32_t i;
+  char* buffer = getBuffer();
+  char* p = buffer;
+  *p++ = '|';
+  for (i = 0; i < NCOLORS; i++) {
+    if (colors & (1u << i)) {
+      *p++ = 'a' + i;
+    }
+  }
+  *p++ = '|';
+  *p = '\0';
+  return usingBuffer(buffer);
+}
+
+char* cycleToStr(CYCLE cycle)
+{
+  char* buffer = getBuffer();
+  char* p = buffer;
+  if (cycle == NULL) {
+    return "(NULL)";
+  }
+  *p++ = '(';
+  for (uint32_t i = 0; i < cycle->length; i++) {
+    *p++ = 'a' + cycle->curves[i];
+  }
+  *p++ = ')';
+  *p = '\0';
+  return usingBuffer(buffer);
+}
+
+uint32_t cycleIdFromColors(char* colors)
+{
+  COLOR cycle[NCOLORS];
+  int i;
+  for (i = 0; *colors; i++, colors++) {
+    cycle[i] = *colors - 'a';
+  }
+  return cycleId(cycle, i);
+}
+
+/* File scoped static functions */
 static void addCycle(int length, ...)
 {
   uint32_t color;
@@ -202,37 +295,6 @@ static void initializeCycles(void)
   assert(NextCycle == ARRAY_LEN(Cycles));
 }
 
-void initializeCycleSets(void)
-{
-  initializeCycles();
-  uint32_t i, j, k, cycleId;
-  for (i = 0; i < NCOLORS; i++) {
-    for (j = 0; j < NCOLORS; j++) {
-      if (i == j) {
-        continue;
-      }
-      for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-        if (cycleContainsAthenB(&Cycles[cycleId], i, j)) {
-          cycleSetAdd(cycleId, CycleSetPairs[i][j]);
-        }
-      }
-      for (k = 0; k < NCOLORS; k++) {
-        if (i == k || j == k) {
-          continue;
-        }
-        for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-          if (cycleContainsAthenBthenC(&Cycles[cycleId], i, j, k)) {
-            cycleSetAdd(cycleId, CycleSetTriples[i][j][k]);
-          }
-        }
-      }
-    }
-  }
-  initializeSameDirection();
-  initializeOppositeDirection();
-  initializeOmittingCycleSets();
-}
-
 static void initializeSameDirection(void)
 {
   uint32_t i, j;
@@ -250,6 +312,7 @@ static void initializeSameDirection(void)
 
   assert(NextSetOfCycleSets == NCYCLE_ENTRIES);
 }
+
 static void initializeOppositeDirection(void)
 {
   uint32_t i, j;
@@ -294,60 +357,4 @@ static void initializeOmittingCycleSets()
       }
     }
   }
-}
-
-int colorToChar(COLOR c) { return 'a' + c; }
-
-char* colorSetToStr(COLORSET colors)
-{
-  uint32_t i;
-  char* buffer = getBuffer();
-  char* p = buffer;
-  *p++ = '|';
-  for (i = 0; i < NCOLORS; i++) {
-    if (colors & (1u << i)) {
-      *p++ = 'a' + i;
-    }
-  }
-  *p++ = '|';
-  *p = '\0';
-  return usingBuffer(buffer);
-}
-
-char* cycleToStr(CYCLE cycle)
-{
-  char* buffer = getBuffer();
-  char* p = buffer;
-  if (cycle == NULL) {
-    return "(NULL)";
-  }
-  *p++ = '(';
-  for (uint32_t i = 0; i < cycle->length; i++) {
-    *p++ = 'a' + cycle->curves[i];
-  }
-  *p++ = ')';
-  *p = '\0';
-  return usingBuffer(buffer);
-}
-
-#define FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET \
-  ((1ul << (NCYCLES % BITS_PER_WORD)) - 1ul)
-
-void initializeCycleSetUniversal(CYCLESET cycleSet)
-{
-  uint32_t i;
-  for (i = 0; i < CYCLESET_LENGTH - 1; i++) {
-    cycleSet[i] = ~0;
-  }
-  cycleSet[i] = FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET;
-}
-
-uint32_t cycleIdFromColors(char* colors)
-{
-  COLOR cycle[NCOLORS];
-  int i;
-  for (i = 0; *colors; i++, colors++) {
-    cycle[i] = *colors - 'a';
-  }
-  return cycleId(cycle, i);
 }
