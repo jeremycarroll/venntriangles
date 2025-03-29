@@ -1,7 +1,10 @@
 #include "trail.h"
 
+#include "statistics.h"
+
 struct trail TrailArray[TRAIL_SIZE];
 TRAIL Trail = TrailArray;
+static uint64_t MaxTrailSize = 0;
 
 void trailSetPointer(void** ptr, void* value)
 {
@@ -28,6 +31,10 @@ void trailSetInt(uint_trail* ptr, uint_trail value)
 
 bool trailBacktrackTo(TRAIL backtrackPoint)
 {
+  uint64_t trailSize = Trail - TrailArray;
+  if (trailSize > MaxTrailSize) {
+    MaxTrailSize = trailSize;
+  }
   bool result = false;
   while (Trail > backtrackPoint) {
     result = true;
@@ -36,5 +43,7 @@ bool trailBacktrackTo(TRAIL backtrackPoint)
   }
   return result;
 }
+
+void initializeTrail() { statisticNew(&MaxTrailSize, "$", "MaxTrail"); }
 
 void resetTrail() { Trail = TrailArray; }

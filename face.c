@@ -1,6 +1,7 @@
 #include "face.h"
 
 #include "d6.h"
+#include "utils.h"
 
 #include <stdlib.h>
 
@@ -437,25 +438,21 @@ bool dynamicColorRemoveFromSearch(COLOR color)
   return true;
 }
 
-char* faceToStr(char* dbuffer, FACE face)
+char* faceToStr(FACE face)
 {
-  char colorBuf[256];
-  char cycleBuf[256];
-  colorSetToStr(colorBuf, face->colors);
-  dynamicCycleToStr(cycleBuf, face->cycle);
+  char* buffer = getBuffer();
+  char* colorBuf = colorSetToStr(face->colors);
+  char* cycleBuf = dynamicCycleToStr(face->cycle);
+
   if (face->cycleSetSize > 1) {
-    sprintf(dbuffer, "%s%s^%llu", colorBuf, cycleBuf, face->cycleSetSize);
+    sprintf(buffer, "%s%s^%llu", colorBuf, cycleBuf, face->cycleSetSize);
   } else {
-    sprintf(dbuffer, "%s%s", colorBuf, cycleBuf);
+    sprintf(buffer, "%s%s", colorBuf, cycleBuf);
   }
-  return dbuffer;
+  return usingBuffer(buffer);
 }
 
-void dynamicFacePrint(FACE face)
-{
-  char buffer[2048];
-  printf("%s\n", faceToStr(buffer, face));
-}
+void dynamicFacePrint(FACE face) { printf("%s\n", faceToStr(face)); }
 
 void dynamicFacePrintSelected(void)
 {
@@ -481,8 +478,7 @@ void dynamicSolutionPrint(FILE* fp)
       FACE next = face->next;
       COLORSET colorBeingDropped = face->colors & ~next->colors;
       COLORSET colorBeingAdded = next->colors & ~face->colors;
-      char buffer[256];
-      fprintf(fp, "%s [%c,%c] ", faceToStr(buffer, face),
+      fprintf(fp, "%s [%c,%c] ", faceToStr(face),
               colorToChar(ffs(colorBeingDropped) - 1),
               colorToChar(ffs(colorBeingAdded) - 1));
       face = next;
@@ -529,7 +525,6 @@ void dynamicSolutionWrite(const char* prefix)
 {
   EDGE corners[3][2];
   char filename[1024];
-  char buffer[1024];
   int numberOfVariations = 1;
   int pLength;
   FILE* fp;
@@ -555,9 +550,8 @@ void dynamicSolutionWrite(const char* prefix)
         fprintf(fp, "NULL/%d ", pLength);
       } else {
         pLength = edgePathLength(corners[i][0]->reversed, corners[i][1]);
-        buffer[0] = buffer[1] = 0;
-        fprintf(fp, "(%s => %s/%d) ", edgeToStr(buffer, corners[i][0]),
-                edgeToStr(buffer, corners[i][1]), pLength);
+        fprintf(fp, "(%s => %s/%d) ", edgeToStr(corners[i][0]),
+                edgeToStr(corners[i][1]), pLength);
       }
       numberOfVariations *= pLength;
       fprintf(fp, "\n");

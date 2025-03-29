@@ -2,6 +2,7 @@
 
 #include "search.h"
 #include "statistics.h"
+#include "utils.h"
 #include <sys/stat.h>
 
 #include <getopt.h>
@@ -11,10 +12,10 @@ static char *TargetFolder = NULL;
 
 void dynamicSaveResult(void)
 {
-  char buffer[1024];
+  char *buffer = getBuffer();
   snprintf(buffer, sizeof(buffer), "%s/%s", TargetFolder,
            dynamicFaceDegreeSignature());
-  dynamicSolutionWrite(buffer);
+  dynamicSolutionWrite(usingBuffer(buffer));
 }
 
 static void initializeOutputFolder()
@@ -59,5 +60,6 @@ int dynamicMain0(int argc, char *argv[])
   initializeOutputFolder();
   initializeStatisticLogging("/dev/stdout", 200, 10);
   dynamicSearchFull(dynamicSaveResult);
+  statisticPrintFull();
   return 0;
 }

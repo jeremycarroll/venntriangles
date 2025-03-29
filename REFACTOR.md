@@ -4,9 +4,9 @@ A to-do items are:
 - graphml output
 
 Issues to be addressed in refactoring:
-- [ ] simplify output, e.g. just use stdout
+- [x] simplify output, e.g. just use stdout
 - [ ] move FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET to color.c
-- [ ] improve TRAIL_SIZE, add maxTrail to stats
+- [x] improve TRAIL_SIZE, add maxTrail to stats
 - [ ] rationalize initialization; maybe use more lazy initialization
 - [ ] Revist function names
 - [ ] ensuring most files are between 100 and 500 lines long

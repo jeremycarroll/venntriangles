@@ -1,6 +1,7 @@
 #include "color.h"
 
 #include "trail.h"
+#include "utils.h"
 
 #include <stdarg.h>
 
@@ -301,10 +302,11 @@ static void initializeOmittingCycleSets()
 
 int colorToChar(COLOR c) { return 'a' + c; }
 
-char* colorSetToStr(char* dbuffer, COLORSET colors)
+char* colorSetToStr(COLORSET colors)
 {
   uint32_t i;
-  char* p = dbuffer;
+  char* buffer = getBuffer();
+  char* p = buffer;
   *p++ = '|';
   for (i = 0; i < NCOLORS; i++) {
     if (colors & (1u << i)) {
@@ -313,12 +315,13 @@ char* colorSetToStr(char* dbuffer, COLORSET colors)
   }
   *p++ = '|';
   *p = '\0';
-  return dbuffer;
+  return usingBuffer(buffer);
 }
 
-char* dynamicCycleToStr(char* dbuffer, CYCLE cycle)
+char* dynamicCycleToStr(CYCLE cycle)
 {
-  char* p = dbuffer;
+  char* buffer = getBuffer();
+  char* p = buffer;
   if (cycle == NULL) {
     return "(NULL)";
   }
@@ -328,5 +331,5 @@ char* dynamicCycleToStr(char* dbuffer, CYCLE cycle)
   }
   *p++ = ')';
   *p = '\0';
-  return dbuffer;
+  return usingBuffer(buffer);
 }

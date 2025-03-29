@@ -48,7 +48,7 @@ extern EDGE edgeFollowForwards(EDGE edge);
 extern FAILURE dynamicEdgeCurveChecks(EDGE edge, int depth);
 extern void edgeFindCorners(COLOR a, EDGE result[3][2]);
 extern int edgePathLength(EDGE from, EDGE to);
-extern char* edgeToStr(char* dbuffer, EDGE edge);
+extern char* edgeToStr(EDGE edge);
 
 extern EDGE edgeOnCentralFace(COLOR a);
 extern void dynamicSolutionWrite(const char* prefix);

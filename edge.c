@@ -1,6 +1,7 @@
 #include "edge.h"
 
 #include "trail.h"
+#include "utils.h"
 
 #include <stdlib.h>
 
@@ -119,12 +120,13 @@ void resetEdges()
   memset(EdgeCurvesComplete, 0, sizeof(EdgeCurvesComplete));
 }
 
-char* edgeToStr(char* dbuffer, EDGE edge)
+char* edgeToStr(EDGE edge)
 {
+  char* buffer = getBuffer();
   if (edge == NULL) {
-    strcpy(dbuffer, "NULL");
+    strcpy(buffer, "NULL");
   } else {
-    sprintf(dbuffer, "%c%d", colorToChar(edge->color), edge->colors);
+    sprintf(buffer, "%c%d", colorToChar(edge->color), edge->colors);
   }
-  return dbuffer;
+  return usingBuffer(buffer);
 }

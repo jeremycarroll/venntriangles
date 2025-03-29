@@ -40,7 +40,7 @@ extern bool dynamicColorRemoveFromSearch(COLOR color);
 extern COLORSET ColorCompleted;
 
 extern uint64_t CycleGuessCounter;
-extern char *faceToStr(char *dbuffer, FACE face);
+extern char *faceToStr(FACE face);
 
 extern FACE dynamicFaceFromColors(char *colors);
 extern FACE dynamicFaceAddSpecific(char *colors, char *cycle);

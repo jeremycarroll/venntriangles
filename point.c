@@ -1,6 +1,7 @@
 #include "point.h"
 
 #include "trail.h"
+#include "utils.h"
 
 #include <stddef.h>
 
@@ -87,11 +88,12 @@ POINT dynamicPointAdd(COLORSET colors, EDGE incomingEdge, COLOR othercolor)
   return point;
 }
 
-char* uPointToStr(char* dbuffer, POINT up)
+char* uPointToStr(POINT up)
 {
-  char* colors = colorSetToStr(dbuffer, up->colors);
-  sprintf(dbuffer, "%s(%c,%c)", colors, 'a' + up->primary, 'a' + up->secondary);
-  return dbuffer;
+  char* buffer = getBuffer();
+  char* colors = colorSetToStr(up->colors);
+  sprintf(buffer, "%s(%c,%c)", colors, 'a' + up->primary, 'a' + up->secondary);
+  return usingBuffer(buffer);
 }
 
 /*

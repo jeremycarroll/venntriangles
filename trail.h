@@ -12,9 +12,8 @@ struct trail {
   uint_trail value;
 };
 
-/* TODO: improve this number, 10^6 looks very safe, but we should aim for less.
- */
-#define TRAIL_SIZE 1000000
+/* We actually need 4834 */
+#define TRAIL_SIZE 16384
 
 extern TRAIL Trail;
 extern void trailSetPointer(void **ptr, void *value);
@@ -25,5 +24,6 @@ extern bool trailBacktrackTo(TRAIL backtrackPoint);
 extern void trailMaybeSetInt(uint_trail *ptr, uint_trail value);
 
 extern void resetTrail(void);
+extern void initializeTrail(void);
 
 #endif  // TRAIL_H

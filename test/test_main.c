@@ -57,6 +57,10 @@ const char *dynamicFaceDegreeSignature(void) { return "stub"; }
 
 void dynamicSolutionWrite(const char *buffer) { /* stub for testing. */ }
 
+char *getBuffer() { return NULL; }
+char *usingBuffer(char *buffer) { return NULL; }
+void statisticPrintFull(void) { /* stub for testing. */ }
+
 void initializeSequenceOrder() { /* stub for testing. */ }
 
 void initializeStatisticLogging(char *filename, int frequency, int seconds)
