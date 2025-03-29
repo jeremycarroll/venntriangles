@@ -10,33 +10,11 @@
 
 static char *TargetFolder = NULL;
 
-static void saveResult(void)
-{
-  char *buffer = getBuffer();
-  snprintf(buffer, sizeof(buffer), "%s/%s", TargetFolder,
-           faceDegreeSignature());
-  solutionWrite(usingBuffer(buffer));
-}
+/* Declaration of file scoped static functions */
+static void saveResult(void);
+static void initializeOutputFolder(void);
 
-static void initializeOutputFolder()
-{
-  struct stat st = {0};
-
-  if (stat(TargetFolder, &st) == -1) {
-    // Directory does not exist, create it
-    if (mkdir(TargetFolder, 0700) != 0) {
-      perror("Failed to create directory");
-      exit(EXIT_FAILURE);
-    }
-  } else {
-    // Directory exists, check if it is writable
-    if (!S_ISDIR(st.st_mode) || access(TargetFolder, W_OK) != 0) {
-      fprintf(stderr, "Target folder exists but is not writable\n");
-      exit(EXIT_FAILURE);
-    }
-  }
-}
-
+/* Externally linked functions */
 int dynamicMain0(int argc, char *argv[])
 {
   int opt;
@@ -62,4 +40,32 @@ int dynamicMain0(int argc, char *argv[])
   searchFull(saveResult);
   statisticPrintFull();
   return 0;
+}
+
+/* File scoped static functions */
+static void saveResult(void)
+{
+  char *buffer = getBuffer();
+  snprintf(buffer, sizeof(buffer), "%s/%s", TargetFolder,
+           faceDegreeSignature());
+  solutionWrite(usingBuffer(buffer));
+}
+
+static void initializeOutputFolder()
+{
+  struct stat st = {0};
+
+  if (stat(TargetFolder, &st) == -1) {
+    // Directory does not exist, create it
+    if (mkdir(TargetFolder, 0700) != 0) {
+      perror("Failed to create directory");
+      exit(EXIT_FAILURE);
+    }
+  } else {
+    // Directory exists, check if it is writable
+    if (!S_ISDIR(st.st_mode) || access(TargetFolder, W_OK) != 0) {
+      fprintf(stderr, "Target folder exists but is not writable\n");
+      exit(EXIT_FAILURE);
+    }
+  }
 }
