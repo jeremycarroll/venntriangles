@@ -63,7 +63,6 @@ extern void initializePoints(void);
 extern void resetPoints(void);
 extern UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
 extern char* uPointToStr(char* dbuffer, UPOINT up);
-extern char* dynamicDPointToStr(char* dbuffer, DPOINT dp);
 extern UPOINT getPoint(COLORSET colorsOfFace, COLOR primary, COLOR secondary);
 extern FAILURE dynamicPointCheckCrossingLimit(DPOINT point, int depth);
 extern struct undirectedPoint DynamicPointAllUPoints[NPOINTS];

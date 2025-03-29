@@ -150,8 +150,3 @@ char* uPointToStr(char* dbuffer, UPOINT up)
   sprintf(dbuffer, "%s(%c,%c)", colors, 'a' + up->primary, 'a' + up->secondary);
   return dbuffer;
 }
-
-char* dynamicDPointToStr(char* dbuffer, DPOINT dp)
-{
-  return uPointToStr(dbuffer, dp->point);
-}
