@@ -1,7 +1,7 @@
 #ifndef FACE_H
 #define FACE_H
 
-#include "edge.h"
+#include "point.h"
 #include "trail.h"
 
 typedef struct face *FACE;

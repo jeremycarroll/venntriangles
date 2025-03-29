@@ -1,9 +1,21 @@
 #ifndef EDGE_H
 #define EDGE_H
 
-#include "point.h"
+#include "color.h"
+#include "failure.h"
 
 typedef struct edge* EDGE;
+typedef struct directedPoint* DPOINT;
+typedef struct undirectedPoint* UPOINT;
+
+struct directedPoint {
+  /* This DPOINT is at the end of one edge only.
+     To find that edge, if the to field here is not NULL, then:
+     it is: next->reversed->to->next->reversed
+  */
+  EDGE next;
+  UPOINT point;
+};
 
 struct edge {
   /* The label on the edge. */

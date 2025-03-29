@@ -1,20 +1,7 @@
 #ifndef POINT_H
 #define POINT_H
 
-#include "color.h"
-#include "failure.h"
-
-typedef struct directedPoint* DPOINT;
-typedef struct undirectedPoint* UPOINT;
-
-struct directedPoint {
-  /* This DPOINT is at the end of one edge only.
-     To find that edge, if the to field here is not NULL, then:
-     it is: next->reversed->to->next->reversed
-  */
-  EDGE next;
-  UPOINT point;
-};
+#include "edge.h"
 
 /* We create all possible points during initialization.
 
@@ -64,7 +51,6 @@ extern void resetPoints(void);
 extern UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
 extern char* uPointToStr(char* dbuffer, UPOINT up);
 extern UPOINT getPoint(COLORSET colorsOfFace, COLOR primary, COLOR secondary);
-extern FAILURE dynamicPointCheckCrossingLimit(DPOINT point, int depth);
 extern struct undirectedPoint DynamicPointAllUPoints[NPOINTS];
 
 #endif  // POINT_H
