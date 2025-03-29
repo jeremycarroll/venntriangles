@@ -11,9 +11,9 @@
  * [n][i][j] is used if i != j, and the i and j are not in n.
  * other values are left as null
  */
-struct undirectedPoint DynamicPointAllUPoints[NPOINTS];
+struct Point DynamicPointAllUPoints[NPOINTS];
 static int nextUPointId = 0;
-static struct undirectedPoint* allUPointPointers[NFACES][NCOLORS][NCOLORS];
+static struct Point* allUPointPointers[NFACES][NCOLORS][NCOLORS];
 
 void resetPoints()
 {
@@ -22,7 +22,7 @@ void resetPoints()
   nextUPointId = 0;
 }
 
-UPOINT getPoint(COLORSET colorsOfFace, COLOR primary, COLOR secondary)
+POINT getPoint(COLORSET colorsOfFace, COLOR primary, COLOR secondary)
 {
   COLORSET outsideColor = colorsOfFace & ~(1u << primary) & ~(1u << secondary);
   if (allUPointPointers[outsideColor][primary][secondary] == NULL) {
@@ -42,9 +42,9 @@ UPOINT getPoint(COLORSET colorsOfFace, COLOR primary, COLOR secondary)
    The curve colored A crosses from inside the curve colored B to outside it.
    The curve colored B crosses from outside the curve colored A to inside it.
 */
-UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor)
+POINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor)
 {
-  UPOINT point;
+  POINT point;
   COLOR primary, secondary;
   uint32_t ix;
 
@@ -97,7 +97,7 @@ FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
                                 int depth)
 {
   FAILURE crossingLimit;
-  UPOINT upoint;
+  POINT upoint;
   EDGE edge;
   COLOR colors[2];
   uint_trail* edgeCountPtr;
@@ -144,7 +144,7 @@ FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
   return NULL;
 }
 
-char* uPointToStr(char* dbuffer, UPOINT up)
+char* uPointToStr(char* dbuffer, POINT up)
 {
   char* colors = colorSetToStr(dbuffer, up->colors);
   sprintf(dbuffer, "%s(%c,%c)", colors, 'a' + up->primary, 'a' + up->secondary);
@@ -207,7 +207,7 @@ static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn)
   assert(start->reversed->to == NULL ||
          (start->colors & notMyColor) == ((NFACES - 1) & notMyColor));
   do {
-    DPOINT p = current->to;
+    CURVELINK p = current->to;
     COLORSET other = p->point->colors & notMyColor;
     if (other & outside) {
       outside = outside & ~other;
@@ -254,7 +254,7 @@ EDGE edgeOnCentralFace(COLOR a)
 {
   COLOR primary = a;
   COLOR secondary = (a + 1) % NCOLORS;
-  UPOINT uPoint = getPoint(NFACES - 1, primary, secondary);
+  POINT uPoint = getPoint(NFACES - 1, primary, secondary);
   return uPoint->incomingEdges[0];
 }
 

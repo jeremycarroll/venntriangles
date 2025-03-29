@@ -281,7 +281,7 @@ static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
 static FAILURE propogateChoice(FACE face, EDGE edge, int depth)
 {
   FAILURE failure;
-  UPOINT upoint = edge->to->point;
+  POINT upoint = edge->to->point;
   COLOR aColor = edge->color;
   COLOR bColor =
       edge->color == upoint->primary ? upoint->secondary : upoint->primary;
@@ -605,7 +605,7 @@ void initializePoints(void)
 {
   uint32_t i, j, k;
   for (i = 0; i < NPOINTS; i++) {
-    UPOINT p = DynamicPointAllUPoints + i;
+    POINT p = DynamicPointAllUPoints + i;
     linkOut(p->incomingEdges[0], p->incomingEdges[1], p->incomingEdges[2],
             p->incomingEdges[3]);
     linkOut(p->incomingEdges[2], p->incomingEdges[3], p->incomingEdges[0],

@@ -22,7 +22,7 @@
    outside it. The curve colored secondary crosses from outside the curve
    colored primary to inside it.
  */
-struct undirectedPoint {
+struct Point {
   /*
   If the point is between crossing of curve A and curve B,
   and A is primary, and B is secondary.
@@ -48,9 +48,9 @@ struct undirectedPoint {
 
 extern void initializePoints(void);
 extern void resetPoints(void);
-extern UPOINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
-extern char* uPointToStr(char* dbuffer, UPOINT up);
-extern UPOINT getPoint(COLORSET colorsOfFace, COLOR primary, COLOR secondary);
-extern struct undirectedPoint DynamicPointAllUPoints[NPOINTS];
+extern POINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
+extern char* uPointToStr(char* dbuffer, POINT up);
+extern POINT getPoint(COLORSET colorsOfFace, COLOR primary, COLOR secondary);
+extern struct Point DynamicPointAllUPoints[NPOINTS];
 
 #endif  // POINT_H

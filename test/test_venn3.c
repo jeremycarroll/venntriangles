@@ -56,7 +56,7 @@ static void test_abc_face()
   TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 3);
 }
 
-static void sanity_point(UPOINT point)
+static void sanity_point(POINT point)
 {
   TEST_ASSERT_EQUAL(1u << point->primary | 1u << point->secondary,
                     point->colors);

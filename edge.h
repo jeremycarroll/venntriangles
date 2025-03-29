@@ -5,16 +5,16 @@
 #include "failure.h"
 
 typedef struct edge* EDGE;
-typedef struct directedPoint* DPOINT;
-typedef struct undirectedPoint* UPOINT;
+typedef struct curveLink* CURVELINK;
+typedef struct Point* POINT;
 
-struct directedPoint {
-  /* This DPOINT is at the end of one edge only.
+struct curveLink {
+  /* This CURVELINK is at the end of one edge only.
      To find that edge, if the to field here is not NULL, then:
      it is: next->reversed->to->next->reversed
   */
   EDGE next;
-  UPOINT point;
+  POINT point;
 };
 
 struct edge {
@@ -31,14 +31,14 @@ struct edge {
   where (color, j) is in the facial cycle of inner, equivalently
   (j, color) is in the facial cycle of outer.
   */
-  DYNAMIC DPOINT to;
+  DYNAMIC CURVELINK to;
   /* A value between 0 and NCOLORS, being the cardinality of face. */
   STATIC uint64_t level;
   /* This point at the end of this edge may cross one of the other colors.
   We have all 5 pre-initialized in this array, with the color-th entry
   being all NULL.
    */
-  STATIC struct directedPoint possiblyTo[NCOLORS];
+  STATIC struct curveLink possiblyTo[NCOLORS];
 };
 
 extern uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
