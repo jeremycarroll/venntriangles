@@ -3,12 +3,12 @@
 #include "search.h"
 #include "statistics.h"
 #include "test_helpers.h"
-#include "unity.h"
 #include "utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unity.h>
 
 static char* testData3[][2] = {
     {

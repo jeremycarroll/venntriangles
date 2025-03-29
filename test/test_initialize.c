@@ -1,7 +1,8 @@
 #include "face.h"
 #include "statistics.h"
-#include "unity.h"
 #include "utils.h"
+
+#include <unity.h>
 
 extern CYCLESET_DECLARE InitializeCycleSetPairs[NCOLORS][NCOLORS];
 extern CYCLESET_DECLARE InitializeCycleSetTriples[NCOLORS][NCOLORS][NCOLORS];

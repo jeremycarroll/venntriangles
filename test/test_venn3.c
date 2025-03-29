@@ -1,8 +1,9 @@
 #include "face.h"
 #include "search.h"
 #include "statistics.h"
-#include "unity.h"
 #include "utils.h"
+
+#include <unity.h>
 
 void setUp(void)
 {

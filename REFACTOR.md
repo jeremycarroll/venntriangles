@@ -11,7 +11,7 @@ Issues to be addressed in refactoring:
 - [ ] Order of declarations within files
 - [ ] Decide how to deal with globals
 - [x] Better use of -I in the Makefile
-- [ ] Use of #include <> vs #include ""
+- [x] Use of #include <> vs #include ""
 - [ ] naming conventions: when to use camelCase, snake_case, all caps etc.
 - [x] naming conventions when to use prefixes to provide some namespacing
 - [ ] ensuring most files are between 100 and 500 lines long
@@ -33,7 +33,7 @@ Issues to be addressed in refactoring:
 - [x] more clearly separating code that is for testing only.
 - [x] withoutColor - via function? - rename
 - [x] omittingCycleSets - move - rename
-- [ ] include order as per https://stackoverflow.com/a/2762596
+- [x] include order as per https://stackoverflow.com/a/2762596
 - [x] names matching (|dynamic|initialize|reset)(Point|Color|ColorSet|Edge|Face|Cycle|CycleSet|Failure|Trail)[A-Z][a-z]*
 - [x] break up graph into edge and face
 - [x] revisit static/dynamic macros ...

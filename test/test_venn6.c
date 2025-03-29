@@ -3,11 +3,11 @@
 #include "search.h"
 #include "statistics.h"
 #include "test_helpers.h"
-#include "unity.h"
 #include "utils.h"
 
 #include <stdlib.h>
 #include <time.h>
+#include <unity.h>
 
 void setUp(void)
 {
