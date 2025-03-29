@@ -282,7 +282,7 @@ static void initializeOmittingCycleSets()
   uint32_t i, j, cycleId;
   for (i = 0; i < NCOLORS; i++) {
     for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-      if (!COLOR_SET_HAS_MEMBER(i, Cycles[cycleId].colors)) {
+      if (!COLORSET_HAS_MEMBER(i, Cycles[cycleId].colors)) {
         initializeCycleSetAdd(cycleId, CycleSetOmittingOneColor[i]);
       }
     }
@@ -290,8 +290,8 @@ static void initializeOmittingCycleSets()
   for (i = 0; i < NCOLORS; i++) {
     for (j = i + 1; j < NCOLORS; j++) {
       for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-        if (!(COLOR_SET_HAS_MEMBER(i, Cycles[cycleId].colors) &&
-              COLOR_SET_HAS_MEMBER(j, Cycles[cycleId].colors) &&
+        if (!(COLORSET_HAS_MEMBER(i, Cycles[cycleId].colors) &&
+              COLORSET_HAS_MEMBER(j, Cycles[cycleId].colors) &&
               cycleContainsAthenB(&Cycles[cycleId], i, j))) {
           initializeCycleSetAdd(cycleId, CycleSetOmittingColorPair[i][j]);
         }
@@ -332,4 +332,16 @@ char* dynamicCycleToStr(CYCLE cycle)
   *p++ = ')';
   *p = '\0';
   return usingBuffer(buffer);
+}
+
+#define FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET \
+  ((1ul << (NCYCLES % BITS_PER_WORD)) - 1ul)
+
+void initializeCycleSetUniversal(CYCLESET cycleSet)
+{
+  uint32_t i;
+  for (i = 0; i < CYCLESET_LENGTH - 1; i++) {
+    cycleSet[i] = ~0;
+  }
+  cycleSet[i] = FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET;
 }

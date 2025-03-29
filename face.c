@@ -101,22 +101,16 @@ static void initializeLengthOfCycleOfFaces(void)
   }
 }
 
-#define FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET \
-  ((1ul << (NCYCLES % BITS_PER_WORD)) - 1ul)
-
 void initializeFacesAndEdges(void)
 {
-  uint32_t facecolors, color, j;
+  uint32_t facecolors, color;
   FACE face, adjacent;
   EDGE edge;
   initializeLengthOfCycleOfFaces();
   for (facecolors = 0, face = Faces; facecolors < NFACES;
        facecolors++, face++) {
     face->colors = facecolors;
-    for (j = 0; j < CYCLESET_LENGTH - 1; j++) {
-      face->possibleCycles[j] = ~0;
-    }
-    face->possibleCycles[j] = FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET;
+    initializeCycleSetUniversal(face->possibleCycles);
 
     for (color = 0; color < NCOLORS; color++) {
       uint32_t colorbit = (1 << color);
@@ -341,7 +335,7 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
     CHECK_FAILURE(propogateChoice(face, &face->edges[cycle->curves[i]], depth));
   }
   for (i = 0; i < NCOLORS; i++) {
-    if (COLOR_SET_HAS_MEMBER(i, cycle->colors)) {
+    if (COLORSET_HAS_MEMBER(i, cycle->colors)) {
       continue;
     }
     CHECK_FAILURE(restrictAndPropogateCycles(
@@ -363,8 +357,8 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
 
   for (i = 0; i < NCOLORS; i++) {
     for (j = i + 1; j < NCOLORS; j++) {
-      if (COLOR_SET_HAS_MEMBER(i, cycle->colors) &&
-          COLOR_SET_HAS_MEMBER(j, cycle->colors)) {
+      if (COLORSET_HAS_MEMBER(i, cycle->colors) &&
+          COLORSET_HAS_MEMBER(j, cycle->colors)) {
         if (cycleContainsAthenB(face->cycle, i, j)) {
           continue;
         }
@@ -411,7 +405,7 @@ FAILURE dynamicFaceMakeChoice(FACE face)
   }
   if (ColorCompleted) {
     for (completedColor = 0; completedColor < NCOLORS; completedColor++) {
-      if (COLOR_SET_HAS_MEMBER(completedColor, ColorCompleted)) {
+      if (COLORSET_HAS_MEMBER(completedColor, ColorCompleted)) {
         if (!dynamicColorRemoveFromSearch(completedColor)) {
           return failureDisconnectedCurve(0);
         }
@@ -559,37 +553,6 @@ void dynamicSolutionWrite(const char* prefix)
   }
   fprintf(fp, "\n\nVariations = %d\n", numberOfVariations);
   fclose(fp);
-}
-
-/*
-Set up the next values for edge1 and edge2 that have the same color.
-All four edges meet at the same point.
-The edge3 and edge4 have the other color.
-The next value for both  edge1 and edge2  for the other color is set to
-the reverse of the other edge.
-*/
-static void linkOut(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
-{
-  COLOR other = edge3->color;
-  uint32_t level1 = edge1->level;
-  uint32_t level2 = edge2->level;
-  uint32_t level3 = edge3->reversed->level;
-  uint32_t level4 = edge4->reversed->level;
-
-  assert(edge1->color == edge2->color);
-  assert(edge1->possiblyTo[other].next == NULL);
-  assert(edge2->possiblyTo[other].next == NULL);
-  assert(edge1->possiblyTo[other].point == edge2->possiblyTo[other].point);
-  assert(edge1->possiblyTo[other].point->colors =
-             (1u << edge1->color | 1u << other));
-  edge1->possiblyTo[other].next = edge2->reversed;
-  edge2->possiblyTo[other].next = edge1->reversed;
-  if (level1 == level3) {
-    assert(level2 == level4);
-  } else {
-    assert(level1 == level4);
-    assert(level2 == level3);
-  }
 }
 
 /*

@@ -55,8 +55,9 @@ extern void dynamicSolutionWrite(const char* prefix);
 extern void resetEdges(void);
 
 extern FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
+extern void linkOut(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4);
 
 #define IS_PRIMARY_EDGE(edge) \
-  (COLOR_SET_HAS_MEMBER((edge)->color, (edge)->colors))
+  (COLORSET_HAS_MEMBER((edge)->color, (edge)->colors))
 
 #endif  // EDGE_H

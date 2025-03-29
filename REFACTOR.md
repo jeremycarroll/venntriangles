@@ -5,7 +5,7 @@ A to-do items are:
 
 Issues to be addressed in refactoring:
 - [x] simplify output, e.g. just use stdout
-- [ ] move FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET to color.c
+- [x] move FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET to color.c
 - [x] improve TRAIL_SIZE, add maxTrail to stats
 - [ ] rationalize initialization; maybe use more lazy initialization
 - [ ] Revist function names

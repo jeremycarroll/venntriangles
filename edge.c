@@ -130,3 +130,32 @@ char* edgeToStr(EDGE edge)
   }
   return usingBuffer(buffer);
 }
+
+/*
+Set up the next values for edge1 and edge2 that have the same color.
+All four edges meet at the same point.
+The edge3 and edge4 have the other color.
+The next value for both  edge1 and edge2  for the other color is set to
+the reverse of the other edge.
+*/
+void linkOut(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
+{
+  COLOR other = edge3->color;
+  uint32_t level1 = edge1->level;
+  uint32_t level2 = edge2->level;
+  uint32_t level3 = edge3->reversed->level;
+  uint32_t level4 = edge4->reversed->level;
+
+  assert(edge1->color == edge2->color);
+  assert(edge1->possiblyTo[other].next == NULL);
+  assert(edge2->possiblyTo[other].next == NULL);
+  assert(edge1->possiblyTo[other].point == edge2->possiblyTo[other].point);
+  edge1->possiblyTo[other].next = edge2->reversed;
+  edge2->possiblyTo[other].next = edge1->reversed;
+  if (level1 == level3) {
+    assert(level2 == level4);
+  } else {
+    assert(level1 == level4);
+    assert(level2 == level3);
+  }
+}

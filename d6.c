@@ -53,7 +53,7 @@ COLORSET dynamicColorSetPermute(COLORSET colorSet, PERMUTATION permutation)
 {
   COLORSET result = 0;
   for (COLOR color = 0; color < NCOLORS; color++) {
-    if (COLOR_SET_HAS_MEMBER(color, colorSet)) {
+    if (COLORSET_HAS_MEMBER(color, colorSet)) {
       result |= 1u << permutation[color];
     }
   }

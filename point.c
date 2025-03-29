@@ -48,13 +48,13 @@ POINT dynamicPointAdd(COLORSET colors, EDGE incomingEdge, COLOR othercolor)
   uint32_t ix;
 
   if (IS_PRIMARY_EDGE(incomingEdge)) {
-    if (COLOR_SET_HAS_MEMBER(othercolor, colors)) {
+    if (COLORSET_HAS_MEMBER(othercolor, colors)) {
       ix = 0;
     } else {
       ix = 3;
     }
   } else {
-    if (COLOR_SET_HAS_MEMBER(othercolor, colors)) {
+    if (COLORSET_HAS_MEMBER(othercolor, colors)) {
       ix = 2;
     } else {
       ix = 1;

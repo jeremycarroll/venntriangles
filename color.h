@@ -27,7 +27,7 @@ struct facialCycle {
   COLOR curves[NCOLORS];
 };
 
-#define COLOR_SET_HAS_MEMBER(color, colorSet) (((colorSet) >> (color)) & 1u)
+#define COLORSET_HAS_MEMBER(color, colorSet) (((colorSet) >> (color)) & 1u)
 
 /* These cycleSets are accessed from cycles, with the pointers set up during
    initialization. */
@@ -55,4 +55,5 @@ extern char *dynamicCycleToStr(CYCLE cycle);
 extern void removeFromCycleSetWithTrail(uint32_t cycleId, CYCLESET cycleSet);
 extern void initializeCycleSets(void);
 extern void resetCycles(void);
+extern void initializeCycleSetUniversal(CYCLESET cycleSet);
 #endif  // COLOR_H

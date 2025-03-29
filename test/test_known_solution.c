@@ -377,7 +377,7 @@ static void test_in_order(bool smallestFirst)
   COLOR color;
   while ((face = dynamicFaceChoose(smallestFirst))) {
     for (color = 0, i = 0; color < NCOLORS; color++) {
-      if (COLOR_SET_HAS_MEMBER(color, face->colors)) {
+      if (COLORSET_HAS_MEMBER(color, face->colors)) {
         colors[i++] = 'a' + color;
       }
     }
