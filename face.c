@@ -3,6 +3,7 @@
 #include "d6.h"
 
 #include <stdlib.h>
+
 struct face Faces[NFACES];
 uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
 
@@ -145,7 +146,7 @@ static void initializePossiblyTo(void)
           continue;
         }
         edge->possiblyTo[othercolor].point =
-            dynamicPointAdd(face, edge, othercolor);
+            dynamicPointAdd(face->colors, edge, othercolor);
       }
     }
   }
@@ -332,6 +333,8 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
   for (i = 0; i < cycle->length; i++) {
     CHECK_FAILURE(
         dynamicEdgeCurveChecks(&face->edges[cycle->curves[i]], depth));
+    CHECK_FAILURE(
+        dynamicEdgeCornerCheck(&face->edges[cycle->curves[i]], depth));
   }
   for (i = 0; i < cycle->length; i++) {
     CHECK_FAILURE(propogateChoice(face, &face->edges[cycle->curves[i]], depth));
@@ -627,4 +630,59 @@ void initializePoints(void)
       }
     }
   }
+}
+
+/*
+TODO: rename vars , the A B problem ...
+Either return the point, or return NULL and set the value of failureReturn.
+*/
+FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
+                                int depth)
+{
+  FAILURE crossingLimit;
+  POINT upoint;
+  EDGE edge;
+  COLOR colors[2];
+  uint_trail* edgeCountPtr;
+
+  if (face->edges[aColor].to != NULL) {
+    assert(face->edges[aColor].to != &face->edges[aColor].possiblyTo[aColor]);
+    if (face->edges[aColor].to != &face->edges[aColor].possiblyTo[bColor]) {
+      return failurePointConflict(depth);
+    }
+    assert(face->edges[aColor].to == &face->edges[aColor].possiblyTo[bColor]);
+    return NULL;
+  }
+  upoint = face->edges[aColor].possiblyTo[bColor].point;
+  crossingLimit =
+      dynamicEdgeCheckCrossingLimit(upoint->primary, upoint->secondary, depth);
+  if (crossingLimit != NULL) {
+    return crossingLimit;
+  }
+  colors[0] = upoint->primary;
+  colors[1] = upoint->secondary;
+  for (int i = 0; i < 4; i++) {
+    edge = upoint->incomingEdges[i];
+    assert(edge->color == colors[(i & 2) >> 1]);
+    assert(edge->color != colors[1 - ((i & 2) >> 1)]);
+    if (edge->to != NULL) {
+      if (edge->to != &edge->possiblyTo[colors[(i & 2) >> 1]]) {
+        return failurePointConflict(depth);
+      }
+      assert(edge->to == &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
+    } else {
+      setDynamicPointer(&edge->to,
+                        &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
+    }
+
+    assert(edge->to != &edge->possiblyTo[edge->color]);
+    // Count edge
+    edgeCountPtr =
+        &EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color];
+    trailSetInt(edgeCountPtr, (*edgeCountPtr) + 1);
+  }
+  for (int i = 0; i < 4; i++) {
+    assert(upoint->incomingEdges[i]->to != NULL);
+  }
+  return NULL;
 }

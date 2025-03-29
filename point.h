@@ -48,9 +48,11 @@ struct Point {
 
 extern void initializePoints(void);
 extern void resetPoints(void);
-extern POINT dynamicPointAdd(FACE face, EDGE incomingEdge, COLOR othercolor);
+extern POINT dynamicPointAdd(COLORSET colorsOfFace, EDGE incomingEdge,
+                             COLOR othercolor);
 extern char* uPointToStr(char* dbuffer, POINT up);
 extern POINT getPoint(COLORSET colorsOfFace, COLOR primary, COLOR secondary);
 extern struct Point DynamicPointAllUPoints[NPOINTS];
+extern FAILURE dynamicEdgeCornerCheck(EDGE start, int depth);
 
 #endif  // POINT_H

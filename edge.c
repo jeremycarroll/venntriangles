@@ -94,13 +94,11 @@ static EDGE findStartOfCurve(EDGE edge)
 
 FAILURE dynamicEdgeCurveChecks(EDGE edge, int depth)
 {
-  FAILURE failure;
   if (EdgeCurvesComplete[edge->color]) {
     return NULL;
   }
   EDGE start = findStartOfCurve(edge);
-  CHECK_FAILURE(checkForDisconnectedCurve(start, depth));
-  return dynamicEdgeCornerCheck(start, depth);
+  return checkForDisconnectedCurve(start, depth);
 }
 
 FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth)

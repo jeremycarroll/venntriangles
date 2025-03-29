@@ -54,7 +54,6 @@ extern EDGE edgeOnCentralFace(COLOR a);
 extern void dynamicSolutionWrite(const char* prefix);
 extern void resetEdges(void);
 
-extern FAILURE dynamicEdgeCornerCheck(EDGE start, int depth);
 extern FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
 
 #define IS_PRIMARY_EDGE(edge) (memberOfColorSet((edge)->color, (edge)->colors))
