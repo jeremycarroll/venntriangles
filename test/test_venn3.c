@@ -179,13 +179,13 @@ static void test_choosing_and_backtracking()
   TEST_ASSERT_EQUAL(8, DynamicCycleGuessCounter);
 }
 
-static int solution_count = 0;
-static void found_solution() { solution_count++; }
+static int SolutionCount = 0;
+static void found_solution() { SolutionCount++; }
 
 static void test_search()
 {
   dynamicSearch(true, found_solution);
-  TEST_ASSERT_EQUAL(2, solution_count);
+  TEST_ASSERT_EQUAL(2, SolutionCount);
 }
 
 int main(void)

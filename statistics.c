@@ -6,25 +6,25 @@
 #include <math.h>
 #include <string.h>
 
-static Statistic statistics[MAX_STATISTICS];
-static Failure failures[MAX_STATISTICS];
-static time_t startTime;
-static time_t lastLogTime;
-static int checkFrequency = 1;
-static int secondsBetweenLogs = 10;
-static int checkCountDown = 0;
-static FILE* logFile = NULL;
+static Statistic Statistics[MAX_STATISTICS];
+static Failure Failures[MAX_STATISTICS];
+static time_t StartTime;
+static time_t LastLogTime;
+static int CheckFrequency = 1;
+static int SecondsBetweenLogs = 10;
+static int CheckCountDown = 0;
+static FILE* LogFile = NULL;
 
 void statisticNew(uint64_t* counter, char* shortName, char* name)
 {
   for (int i = 0; i < MAX_STATISTICS; i++) {
-    if (statistics[i].countPtr == counter) {
+    if (Statistics[i].countPtr == counter) {
       return;
     }
-    if (statistics[i].countPtr == NULL) {
-      statistics[i].countPtr = counter;
-      statistics[i].shortName = shortName;
-      statistics[i].name = name;
+    if (Statistics[i].countPtr == NULL) {
+      Statistics[i].countPtr = counter;
+      Statistics[i].shortName = shortName;
+      Statistics[i].name = name;
       return;
     }
   }
@@ -34,8 +34,8 @@ void statisticNew(uint64_t* counter, char* shortName, char* name)
 void initializeFailureStatistic(Failure* failure)
 {
   for (int i = 0; i < MAX_STATISTICS; i++) {
-    if (failures[i].count[0] == 0) {
-      failures[i] = *failure;
+    if (Failures[i].count[0] == 0) {
+      Failures[i] = *failure;
       return;
     }
   }
@@ -45,17 +45,17 @@ void initializeFailureStatistic(Failure* failure)
 void resetStatistics(void)
 {
   for (int i = 0; i < MAX_STATISTICS; i++) {
-    if (statistics[i].countPtr == NULL) {
+    if (Statistics[i].countPtr == NULL) {
       break;
     }
-    *statistics[i].countPtr = 0;
-    statistics[i].countPtr = NULL;
+    *Statistics[i].countPtr = 0;
+    Statistics[i].countPtr = NULL;
   }
   for (int i = 0; i < MAX_STATISTICS; i++) {
-    if (failures[i].count[0] == 0) {
+    if (Failures[i].count[0] == 0) {
       break;
     }
-    memset(failures[i].count, 0, sizeof(failures[i].count));
+    memset(Failures[i].count, 0, sizeof(Failures[i].count));
   }
 }
 
@@ -83,48 +83,48 @@ int statisticCountChosen(void)
 
 void statisticPrintOneLine(int position)
 {
-  if (--checkCountDown <= 0) {
+  if (--CheckCountDown <= 0) {
     time_t now = time(NULL);
-    double seconds = difftime(now, lastLogTime);
-    if (seconds >= secondsBetweenLogs) {
+    double seconds = difftime(now, LastLogTime);
+    if (seconds >= SecondsBetweenLogs) {
       char* timestr = asctime(localtime(&now));
-      time_t elapsed = now - startTime;
+      time_t elapsed = now - StartTime;
       timestr[19] = 0;
-      fprintf(logFile, "%s %ld:%02.2ld:%02.2ld %d %.1f ", timestr + 11,
+      fprintf(LogFile, "%s %ld:%02.2ld:%02.2ld %d %.1f ", timestr + 11,
               elapsed / 3600, (elapsed / 60) % 60, elapsed % 60,
               statisticCountChosen(), statisticCalculateSearchSpace());
 
-      fprintf(logFile, "p %d ", position);
+      fprintf(LogFile, "p %d ", position);
       for (int i = 0; i < MAX_STATISTICS; i++) {
-        if (statistics[i].countPtr == NULL) {
+        if (Statistics[i].countPtr == NULL) {
           break;
         }
-        fprintf(logFile, "%s %llu ", statistics[i].shortName,
-                *statistics[i].countPtr);
+        fprintf(LogFile, "%s %llu ", Statistics[i].shortName,
+                *Statistics[i].countPtr);
       }
       for (int i = 0; i < MAX_STATISTICS; i++) {
-        if (failures[i].count[0] == 0) {
+        if (Failures[i].count[0] == 0) {
           break;
         }
         int j;
         for (j = NFACES - 1; j > 0; j--) {
-          if (failures[i].count[j]) {
+          if (Failures[i].count[j]) {
             break;
           }
         }
         char separator = '[';
-        fprintf(logFile, "%s: ", failures[i].shortLabel);
+        fprintf(LogFile, "%s: ", Failures[i].shortLabel);
         for (int k = 0; k <= j; k++) {
-          fprintf(logFile, "%c%llu", separator, failures[i].count[k]);
+          fprintf(LogFile, "%c%llu", separator, Failures[i].count[k]);
           separator = ' ';
         }
-        fprintf(logFile, "] ");
+        fprintf(LogFile, "] ");
       }
-      fprintf(logFile, "\n");
-      lastLogTime = now;
-      fflush(logFile);
+      fprintf(LogFile, "\n");
+      LastLogTime = now;
+      fflush(LogFile);
     }
-    checkCountDown = checkFrequency;
+    CheckCountDown = CheckFrequency;
   }
 }
 
@@ -132,30 +132,30 @@ void statisticPrintFull(void)
 {
   time_t now = time(NULL);
   char* timestr = asctime(localtime(&now));
-  time_t elapsed = now - startTime;
+  time_t elapsed = now - StartTime;
   double searchSpaceLogSize = statisticCalculateSearchSpace();
-  fprintf(logFile,
+  fprintf(LogFile,
           "%sRuntime: %ld:%02.2ld:%02.2ld\nChosen faces: %d\nOpen Search Space "
           "Size: Log = %.2f "
           "; i.e. "
           "%6.3g\n",
           timestr, elapsed / 3600, (elapsed / 60) % 60, elapsed % 60,
           statisticCountChosen(), searchSpaceLogSize, exp(searchSpaceLogSize));
-  fprintf(logFile, "%30s %30s\n", "Counter", "Value(s)");
+  fprintf(LogFile, "%30s %30s\n", "Counter", "Value(s)");
   for (int i = 0; i < MAX_STATISTICS; i++) {
-    if (statistics[i].countPtr == NULL) {
+    if (Statistics[i].countPtr == NULL) {
       break;
     }
-    fprintf(logFile, "%30s %30llu\n", statistics[i].name,
-            *statistics[i].countPtr);
+    fprintf(LogFile, "%30s %30llu\n", Statistics[i].name,
+            *Statistics[i].countPtr);
   }
   for (int i = 0; i < MAX_STATISTICS; i++) {
-    if (failures[i].count[0] == 0) {
+    if (Failures[i].count[0] == 0) {
       break;
     }
     int j;
     for (j = NFACES - 1; j > 0; j--) {
-      if (failures[i].count[j]) {
+      if (Failures[i].count[j]) {
         break;
       }
     }
@@ -163,35 +163,35 @@ void statisticPrintFull(void)
     char buf[4096];
     char* bufptr = buf;
     for (int k = 0; k <= j; k++) {
-      bufptr += sprintf(bufptr, "%c%llu", separator, failures[i].count[k]);
+      bufptr += sprintf(bufptr, "%c%llu", separator, Failures[i].count[k]);
       separator = ' ';
     }
     sprintf(bufptr, "]");
-    fprintf(logFile, "%30s %30s\n", failures[i].label, buf);
+    fprintf(LogFile, "%30s %30s\n", Failures[i].label, buf);
   }
-  fprintf(logFile, "\n");
-  lastLogTime = now;
-  fflush(logFile);
+  fprintf(LogFile, "\n");
+  LastLogTime = now;
+  fflush(LogFile);
 
-  checkCountDown = checkFrequency;
+  CheckCountDown = CheckFrequency;
 }
 
 void initializeStatisticLogging(char* filename, int frequency, int seconds)
 {
-  logFile = filename == NULL                  ? stderr
+  LogFile = filename == NULL                  ? stderr
             : strcmp("/dev/stdout", filename) ? fopen(filename, "w")
                                               : stdout;
-  checkFrequency = frequency;
-  secondsBetweenLogs = seconds;
-  startTime = time(NULL);
-  lastLogTime = startTime;
-  checkCountDown = checkFrequency;
+  CheckFrequency = frequency;
+  SecondsBetweenLogs = seconds;
+  StartTime = time(NULL);
+  LastLogTime = StartTime;
+  CheckCountDown = CheckFrequency;
   initializeFailures();
 }
 
 void initializeDynamicCounters(void)
 {
   statisticNew(&DynamicCycleGuessCounter, "?", "guesses");
-  statisticNew(&cycleForcedCounter, "+", "forced");
-  statisticNew(&cycleSetReducedCounter, "-", "reduced");
+  statisticNew(&CycleForcedCounter, "+", "forced");
+  statisticNew(&CycleSetReducedCounter, "-", "reduced");
 }

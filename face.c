@@ -9,8 +9,8 @@ uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
 
 uint64_t DynamicCycleGuessCounter = 0;
 /* Output-related variables */
-static int solutionNumber = 0;
-static char lastPrefix[128] = "";
+static int SolutionNumber = 0;
+static char LastPrefix[128] = "";
 
 static void recomputeCountOfChoices(FACE face);
 static void initializePossiblyTo(void);
@@ -204,8 +204,8 @@ FAILURE dynamicFaceFinalCorrectnessChecks(void)
    be in the Trail.
  */
 static FAILURE makeChoiceInternal(FACE face, int depth);
-uint64_t cycleForcedCounter = 0;
-uint64_t cycleSetReducedCounter = 0;
+uint64_t CycleForcedCounter = 0;
+uint64_t CycleSetReducedCounter = 0;
 
 void dynamicFaceSetupCentral(int* faceDegrees)
 {
@@ -248,7 +248,7 @@ static void restrictCycles(FACE face, CYCLESET cycleSet)
     newCycleSetSize -= __builtin_popcountll(toBeCleared);
   }
   if (newCycleSetSize < face->cycleSetSize) {
-    cycleSetReducedCounter++;
+    CycleSetReducedCounter++;
     trailSetInt(&face->cycleSetSize, newCycleSetSize);
   }
 }
@@ -273,7 +273,7 @@ static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
   }
   if (face->cycleSetSize == 1) {
     setDynamicPointer(&face->cycle, cycleSetFindFirst(face->possibleCycles));
-    cycleForcedCounter++;
+    CycleForcedCounter++;
     return makeChoiceInternal(face, depth + 1);
   }
   return NULL;
@@ -533,12 +533,12 @@ void dynamicSolutionWrite(const char* prefix)
   int numberOfVariations = 1;
   int pLength;
   FILE* fp;
-  if (strcmp(prefix, lastPrefix) != 0) {
-    strcpy(lastPrefix, prefix);
-    solutionNumber = 1;
+  if (strcmp(prefix, LastPrefix) != 0) {
+    strcpy(LastPrefix, prefix);
+    SolutionNumber = 1;
   }
   snprintf(filename, sizeof(filename), "%s-%2.2d.txt", prefix,
-           solutionNumber++);
+           SolutionNumber++);
   fp = fopen(filename, "w");
   if (fp == NULL) {
     perror(filename);

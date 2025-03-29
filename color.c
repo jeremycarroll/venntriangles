@@ -10,8 +10,8 @@ static void initializeSameDirection(void);
 static void initializeOppositeDirection(void);
 static void initializeOmittingCycleSets(void);
 
-static int nextCycle = 0;
-static int nextSetOfCycleSets = 0;
+static int NextCycle = 0;
+static int NextSetOfCycleSets = 0;
 
 /*
 These cycleSets are accessed from cycles, with the pointers set up during
@@ -149,15 +149,15 @@ void resetCycles()
   memset(CycleSetOmittingOneColor, 0, sizeof(CycleSetOmittingOneColor));
   memset(CycleSetOmittingColorPair, 0, sizeof(CycleSetOmittingColorPair));
 
-  nextCycle = 0;
-  nextSetOfCycleSets = 0;
+  NextCycle = 0;
+  NextSetOfCycleSets = 0;
 }
 
 static void addCycle(int length, ...)
 {
   uint32_t color;
   va_list ap;
-  CYCLE cycle = &Cycles[nextCycle++];
+  CYCLE cycle = &Cycles[NextCycle++];
   int ix = 0;
   cycle->colors = 0;
   cycle->length = length;
@@ -172,7 +172,7 @@ static void addCycle(int length, ...)
 
 static void initializeCycles(void)
 {
-  assert(nextCycle == 0);
+  assert(NextCycle == 0);
   uint32_t c1, c2, c3, c4, c5, c6;
   for (c1 = 0; c1 < NCOLORS; c1++) {
     for (c2 = c1 + 1; c2 < NCOLORS; c2++) {
@@ -202,7 +202,7 @@ static void initializeCycles(void)
       }
     }
   }
-  assert(nextCycle == ARRAY_LEN(Cycles));
+  assert(NextCycle == ARRAY_LEN(Cycles));
 }
 
 void initializeCycleSets(void)
@@ -241,8 +241,8 @@ static void initializeSameDirection(void)
   uint32_t i, j;
   CYCLE cycle;
   for (i = 0, cycle = Cycles; i < NCYCLES; i++, cycle++) {
-    cycle->sameDirection = &InitializeCycleSetSets[nextSetOfCycleSets];
-    nextSetOfCycleSets += cycle->length;
+    cycle->sameDirection = &InitializeCycleSetSets[NextSetOfCycleSets];
+    NextSetOfCycleSets += cycle->length;
     for (j = 1; j < cycle->length; j++) {
       cycle->sameDirection[j - 1] =
           InitializeCycleSetPairs[cycle->curves[j - 1]][cycle->curves[j]];
@@ -251,15 +251,15 @@ static void initializeSameDirection(void)
         InitializeCycleSetPairs[cycle->curves[j - 1]][cycle->curves[0]];
   }
 
-  assert(nextSetOfCycleSets == NCYCLE_ENTRIES);
+  assert(NextSetOfCycleSets == NCYCLE_ENTRIES);
 }
 static void initializeOppositeDirection(void)
 {
   uint32_t i, j;
   CYCLE cycle;
   for (i = 0, cycle = Cycles; i < NCYCLES; i++, cycle++) {
-    cycle->oppositeDirection = &InitializeCycleSetSets[nextSetOfCycleSets];
-    nextSetOfCycleSets += cycle->length;
+    cycle->oppositeDirection = &InitializeCycleSetSets[NextSetOfCycleSets];
+    NextSetOfCycleSets += cycle->length;
     for (j = 2; j < cycle->length; j++) {
       cycle->oppositeDirection[j - 1] =
           InitializeCycleSetTriples[cycle->curves[j]][cycle->curves[j - 1]]
@@ -273,7 +273,7 @@ static void initializeOppositeDirection(void)
                                  [cycle->curves[j - 1]];
   }
 
-  assert(nextSetOfCycleSets == 2 * NCYCLE_ENTRIES);
+  assert(NextSetOfCycleSets == 2 * NCYCLE_ENTRIES);
 }
 
 static void initializeOmittingCycleSets()

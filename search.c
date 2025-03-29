@@ -29,7 +29,7 @@ static CYCLE chooseCycle(FACE face, CYCLE cycle)
   return cycleSetFindNext(face->possibleCycles, cycle);
 }
 
-static int solution_count = 0;
+static int SolutionCount = 0;
 void dynamicSearch(bool smallestFirst, void (*foundSolution)(void))
 {
   FACE face;
@@ -45,7 +45,7 @@ void dynamicSearch(bool smallestFirst, void (*foundSolution)(void))
         face = dynamicFaceChoose(smallestFirst);
         if (face == NULL) {
           if (dynamicFaceFinalCorrectnessChecks() == NULL) {
-            solution_count++;
+            SolutionCount++;
             foundSolution();
           }
           position -= 1;
@@ -83,40 +83,40 @@ void dynamicSearch(bool smallestFirst, void (*foundSolution)(void))
   }
 }
 
-static clock_t totalWastedTime = 0;
-static clock_t totalUsefulTime = 0;
-static int wastedSearchCount = 0;
-static int usefulSearchCount = 0;
-static TRAIL startPoint;
+static clock_t TotalWastedTime = 0;
+static clock_t TotalUsefulTime = 0;
+static int WastedSearchCount = 0;
+static int UsefulSearchCount = 0;
+static TRAIL StartPoint;
 static void full_search_callback6(void *foundSolutionVoidPtr, int *args)
 {
   clock_t now = clock();
   clock_t used;
-  int initialSolutionCount = solution_count;
+  int initialSolutionCount = SolutionCount;
   int i;
   void (*foundSolution)(void) = foundSolutionVoidPtr;
-  trailBacktrackTo(startPoint);  // Start with backtracking
+  trailBacktrackTo(StartPoint);  // Start with backtracking
   dynamicFaceSetupCentral(args);
   dynamicSearch(true, foundSolution);
   used = clock() - now;
-  if (solution_count != initialSolutionCount) {
-    totalUsefulTime += used;
-    usefulSearchCount += 1;
+  if (SolutionCount != initialSolutionCount) {
+    TotalUsefulTime += used;
+    UsefulSearchCount += 1;
 
 #define PRINT_TIME(clockValue, counter)                        \
   printf("[%1lu.%6.6lu (%d)] ", (clockValue) / CLOCKS_PER_SEC, \
          (clockValue) % CLOCKS_PER_SEC, counter)
     PRINT_TIME(used, 0);
-    PRINT_TIME(totalUsefulTime, usefulSearchCount);
-    PRINT_TIME(totalWastedTime, wastedSearchCount);
+    PRINT_TIME(TotalUsefulTime, UsefulSearchCount);
+    PRINT_TIME(TotalWastedTime, WastedSearchCount);
     for (i = 0; i < NCOLORS; i++) {
       printf("%d ", args[i]);
     }
-    printf(" gives %d new solutions\n", solution_count - initialSolutionCount);
+    printf(" gives %d new solutions\n", SolutionCount - initialSolutionCount);
   } else {
-    wastedSearchCount += 1;
+    WastedSearchCount += 1;
 
-    totalWastedTime += used;
+    TotalWastedTime += used;
   }
 }
 
@@ -124,7 +124,7 @@ void dynamicSearchFull(void (*foundSolution)(void))
 {
   initializeSequenceOrder();
   initialize();
-  startPoint = Trail;
-  solution_count = 0;
+  StartPoint = Trail;
+  SolutionCount = 0;
   dynamicFaceCanonicalCallback(full_search_callback6, (void *)foundSolution);
 }

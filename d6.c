@@ -2,8 +2,8 @@
 
 #include "face.h"
 #define TOTAL_5FACE_DEGREE 27
-static COLORSET sequenceOrder[NFACES];
-static COLORSET inverseSequenceOrder[NFACES];
+static COLORSET SequenceOrder[NFACES];
+static COLORSET InverseSequenceOrder[NFACES];
 
 static PERMUTATION group[] = {
 #if NCOLORS == 6
@@ -21,7 +21,7 @@ void initializeSequenceOrder(void)
 
 #define ADD_TO_SEQUENCE_ORDER(colors)               \
   do {                                              \
-    sequenceOrder[ix++] = (NFACES - 1) & ~(colors); \
+    SequenceOrder[ix++] = (NFACES - 1) & ~(colors); \
     done |= 1llu << (colors);                       \
   } while (0)
   for (i = 0; i < NCOLORS; i++) {
@@ -40,7 +40,7 @@ void initializeSequenceOrder(void)
   assert(done == ~0llu);
   assert(ix == NFACES);
   for (i = 0; i < NFACES; i++) {
-    inverseSequenceOrder[sequenceOrder[i]] = i;
+    InverseSequenceOrder[SequenceOrder[i]] = i;
   }
 }
 
@@ -66,8 +66,8 @@ static int compareUint8(const void *a, const void *b)
 }
 
 /*
-sizes[i] is in sequenceOrder
-To find the color we have to use inverseSequenceOrder, then permute, then map
+sizes[i] is in SequenceOrder
+To find the color we have to use InverseSequenceOrder, then permute, then map
 back
 */
 static SYMMETRY_TYPE d6SymmetryType64(int *sizes)
@@ -76,8 +76,8 @@ static SYMMETRY_TYPE d6SymmetryType64(int *sizes)
   int i, j;
   for (i = 0; i < 12; i++) {
     for (j = 0; j < NFACES; j++) {
-      permuted[i][j] = sizes[inverseSequenceOrder[dynamicColorSetPermute(
-          sequenceOrder[j], group[i])]];
+      permuted[i][j] = sizes[InverseSequenceOrder[dynamicColorSetPermute(
+          SequenceOrder[j], group[i])]];
     }
   }
   assert(memcmp(permuted[0], sizes, sizeof(permuted[0])) == 0);
@@ -112,7 +112,7 @@ static int *d6FaceDegrees()
 {
   static int faceDegrees[NFACES];
   for (int i = 0; i < NFACES; i++) {
-    faceDegrees[i] = Faces[sequenceOrder[i]].cycle->length;
+    faceDegrees[i] = Faces[SequenceOrder[i]].cycle->length;
   }
   return faceDegrees;
 }

@@ -24,38 +24,38 @@ void tearDown(void)
   resetPoints();
 }
 
-static int solution_count = 0;
-static void found_solution() { solution_count++; }
+static int SolutionCount = 0;
+static void found_solution() { SolutionCount++; }
 
 static void test_search()
 {
-  solution_count = 0;
+  SolutionCount = 0;
   dynamicSearch(false, found_solution);
-  TEST_ASSERT_EQUAL(FACTORIAL4, solution_count);
+  TEST_ASSERT_EQUAL(FACTORIAL4, SolutionCount);
 }
 
 static void test_search_abcd()
 {
-  solution_count = 0;
+  SolutionCount = 0;
   dynamicFaceSetupCentral(dynamicIntArray(0, 0, 0, 0));
   dynamicSearch(false, found_solution);
-  TEST_ASSERT_EQUAL(4, solution_count);
+  TEST_ASSERT_EQUAL(4, SolutionCount);
 }
 
 static void test_search_4343()
 {
-  solution_count = 0;
+  SolutionCount = 0;
   dynamicFaceSetupCentral(dynamicIntArray(4, 3, 4, 3));
   dynamicSearch(false, found_solution);
-  TEST_ASSERT_EQUAL(0, solution_count);
+  TEST_ASSERT_EQUAL(0, SolutionCount);
 }
 
 static void test_search_4433()
 {
-  solution_count = 0;
+  SolutionCount = 0;
   dynamicFaceSetupCentral(dynamicIntArray(4, 4, 3, 3));
   dynamicSearch(false, found_solution);
-  TEST_ASSERT_EQUAL(1, solution_count);
+  TEST_ASSERT_EQUAL(1, SolutionCount);
 }
 
 int main(void)

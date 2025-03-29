@@ -5,7 +5,7 @@
 /*
 We run single threaded and have only one active failure at any time;
 hence for each failure we have a single static instance, which records the
-current state of the failure as we backtrack. Each of the static failures
+current state of the failure as we backtrack. Each of the static Failures
 also has a counter, which is incremented on every use, so that we can produce
 stats.
 */

@@ -25,8 +25,8 @@ void tearDown(void)
   resetPoints();
 }
 
-static int solution_count = 0;
-static void found_solution() { solution_count++; }
+static int SolutionCount = 0;
+static void found_solution() { SolutionCount++; }
 
 static void test_central_face_edge(void)
 {
@@ -41,16 +41,16 @@ static void test_central_face_edge(void)
 
 static void test_search_for_best_solution()
 {
-  solution_count = 0;
+  SolutionCount = 0;
   dynamicFaceSetupCentral(dynamicIntArray(5, 5, 5, 4, 4, 4));
   dynamicSearch(true, found_solution);
 
-  TEST_ASSERT_EQUAL(80, solution_count);
+  TEST_ASSERT_EQUAL(80, SolutionCount);
 }
 
 static void test_search_for_two_solutions()
 {
-  solution_count = 0;
+  SolutionCount = 0;
   dynamicFaceSetupCentral(dynamicIntArray(5, 5, 5, 4, 4, 4));
   dynamicFaceAddSpecific("c", "adbce");
   /* This is a short statement of the best solution.
@@ -66,16 +66,16 @@ static void test_search_for_two_solutions()
   */
   dynamicSearch(true, found_solution);
 
-  TEST_ASSERT_EQUAL(2, solution_count);
+  TEST_ASSERT_EQUAL(2, SolutionCount);
 }
 
 static void test_full_search(void)
 {
   /* dyanmicSearchFull includes initialization, so we undo our own setUp. */
   tearDown();
-  solution_count = 0;
+  SolutionCount = 0;
   dynamicSearchFull(found_solution);
-  TEST_ASSERT_EQUAL(233, solution_count);
+  TEST_ASSERT_EQUAL(233, SolutionCount);
 }
 
 int main(void)

@@ -7,12 +7,12 @@
 #include <getopt.h>
 #include <stdlib.h>
 
-static char *targetFolder = NULL;
+static char *TargetFolder = NULL;
 
 void dynamicSaveResult(void)
 {
   char buffer[1024];
-  snprintf(buffer, sizeof(buffer), "%s/%s", targetFolder,
+  snprintf(buffer, sizeof(buffer), "%s/%s", TargetFolder,
            dynamicFaceDegreeSignature());
   dynamicSolutionWrite(buffer);
 }
@@ -21,15 +21,15 @@ static void initializeOutputFolder()
 {
   struct stat st = {0};
 
-  if (stat(targetFolder, &st) == -1) {
+  if (stat(TargetFolder, &st) == -1) {
     // Directory does not exist, create it
-    if (mkdir(targetFolder, 0700) != 0) {
+    if (mkdir(TargetFolder, 0700) != 0) {
       perror("Failed to create directory");
       exit(EXIT_FAILURE);
     }
   } else {
     // Directory exists, check if it is writable
-    if (!S_ISDIR(st.st_mode) || access(targetFolder, W_OK) != 0) {
+    if (!S_ISDIR(st.st_mode) || access(TargetFolder, W_OK) != 0) {
       fprintf(stderr, "Target folder exists but is not writable\n");
       exit(EXIT_FAILURE);
     }
@@ -39,11 +39,11 @@ static void initializeOutputFolder()
 int dynamicMain0(int argc, char *argv[])
 {
   int opt;
-  targetFolder = NULL;
+  TargetFolder = NULL;
   while ((opt = getopt(argc, argv, "f:")) != -1) {
     switch (opt) {
       case 'f':
-        targetFolder = optarg;
+        TargetFolder = optarg;
         break;
       default:
         fprintf(stderr, "Usage: %s -f outputFolder\n", argv[0]);
@@ -51,7 +51,7 @@ int dynamicMain0(int argc, char *argv[])
     }
   }
 
-  if (optind != argc || targetFolder == NULL) {
+  if (optind != argc || TargetFolder == NULL) {
     fprintf(stderr, "Usage: %s -f outputFolder\n", argv[0]);
     return EXIT_FAILURE;
   }
