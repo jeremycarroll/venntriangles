@@ -5,7 +5,7 @@
 #include "face.h"
 
 extern FACE dynamicFaceAddSpecific(char* colors, char* cycle);
-extern int* dynamicIntArray(int a, ...);
+extern int* intArray(int a, ...);
 extern bool dynamicCycleSetPrint(CYCLESET cycleSet);
 
 #endif /* TEST_HELPERS_H */ 

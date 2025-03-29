@@ -31,7 +31,7 @@ static void foundSolution() { SolutionCount++; }
 static void testCentralFaceEdge(void)
 {
   COLOR a;
-  dynamicFaceSetupCentral(dynamicIntArray(0, 0, 0, 0, 0, 0));
+  dynamicFaceSetupCentral(intArray(0, 0, 0, 0, 0, 0));
   for (a = 0; a < NCOLORS; a++) {
     EDGE edge = &Faces[NFACES - 1].edges[a];
     EDGE edge2 = edgeOnCentralFace(a);
@@ -42,8 +42,8 @@ static void testCentralFaceEdge(void)
 static void testSearchForBestSolution()
 {
   SolutionCount = 0;
-  dynamicFaceSetupCentral(dynamicIntArray(5, 5, 5, 4, 4, 4));
-  dynamicSearch(true, foundSolution);
+  dynamicFaceSetupCentral(intArray(5, 5, 5, 4, 4, 4));
+  searchHere(true, foundSolution);
 
   TEST_ASSERT_EQUAL(80, SolutionCount);
 }
@@ -51,7 +51,7 @@ static void testSearchForBestSolution()
 static void testSearchForTwoSolutions()
 {
   SolutionCount = 0;
-  dynamicFaceSetupCentral(dynamicIntArray(5, 5, 5, 4, 4, 4));
+  dynamicFaceSetupCentral(intArray(5, 5, 5, 4, 4, 4));
   dynamicFaceAddSpecific("c", "adbce");
   /* This is a short statement of the best solution.
   dynamicFaceAddSpecific("a", "abed");
@@ -64,7 +64,7 @@ static void testSearchForTwoSolutions()
   dynamicFaceAddSpecific("b", "abcf");
   dynamicFaceAddSpecific("f", "aefdc");
   */
-  dynamicSearch(true, foundSolution);
+  searchHere(true, foundSolution);
 
   TEST_ASSERT_EQUAL(2, SolutionCount);
 }
@@ -74,7 +74,7 @@ static void testFullSearch(void)
   /* dyanmicSearchFull includes initialization, so we undo our own setUp. */
   tearDown();
   SolutionCount = 0;
-  dynamicSearchFull(foundSolution);
+  searchFull(foundSolution);
   TEST_ASSERT_EQUAL(233, SolutionCount);
 }
 

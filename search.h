@@ -6,9 +6,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-extern FACE dynamicFaceChoose(bool smallestFirst);
-extern void dynamicSearch(bool smallestFirst, void (*foundSolution)(void));
-extern void dynamicSearchFull(void (*foundSolution)(void));
+extern FACE chooseNextFaceForSearch(bool smallestFirst);
+extern void searchHere(bool smallestFirst, void (*foundSolution)(void));
+extern void searchFull(void (*foundSolution)(void));
 extern void dynamicSolutionEnumerate(FILE *(*fp)(char *signature, int soln,
                                                  int subsoln));
 

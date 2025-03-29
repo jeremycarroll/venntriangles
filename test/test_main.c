@@ -67,10 +67,10 @@ void initializeSequenceOrder() { /* stub for testing. */ }
 void initializeStatisticLogging(char *filename, int frequency, int seconds)
 { /* stub for testing. */ }
 
-void dynamicSearchFull(void (*foundSolution)(void)) { /* stub for testing. */ }
+void searchFull(void (*foundSolution)(void)) { /* stub for testing. */ }
 
-const char *dynamicFaceDegreeSignature(void) { return "stub"; }
+const char *faceDegreeSignature(void) { return "stub"; }
 
-void dynamicSolutionWrite(const char *buffer) { /* stub for testing. */ }
+void solutionWrite(const char *buffer) { /* stub for testing. */ }
 
 char *getBuffer() { return NULL; }

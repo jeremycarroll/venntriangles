@@ -7,7 +7,7 @@ extern  void resetGlobals(void);
 extern  void resetInitialize(void);
 extern void initialize(void);
 
-extern  int* dynamicIntArray(int a, ...);
+extern  int* intArray(int a, ...);
 extern  char * getBuffer(void);
 extern  char * usingBuffer(char * buffer);
 

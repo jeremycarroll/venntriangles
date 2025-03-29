@@ -146,7 +146,7 @@ static void initializePossiblyTo(void)
           continue;
         }
         edge->possiblyTo[othercolor].point =
-            dynamicPointAdd(face->colors, edge, othercolor);
+            initializePointIncomingEdge(face->colors, edge, othercolor);
       }
     }
   }
@@ -174,13 +174,13 @@ static FAILURE checkLengthOfCycleOfFaces(FACE face)
   assert(0);
 }
 
-FAILURE dynamicFaceFinalCorrectnessChecks(void)
+FAILURE faceFinalCorrectnessChecks(void)
 {
   FAILURE failure;
   COLORSET colors = 1;
   FACE face;
 #if NCOLORS == 6
-  switch (dynamicSymmetryTypeFaces()) {
+  switch (symmetryTypeFaces()) {
     case NON_CANONICAL:
       return failureNonCanonical();
     case EQUIVOCAL:
@@ -198,7 +198,7 @@ FAILURE dynamicFaceFinalCorrectnessChecks(void)
   return NULL;
 }
 
-/* We use this global to defer removing colors from the dynamicSearch space
+/* We use this global to defer removing colors from the searchHere space
    until we have completed computing consequential changes. From a design point
    of view it is local to the dynamicFaceMakeChoice method, so does not need to
    be in the Trail.
@@ -272,7 +272,7 @@ static FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
     return failureNoMatchingCycles(depth);
   }
   if (face->cycleSetSize == 1) {
-    TRAIL_SET_POINTER(&face->cycle, cycleSetFindFirst(face->possibleCycles));
+    TRAIL_SET_POINTER(&face->cycle, cycleSetFirst(face->possibleCycles));
     CycleForcedCounter++;
     return makeChoiceInternal(face, depth + 1);
   }
@@ -331,8 +331,7 @@ static FAILURE makeChoiceInternal(FACE face, int depth)
       dynamicFaceIncludePoint(face, cycle->curves[i], cycle->curves[0], depth));
 
   for (i = 0; i < cycle->length; i++) {
-    CHECK_FAILURE(
-        dynamicEdgeCurveChecks(&face->edges[cycle->curves[i]], depth));
+    CHECK_FAILURE(edgeCurveChecks(&face->edges[cycle->curves[i]], depth));
     CHECK_FAILURE(
         dynamicEdgeCornerCheck(&face->edges[cycle->curves[i]], depth));
   }
@@ -441,7 +440,7 @@ char* faceToStr(FACE face)
 {
   char* buffer = getBuffer();
   char* colorBuf = colorSetToStr(face->colors);
-  char* cycleBuf = dynamicCycleToStr(face->cycle);
+  char* cycleBuf = cycleToStr(face->cycle);
 
   if (face->cycleSetSize > 1) {
     sprintf(buffer, "%s%s^%llu", colorBuf, cycleBuf, face->cycleSetSize);
@@ -451,20 +450,20 @@ char* faceToStr(FACE face)
   return usingBuffer(buffer);
 }
 
-void dynamicFacePrint(FACE face) { printf("%s\n", faceToStr(face)); }
+void facePrint(FACE face) { printf("%s\n", faceToStr(face)); }
 
-void dynamicFacePrintSelected(void)
+void facePrintSelected(void)
 {
   uint32_t i;
   FACE face;
   for (i = 0, face = Faces; i < NFACES; i++, face++) {
     if (face->cycle || face->cycleSetSize < 2) {
-      dynamicFacePrint(face);
+      facePrint(face);
     }
   }
 }
 
-void dynamicSolutionPrint(FILE* fp)
+void solutionPrint(FILE* fp)
 {
   COLORSET colors = 0;
   if (fp == NULL) {
@@ -504,10 +503,10 @@ uint32_t cycleIdFromColors(char* colors)
   for (i = 0; *colors; i++, colors++) {
     cycle[i] = *colors - 'a';
   }
-  return cycleFindId(cycle, i);
+  return cycleId(cycle, i);
 }
 
-FACE dynamicFaceFromColors(char* colors)
+FACE faceFromColors(char* colors)
 {
   int faceId = 0;
   while (true) {
@@ -520,7 +519,7 @@ FACE dynamicFaceFromColors(char* colors)
   return Faces + faceId;
 }
 
-void dynamicSolutionWrite(const char* prefix)
+void solutionWrite(const char* prefix)
 {
   EDGE corners[3][2];
   char filename[1024];
@@ -538,7 +537,7 @@ void dynamicSolutionWrite(const char* prefix)
     perror(filename);
     exit(EXIT_FAILURE);
   }
-  dynamicSolutionPrint(fp);
+  solutionPrint(fp);
   for (COLOR a = 0; a < NCOLORS; a++) {
     edgeFindCorners(a, corners);
     for (int i = 0; i < 3; i++) {
@@ -571,10 +570,10 @@ void initializePoints(void)
   uint32_t i, j, k;
   for (i = 0; i < NPOINTS; i++) {
     POINT p = PointAllUPoints + i;
-    linkOut(p->incomingEdges[0], p->incomingEdges[1], p->incomingEdges[2],
-            p->incomingEdges[3]);
-    linkOut(p->incomingEdges[2], p->incomingEdges[3], p->incomingEdges[0],
-            p->incomingEdges[1]);
+    edgeLink(p->incomingEdges[0], p->incomingEdges[1], p->incomingEdges[2],
+             p->incomingEdges[3]);
+    edgeLink(p->incomingEdges[2], p->incomingEdges[3], p->incomingEdges[0],
+             p->incomingEdges[1]);
   }
   for (i = 0; i < NFACES; i++) {
     FACE f = Faces + i;
@@ -617,7 +616,7 @@ FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
   }
   upoint = face->edges[aColor].possiblyTo[bColor].point;
   crossingLimit =
-      dynamicEdgeCheckCrossingLimit(upoint->primary, upoint->secondary, depth);
+      edgeCheckCrossingLimit(upoint->primary, upoint->secondary, depth);
   if (crossingLimit != NULL) {
     return crossingLimit;
   }

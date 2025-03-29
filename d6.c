@@ -44,12 +44,12 @@ void initializeSequenceOrder(void)
   }
 }
 
-COLOR dynamicColorPermute(COLOR color, PERMUTATION permutation)
+COLOR colorPermute(COLOR color, PERMUTATION permutation)
 {
   return permutation[color];
 }
 
-COLORSET dynamicColorSetPermute(COLORSET colorSet, PERMUTATION permutation)
+COLORSET colorSetPermute(COLORSET colorSet, PERMUTATION permutation)
 {
   COLORSET result = 0;
   for (COLOR color = 0; color < NCOLORS; color++) {
@@ -76,7 +76,7 @@ static SYMMETRY_TYPE d6SymmetryType64(int *sizes)
   int i, j;
   for (i = 0; i < 12; i++) {
     for (j = 0; j < NFACES; j++) {
-      permuted[i][j] = sizes[InverseSequenceOrder[dynamicColorSetPermute(
+      permuted[i][j] = sizes[InverseSequenceOrder[colorSetPermute(
           SequenceOrder[j], group[i])]];
     }
   }
@@ -103,10 +103,7 @@ static SYMMETRY_TYPE d6SymmetryTypeN(int n, int *args)
   return d6SymmetryType64(sizes);
 }
 
-SYMMETRY_TYPE dynamicSymmetryType6(int *args)
-{
-  return d6SymmetryTypeN(6, args);
-}
+SYMMETRY_TYPE symmetryType6(int *args) { return d6SymmetryTypeN(6, args); }
 
 static int *d6FaceDegrees()
 {
@@ -117,12 +114,12 @@ static int *d6FaceDegrees()
   return FaceDegrees;
 }
 
-SYMMETRY_TYPE dynamicSymmetryTypeFaces(void)
+SYMMETRY_TYPE symmetryTypeFaces(void)
 {
   return d6SymmetryType64(d6FaceDegrees());
 }
 
-char *dynamicFaceDegreeSignature(void)
+char *faceDegreeSignature(void)
 {
   static char Result[NCOLORS + 1];
   int *faceDegrees = d6FaceDegrees();
@@ -158,7 +155,7 @@ static void canoncialCallbackImpl(int depth, int sum, int *args,
   }
 }
 
-void dynamicFaceCanonicalCallback(UseFaceDegrees callback, void *data)
+void canonicalCallback(UseFaceDegrees callback, void *data)
 {
   int args[NCOLORS];
   canoncialCallbackImpl(0, 0, args, callback, data);

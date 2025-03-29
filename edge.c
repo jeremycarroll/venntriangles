@@ -93,7 +93,7 @@ static EDGE findStartOfCurve(EDGE edge)
   return edge;
 }
 
-FAILURE dynamicEdgeCurveChecks(EDGE edge, int depth)
+FAILURE edgeCurveChecks(EDGE edge, int depth)
 {
   if (EdgeCurvesComplete[edge->color]) {
     return NULL;
@@ -102,7 +102,7 @@ FAILURE dynamicEdgeCurveChecks(EDGE edge, int depth)
   return checkForDisconnectedCurve(start, depth);
 }
 
-FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth)
+FAILURE edgeCheckCrossingLimit(COLOR a, COLOR b, int depth)
 {
   uint_trail* crossing = &EdgeCrossingCounts[a][b];
   if (*crossing + 1 > MAX_ONE_WAY_CURVE_CROSSINGS) {
@@ -138,7 +138,7 @@ The edge3 and edge4 have the other color.
 The next value for both  edge1 and edge2  for the other color is set to
 the reverse of the other edge.
 */
-void linkOut(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
+void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
 {
   COLOR other = edge3->color;
   uint32_t level1 = edge1->level;

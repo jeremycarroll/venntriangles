@@ -30,31 +30,31 @@ static void foundSolution() { SolutionCount++; }
 static void testSearch()
 {
   SolutionCount = 0;
-  dynamicSearch(false, foundSolution);
+  searchHere(false, foundSolution);
   TEST_ASSERT_EQUAL(FACTORIAL4, SolutionCount);
 }
 
 static void testSearchAbcd()
 {
   SolutionCount = 0;
-  dynamicFaceSetupCentral(dynamicIntArray(0, 0, 0, 0));
-  dynamicSearch(false, foundSolution);
+  dynamicFaceSetupCentral(intArray(0, 0, 0, 0));
+  searchHere(false, foundSolution);
   TEST_ASSERT_EQUAL(4, SolutionCount);
 }
 
 static void testSearch4343()
 {
   SolutionCount = 0;
-  dynamicFaceSetupCentral(dynamicIntArray(4, 3, 4, 3));
-  dynamicSearch(false, foundSolution);
+  dynamicFaceSetupCentral(intArray(4, 3, 4, 3));
+  searchHere(false, foundSolution);
   TEST_ASSERT_EQUAL(0, SolutionCount);
 }
 
 static void testSearch4433()
 {
   SolutionCount = 0;
-  dynamicFaceSetupCentral(dynamicIntArray(4, 4, 3, 3));
-  dynamicSearch(false, foundSolution);
+  dynamicFaceSetupCentral(intArray(4, 4, 3, 3));
+  searchHere(false, foundSolution);
   TEST_ASSERT_EQUAL(1, SolutionCount);
 }
 

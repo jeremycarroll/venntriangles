@@ -43,12 +43,9 @@ void cycleSetRemove(uint32_t cycleId, CYCLESET cycleSet)
   cycleSet[cycleId / BITS_PER_WORD] &= ~(1ul << (cycleId % BITS_PER_WORD));
 }
 
-CYCLE cycleSetFindFirst(CYCLESET cycleSet)
-{
-  return cycleSetFindNext(cycleSet, NULL);
-}
+CYCLE cycleSetFirst(CYCLESET cycleSet) { return cycleSetNext(cycleSet, NULL); }
 
-CYCLE cycleSetFindNext(CYCLESET cycleSet, CYCLE cycle)
+CYCLE cycleSetNext(CYCLESET cycleSet, CYCLE cycle)
 {
   uint64_t i;
   int64_t j;
@@ -101,7 +98,7 @@ uint32_t cycleSetSize(CYCLESET cycleSet)
   return size;
 }
 
-uint32_t cycleFindId(COLOR* cycle, uint32_t length)
+uint32_t cycleId(COLOR* cycle, uint32_t length)
 {
   uint32_t cycleId;
   uint32_t i;
@@ -317,7 +314,7 @@ char* colorSetToStr(COLORSET colors)
   return usingBuffer(buffer);
 }
 
-char* dynamicCycleToStr(CYCLE cycle)
+char* cycleToStr(CYCLE cycle)
 {
   char* buffer = getBuffer();
   char* p = buffer;

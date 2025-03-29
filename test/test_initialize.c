@@ -169,7 +169,7 @@ static void testNextCycle(void)
   CYCLE cycle = NULL;
   initialize();
   do {
-    cycle = cycleSetFindNext(face->possibleCycles, cycle);
+    cycle = cycleSetNext(face->possibleCycles, cycle);
     counter++;
   } while (cycle != NULL);
 

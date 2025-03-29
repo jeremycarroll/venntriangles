@@ -17,12 +17,9 @@ void tearDown(void)
 
 static void testCanonical6()
 {
-  TEST_ASSERT_EQUAL(NON_CANONICAL,
-                    dynamicSymmetryType6(dynamicIntArray(5, 5, 4, 4, 4, 5)));
-  TEST_ASSERT_EQUAL(CANONICAL,
-                    dynamicSymmetryType6(dynamicIntArray(6, 5, 5, 4, 4, 3)));
-  TEST_ASSERT_EQUAL(EQUIVOCAL,
-                    dynamicSymmetryType6(dynamicIntArray(5, 5, 5, 4, 4, 4)));
+  TEST_ASSERT_EQUAL(NON_CANONICAL, symmetryType6(intArray(5, 5, 4, 4, 4, 5)));
+  TEST_ASSERT_EQUAL(CANONICAL, symmetryType6(intArray(6, 5, 5, 4, 4, 3)));
+  TEST_ASSERT_EQUAL(EQUIVOCAL, symmetryType6(intArray(5, 5, 5, 4, 4, 4)));
 }
 
 static int count6;
@@ -30,7 +27,7 @@ static void countSolutions() { count6++; }
 
 static void testCallback()
 {
-  dynamicFaceCanonicalCallback(countSolutions, NULL);
+  canonicalCallback(countSolutions, NULL);
 
   TEST_ASSERT_EQUAL(56, count6);
 }

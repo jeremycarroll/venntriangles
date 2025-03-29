@@ -184,7 +184,7 @@ static void foundSolution() { SolutionCount++; }
 
 static void testSearch()
 {
-  dynamicSearch(true, foundSolution);
+  searchHere(true, foundSolution);
   TEST_ASSERT_EQUAL(2, SolutionCount);
 }
 

@@ -45,17 +45,17 @@ extern uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
 
 extern EDGE edgeFollowBackwards(EDGE edge);
 extern EDGE edgeFollowForwards(EDGE edge);
-extern FAILURE dynamicEdgeCurveChecks(EDGE edge, int depth);
+extern FAILURE edgeCurveChecks(EDGE edge, int depth);
 extern void edgeFindCorners(COLOR a, EDGE result[3][2]);
 extern int edgePathLength(EDGE from, EDGE to);
 extern char* edgeToStr(EDGE edge);
 
 extern EDGE edgeOnCentralFace(COLOR a);
-extern void dynamicSolutionWrite(const char* prefix);
+extern void solutionWrite(const char* prefix);
 extern void resetEdges(void);
 
-extern FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
-extern void linkOut(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4);
+extern FAILURE edgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
+extern void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4);
 
 #define IS_PRIMARY_EDGE(edge) \
   (COLORSET_HAS_MEMBER((edge)->color, (edge)->colors))

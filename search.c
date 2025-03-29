@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <time.h>
 
-FACE dynamicFaceChoose(bool smallestFirst)
+FACE chooseNextFaceForSearch(bool smallestFirst)
 {
   FACE face = NULL;
   int sign = smallestFirst ? 1 : -1;
@@ -26,12 +26,12 @@ FACE dynamicFaceChoose(bool smallestFirst)
 
 static CYCLE chooseCycle(FACE face, CYCLE cycle)
 {
-  return cycleSetFindNext(face->possibleCycles, cycle);
+  return cycleSetNext(face->possibleCycles, cycle);
 }
 
 static int SolutionCount = 0;
 static int position = 0;
-void dynamicSearch(bool smallestFirst, void (*foundSolution)(void))
+void searchHere(bool smallestFirst, void (*foundSolution)(void))
 {
   FACE face;
   FACE chosenFaces[NFACES];
@@ -43,9 +43,9 @@ void dynamicSearch(bool smallestFirst, void (*foundSolution)(void))
     statisticPrintOneLine(position, false);
     switch (state) {
       case NEXT_FACE:
-        face = dynamicFaceChoose(smallestFirst);
+        face = chooseNextFaceForSearch(smallestFirst);
         if (face == NULL) {
-          if (dynamicFaceFinalCorrectnessChecks() == NULL) {
+          if (faceFinalCorrectnessChecks() == NULL) {
             SolutionCount++;
             foundSolution();
           }
@@ -98,7 +98,7 @@ static void fullSearchCallback(void *foundSolutionVoidPtr, int *args)
   void (*foundSolution)(void) = foundSolutionVoidPtr;
   trailBacktrackTo(StartPoint);  // Start with backtracking
   dynamicFaceSetupCentral(args);
-  dynamicSearch(true, foundSolution);
+  searchHere(true, foundSolution);
   used = clock() - now;
   if (SolutionCount != initialSolutionCount) {
     TotalUsefulTime += used;
@@ -122,11 +122,11 @@ static void fullSearchCallback(void *foundSolutionVoidPtr, int *args)
   }
 }
 
-void dynamicSearchFull(void (*foundSolution)(void))
+void searchFull(void (*foundSolution)(void))
 {
   initializeSequenceOrder();
   initialize();
   StartPoint = Trail;
   SolutionCount = 0;
-  dynamicFaceCanonicalCallback(fullSearchCallback, (void *)foundSolution);
+  canonicalCallback(fullSearchCallback, (void *)foundSolution);
 }

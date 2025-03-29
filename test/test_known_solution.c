@@ -301,19 +301,18 @@ static void addFacesFromTestData(char* testData[][2], int length)
   uint32_t cycleId;
   FAILURE failure;
   for (i = 0; i < length; i++) {
-    face = dynamicFaceFromColors(testData[i][0]);
+    face = faceFromColors(testData[i][0]);
     cycleId = cycleIdFromColors(testData[i][1]);
     TEST_ASSERT_TRUE(cycleSetMember(cycleId, face->possibleCycles));
     if (face->cycleSetSize == 1) {
-      TEST_ASSERT_EQUAL(Cycles + cycleId,
-                        cycleSetFindFirst(face->possibleCycles));
+      TEST_ASSERT_EQUAL(Cycles + cycleId, cycleSetFirst(face->possibleCycles));
       TEST_ASSERT_EQUAL(face->cycle, Cycles + cycleId);
     } else {
       face->cycle = Cycles + cycleId;
       failure = dynamicFaceMakeChoice(face);
       if (failure != NULL) {
         printf("Failure: %s %s\n", failure->label, failure->shortLabel);
-        dynamicFacePrintSelected();
+        facePrintSelected();
       }
       TEST_ASSERT_NULL(failure);
     }
@@ -322,15 +321,15 @@ static void addFacesFromTestData(char* testData[][2], int length)
 
 static void testFaceFromColors()
 {
-  TEST_ASSERT_EQUAL(Faces, dynamicFaceFromColors(""));
-  TEST_ASSERT_EQUAL(Faces + 1, dynamicFaceFromColors("a"));
-  TEST_ASSERT_EQUAL(Faces + 2, dynamicFaceFromColors("b"));
-  TEST_ASSERT_EQUAL(Faces + 3, dynamicFaceFromColors("ab"));
-  TEST_ASSERT_EQUAL(Faces + 4, dynamicFaceFromColors("c"));
-  TEST_ASSERT_EQUAL(Faces + 5, dynamicFaceFromColors("ac"));
-  TEST_ASSERT_EQUAL(Faces + 6, dynamicFaceFromColors("bc"));
-  TEST_ASSERT_EQUAL(Faces + 7, dynamicFaceFromColors("abc"));
-  TEST_ASSERT_EQUAL(Faces + NFACES - 1, dynamicFaceFromColors("abcdef"));
+  TEST_ASSERT_EQUAL(Faces, faceFromColors(""));
+  TEST_ASSERT_EQUAL(Faces + 1, faceFromColors("a"));
+  TEST_ASSERT_EQUAL(Faces + 2, faceFromColors("b"));
+  TEST_ASSERT_EQUAL(Faces + 3, faceFromColors("ab"));
+  TEST_ASSERT_EQUAL(Faces + 4, faceFromColors("c"));
+  TEST_ASSERT_EQUAL(Faces + 5, faceFromColors("ac"));
+  TEST_ASSERT_EQUAL(Faces + 6, faceFromColors("bc"));
+  TEST_ASSERT_EQUAL(Faces + 7, faceFromColors("abc"));
+  TEST_ASSERT_EQUAL(Faces + NFACES - 1, faceFromColors("abcdef"));
 }
 
 static void test3456(void)
@@ -375,7 +374,7 @@ static void testInOrder(bool smallestFirst)
   char colors[7];
   int i;
   COLOR color;
-  while ((face = dynamicFaceChoose(smallestFirst))) {
+  while ((face = chooseNextFaceForSearch(smallestFirst))) {
     for (color = 0, i = 0; color < NCOLORS; color++) {
       if (COLORSET_HAS_MEMBER(color, face->colors)) {
         colors[i++] = 'a' + color;
@@ -404,7 +403,7 @@ static bool findFace(char* colors, FACE* face, char** cyclePtr,
   int i;
   for (i = 0; i < length; i++) {
     if (strcmp(colors, testData[i][0]) == 0) {
-      *face = dynamicFaceFromColors(testData[i][0]);
+      *face = faceFromColors(testData[i][0]);
       *cyclePtr = testData[i][1];
       return true;
     }
@@ -429,8 +428,8 @@ static FACE addFaceFromTestData(char* colors)
 
 static void testDE1(void)
 {
-  FACE ab = dynamicFaceFromColors("ab");
-  FACE abc = dynamicFaceFromColors("abc");
+  FACE ab = faceFromColors("ab");
+  FACE abc = faceFromColors("abc");
   uint32_t cycleId = cycleIdFromColors("afceb");
   TEST_ASSERT_TRUE(cycleSetMember(cycleId, ab->possibleCycles));
   addFaceFromTestData("abc");
@@ -445,7 +444,7 @@ static void testDE1(void)
 
 static void testDE2(void)
 {
-  FACE ab = dynamicFaceFromColors("ab");
+  FACE ab = faceFromColors("ab");
   uint32_t cycleId = cycleIdFromColors("afceb");
   TEST_ASSERT_TRUE(cycleSetMember(cycleId, ab->possibleCycles));
   addFaceFromTestData("abce");

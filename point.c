@@ -22,7 +22,8 @@ void resetPoints()
   NextUPointId = 0;
 }
 
-POINT getPoint(COLORSET colorsOfFace, COLOR primary, COLOR secondary)
+POINT getOrInitializePoint(COLORSET colorsOfFace, COLOR primary,
+                           COLOR secondary)
 {
   COLORSET outsideColor = colorsOfFace & ~(1u << primary) & ~(1u << secondary);
   if (AllUPointPointers[outsideColor][primary][secondary] == NULL) {
@@ -41,7 +42,8 @@ POINT getPoint(COLORSET colorsOfFace, COLOR primary, COLOR secondary)
    The curve colored A crosses from inside the curve colored B to outside it.
    The curve colored B crosses from outside the curve colored A to inside it.
 */
-POINT dynamicPointAdd(COLORSET colors, EDGE incomingEdge, COLOR othercolor)
+POINT initializePointIncomingEdge(COLORSET colors, EDGE incomingEdge,
+                                  COLOR othercolor)
 {
   POINT point;
   COLOR primary, secondary;
@@ -77,7 +79,7 @@ POINT dynamicPointAdd(COLORSET colors, EDGE incomingEdge, COLOR othercolor)
       assert(0);
   }
 
-  point = getPoint(incomingEdge->colors, primary, secondary);
+  point = getOrInitializePoint(incomingEdge->colors, primary, secondary);
   assert(point->incomingEdges[ix] == NULL);
   assert(point->colors == 0 ||
          point->colors == ((1u << primary) | (1u << secondary)));
@@ -88,7 +90,7 @@ POINT dynamicPointAdd(COLORSET colors, EDGE incomingEdge, COLOR othercolor)
   return point;
 }
 
-char* uPointToStr(POINT up)
+char* pointToStr(POINT up)
 {
   char* buffer = getBuffer();
   char* colors = colorSetToStr(up->colors);
@@ -199,7 +201,7 @@ EDGE edgeOnCentralFace(COLOR a)
 {
   COLOR primary = a;
   COLOR secondary = (a + 1) % NCOLORS;
-  POINT uPoint = getPoint(NFACES - 1, primary, secondary);
+  POINT uPoint = getOrInitializePoint(NFACES - 1, primary, secondary);
   return uPoint->incomingEdges[0];
 }
 

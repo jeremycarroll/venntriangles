@@ -14,8 +14,8 @@ static void saveResult(void)
 {
   char *buffer = getBuffer();
   snprintf(buffer, sizeof(buffer), "%s/%s", TargetFolder,
-           dynamicFaceDegreeSignature());
-  dynamicSolutionWrite(usingBuffer(buffer));
+           faceDegreeSignature());
+  solutionWrite(usingBuffer(buffer));
 }
 
 static void initializeOutputFolder()
@@ -59,7 +59,7 @@ int dynamicMain0(int argc, char *argv[])
 
   initializeOutputFolder();
   initializeStatisticLogging("/dev/stdout", 200, 10);
-  dynamicSearchFull(saveResult);
+  searchFull(saveResult);
   statisticPrintFull();
   return 0;
 }

@@ -9,11 +9,11 @@
 FACE dynamicFaceAddSpecific(char* colors, char* cycle)
 {
   FAILURE failure;
-  FACE face = dynamicFaceFromColors(colors);
+  FACE face = faceFromColors(colors);
   uint32_t cycleId = cycleIdFromColors(cycle);
   TEST_ASSERT_TRUE(cycleSetMember(cycleId, face->possibleCycles));
   if (face->cycleSetSize == 1) {
-    TEST_ASSERT_EQUAL(face->cycle, cycleSetFindFirst(face->possibleCycles));
+    TEST_ASSERT_EQUAL(face->cycle, cycleSetFirst(face->possibleCycles));
     TEST_ASSERT_EQUAL(face->cycle, Cycles + cycleId);
   } else {
     face->cycle = Cycles + cycleId;
@@ -21,14 +21,14 @@ FACE dynamicFaceAddSpecific(char* colors, char* cycle)
 
     if (failure != NULL) {
       printf("Failure: %s %s\n", failure->label, failure->shortLabel);
-      dynamicFacePrintSelected();
+      facePrintSelected();
     }
     TEST_ASSERT_NULL(failure);
   }
   return face;
 }
 
-int* dynamicIntArray(int a, ...)
+int* intArray(int a, ...)
 {
   static int result[NCOLORS];
   va_list ap;
