@@ -176,7 +176,7 @@ static void test_choosing_and_backtracking()
     trailBacktrackTo(face->backtrack);
     face->cycle = NULL;
   }
-  TEST_ASSERT_EQUAL(8, DynamicCycleGuessCounter);
+  TEST_ASSERT_EQUAL(8, CycleGuessCounter);
 }
 
 static int SolutionCount = 0;

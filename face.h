@@ -37,9 +37,9 @@ extern FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
                                        int depth);
 extern bool dynamicColorRemoveFromSearch(COLOR color);
 
-extern COLORSET DynamicColorCompleted;
+extern COLORSET ColorCompleted;
 
-extern uint64_t DynamicCycleGuessCounter;
+extern uint64_t CycleGuessCounter;
 extern char *faceToStr(char *dbuffer, FACE face);
 
 extern FACE dynamicFaceFromColors(char *colors);

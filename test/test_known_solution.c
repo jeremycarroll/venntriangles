@@ -339,7 +339,7 @@ static void test_3_4_5_6(void)
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
-  TEST_ASSERT_EQUAL(14, DynamicCycleGuessCounter);
+  TEST_ASSERT_EQUAL(14, CycleGuessCounter);
 }
 
 static void test_4_3_5_6(void)
@@ -348,7 +348,7 @@ static void test_4_3_5_6(void)
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
-  TEST_ASSERT_EQUAL(11, DynamicCycleGuessCounter);
+  TEST_ASSERT_EQUAL(11, CycleGuessCounter);
 }
 
 static void test_6_5_4_3(void)
@@ -357,7 +357,7 @@ static void test_6_5_4_3(void)
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
-  TEST_ASSERT_EQUAL(12, DynamicCycleGuessCounter);
+  TEST_ASSERT_EQUAL(12, CycleGuessCounter);
 }
 
 static void test_5_3_6_4(void)
@@ -366,7 +366,7 @@ static void test_5_3_6_4(void)
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
-  TEST_ASSERT_EQUAL(11, DynamicCycleGuessCounter);
+  TEST_ASSERT_EQUAL(11, CycleGuessCounter);
 }
 
 static void test_in_order(bool smallestFirst)
@@ -389,13 +389,13 @@ static void test_in_order(bool smallestFirst)
 static void test_in_best_order(void)
 {
   test_in_order(true);
-  TEST_ASSERT_EQUAL(26, DynamicCycleGuessCounter);
+  TEST_ASSERT_EQUAL(26, CycleGuessCounter);
 }
 
 static void test_in_worst_order(void)
 {
   test_in_order(false);
-  TEST_ASSERT_EQUAL(10, DynamicCycleGuessCounter);
+  TEST_ASSERT_EQUAL(10, CycleGuessCounter);
 }
 
 static bool findFace(char* colors, FACE* face, char** cyclePtr,

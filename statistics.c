@@ -191,7 +191,7 @@ void initializeStatisticLogging(char* filename, int frequency, int seconds)
 
 void initializeDynamicCounters(void)
 {
-  statisticNew(&DynamicCycleGuessCounter, "?", "guesses");
+  statisticNew(&CycleGuessCounter, "?", "guesses");
   statisticNew(&CycleForcedCounter, "+", "forced");
   statisticNew(&CycleSetReducedCounter, "-", "reduced");
 }

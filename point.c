@@ -10,14 +10,14 @@
  * [n][i][j] is used if i != j, and the i and j are not in n.
  * other values are left as null
  */
-struct Point DynamicPointAllUPoints[NPOINTS];
+struct Point PointAllUPoints[NPOINTS];
 static int NextUPointId = 0;
 static struct Point* AllUPointPointers[NFACES][NCOLORS][NCOLORS];
 
 void resetPoints()
 {
   memset(AllUPointPointers, 0, sizeof(AllUPointPointers));
-  memset(DynamicPointAllUPoints, 0, sizeof(DynamicPointAllUPoints));
+  memset(PointAllUPoints, 0, sizeof(PointAllUPoints));
   NextUPointId = 0;
 }
 
@@ -25,13 +25,12 @@ POINT getPoint(COLORSET colorsOfFace, COLOR primary, COLOR secondary)
 {
   COLORSET outsideColor = colorsOfFace & ~(1u << primary) & ~(1u << secondary);
   if (AllUPointPointers[outsideColor][primary][secondary] == NULL) {
-    DynamicPointAllUPoints[NextUPointId].id = NextUPointId;
+    PointAllUPoints[NextUPointId].id = NextUPointId;
     AllUPointPointers[outsideColor][primary][secondary] =
-        &DynamicPointAllUPoints[NextUPointId];
-    DynamicPointAllUPoints[NextUPointId].primary = primary;
-    DynamicPointAllUPoints[NextUPointId].secondary = secondary;
-    DynamicPointAllUPoints[NextUPointId].colors =
-        1u << primary | 1u << secondary;
+        &PointAllUPoints[NextUPointId];
+    PointAllUPoints[NextUPointId].primary = primary;
+    PointAllUPoints[NextUPointId].secondary = secondary;
+    PointAllUPoints[NextUPointId].colors = 1u << primary | 1u << secondary;
     NextUPointId++;
   }
   return AllUPointPointers[outsideColor][primary][secondary];

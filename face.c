@@ -7,7 +7,7 @@
 struct face Faces[NFACES];
 uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
 
-uint64_t DynamicCycleGuessCounter = 0;
+uint64_t CycleGuessCounter = 0;
 /* Output-related variables */
 static int SolutionNumber = 0;
 static char LastPrefix[128] = "";
@@ -394,8 +394,8 @@ FAILURE dynamicFaceMakeChoice(FACE face)
   FAILURE failure;
   COLOR completedColor;
   uint64_t cycleId;
-  DynamicCycleGuessCounter++;
-  DynamicColorCompleted = 0;
+  CycleGuessCounter++;
+  ColorCompleted = 0;
   face->backtrack = Trail;
   assert(face->cycle != NULL);
   cycleId = face->cycle - Cycles;
@@ -408,9 +408,9 @@ FAILURE dynamicFaceMakeChoice(FACE face)
   if (failure != NULL) {
     return failure;
   }
-  if (DynamicColorCompleted) {
+  if (ColorCompleted) {
     for (completedColor = 0; completedColor < NCOLORS; completedColor++) {
-      if (memberOfColorSet(completedColor, DynamicColorCompleted)) {
+      if (memberOfColorSet(completedColor, ColorCompleted)) {
         if (!dynamicColorRemoveFromSearch(completedColor)) {
           return failureDisconnectedCurve(0);
         }
@@ -608,7 +608,7 @@ void initializePoints(void)
 {
   uint32_t i, j, k;
   for (i = 0; i < NPOINTS; i++) {
-    POINT p = DynamicPointAllUPoints + i;
+    POINT p = PointAllUPoints + i;
     linkOut(p->incomingEdges[0], p->incomingEdges[1], p->incomingEdges[2],
             p->incomingEdges[3]);
     linkOut(p->incomingEdges[2], p->incomingEdges[3], p->incomingEdges[0],

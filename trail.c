@@ -1,7 +1,7 @@
 #include "trail.h"
 
-struct trail DynamicTrailArray[TRAIL_SIZE];
-TRAIL Trail = DynamicTrailArray;
+struct trail TrailArray[TRAIL_SIZE];
+TRAIL Trail = TrailArray;
 
 void trailSetPointer(void** ptr, void* value)
 {
@@ -37,4 +37,4 @@ bool trailBacktrackTo(TRAIL backtrackPoint)
   return result;
 }
 
-void resetTrail() { Trail = DynamicTrailArray; }
+void resetTrail() { Trail = TrailArray; }

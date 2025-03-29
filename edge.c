@@ -13,7 +13,7 @@
 static uint64_t EdgeCrossingCounts[NCOLORS][NCOLORS];
 static uint64_t EdgeCurvesComplete[NCOLORS];
 uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
-COLORSET DynamicColorCompleted;
+COLORSET ColorCompleted;
 
 /*
 This file is responsible for checking that a set of edges can make a triangle,
@@ -47,10 +47,10 @@ static FAILURE checkForDisconnectedCurve(EDGE edge, int depth)
     }
     assert(length ==
            EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color]);
-    if (DynamicColorCompleted & 1u << edge->color) {
+    if (ColorCompleted & 1u << edge->color) {
       return NULL;
     }
-    DynamicColorCompleted |= 1u << edge->color;
+    ColorCompleted |= 1u << edge->color;
     trailSetInt(&EdgeCurvesComplete[edge->color], 1);
   }
   return NULL;

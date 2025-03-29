@@ -17,11 +17,11 @@ static int NextSetOfCycleSets = 0;
 These cycleSets are accessed from cycles, with the pointers set up during
 initialization.
  */
-CYCLESET_DECLARE InitializeCycleSetPairs[NCOLORS][NCOLORS];
-CYCLESET_DECLARE InitializeCycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
+CYCLESET_DECLARE CycleSetPairs[NCOLORS][NCOLORS];
+CYCLESET_DECLARE CycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
 CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
 CYCLESET_DECLARE CycleSetOmittingColorPair[NCOLORS][NCOLORS];
-static CYCLESET InitializeCycleSetSets[NCYCLE_ENTRIES * 2];
+static CYCLESET CycleSetSets[NCYCLE_ENTRIES * 2];
 
 struct facial_cycle Cycles[NCYCLES];
 
@@ -143,9 +143,9 @@ void removeFromCycleSetWithTrail(uint32_t cycleId, CYCLESET cycleSet)
 
 void resetCycles()
 {
-  memset(InitializeCycleSetPairs, 0, sizeof(InitializeCycleSetPairs));
-  memset(InitializeCycleSetTriples, 0, sizeof(InitializeCycleSetTriples));
-  memset(InitializeCycleSetSets, 0, sizeof(InitializeCycleSetSets));
+  memset(CycleSetPairs, 0, sizeof(CycleSetPairs));
+  memset(CycleSetTriples, 0, sizeof(CycleSetTriples));
+  memset(CycleSetSets, 0, sizeof(CycleSetSets));
   memset(CycleSetOmittingOneColor, 0, sizeof(CycleSetOmittingOneColor));
   memset(CycleSetOmittingColorPair, 0, sizeof(CycleSetOmittingColorPair));
 
@@ -216,7 +216,7 @@ void initializeCycleSets(void)
       }
       for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
         if (cycleContainsAthenB(&Cycles[cycleId], i, j)) {
-          initializeCycleSetAdd(cycleId, InitializeCycleSetPairs[i][j]);
+          initializeCycleSetAdd(cycleId, CycleSetPairs[i][j]);
         }
       }
       for (k = 0; k < NCOLORS; k++) {
@@ -225,7 +225,7 @@ void initializeCycleSets(void)
         }
         for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
           if (cycleContainsAthenBthenC(&Cycles[cycleId], i, j, k)) {
-            initializeCycleSetAdd(cycleId, InitializeCycleSetTriples[i][j][k]);
+            initializeCycleSetAdd(cycleId, CycleSetTriples[i][j][k]);
           }
         }
       }
@@ -241,14 +241,14 @@ static void initializeSameDirection(void)
   uint32_t i, j;
   CYCLE cycle;
   for (i = 0, cycle = Cycles; i < NCYCLES; i++, cycle++) {
-    cycle->sameDirection = &InitializeCycleSetSets[NextSetOfCycleSets];
+    cycle->sameDirection = &CycleSetSets[NextSetOfCycleSets];
     NextSetOfCycleSets += cycle->length;
     for (j = 1; j < cycle->length; j++) {
       cycle->sameDirection[j - 1] =
-          InitializeCycleSetPairs[cycle->curves[j - 1]][cycle->curves[j]];
+          CycleSetPairs[cycle->curves[j - 1]][cycle->curves[j]];
     }
     cycle->sameDirection[j - 1] =
-        InitializeCycleSetPairs[cycle->curves[j - 1]][cycle->curves[0]];
+        CycleSetPairs[cycle->curves[j - 1]][cycle->curves[0]];
   }
 
   assert(NextSetOfCycleSets == NCYCLE_ENTRIES);
@@ -258,19 +258,19 @@ static void initializeOppositeDirection(void)
   uint32_t i, j;
   CYCLE cycle;
   for (i = 0, cycle = Cycles; i < NCYCLES; i++, cycle++) {
-    cycle->oppositeDirection = &InitializeCycleSetSets[NextSetOfCycleSets];
+    cycle->oppositeDirection = &CycleSetSets[NextSetOfCycleSets];
     NextSetOfCycleSets += cycle->length;
     for (j = 2; j < cycle->length; j++) {
       cycle->oppositeDirection[j - 1] =
-          InitializeCycleSetTriples[cycle->curves[j]][cycle->curves[j - 1]]
-                                   [cycle->curves[j - 2]];
+          CycleSetTriples[cycle->curves[j]][cycle->curves[j - 1]]
+                         [cycle->curves[j - 2]];
     }
     cycle->oppositeDirection[j - 1] =
-        InitializeCycleSetTriples[cycle->curves[0]][cycle->curves[j - 1]]
-                                 [cycle->curves[j - 2]];
+        CycleSetTriples[cycle->curves[0]][cycle->curves[j - 1]]
+                       [cycle->curves[j - 2]];
     cycle->oppositeDirection[0] =
-        InitializeCycleSetTriples[cycle->curves[1]][cycle->curves[0]]
-                                 [cycle->curves[j - 1]];
+        CycleSetTriples[cycle->curves[1]][cycle->curves[0]]
+                       [cycle->curves[j - 1]];
   }
 
   assert(NextSetOfCycleSets == 2 * NCYCLE_ENTRIES);

@@ -4,8 +4,8 @@
 
 #include <unity.h>
 
-extern CYCLESET_DECLARE InitializeCycleSetPairs[NCOLORS][NCOLORS];
-extern CYCLESET_DECLARE InitializeCycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
+extern CYCLESET_DECLARE CycleSetPairs[NCOLORS][NCOLORS];
+extern CYCLESET_DECLARE CycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
 
 void setUp(void) {}
 
@@ -91,14 +91,14 @@ void test_cycleset(void)
   initialize();
   for (i = 0; i < NCOLORS; i++) {
     for (j = 0; j < NCOLORS; j++) {
-      int size2 = cycleSetSize(InitializeCycleSetPairs[i][j]);
+      int size2 = cycleSetSize(CycleSetPairs[i][j]);
       if (i == j) {
         TEST_ASSERT_EQUAL(0, size2);
       } else {
         TEST_ASSERT_EQUAL(64, size2);
       }
       for (k = 0; k < NCOLORS; k++) {
-        int size3 = cycleSetSize(InitializeCycleSetTriples[i][j][k]);
+        int size3 = cycleSetSize(CycleSetTriples[i][j][k]);
         if (i == j || i == k || j == k) {
           TEST_ASSERT_EQUAL(0, size3);
         } else {
