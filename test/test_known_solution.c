@@ -10,6 +10,23 @@
 #include <string.h>
 #include <unity.h>
 
+/* Function declarations */
+static void addFacesFromTestData(char* testData[][2], int length);
+static bool findFace(char* colors, FACE* face, char** cyclePtr,
+                     char* testData[][2], int length);
+static FACE addFaceFromTestData(char* colors);
+static void testFaceFromColors(void);
+static void test3456(void);
+static void test4356(void);
+static void test6543(void);
+static void test5364(void);
+static void testInOrder(bool smallestFirst);
+static void testInBestOrder(void);
+static void testInWorstOrder(void);
+static void testDE1(void);
+static void testDE2(void);
+
+/* Test data */
 static char* testData3[][2] = {
     {
         "ac",
@@ -108,6 +125,7 @@ static char* testData3[][2] = {
         "bce",
     },
 };
+
 char* testData4[][2] = {
     {
         "a",
@@ -214,6 +232,7 @@ char* testData4[][2] = {
         "abcd",
     },
 };
+
 static char* testData5[][2] = {
     {
         "ab",
@@ -264,6 +283,7 @@ static char* testData5[][2] = {
         "afdcb",
     },
 };
+
 static char* testData6[][2] = {
     {
         "",
@@ -275,8 +295,7 @@ static char* testData6[][2] = {
     },
 };
 
-static FACE addFaceFromTestData(char* colors);
-
+/* Test setup and teardown */
 void setUp(void)
 {
   int args[] = {5, 5, 5, 4, 4, 4};
@@ -294,6 +313,7 @@ void tearDown(void)
   resetPoints();
 }
 
+/* Helper functions */
 static void addFacesFromTestData(char* testData[][2], int length)
 {
   int i;
@@ -319,6 +339,36 @@ static void addFacesFromTestData(char* testData[][2], int length)
   }
 }
 
+static bool findFace(char* colors, FACE* face, char** cyclePtr,
+                     char* testData[][2], int length)
+{
+  int i;
+  for (i = 0; i < length; i++) {
+    if (strcmp(colors, testData[i][0]) == 0) {
+      *face = faceFromColors(testData[i][0]);
+      *cyclePtr = testData[i][1];
+      return true;
+    }
+  }
+  return false;
+}
+
+static FACE addFaceFromTestData(char* colors)
+{
+  FACE face;
+  char* cycle;
+  findFace(colors, &face, &cycle, testData3,
+           sizeof(testData3) / sizeof(testData3[0])) ||
+      findFace(colors, &face, &cycle, testData4,
+               sizeof(testData4) / sizeof(testData4[0])) ||
+      findFace(colors, &face, &cycle, testData5,
+               sizeof(testData5) / sizeof(testData5[0])) ||
+      findFace(colors, &face, &cycle, testData6,
+               sizeof(testData6) / sizeof(testData6[0]));
+  return dynamicFaceAddSpecific(colors, cycle);
+}
+
+/* Test functions */
 static void testFaceFromColors()
 {
   TEST_ASSERT_EQUAL(Faces, faceFromColors(""));
@@ -397,35 +447,6 @@ static void testInWorstOrder(void)
   TEST_ASSERT_EQUAL(10, CycleGuessCounter);
 }
 
-static bool findFace(char* colors, FACE* face, char** cyclePtr,
-                     char* testData[][2], int length)
-{
-  int i;
-  for (i = 0; i < length; i++) {
-    if (strcmp(colors, testData[i][0]) == 0) {
-      *face = faceFromColors(testData[i][0]);
-      *cyclePtr = testData[i][1];
-      return true;
-    }
-  }
-  return false;
-}
-
-static FACE addFaceFromTestData(char* colors)
-{
-  FACE face;
-  char* cycle;
-  findFace(colors, &face, &cycle, testData3,
-           sizeof(testData3) / sizeof(testData3[0])) ||
-      findFace(colors, &face, &cycle, testData4,
-               sizeof(testData4) / sizeof(testData4[0])) ||
-      findFace(colors, &face, &cycle, testData5,
-               sizeof(testData5) / sizeof(testData5[0])) ||
-      findFace(colors, &face, &cycle, testData6,
-               sizeof(testData6) / sizeof(testData6[0]));
-  return dynamicFaceAddSpecific(colors, cycle);
-}
-
 static void testDE1(void)
 {
   FACE ab = faceFromColors("ab");
@@ -453,6 +474,7 @@ static void testDE2(void)
   TEST_ASSERT_TRUE(cycleSetMember(cycleId, ab->possibleCycles));
 }
 
+/* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();

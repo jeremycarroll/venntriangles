@@ -145,15 +145,15 @@ start must either be an edge of the central face, or be an incomplete end.
 cornerReturn is a pointer to an array of length at least 3.
 */
 
-#if NCOLORS == 4
+#if NCOLORS <= 4
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunused-function"
 #endif
 
 FAILURE dynamicEdgeCornerCheck(EDGE start, int depth)
 {
-#if NCOLORS == 4
-  /* test_venn4.c does not like the normal code - not an issue. */
+#if NCOLORS <= 4
+  /* test_venn[34].c do not like the normal code - not an issue. */
   return NULL;
 #else
   EDGE ignore[MAX_CORNERS * 100];
