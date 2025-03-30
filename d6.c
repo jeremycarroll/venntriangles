@@ -4,6 +4,8 @@
 
 #include "face.h"
 
+typedef int PERMUTATION[NCOLORS];
+
 /* Global variables - file scoped */
 #define TOTAL_5FACE_DEGREE 27
 static COLORSET SequenceOrder[NFACES];
@@ -21,9 +23,12 @@ static PERMUTATION group[] = {
 static int compareUint8(const void *a, const void *b);
 static SYMMETRY_TYPE d6SymmetryType64(int *sizes);
 static SYMMETRY_TYPE d6SymmetryTypeN(int n, int *args);
-static int *d6FaceDegrees(void);
+static int *d6FaceDegreesInSequenceOrder(void);
 static void canoncialCallbackImpl(int depth, int sum, int *args,
                                   UseFaceDegrees callback, void *data);
+
+static COLOR colorPermute(COLOR color, PERMUTATION permutation);
+static COLORSET colorSetPermute(COLORSET colorSet, PERMUTATION permutation);
 
 /* Externally linked functions */
 void initializeSequenceOrder(void)
@@ -56,33 +61,17 @@ void initializeSequenceOrder(void)
   }
 }
 
-COLOR colorPermute(COLOR color, PERMUTATION permutation)
-{
-  return permutation[color];
-}
-
-COLORSET colorSetPermute(COLORSET colorSet, PERMUTATION permutation)
-{
-  COLORSET result = 0;
-  for (COLOR color = 0; color < NCOLORS; color++) {
-    if (COLORSET_HAS_MEMBER(color, colorSet)) {
-      result |= 1u << permutation[color];
-    }
-  }
-  return result;
-}
-
 SYMMETRY_TYPE symmetryType6(int *args) { return d6SymmetryTypeN(6, args); }
 
 SYMMETRY_TYPE symmetryTypeFaces(void)
 {
-  return d6SymmetryType64(d6FaceDegrees());
+  return d6SymmetryType64(d6FaceDegreesInSequenceOrder());
 }
 
 char *faceDegreeSignature(void)
 {
   static char Result[NCOLORS + 1];
-  int *faceDegrees = d6FaceDegrees();
+  int *faceDegrees = d6FaceDegreesInSequenceOrder();
   for (int i = 0; i < NCOLORS; i++) {
     Result[i] = '0' + faceDegrees[i];
   }
@@ -100,6 +89,22 @@ void canonicalCallback(UseFaceDegrees callback, void *data)
 static int compareUint8(const void *a, const void *b)
 {
   return -memcmp(a, b, sizeof(int) * NFACES);
+}
+
+static COLOR colorPermute(COLOR color, PERMUTATION permutation)
+{
+  return permutation[color];
+}
+
+static COLORSET colorSetPermute(COLORSET colorSet, PERMUTATION permutation)
+{
+  COLORSET result = 0;
+  for (COLOR color = 0; color < NCOLORS; color++) {
+    if (COLORSET_HAS_MEMBER(color, colorSet)) {
+      result |= 1u << permutation[color];
+    }
+  }
+  return result;
 }
 
 /*
@@ -140,7 +145,7 @@ static SYMMETRY_TYPE d6SymmetryTypeN(int n, int *args)
   return d6SymmetryType64(sizes);
 }
 
-static int *d6FaceDegrees()
+static int *d6FaceDegreesInSequenceOrder()
 {
   static int FaceDegrees[NFACES];
   for (int i = 0; i < NFACES; i++) {
