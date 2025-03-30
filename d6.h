@@ -1,3 +1,5 @@
+/* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
+
 #ifndef D6_H
 #define D6_H
 

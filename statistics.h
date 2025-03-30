@@ -1,3 +1,5 @@
+/* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
+
 #ifndef STATISTICS_H
 #define STATISTICS_H
 

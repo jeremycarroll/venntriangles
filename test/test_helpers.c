@@ -1,3 +1,5 @@
+/* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
+
 #include "test_helpers.h"
 
 #include "face.h"

@@ -1,3 +1,5 @@
+/* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
+
 #ifndef FAILURE_H
 #define FAILURE_H
 

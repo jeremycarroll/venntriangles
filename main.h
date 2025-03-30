@@ -1,3 +1,5 @@
+/* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
+
 #ifndef MAIN_H
 #define MAIN_H
 

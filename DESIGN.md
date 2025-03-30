@@ -46,6 +46,9 @@ We use the following naming conventions:
 The geometric files are in the sequence above, with each header file including the previous header file,
 and each c file including the corresponding header file, so that face.h and face.c include everything.
 
+Some of the functionality that should logically be in face.c is found in search.c to better balance
+the files.
+
 color.h includes core.h which defines various constants needed.
 
 ## Naming Conventions
