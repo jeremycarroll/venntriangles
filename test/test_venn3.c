@@ -1,216 +1,218 @@
-#include "../venn.h"
-#include "../visible_for_testing.h"
-#include "unity.h"
+/* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#define STATS 0
+#include "face.h"
+#include "search.h"
+#include "statistics.h"
+#include "utils.h"
 
+#include <unity.h>
+
+/* Test setup and teardown */
 void setUp(void)
 {
   initialize();
-  initializeStatsLogging(NULL, 4, 1);
+  initializeStatisticLogging(NULL, 4, 1);
 }
 
 void tearDown(void)
 {
-  clearGlobals();
-  clearInitialize();
+  resetGlobals();
+  resetInitialize();
   resetTrail();
   resetStatistics();
+  resetPoints();
 }
 
-static void test_outer_face()
-{
-  FACE face = g_faces;
-  TEST_ASSERT_EQUAL(0, face->colors);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[0], g_faces + 1);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[1], g_faces + 2);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[2], g_faces + 4);
-}
-
-static void test_a_face()
-{
-  FACE face = g_faces + 1;
-  TEST_ASSERT_EQUAL(1, face->colors);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[0], g_faces);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[1], g_faces + 3);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[2], g_faces + 5);
-}
-
-static void test_ab_face()
-{
-  FACE face = g_faces + 3;
-  TEST_ASSERT_EQUAL(3, face->colors);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[0], g_faces + 2);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[1], g_faces + 1);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[2], g_faces + 7);
-}
-
-static void test_abc_face()
-{
-  FACE face = g_faces + 7;
-  TEST_ASSERT_EQUAL(7, face->colors);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[0], g_faces + 6);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[1], g_faces + 5);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[2], g_faces + 3);
-}
-
-static void sanity_point(UPOINT point)
+/* Helper functions */
+static void sanityPoint(POINT point)
 {
   TEST_ASSERT_EQUAL(1u << point->primary | 1u << point->secondary,
                     point->colors);
   for (int i = 0; i < 4; i++) {
     for (int j = i + 1; j < 4; j++) {
       TEST_ASSERT_NOT_EQUAL(point->incomingEdges[i], point->incomingEdges[j]);
-      TEST_ASSERT_NOT_EQUAL(point->faces[i], point->faces[j]);
     }
   }
-  TEST_ASSERT_EQUAL(0, point->faces[0]->colors & point->colors);
-  TEST_ASSERT_EQUAL(1u << point->secondary,
-                    point->faces[2]->colors & point->colors);
-  TEST_ASSERT_EQUAL(1u << point->primary,
-                    point->faces[1]->colors & point->colors);
-  TEST_ASSERT_EQUAL(point->colors, point->faces[3]->colors & point->colors);
 }
 
-/*
-TODO add picture to justify the following test.
-*/
-static void test_outer_a_edge()
-{
-  FACE face = g_faces;
-  EDGE edge = &face->edges[0];
-  TEST_ASSERT_FALSE(IS_PRIMARY_EDGE(edge));
-  TEST_ASSERT_EQUAL(face, edge->face);
-  TEST_ASSERT_NULL(edge->to);
-  TEST_ASSERT_EQUAL(0, edge->color);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].point);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].out[0]);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->primary);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->secondary);
-  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].out[0]->color);
-  TEST_ASSERT_EQUAL(2, edge->possiblyTo[1].out[0]->face->colors);
-  sanity_point(edge->possiblyTo[1].point);
-}
-/*
-TODO add picture to justify the following test.
-*/
-static void test_a_face_a_edge()
-{
-  FACE face = g_faces + 1;
-  EDGE edge = &face->edges[0];
-  TEST_ASSERT_TRUE(IS_PRIMARY_EDGE(edge));
-  TEST_ASSERT_EQUAL(face, edge->face);
-  TEST_ASSERT_NULL(edge->to);
-  TEST_ASSERT_EQUAL(0, edge->color);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].point);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].out[0]);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->primary);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->secondary);
-  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].out[0]->color);
-  TEST_ASSERT_EQUAL(3, edge->possiblyTo[1].out[0]->face->colors);
-  sanity_point(edge->possiblyTo[1].point);
-}
-/*
-TODO add picture to justify the following test.
-*/
-static void test_ab_face_a_edge()
-{
-  FACE face = g_faces + 3;
-  EDGE edge = &face->edges[0];
-  TEST_ASSERT_TRUE(IS_PRIMARY_EDGE(edge));
-  TEST_ASSERT_EQUAL(face, edge->face);
-  TEST_ASSERT_NULL(edge->to);
-  TEST_ASSERT_EQUAL(0, edge->color);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].point);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].out[0]);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->primary);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->secondary);
-  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].out[0]->color);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].out[0]->face->colors);
-  sanity_point(edge->possiblyTo[1].point);
-}
-/*
-TODO add picture to justify the following test.
-*/
-static void test_abc_face_a_edge()
-{
-  FACE face = g_faces + 7;
-  EDGE edge = &face->edges[0];
-  TEST_ASSERT_TRUE(IS_PRIMARY_EDGE(edge));
-  TEST_ASSERT_EQUAL(face, edge->face);
-  TEST_ASSERT_NULL(edge->to);
-  TEST_ASSERT_EQUAL(0, edge->color);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].point);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].out[0]);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->primary);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->secondary);
-  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].out[0]->color);
-  TEST_ASSERT_EQUAL(5, edge->possiblyTo[1].out[0]->face->colors);
-  sanity_point(edge->possiblyTo[1].point);
-}
-
-static void verify_face_size(int size)
+static void verifyFaceSize(int size)
 {
   int i;
   for (i = 0; i < NFACES; i++) {
-    TEST_ASSERT_EQUAL(size, g_faces[i].cycleSetSize);
+    TEST_ASSERT_EQUAL(size, Faces[i].cycleSetSize);
     if (size == 1) {
-      TEST_ASSERT_NOT_NULL(g_faces[i].cycle);
+      TEST_ASSERT_NOT_NULL(Faces[i].cycle);
     } else {
-      TEST_ASSERT_NULL(g_faces[i].cycle);
+      TEST_ASSERT_NULL(Faces[i].cycle);
     }
   }
 }
 
-static void test_choosing_and_backtracking()
+/* Test functions */
+static void testOuterFace()
+{
+  FACE face = Faces;
+  TEST_ASSERT_EQUAL(0, face->colors);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[0], Faces + 1);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[1], Faces + 2);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 4);
+}
+
+static void testAFace()
+{
+  FACE face = Faces + 1;
+  TEST_ASSERT_EQUAL(1, face->colors);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[0], Faces);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[1], Faces + 3);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 5);
+}
+
+static void testAbFace()
+{
+  FACE face = Faces + 3;
+  TEST_ASSERT_EQUAL(3, face->colors);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[0], Faces + 2);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[1], Faces + 1);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 7);
+}
+
+static void testAbcFace()
+{
+  FACE face = Faces + 7;
+  TEST_ASSERT_EQUAL(7, face->colors);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[0], Faces + 6);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[1], Faces + 5);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 3);
+}
+
+/*
+TODO add picture to justify the following test.
+*/
+static void testOuterAEdge()
+{
+  FACE face = Faces;
+  EDGE edge = &face->edges[0];
+  TEST_ASSERT_FALSE(IS_PRIMARY_EDGE(edge));
+  TEST_ASSERT_EQUAL(face->colors, edge->colors);
+  TEST_ASSERT_NULL(edge->to);
+  TEST_ASSERT_EQUAL(0, edge->color);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].point);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].next);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->primary);
+  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->secondary);
+  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
+  TEST_ASSERT_EQUAL(2, edge->possiblyTo[1].next->colors);
+  sanityPoint(edge->possiblyTo[1].point);
+}
+
+/*
+TODO add picture to justify the following test.
+*/
+static void testAFaceAEdge()
+{
+  FACE face = Faces + 1;
+  EDGE edge = &face->edges[0];
+  TEST_ASSERT_TRUE(IS_PRIMARY_EDGE(edge));
+  TEST_ASSERT_EQUAL(face->colors, edge->colors);
+  TEST_ASSERT_NULL(edge->to);
+  TEST_ASSERT_EQUAL(0, edge->color);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].point);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].next);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->secondary);
+  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->primary);
+  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
+  TEST_ASSERT_EQUAL(3, edge->possiblyTo[1].next->colors);
+  sanityPoint(edge->possiblyTo[1].point);
+}
+
+/*
+TODO add picture to justify the following test.
+*/
+static void testAbFaceAEdge()
+{
+  FACE face = Faces + 3;
+  EDGE edge = &face->edges[0];
+  TEST_ASSERT_TRUE(IS_PRIMARY_EDGE(edge));
+  TEST_ASSERT_EQUAL(face->colors, edge->colors);
+  TEST_ASSERT_NULL(edge->to);
+  TEST_ASSERT_EQUAL(0, edge->color);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].point);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].next);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->primary);
+  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->secondary);
+  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
+  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].next->colors);
+  sanityPoint(edge->possiblyTo[1].point);
+}
+
+/*
+TODO add picture to justify the following test.
+*/
+static void testAbcFaceAEdge()
+{
+  FACE face = Faces + 7;
+  EDGE edge = &face->edges[0];
+  TEST_ASSERT_TRUE(IS_PRIMARY_EDGE(edge));
+  TEST_ASSERT_EQUAL(face->colors, edge->colors);
+  TEST_ASSERT_NULL(edge->to);
+  TEST_ASSERT_EQUAL(0, edge->color);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].point);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].next);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->primary);
+  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->secondary);
+  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
+  TEST_ASSERT_EQUAL(5, edge->possiblyTo[1].next->colors);
+  sanityPoint(edge->possiblyTo[1].point);
+}
+
+static void testChoosingAndBacktracking()
 {
   int i;
   FACE face;
-  TRAIL startTrail = trail;
+  TRAIL startTrail = Trail;
   for (i = 0; i < NFACES; i++) {
-    TEST_ASSERT_EQUAL(startTrail, trail);
-    verify_face_size(2);
-    face = g_faces + i;
-    face->cycle = g_cycles;
-    TEST_ASSERT_NULL(makeChoice(face));
-#if STATS
-    printStatisticsOneLine();
-#endif
-    verify_face_size(1);
-    backtrackTo(face->backtrack);
+    TEST_ASSERT_EQUAL(startTrail, Trail);
+    verifyFaceSize(2);
+    face = Faces + i;
+    face->cycle = Cycles;
+    TEST_ASSERT_NULL(dynamicFaceBacktrackableChoice(face));
+    verifyFaceSize(1);
+    trailBacktrackTo(face->backtrack);
     face->cycle = NULL;
   }
-#if STATS
-  printStatisticsFull();
-#endif
-  TEST_ASSERT_EQUAL(8, cycleGuessCounter);
+  TEST_ASSERT_EQUAL(8, CycleGuessCounter);
 }
 
-static int solution_count = 0;
-static void found_solution() { solution_count++; }
+/* Global variables */
+static int SolutionCount = 0;
 
-static void test_search()
+/* Callback functions */
+static void foundSolution() { SolutionCount++; }
+
+/* Test functions */
+static void testSearch()
 {
-  search(true, found_solution);
-  TEST_ASSERT_EQUAL(2, solution_count);
+  searchHere(true, foundSolution);
+  TEST_ASSERT_EQUAL(2, SolutionCount);
 }
 
+/* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();
-  RUN_TEST(test_outer_face);
-  RUN_TEST(test_a_face);
-  RUN_TEST(test_ab_face);
-  RUN_TEST(test_abc_face);
-  RUN_TEST(test_outer_a_edge);
-  RUN_TEST(test_a_face_a_edge);
-  RUN_TEST(test_ab_face_a_edge);
-  RUN_TEST(test_abc_face_a_edge);
-  RUN_TEST(test_choosing_and_backtracking);
-  RUN_TEST(test_search);
+  RUN_TEST(testOuterFace);
+  RUN_TEST(testAFace);
+  RUN_TEST(testAbFace);
+  RUN_TEST(testAbcFace);
+  RUN_TEST(testOuterAEdge);
+  RUN_TEST(testAFaceAEdge);
+  RUN_TEST(testAbFaceAEdge);
+  RUN_TEST(testAbcFaceAEdge);
+  RUN_TEST(testChoosingAndBacktracking);
+  RUN_TEST(testSearch);
   return UNITY_END();
 }

@@ -1,10 +1,14 @@
+/* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
+
 #ifndef MAIN_H
 #define MAIN_H
 
-typedef enum { LOG_DEBUG, LOG_VERBOSE, LOG_INFO, LOG_QUIET } log_level_t;
+#include "face.h"
 
+// Declare functions used in main.c
+extern const char* faceDegreeSignature(void);
+extern int dynamicMain0(int argc, char* argv[]);
+extern void solutionWrite(const char* prefix);
+extern void searchFull(void (*foundSolution)(void));
 
-extern int main0(int argc, char *argv[]);
-extern void log_message(log_level_t level, const char *format, ...);
-extern log_level_t log_level;
-#endif
+#endif  // MAIN_H

@@ -1,0 +1,31 @@
+/* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
+
+#ifndef TRAIL_H
+#define TRAIL_H
+
+#include <stdbool.h>
+#include <stdint.h>
+
+typedef struct trail *TRAIL;
+typedef uint64_t uint_trail;
+
+struct trail {
+  void *ptr;
+  uint_trail value;
+};
+
+/* We actually need 4834 */
+#define TRAIL_SIZE 16384
+
+extern TRAIL Trail;
+extern void trailSetPointer(void **ptr, void *value);
+#define TRAIL_SET_POINTER(a, b) trailSetPointer((void **)a, b)
+
+extern void trailSetInt(uint_trail *ptr, uint_trail value);
+extern bool trailBacktrackTo(TRAIL backtrackPoint);
+extern void trailMaybeSetInt(uint_trail *ptr, uint_trail value);
+
+extern void resetTrail(void);
+extern void initializeTrail(void);
+
+#endif  // TRAIL_H

@@ -1,40 +1,56 @@
-#include "venn.h"
+/* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-struct trail trailarray[TRAIL_SIZE];
-TRAIL trail = trailarray;
+#include "trail.h"
 
-void setDynamicPointer_(void** ptr, void* value)
+#include "statistics.h"
+
+/* Global variables (file scoped static) */
+struct trail TrailArray[TRAIL_SIZE];
+TRAIL Trail = TrailArray;
+static uint64_t MaxTrailSize = 0;
+
+/* Externally linked functions */
+void trailSetPointer(void** ptr, void* value)
 {
-  trail->ptr = ptr;
-  trail->value = (uint_trail)*ptr;
-  trail++;
+  Trail->ptr = ptr;
+  Trail->value = (uint_trail)*ptr;
+  Trail++;
   *ptr = value;
 }
 
-void maybeSetDynamicInt(uint_trail* ptr, uint_trail value)
+void trailMaybeSetInt(uint_trail* ptr, uint_trail value)
 {
   if (*ptr != value) {
-    setDynamicInt(ptr, value);
+    trailSetInt(ptr, value);
   }
 }
 
-void setDynamicInt(uint_trail* ptr, uint_trail value)
+void trailSetInt(uint_trail* ptr, uint_trail value)
 {
-  trail->ptr = ptr;
-  trail->value = *ptr;
-  trail++;
+  Trail->ptr = ptr;
+  Trail->value = *ptr;
+  Trail++;
   *ptr = value;
 }
 
-bool backtrackTo(TRAIL backtrackPoint)
+bool trailBacktrackTo(TRAIL backtrackPoint)
 {
+  uint64_t trailSize = Trail - TrailArray;
+  if (trailSize > MaxTrailSize) {
+    MaxTrailSize = trailSize;
+  }
   bool result = false;
-  while (trail > backtrackPoint) {
+  while (Trail > backtrackPoint) {
     result = true;
-    trail--;
-    *(uint_trail*)trail->ptr = trail->value;
+    Trail--;
+    *(uint_trail*)Trail->ptr = Trail->value;
   }
   return result;
 }
 
-void resetTrail() { trail = trailarray; }
+void initializeTrail()
+{
+  statisticIncludeInteger(&MaxTrailSize, "$", "MaxTrail");
+}
+
+void resetTrail() { Trail = TrailArray; }

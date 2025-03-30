@@ -1,9 +1,13 @@
-#include "d6.h"
-#define D6_DEBUG 0
-#define TOTAL_5FACE_DEGREE 27
-static COLORSET sequenceOrder[NFACES];
-static COLORSET inverseSequenceOrder[NFACES];
+/* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
+#include "d6.h"
+
+#include "face.h"
+
+/* Global variables - file scoped */
+#define TOTAL_5FACE_DEGREE 27
+static COLORSET SequenceOrder[NFACES];
+static COLORSET InverseSequenceOrder[NFACES];
 static PERMUTATION group[] = {
 #if NCOLORS == 6
     {0, 1, 2, 3, 4, 5}, {1, 2, 3, 4, 5, 0}, {2, 3, 4, 5, 0, 1},
@@ -13,6 +17,15 @@ static PERMUTATION group[] = {
 #endif
 };
 
+/* Declaration of file scoped static functions */
+static int compareUint8(const void *a, const void *b);
+static SYMMETRY_TYPE d6SymmetryType64(int *sizes);
+static SYMMETRY_TYPE d6SymmetryTypeN(int n, int *args);
+static int *d6FaceDegrees(void);
+static void canoncialCallbackImpl(int depth, int sum, int *args,
+                                  UseFaceDegrees callback, void *data);
+
+/* Externally linked functions */
 void initializeSequenceOrder(void)
 {
   int ix = 0, i;
@@ -20,7 +33,7 @@ void initializeSequenceOrder(void)
 
 #define ADD_TO_SEQUENCE_ORDER(colors)               \
   do {                                              \
-    sequenceOrder[ix++] = (NFACES - 1) & ~(colors); \
+    SequenceOrder[ix++] = (NFACES - 1) & ~(colors); \
     done |= 1llu << (colors);                       \
   } while (0)
   for (i = 0; i < NCOLORS; i++) {
@@ -39,75 +52,73 @@ void initializeSequenceOrder(void)
   assert(done == ~0llu);
   assert(ix == NFACES);
   for (i = 0; i < NFACES; i++) {
-    inverseSequenceOrder[sequenceOrder[i]] = i;
+    InverseSequenceOrder[SequenceOrder[i]] = i;
   }
 }
 
-COLOR d6PermuteColor(COLOR color, PERMUTATION permutation)
+COLOR colorPermute(COLOR color, PERMUTATION permutation)
 {
   return permutation[color];
 }
 
-COLORSET d6PermuteColorSet(COLORSET colorSet, PERMUTATION permutation)
+COLORSET colorSetPermute(COLORSET colorSet, PERMUTATION permutation)
 {
   COLORSET result = 0;
   for (COLOR color = 0; color < NCOLORS; color++) {
-    if (memberOfColorSet(color, colorSet)) {
+    if (COLORSET_HAS_MEMBER(color, colorSet)) {
       result |= 1u << permutation[color];
     }
   }
   return result;
 }
 
+SYMMETRY_TYPE symmetryType6(int *args) { return d6SymmetryTypeN(6, args); }
+
+SYMMETRY_TYPE symmetryTypeFaces(void)
+{
+  return d6SymmetryType64(d6FaceDegrees());
+}
+
+char *faceDegreeSignature(void)
+{
+  static char Result[NCOLORS + 1];
+  int *faceDegrees = d6FaceDegrees();
+  for (int i = 0; i < NCOLORS; i++) {
+    Result[i] = '0' + faceDegrees[i];
+  }
+  Result[NCOLORS] = '\0';
+  return Result;
+}
+
+void canonicalCallback(UseFaceDegrees callback, void *data)
+{
+  int args[NCOLORS];
+  canoncialCallbackImpl(0, 0, args, callback, data);
+}
+
+/* File scoped static functions */
 static int compareUint8(const void *a, const void *b)
 {
   return -memcmp(a, b, sizeof(int) * NFACES);
 }
 
 /*
-sizes[i] is in sequenceOrder
-To find the color we have to use inverseSequenceOrder, then permute, then map
+sizes[i] is in SequenceOrder
+To find the color we have to use InverseSequenceOrder, then permute, then map
 back
 */
 static SYMMETRY_TYPE d6SymmetryType64(int *sizes)
 {
   int permuted[12][NFACES];
   int i, j;
-#if D6_DEBUG
-  printf("+\n");
-  printf("%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\n", sizes[0], sizes[1], sizes[2],
-         sizes[3], sizes[4], sizes[5], sizes[6], sizes[7], sizes[8], sizes[9],
-         sizes[10], sizes[11]);
-  printf("+\n");
-#endif
   for (i = 0; i < 12; i++) {
     for (j = 0; j < NFACES; j++) {
-      permuted[i][j] = sizes[inverseSequenceOrder[d6PermuteColorSet(
-          sequenceOrder[j], group[i])]];
+      permuted[i][j] = sizes[InverseSequenceOrder[colorSetPermute(
+          SequenceOrder[j], group[i])]];
     }
   }
   assert(memcmp(permuted[0], sizes, sizeof(permuted[0])) == 0);
-#if D6_DEBUG
-  printf("*\n");
-  for (i = 0; i < 12; i++) {
-    printf("%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\n", permuted[i][0],
-           permuted[i][1], permuted[i][2], permuted[i][3], permuted[i][4],
-           permuted[i][5], permuted[i][6], permuted[i][7], permuted[i][8],
-           permuted[i][9], permuted[i][10], permuted[i][11]);
-  }
-  printf("*\n");
-#endif
   qsort(permuted, 12, sizeof(permuted[0]), compareUint8);
-#if D6_DEBUG
-  printf("=\n");
-  for (i = 0; i < 12; i++) {
-    printf("%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\n", permuted[i][0],
-           permuted[i][1], permuted[i][2], permuted[i][3], permuted[i][4],
-           permuted[i][5], permuted[i][6], permuted[i][7], permuted[i][8],
-           permuted[i][9], permuted[i][10], permuted[i][11]);
-  }
-  printf("=\n");
-#endif
   if (memcmp(permuted[0], sizes, sizeof(permuted[0])) != 0) {
     return NON_CANONICAL;
   }
@@ -129,31 +140,13 @@ static SYMMETRY_TYPE d6SymmetryTypeN(int n, int *args)
   return d6SymmetryType64(sizes);
 }
 
-SYMMETRY_TYPE d6SymmetryType6(int *args) { return d6SymmetryTypeN(6, args); }
-
 static int *d6FaceDegrees()
 {
-  static int faceDegrees[NFACES];
+  static int FaceDegrees[NFACES];
   for (int i = 0; i < NFACES; i++) {
-    faceDegrees[i] = g_faces[sequenceOrder[i]].cycle->length;
+    FaceDegrees[i] = Faces[SequenceOrder[i]].cycle->length;
   }
-  return faceDegrees;
-}
-
-SYMMETRY_TYPE d6SymmetryTypeFaces(void)
-{
-  return d6SymmetryType64(d6FaceDegrees());
-}
-
-char *d6FaceDegreeSignature(void)
-{
-  static char result[NCOLORS + 1];
-  int *faceDegrees = d6FaceDegrees();
-  for (int i = 0; i < NCOLORS; i++) {
-    result[i] = '0' + faceDegrees[i];
-  }
-  result[NCOLORS] = '\0';
-  return result;
+  return FaceDegrees;
 }
 
 static void canoncialCallbackImpl(int depth, int sum, int *args,
@@ -179,10 +172,4 @@ static void canoncialCallbackImpl(int depth, int sum, int *args,
     args[depth] = i;
     canoncialCallbackImpl(depth + 1, sum + i, args, callback, data);
   }
-}
-
-void canoncialCallback(UseFaceDegrees callback, void *data)
-{
-  int args[NCOLORS];
-  canoncialCallbackImpl(0, 0, args, callback, data);
 }
