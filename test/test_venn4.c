@@ -67,7 +67,6 @@ static void testSearch4433()
 
 static void testPermutations()
 {
-  int size;
   PERMUTATION identity = d6Permutation(0, 1, 2, 3);
   TEST_ASSERT_TRUE(d6PermutationEqual(identity, d6Identity()));
   TEST_ASSERT_TRUE(d6PermutationEqual(identity, d6Compose(identity, identity)));
@@ -88,6 +87,10 @@ static void testS4()
                   d6Permutation(2, 1, 0, 3), d6Permutation(3, 1, 2, 0));
   TEST_ASSERT_EQUAL(24, size);
   TEST_ASSERT_EQUAL(0, memcmp(s4a, s4b, 24 * sizeof(((PERMUTATION)NULL)[0])));
+  for (int i = 0; i < size; i++) {
+    TEST_ASSERT_TRUE(
+        d6PermutationEqual(identity, d6Compose(&s4a[i], d6Inverse(&s4a[i]))));
+  }
 }
 
 /* Main test runner */
