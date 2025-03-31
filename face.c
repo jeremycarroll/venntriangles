@@ -22,7 +22,7 @@ static void restrictCycles(FACE face, CYCLESET cycleSet);
 static FAILURE checkLengthOfCycleOfFaces(FACE face);
 
 /* Externally linked functions */
-bool dynamicFaceSetCycleLength(uint32_t faceColors, uint32_t length)
+bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length)
 {
   FACE face = Faces + (faceColors & (NFACES - 1));
   CYCLE cycle;
@@ -93,7 +93,7 @@ FAILURE faceFinalCorrectnessChecks(void)
   return NULL;
 }
 
-void dynamicFaceSetupCentral(int* faceDegrees)
+void dynamicFaceSetupCentral(FACE_DEGREE* faceDegrees)
 {
   CYCLE cycle;
   uint64_t i;

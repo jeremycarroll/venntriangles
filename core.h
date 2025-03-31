@@ -3,6 +3,12 @@
 #ifndef CORE_H
 #define CORE_H
 
+#include <assert.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 /* The curves are _colored_ from 0 to 5. */
 #ifndef NCOLORS
 #define NCOLORS 6
@@ -63,13 +69,8 @@
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 
 typedef struct edge *EDGE;
-typedef struct face *FACE;
 
-#include <assert.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+typedef struct face *FACE;
+typedef uint64_t FACE_DEGREE;
 
 #endif  // CORE_H

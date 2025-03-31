@@ -11,28 +11,36 @@ typedef enum {
   NON_CANONICAL,
 } SYMMETRY_TYPE;
 
+typedef struct faceDegreeSequence {
+  FACE_DEGREE faceDegrees[NFACES];
+} *FACE_DEGREE_SEQUENCE;
+
 extern void initializeSequenceOrder(void);
 extern SYMMETRY_TYPE symmetryTypeFaces(void);
 
 /* The faceDegrees is an array of NCOLORS integers between 3 and NCOLORS being
    used as the face degrees for the NCOLORS faces around the central face. */
-extern SYMMETRY_TYPE symmetryType6(int *faceDegrees);
+extern SYMMETRY_TYPE symmetryType6(FACE_DEGREE *faceDegrees);
 
 /* The faceDegrees is an array of NCOLORS integers between 3 and NCOLORS to be
    used as the face degrees for the NCOLORS faces around the central face. */
-typedef void (*UseFaceDegrees)(void *data, int *faceDegrees);
+typedef void (*UseFaceDegrees)(void *data, FACE_DEGREE *faceDegrees);
 extern void canonicalCallback(UseFaceDegrees callback, void *data);
 extern char *faceDegreeSignature(void);
 
-extern int *d6FaceDegreesInNaturalOrder(void);
-extern int *d6InvertedFaceDegreesInNaturalOrder(void);
-extern int *d6ConvertToSequenceOrder(int *faceDegreesInNaturalOrder);
-extern int *d6ConvertToNaturalOrder(int *faceDegreesInSequenceOrder);
-extern int *d6MaxInSequenceOrder(int *faceDegreesInSequenceOrder, ...);
-extern SYMMETRY_TYPE d6IsMaxInSequenceOrder(int *faceDegreesInSequenceOrder,
-                                            ...);
-extern bool d6Equal(int *faceDegrees, int *other);
-extern char *d6ToString(int *faceDegrees);
+extern FACE_DEGREE_SEQUENCE d6FaceDegreesInNaturalOrder(void);
+extern FACE_DEGREE_SEQUENCE d6InvertedFaceDegreesInNaturalOrder(void);
+extern FACE_DEGREE_SEQUENCE d6ConvertToSequenceOrder(
+    FACE_DEGREE_SEQUENCE faceDegreesInNaturalOrder);
+extern FACE_DEGREE_SEQUENCE d6ConvertToNaturalOrder(
+    FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder);
+extern FACE_DEGREE_SEQUENCE d6MaxInSequenceOrder(
+    FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...);
+extern SYMMETRY_TYPE d6IsMaxInSequenceOrder(
+    FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...);
+extern bool d6Equal(FACE_DEGREE_SEQUENCE faceDegrees,
+                    FACE_DEGREE_SEQUENCE other);
+extern char *d6ToString(FACE_DEGREE_SEQUENCE faceDegrees);
 extern void d6ResetMemory(void);
 
 #endif  // D6_H

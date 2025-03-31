@@ -4,6 +4,8 @@
 
 #include "face.h"
 
+#include <stdarg.h>
+
 typedef int PERMUTATION[NCOLORS];
 
 /* Global variables - file scoped */
@@ -11,8 +13,8 @@ typedef int PERMUTATION[NCOLORS];
 
 #define TOTAL_SEQUENCE_STORAGE 100
 
-static int SequenceStorage[TOTAL_SEQUENCE_STORAGE][64];
-static int SequenceStorageIndex = 0;
+static struct faceDegreeSequence SequenceStorage[TOTAL_SEQUENCE_STORAGE];
+static uint64_t SequenceStorageIndex = 0;
 static COLORSET SequenceOrder[NFACES];
 static COLORSET InverseSequenceOrder[NFACES];
 static PERMUTATION group[] = {
@@ -26,21 +28,21 @@ static PERMUTATION group[] = {
 
 /* Declaration of file scoped static functions */
 static int compareUint8(const void *a, const void *b);
-static SYMMETRY_TYPE d6SymmetryType64(int *sizes);
-static SYMMETRY_TYPE d6SymmetryTypeN(int n, int *args);
-static int *d6FaceDegreesInSequenceOrder(void);
-static void canoncialCallbackImpl(int depth, int sum, int *args,
+static SYMMETRY_TYPE d6SymmetryType64(FACE_DEGREE_SEQUENCE sizes);
+static SYMMETRY_TYPE d6SymmetryTypeN(int n, FACE_DEGREE_SEQUENCE args);
+static FACE_DEGREE_SEQUENCE d6FaceDegreesInSequenceOrder(void);
+static void canoncialCallbackImpl(int depth, int sum, FACE_DEGREE *args,
                                   UseFaceDegrees callback, void *data);
 
-static int (*getSequenceStorage(int rows))[64];
+static FACE_DEGREE_SEQUENCE getSequenceStorage(int rows);
 
-static COLOR colorPermute(COLOR color, PERMUTATION permutation);
+// static COLOR colorPermute(COLOR color, PERMUTATION permutation);
 static COLORSET colorSetPermute(COLORSET colorSet, PERMUTATION permutation);
 
 /* Externally linked functions */
 void initializeSequenceOrder(void)
 {
-  int ix = 0, i;
+  uint64_t ix = 0, i;
   uint64_t done = 0;
 
 #define ADD_TO_SEQUENCE_ORDER(colors)               \
@@ -66,11 +68,20 @@ void initializeSequenceOrder(void)
   for (i = 0; i < NFACES; i++) {
     InverseSequenceOrder[SequenceOrder[i]] = i;
   }
+  for (i = 0; i < NFACES; i++) {
+    assert(InverseSequenceOrder[SequenceOrder[i]] == i);
+    assert(SequenceOrder[InverseSequenceOrder[i]] == i);
+  }
 }
 
 void d6ResetMemory(void) { SequenceStorageIndex = 0; }
 
-SYMMETRY_TYPE symmetryType6(int *args) { return d6SymmetryTypeN(6, args); }
+SYMMETRY_TYPE symmetryType6(FACE_DEGREE *args)
+{
+  struct faceDegreeSequence argsAsSequence = {
+      {args[0], args[1], args[2], args[3], args[4], args[5]}};
+  return d6SymmetryTypeN(6, &argsAsSequence);
+}
 
 SYMMETRY_TYPE symmetryTypeFaces(void)
 {
@@ -80,9 +91,9 @@ SYMMETRY_TYPE symmetryTypeFaces(void)
 char *faceDegreeSignature(void)
 {
   static char Result[NCOLORS + 1];
-  int *faceDegrees = d6FaceDegreesInSequenceOrder();
+  FACE_DEGREE_SEQUENCE faceDegrees = d6FaceDegreesInSequenceOrder();
   for (int i = 0; i < NCOLORS; i++) {
-    Result[i] = '0' + faceDegrees[i];
+    Result[i] = '0' + faceDegrees->faceDegrees[i];
   }
   Result[NCOLORS] = '\0';
   return Result;
@@ -90,9 +101,38 @@ char *faceDegreeSignature(void)
 
 void canonicalCallback(UseFaceDegrees callback, void *data)
 {
-  int args[NCOLORS];
+  FACE_DEGREE args[NCOLORS];
   canoncialCallbackImpl(0, 0, args, callback, data);
 }
+
+FACE_DEGREE_SEQUENCE d6FaceDegreesInNaturalOrder(void)
+{
+  FACE_DEGREE_SEQUENCE faceDegrees = getSequenceStorage(1);
+  for (int i = 0; i < NFACES; i++) {
+    faceDegrees->faceDegrees[i] = Faces[i].cycle->length;
+  }
+  return faceDegrees;
+}
+
+FACE_DEGREE_SEQUENCE d6InvertedFaceDegreesInNaturalOrder(void)
+{
+  FACE_DEGREE_SEQUENCE faceDegrees = getSequenceStorage(1);
+  for (int i = 0; i < NFACES; i++) {
+    faceDegrees->faceDegrees[i] = Faces[i].cycle->length;
+  }
+  return faceDegrees;
+}
+
+FACE_DEGREE_SEQUENCE d6ConvertToSequenceOrder(
+    FACE_DEGREE_SEQUENCE faceDegreesInNaturalOrder);
+FACE_DEGREE_SEQUENCE d6ConvertToNaturalOrder(
+    FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder);
+FACE_DEGREE_SEQUENCE d6MaxInSequenceOrder(
+    FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...);
+SYMMETRY_TYPE d6IsMaxInSequenceOrder(
+    FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...);
+bool d6Equal(FACE_DEGREE_SEQUENCE faceDegrees, FACE_DEGREE_SEQUENCE other);
+char *d6ToString(FACE_DEGREE_SEQUENCE faceDegrees);
 
 /* File scoped static functions */
 static int compareUint8(const void *a, const void *b)
@@ -100,10 +140,10 @@ static int compareUint8(const void *a, const void *b)
   return -memcmp(a, b, sizeof(int) * NFACES);
 }
 
-static COLOR colorPermute(COLOR color, PERMUTATION permutation)
-{
-  return permutation[color];
-}
+// static COLOR colorPermute(COLOR color, PERMUTATION permutation)
+// {
+//   return permutation[color];
+// }
 
 static COLORSET colorSetPermute(COLORSET colorSet, PERMUTATION permutation)
 {
@@ -121,49 +161,50 @@ sizes[i] is in SequenceOrder
 To find the color we have to use InverseSequenceOrder, then permute, then map
 back
 */
-static SYMMETRY_TYPE d6SymmetryType64(int *sizes)
+static SYMMETRY_TYPE d6SymmetryType64(FACE_DEGREE_SEQUENCE sizes)
 {
-  int permuted[12][NFACES];
+  FACE_DEGREE_SEQUENCE permuted = getSequenceStorage(12);
   int i, j;
   for (i = 0; i < 12; i++) {
     for (j = 0; j < NFACES; j++) {
-      permuted[i][j] = sizes[InverseSequenceOrder[colorSetPermute(
-          SequenceOrder[j], group[i])]];
+      permuted[i].faceDegrees[j] =
+          sizes->faceDegrees[InverseSequenceOrder[colorSetPermute(
+              SequenceOrder[j], group[i])]];
     }
   }
-  assert(memcmp(permuted[0], sizes, sizeof(permuted[0])) == 0);
+  assert(memcmp(permuted, sizes, sizeof(permuted[0])) == 0);
   qsort(permuted, 12, sizeof(permuted[0]), compareUint8);
-  if (memcmp(permuted[0], sizes, sizeof(permuted[0])) != 0) {
+  if (memcmp(permuted, sizes, sizeof(permuted[0])) != 0) {
     return NON_CANONICAL;
   }
 
-  if (memcmp(permuted[0], permuted[1], sizeof(permuted[0])) == 0) {
+  if (memcmp(permuted, permuted + 1, sizeof(permuted[0])) == 0) {
     return EQUIVOCAL;
   }
 
   return CANONICAL;
 }
 
-static SYMMETRY_TYPE d6SymmetryTypeN(int n, int *args)
+static SYMMETRY_TYPE d6SymmetryTypeN(int n, FACE_DEGREE_SEQUENCE args)
 {
-  int sizes[NFACES];
-  memset(sizes, 0, sizeof(sizes));
+  FACE_DEGREE_SEQUENCE sizes = getSequenceStorage(1);
+  memset(sizes, 0, sizeof(*sizes));
   for (int i = 0; i < n; i++) {
-    sizes[i] = args[i];
+    sizes->faceDegrees[i] = args->faceDegrees[i];
   }
   return d6SymmetryType64(sizes);
 }
 
-static int *d6FaceDegreesInSequenceOrder()
+static FACE_DEGREE_SEQUENCE d6FaceDegreesInSequenceOrder()
 {
-  int(*FaceDegrees) = getSequenceStorage(1)[0];
+  FACE_DEGREE_SEQUENCE faceDegrees = getSequenceStorage(1);
   for (int i = 0; i < NFACES; i++) {
-    FaceDegrees[i] = Faces[SequenceOrder[i]].cycle->length;
+    faceDegrees->faceDegrees[i] = Faces[SequenceOrder[i]].cycle->length;
   }
-  return FaceDegrees;
+  return faceDegrees;
 }
 
-static void canoncialCallbackImpl(int depth, int sum, int *args,
+static void canoncialCallbackImpl(int depth, int sum, FACE_DEGREE *args,
                                   UseFaceDegrees callback, void *data)
 {
   if (sum > TOTAL_5FACE_DEGREE) {
@@ -173,7 +214,8 @@ static void canoncialCallbackImpl(int depth, int sum, int *args,
     if (sum != TOTAL_5FACE_DEGREE) {
       return;
     }
-    switch (d6SymmetryTypeN(NCOLORS, args)) {
+    d6ResetMemory();
+    switch (symmetryType6(args)) {
       case NON_CANONICAL:
         return;
       case EQUIVOCAL:
@@ -188,9 +230,9 @@ static void canoncialCallbackImpl(int depth, int sum, int *args,
   }
 }
 
-static int (*getSequenceStorage(int rows))[64]
+static FACE_DEGREE_SEQUENCE getSequenceStorage(int rows)
 {
-  int(*storage)[64] = SequenceStorage + SequenceStorageIndex;
+  FACE_DEGREE_SEQUENCE storage = SequenceStorage + SequenceStorageIndex;
   SequenceStorageIndex += rows;
   assert(SequenceStorageIndex <= TOTAL_SEQUENCE_STORAGE);
   return storage;

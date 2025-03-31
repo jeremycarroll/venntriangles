@@ -300,7 +300,7 @@ static char* testData6[][2] = {
 /* Test setup and teardown */
 void setUp(void)
 {
-  int args[] = {5, 5, 5, 4, 4, 4};
+  FACE_DEGREE args[] = {5, 5, 5, 4, 4, 4};
   initialize();
   initializeStatisticLogging("/dev/stdout", 20, 5);
   dynamicFaceSetupCentral(args);

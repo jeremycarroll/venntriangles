@@ -31,9 +31,9 @@ FACE dynamicFaceAddSpecific(char* colors, char* cycle)
   return face;
 }
 
-int* intArray(int a, ...)
+FACE_DEGREE* intArray(int a, ...)
 {
-  static int result[NCOLORS];
+  static FACE_DEGREE result[NCOLORS];
   va_list ap;
   int i;
   result[0] = a;
