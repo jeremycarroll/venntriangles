@@ -15,6 +15,8 @@ typedef struct faceDegreeSequence {
   FACE_DEGREE faceDegrees[NFACES];
 } *FACE_DEGREE_SEQUENCE;
 
+typedef int (*PERMUTATION)[NCOLORS];
+
 extern void initializeSequenceOrder(void);
 extern SYMMETRY_TYPE symmetryTypeFaces(void);
 
@@ -41,4 +43,18 @@ extern SYMMETRY_TYPE d6IsMaxInSequenceOrder(
 extern bool d6Equal(FACE_DEGREE_SEQUENCE faceDegrees,
                     FACE_DEGREE_SEQUENCE other);
 extern char *d6ToString(FACE_DEGREE_SEQUENCE faceDegrees);
+
+extern PERMUTATION d6Compose(PERMUTATION a, PERMUTATION b);
+
+extern PERMUTATION d6Inverse(PERMUTATION permutation);
+
+extern PERMUTATION d6Identity(void);
+
+extern bool d6PermutationEqual(PERMUTATION a, PERMUTATION b);
+
+extern PERMUTATION d6Closure(int *sizeReturn, int numberOfGenerators,
+                             PERMUTATION generator1, ...);
+
+extern PERMUTATION d6Permutation(int a1, ...);
+
 #endif  // D6_H

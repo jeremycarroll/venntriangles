@@ -6,9 +6,6 @@
 #include "memory.h"
 
 #include <stdarg.h>
-
-typedef int PERMUTATION[NCOLORS];
-
 /* Global variables - file scoped */
 #define TOTAL_5FACE_DEGREE 27
 
@@ -16,17 +13,21 @@ typedef int PERMUTATION[NCOLORS];
 
 static COLORSET SequenceOrder[NFACES];
 static COLORSET InverseSequenceOrder[NFACES];
-static PERMUTATION group[] = {
+static int group[12][NCOLORS] = {
 #if NCOLORS == 6
     {0, 1, 2, 3, 4, 5}, {1, 2, 3, 4, 5, 0}, {2, 3, 4, 5, 0, 1},
     {3, 4, 5, 0, 1, 2}, {4, 5, 0, 1, 2, 3}, {5, 0, 1, 2, 3, 4},
     {5, 4, 3, 2, 1, 0}, {4, 3, 2, 1, 0, 5}, {3, 2, 1, 0, 5, 4},
     {2, 1, 0, 5, 4, 3}, {1, 0, 5, 4, 3, 2}, {0, 5, 4, 3, 2, 1},
 #endif
+#if NCOLORS == 4
+    {0, 1, 2, 3}
+#endif
 };
 
 /* Declaration of file scoped static functions */
-static int compareUint8(const void *a, const void *b);
+static int compareFaceDegree(const void *a, const void *b);
+static int comparePermutation(const void *a, const void *b);
 static SYMMETRY_TYPE d6SymmetryType64(FACE_DEGREE_SEQUENCE sizes);
 static SYMMETRY_TYPE d6SymmetryTypeN(int n, FACE_DEGREE_SEQUENCE args);
 static FACE_DEGREE_SEQUENCE d6FaceDegreesInSequenceOrder(void);
@@ -118,6 +119,98 @@ FACE_DEGREE_SEQUENCE d6InvertedFaceDegreesInNaturalOrder(void)
   return faceDegrees;
 }
 
+PERMUTATION d6Compose(PERMUTATION a, PERMUTATION b)
+{
+  PERMUTATION result = NEW(PERMUTATION);
+  for (int i = 0; i < NCOLORS; i++) {
+    (*result)[i] = (*a)[(*b)[i]];
+  }
+  return result;
+}
+
+PERMUTATION d6Inverse(PERMUTATION permutation)
+{
+  PERMUTATION result = NEW(PERMUTATION);
+  for (int i = 0; i < NCOLORS; i++) {
+    (*result)[(*permutation)[i]] = i;
+  }
+  return result;
+}
+
+PERMUTATION d6Identity(void) { return &group[0]; }
+
+char *d6Permutation2str(PERMUTATION permutation)
+{
+  char *buffer = getBuffer();
+  char *p = buffer;
+  p += sprintf(p, "(");
+  for (int i = 0; i < NCOLORS; i++) {
+    p += sprintf(p, "%d ", (*permutation)[i]);
+  }
+  p += sprintf(p, ")\n");
+  return usingBuffer(buffer);
+}
+
+bool d6PermutationEqual(PERMUTATION a, PERMUTATION b)
+{
+  bool result = memcmp(a, b, sizeof(((PERMUTATION)NULL)[0])) == 0;
+#if 0
+  printf("%s %s %s\n", d6Permutation2str(a), result ? "==" : "!=",
+         d6Permutation2str(b));
+#endif
+  return result;
+}
+
+PERMUTATION d6Closure(int *sizeReturn, int numberOfGenerators,
+                      PERMUTATION generator1, ...)
+{
+  int size = 0;
+  PERMUTATION result = NEW_ARRAY(PERMUTATION, FACTORIAL6);
+  va_list args;
+  bool progress = true;
+  int i, j, k;
+  PERMUTATION generated;
+  memcpy(result[size++], generator1, sizeof(((PERMUTATION)NULL)[0]));
+  va_start(args, generator1);
+  for (i = 0; i < numberOfGenerators - 1; i++) {
+    memcpy(result[size++], va_arg(args, PERMUTATION),
+           sizeof(((PERMUTATION)NULL)[0]));
+  }
+  va_end(args);
+  while (progress) {
+    progress = false;
+    for (i = 0; i < size; i++) {
+      for (j = 0; j < size; j++) {
+        generated = d6Compose(&result[i], &result[j]);
+        for (k = 0; k < size; k++) {
+          if (d6PermutationEqual(generated, &result[k])) {
+            goto nextJ;
+          }
+        }
+        progress = true;
+        memcpy(&result[size++], generated, sizeof(((PERMUTATION)NULL)[0]));
+      nextJ:;
+      }
+    }
+  }
+  *sizeReturn = size;
+  qsort(result, size, sizeof(((PERMUTATION)NULL)[0]), comparePermutation);
+  return result;
+}
+
+PERMUTATION d6Permutation(int a1, ...)
+{
+  PERMUTATION result = NEW(PERMUTATION);
+  va_list args;
+  (*result)[0] = a1;
+  va_start(args, a1);
+  for (int i = 1; i < NCOLORS; i++) {
+    (*result)[i] = va_arg(args, int);
+  }
+  va_end(args);
+  return result;
+}
+
 FACE_DEGREE_SEQUENCE d6ConvertToSequenceOrder(
     FACE_DEGREE_SEQUENCE faceDegreesInNaturalOrder);
 FACE_DEGREE_SEQUENCE d6ConvertToNaturalOrder(
@@ -130,22 +223,22 @@ bool d6Equal(FACE_DEGREE_SEQUENCE faceDegrees, FACE_DEGREE_SEQUENCE other);
 char *d6ToString(FACE_DEGREE_SEQUENCE faceDegrees);
 
 /* File scoped static functions */
-static int compareUint8(const void *a, const void *b)
+static int compareFaceDegree(const void *a, const void *b)
 {
-  return -memcmp(a, b, sizeof(int) * NFACES);
+  return -memcmp(a, b, sizeof(FACE_DEGREE) * NFACES);
 }
 
-// static COLOR colorPermute(COLOR color, PERMUTATION permutation)
-// {
-//   return permutation[color];
-// }
+static int comparePermutation(const void *a, const void *b)
+{
+  return memcmp(a, b, sizeof(((PERMUTATION)NULL)[0]));
+}
 
 static COLORSET colorSetPermute(COLORSET colorSet, PERMUTATION permutation)
 {
   COLORSET result = 0;
   for (COLOR color = 0; color < NCOLORS; color++) {
     if (COLORSET_HAS_MEMBER(color, colorSet)) {
-      result |= 1u << permutation[color];
+      result |= 1u << (*permutation)[color];
     }
   }
   return result;
@@ -164,11 +257,11 @@ static SYMMETRY_TYPE d6SymmetryType64(FACE_DEGREE_SEQUENCE sizes)
     for (j = 0; j < NFACES; j++) {
       permuted[i].faceDegrees[j] =
           sizes->faceDegrees[InverseSequenceOrder[colorSetPermute(
-              SequenceOrder[j], group[i])]];
+              SequenceOrder[j], &group[i])]];
     }
   }
   assert(memcmp(permuted, sizes, sizeof(permuted[0])) == 0);
-  qsort(permuted, 12, sizeof(permuted[0]), compareUint8);
+  qsort(permuted, 12, sizeof(permuted[0]), compareFaceDegree);
   if (memcmp(permuted, sizes, sizeof(permuted[0])) != 0) {
     return NON_CANONICAL;
   }

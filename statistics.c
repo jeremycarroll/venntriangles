@@ -59,6 +59,9 @@ void resetStatistics(void)
     Statistics[i].countPtr = NULL;
   }
   for (int i = 0; i < MAX_STATISTICS; i++) {
+    if (Failures[i] == NULL) {
+      break;
+    }
     if (Failures[i]->count[0] == 0) {
       break;
     }

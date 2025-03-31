@@ -16,6 +16,7 @@ void resetGlobals()
   resetFaces();
   resetEdges();
   resetPoints();
+  freeAll();
 }
 
 void resetInitialize() { resetCycles(); }
@@ -25,6 +26,7 @@ void initialize()
   /* Not true on all architectures, but assumed in our Trail. */
   assert((sizeof(uint64_t) == sizeof(void *)));
 
+  freeAll();
   initializeCycleSets();
   initializeFacesAndEdges();
   initializePoints();

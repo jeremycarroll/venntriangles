@@ -20,6 +20,7 @@
 #define FACTORIAL3 6u
 #define FACTORIAL4 24u
 #define FACTORIAL5 120u
+#define FACTORIAL6 720u
 #define CHOOSE_6_0 1u
 #define CHOOSE_6_1 6u
 #define CHOOSE_6_2 15u
