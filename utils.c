@@ -45,7 +45,7 @@ char *getBuffer()
   static char buffer[TOTAL_BUFFER_SIZE];
   static int bufferIndex = 0;
   GetBufferCounter++;
-  if (bufferIndex >= TOTAL_BUFFER_SIZE) {
+  if (bufferIndex >= TOTAL_BUFFER_SIZE - BUFFER_SIZE) {
     bufferIndex = 0;
   }
   return &buffer[bufferIndex += BUFFER_SIZE];

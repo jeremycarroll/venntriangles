@@ -153,6 +153,7 @@ void searchHere(bool smallestFirst, void (*foundSolution)(void))
       case NEXT_FACE:
         face = chooseNextFaceForSearch(smallestFirst);
         if (face == NULL) {
+          d6ResetMemory();
           if (faceFinalCorrectnessChecks() == NULL) {
             SolutionCount++;
             foundSolution();
@@ -211,12 +212,19 @@ void solutionPrint(FILE* fp)
   while (true) {
     FACE face = Faces + colors;
     do {
+      char buffer[1024];
       FACE next = face->next;
       COLORSET colorBeingDropped = face->colors & ~next->colors;
       COLORSET colorBeingAdded = next->colors & ~face->colors;
-      fprintf(fp, "%s [%c,%c] ", faceToStr(face),
+      sprintf(buffer, "%s [%c,%c] ", faceToStr(face),
               colorToChar(ffs(colorBeingDropped) - 1),
               colorToChar(ffs(colorBeingAdded) - 1));
+      if (strchr(buffer, '@')) {
+        fprintf(stderr, "buffer: %s\n", buffer);
+        fprintf(stderr, "faceToStr: %s\n", faceToStr(face));
+        exit(EXIT_FAILURE);
+      }
+      fputs(buffer, fp);
       face = next;
     } while (face->colors != colors);
     fprintf(fp, "\n");

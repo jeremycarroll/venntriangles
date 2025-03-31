@@ -48,8 +48,7 @@ int dynamicMain0(int argc, char *argv[])
 static void saveResult(void)
 {
   char *buffer = getBuffer();
-  snprintf(buffer, sizeof(buffer), "%s/%s", TargetFolder,
-           faceDegreeSignature());
+  sprintf(buffer, "%s/%s", TargetFolder, faceDegreeSignature());
   solutionWrite(usingBuffer(buffer));
 }
 

@@ -8,6 +8,11 @@ typedef int PERMUTATION[NCOLORS];
 
 /* Global variables - file scoped */
 #define TOTAL_5FACE_DEGREE 27
+
+#define TOTAL_SEQUENCE_STORAGE 100
+
+static int SequenceStorage[TOTAL_SEQUENCE_STORAGE][64];
+static int SequenceStorageIndex = 0;
 static COLORSET SequenceOrder[NFACES];
 static COLORSET InverseSequenceOrder[NFACES];
 static PERMUTATION group[] = {
@@ -26,6 +31,8 @@ static SYMMETRY_TYPE d6SymmetryTypeN(int n, int *args);
 static int *d6FaceDegreesInSequenceOrder(void);
 static void canoncialCallbackImpl(int depth, int sum, int *args,
                                   UseFaceDegrees callback, void *data);
+
+static int (*getSequenceStorage(int rows))[64];
 
 static COLOR colorPermute(COLOR color, PERMUTATION permutation);
 static COLORSET colorSetPermute(COLORSET colorSet, PERMUTATION permutation);
@@ -60,6 +67,8 @@ void initializeSequenceOrder(void)
     InverseSequenceOrder[SequenceOrder[i]] = i;
   }
 }
+
+void d6ResetMemory(void) { SequenceStorageIndex = 0; }
 
 SYMMETRY_TYPE symmetryType6(int *args) { return d6SymmetryTypeN(6, args); }
 
@@ -147,7 +156,7 @@ static SYMMETRY_TYPE d6SymmetryTypeN(int n, int *args)
 
 static int *d6FaceDegreesInSequenceOrder()
 {
-  static int FaceDegrees[NFACES];
+  int(*FaceDegrees) = getSequenceStorage(1)[0];
   for (int i = 0; i < NFACES; i++) {
     FaceDegrees[i] = Faces[SequenceOrder[i]].cycle->length;
   }
@@ -177,4 +186,12 @@ static void canoncialCallbackImpl(int depth, int sum, int *args,
     args[depth] = i;
     canoncialCallbackImpl(depth + 1, sum + i, args, callback, data);
   }
+}
+
+static int (*getSequenceStorage(int rows))[64]
+{
+  int(*storage)[64] = SequenceStorage + SequenceStorageIndex;
+  SequenceStorageIndex += rows;
+  assert(SequenceStorageIndex <= TOTAL_SEQUENCE_STORAGE);
+  return storage;
 }
