@@ -2,6 +2,7 @@
 
 #include "main.h"
 
+#include "memory.h"
 #include "search.h"
 #include "statistics.h"
 #include "utils.h"

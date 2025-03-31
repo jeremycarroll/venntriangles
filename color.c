@@ -3,7 +3,6 @@
 #include "color.h"
 
 #include "trail.h"
-#include "utils.h"
 
 #include <stdarg.h>
 

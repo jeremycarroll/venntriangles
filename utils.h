@@ -9,7 +9,4 @@ extern  void resetGlobals(void);
 extern  void resetInitialize(void);
 extern void initialize(void);
 
-extern  char * getBuffer(void);
-extern  char * usingBuffer(char * buffer);
-
 #endif  // UTILS_H

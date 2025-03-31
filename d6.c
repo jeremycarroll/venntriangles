@@ -3,6 +3,7 @@
 #include "d6.h"
 
 #include "face.h"
+#include "memory.h"
 
 #include <stdarg.h>
 
@@ -13,8 +14,6 @@ typedef int PERMUTATION[NCOLORS];
 
 #define TOTAL_SEQUENCE_STORAGE 100
 
-static struct faceDegreeSequence SequenceStorage[TOTAL_SEQUENCE_STORAGE];
-static uint64_t SequenceStorageIndex = 0;
 static COLORSET SequenceOrder[NFACES];
 static COLORSET InverseSequenceOrder[NFACES];
 static PERMUTATION group[] = {
@@ -33,8 +32,6 @@ static SYMMETRY_TYPE d6SymmetryTypeN(int n, FACE_DEGREE_SEQUENCE args);
 static FACE_DEGREE_SEQUENCE d6FaceDegreesInSequenceOrder(void);
 static void canoncialCallbackImpl(int depth, int sum, FACE_DEGREE *args,
                                   UseFaceDegrees callback, void *data);
-
-static FACE_DEGREE_SEQUENCE getSequenceStorage(int rows);
 
 // static COLOR colorPermute(COLOR color, PERMUTATION permutation);
 static COLORSET colorSetPermute(COLORSET colorSet, PERMUTATION permutation);
@@ -74,8 +71,6 @@ void initializeSequenceOrder(void)
   }
 }
 
-void d6ResetMemory(void) { SequenceStorageIndex = 0; }
-
 SYMMETRY_TYPE symmetryType6(FACE_DEGREE *args)
 {
   struct faceDegreeSequence argsAsSequence = {
@@ -107,7 +102,7 @@ void canonicalCallback(UseFaceDegrees callback, void *data)
 
 FACE_DEGREE_SEQUENCE d6FaceDegreesInNaturalOrder(void)
 {
-  FACE_DEGREE_SEQUENCE faceDegrees = getSequenceStorage(1);
+  FACE_DEGREE_SEQUENCE faceDegrees = NEW(FACE_DEGREE_SEQUENCE);
   for (int i = 0; i < NFACES; i++) {
     faceDegrees->faceDegrees[i] = Faces[i].cycle->length;
   }
@@ -116,7 +111,7 @@ FACE_DEGREE_SEQUENCE d6FaceDegreesInNaturalOrder(void)
 
 FACE_DEGREE_SEQUENCE d6InvertedFaceDegreesInNaturalOrder(void)
 {
-  FACE_DEGREE_SEQUENCE faceDegrees = getSequenceStorage(1);
+  FACE_DEGREE_SEQUENCE faceDegrees = NEW(FACE_DEGREE_SEQUENCE);
   for (int i = 0; i < NFACES; i++) {
     faceDegrees->faceDegrees[i] = Faces[i].cycle->length;
   }
@@ -163,7 +158,7 @@ back
 */
 static SYMMETRY_TYPE d6SymmetryType64(FACE_DEGREE_SEQUENCE sizes)
 {
-  FACE_DEGREE_SEQUENCE permuted = getSequenceStorage(12);
+  FACE_DEGREE_SEQUENCE permuted = NEW_ARRAY(FACE_DEGREE_SEQUENCE, 12);
   int i, j;
   for (i = 0; i < 12; i++) {
     for (j = 0; j < NFACES; j++) {
@@ -187,7 +182,7 @@ static SYMMETRY_TYPE d6SymmetryType64(FACE_DEGREE_SEQUENCE sizes)
 
 static SYMMETRY_TYPE d6SymmetryTypeN(int n, FACE_DEGREE_SEQUENCE args)
 {
-  FACE_DEGREE_SEQUENCE sizes = getSequenceStorage(1);
+  FACE_DEGREE_SEQUENCE sizes = NEW(FACE_DEGREE_SEQUENCE);
   memset(sizes, 0, sizeof(*sizes));
   for (int i = 0; i < n; i++) {
     sizes->faceDegrees[i] = args->faceDegrees[i];
@@ -197,7 +192,7 @@ static SYMMETRY_TYPE d6SymmetryTypeN(int n, FACE_DEGREE_SEQUENCE args)
 
 static FACE_DEGREE_SEQUENCE d6FaceDegreesInSequenceOrder()
 {
-  FACE_DEGREE_SEQUENCE faceDegrees = getSequenceStorage(1);
+  FACE_DEGREE_SEQUENCE faceDegrees = NEW(FACE_DEGREE_SEQUENCE);
   for (int i = 0; i < NFACES; i++) {
     faceDegrees->faceDegrees[i] = Faces[SequenceOrder[i]].cycle->length;
   }
@@ -214,7 +209,7 @@ static void canoncialCallbackImpl(int depth, int sum, FACE_DEGREE *args,
     if (sum != TOTAL_5FACE_DEGREE) {
       return;
     }
-    d6ResetMemory();
+    freeAll();
     switch (symmetryType6(args)) {
       case NON_CANONICAL:
         return;
@@ -228,12 +223,4 @@ static void canoncialCallbackImpl(int depth, int sum, FACE_DEGREE *args,
     args[depth] = i;
     canoncialCallbackImpl(depth + 1, sum + i, args, callback, data);
   }
-}
-
-static FACE_DEGREE_SEQUENCE getSequenceStorage(int rows)
-{
-  FACE_DEGREE_SEQUENCE storage = SequenceStorage + SequenceStorageIndex;
-  SequenceStorageIndex += rows;
-  assert(SequenceStorageIndex <= TOTAL_SEQUENCE_STORAGE);
-  return storage;
 }

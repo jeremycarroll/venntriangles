@@ -2,8 +2,8 @@
 
 #ifndef CORE_H
 #define CORE_H
+#include "memory.h"
 
-#include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>

@@ -4,6 +4,7 @@
 
 #include "d6.h"
 #include "face.h"
+#include "memory.h"
 #include "statistics.h"
 #include "trail.h"
 #include "utils.h"
@@ -153,7 +154,7 @@ void searchHere(bool smallestFirst, void (*foundSolution)(void))
       case NEXT_FACE:
         face = chooseNextFaceForSearch(smallestFirst);
         if (face == NULL) {
-          d6ResetMemory();
+          freeAll();
           if (faceFinalCorrectnessChecks() == NULL) {
             SolutionCount++;
             foundSolution();

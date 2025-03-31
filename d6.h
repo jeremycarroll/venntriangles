@@ -41,6 +41,4 @@ extern SYMMETRY_TYPE d6IsMaxInSequenceOrder(
 extern bool d6Equal(FACE_DEGREE_SEQUENCE faceDegrees,
                     FACE_DEGREE_SEQUENCE other);
 extern char *d6ToString(FACE_DEGREE_SEQUENCE faceDegrees);
-extern void d6ResetMemory(void);
-
 #endif  // D6_H
