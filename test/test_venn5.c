@@ -1,5 +1,6 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
+#include "d6.h"
 #include "face.h"
 #include "search.h"
 #include "statistics.h"
@@ -28,6 +29,72 @@ void tearDown(void)
 
 /* Global variables */
 static int SolutionCount = 0;
+static int EquivocalCount = 0;
+static int CanonicalCount = 0;
+
+/* Callback functions */
+static void countSolutions()
+{
+  SolutionCount++;
+  switch (symmetryTypeFaces()) {
+    case EQUIVOCAL:
+      EquivocalCount++;
+      break;
+    case CANONICAL:
+      CanonicalCount++;
+      break;
+    case NON_CANONICAL:
+      TEST_FAIL_MESSAGE("Non-canonical solution");
+      break;
+  }
+}
+static char* removeSpacesFromStr(char* string)
+{
+  int non_space_count = 0;
+  char* result = getBuffer();
+  for (int i = 0; string[i] != '\0'; i++) {
+    if (string[i] != ' ') {
+      result[non_space_count] = string[i];
+      non_space_count++;
+    }
+  }
+  result[non_space_count] = '\0';
+  return result;
+}
+
+static void checkOrder(char* expected, FACE_DEGREE_SEQUENCE faceDegrees)
+{
+  char* s = d6SequenceToString(faceDegrees);
+  TEST_ASSERT_EQUAL_STRING(removeSpacesFromStr(expected), s);
+}
+
+/* Callback functions */
+static void invertSolution()
+{
+  FACE_DEGREE_SEQUENCE naturalOrder = d6FaceDegreesInNaturalOrder();
+  FACE_DEGREE_SEQUENCE sequenceOrder = d6ConvertToSequenceOrder(naturalOrder);
+  FACE_DEGREE_SEQUENCE invertedNaturalOrder =
+      d6InvertedFaceDegreesInNaturalOrder();
+  FACE_DEGREE_SEQUENCE invertedSequenceOrder =
+      d6ConvertToSequenceOrder(invertedNaturalOrder);
+  SYMMETRY_TYPE comparison =
+      d6IsMaxInSequenceOrder(2, invertedSequenceOrder, sequenceOrder);
+  TEST_ASSERT_EQUAL(CANONICAL, comparison);
+  checkOrder("55443434333343545443333334344455", naturalOrder);
+  checkOrder("55454434334333434333433334444555", invertedNaturalOrder);
+  checkOrder("54434 54434 5 33333445343333343445 5", sequenceOrder);
+  checkOrder("55433 44434 5 43334334333433344545 5", invertedSequenceOrder);
+  switch (symmetryTypeFaces()) {
+    case EQUIVOCAL:
+      TEST_FAIL_MESSAGE("Equivocal solution");
+      break;
+    case CANONICAL:
+      break;
+    case NON_CANONICAL:
+      TEST_FAIL_MESSAGE("Non-canonical solution");
+      break;
+  }
+}
 
 /* Callback functions */
 static void foundSolution() { SolutionCount++; }
@@ -44,43 +111,70 @@ static void testSearchAbcde()
 static void testSearch44444()
 {
   SolutionCount = 0;
+  EquivocalCount = 0;
+  CanonicalCount = 0;
   dynamicFaceSetupCentral(intArray(4, 4, 4, 4, 4));
-  searchHere(false, foundSolution);
+  searchHere(false, countSolutions);
   TEST_ASSERT_EQUAL(2, SolutionCount);
+  TEST_ASSERT_EQUAL(2, EquivocalCount);
+  TEST_ASSERT_EQUAL(0, CanonicalCount);
 }
 
 static void testSearch55433()
 {
   SolutionCount = 0;
+  EquivocalCount = 0;
+  CanonicalCount = 0;
   dynamicFaceSetupCentral(intArray(5, 5, 4, 3, 3));
-  searchHere(false, foundSolution);
+  searchHere(false, countSolutions);
   TEST_ASSERT_EQUAL(6, SolutionCount);
+  TEST_ASSERT_EQUAL(0, EquivocalCount);
+  TEST_ASSERT_EQUAL(6, CanonicalCount);
 }
 
 static void testSearch55343()
 {
   SolutionCount = 0;
+  EquivocalCount = 0;
+  CanonicalCount = 0;
   dynamicFaceSetupCentral(intArray(5, 5, 3, 4, 3));
-  searchHere(false, foundSolution);
+  searchHere(false, countSolutions);
   TEST_ASSERT_EQUAL(0, SolutionCount);
+  TEST_ASSERT_EQUAL(0, EquivocalCount);
+  TEST_ASSERT_EQUAL(0, CanonicalCount);
 }
 
 static void testSearch54443()
 {
   SolutionCount = 0;
+  EquivocalCount = 0;
+  CanonicalCount = 0;
   dynamicFaceSetupCentral(intArray(5, 4, 4, 4, 3));
-  searchHere(false, foundSolution);
+  searchHere(false, countSolutions);
   TEST_ASSERT_EQUAL(4, SolutionCount);
+  TEST_ASSERT_EQUAL(0, EquivocalCount);
+  TEST_ASSERT_EQUAL(4, CanonicalCount);
 }
 
 static void testSearch54434()
 {
   SolutionCount = 0;
+  EquivocalCount = 0;
+  CanonicalCount = 0;
   dynamicFaceSetupCentral(intArray(5, 4, 4, 3, 4));
-  searchHere(false, foundSolution);
+  searchHere(false, countSolutions);
   TEST_ASSERT_EQUAL(5, SolutionCount);
+  TEST_ASSERT_EQUAL(0, EquivocalCount);
+  TEST_ASSERT_EQUAL(5, CanonicalCount);
 }
 
+/// @brief
+static void testInvert()
+{
+  dynamicFaceSetupCentral(intArray(5, 4, 4, 3, 4));
+  dynamicFaceSetCycleLength(1 << 2, 3);
+  searchHere(false, invertSolution);
+}
 /* Main test runner */
 int main(void)
 {
@@ -91,6 +185,6 @@ int main(void)
   RUN_TEST(testSearch55433);
   RUN_TEST(testSearch54443);
   RUN_TEST(testSearch54434);
-
+  RUN_TEST(testInvert);
   return UNITY_END();
 }

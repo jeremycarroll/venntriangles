@@ -37,12 +37,12 @@ extern FACE_DEGREE_SEQUENCE d6ConvertToSequenceOrder(
 extern FACE_DEGREE_SEQUENCE d6ConvertToNaturalOrder(
     FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder);
 extern FACE_DEGREE_SEQUENCE d6MaxInSequenceOrder(
-    FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...);
+    int count, FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...);
 extern SYMMETRY_TYPE d6IsMaxInSequenceOrder(
-    FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...);
+    int count, FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...);
 extern bool d6Equal(FACE_DEGREE_SEQUENCE faceDegrees,
                     FACE_DEGREE_SEQUENCE other);
-extern char *d6ToString(FACE_DEGREE_SEQUENCE faceDegrees);
+extern char *d6SequenceToString(FACE_DEGREE_SEQUENCE faceDegrees);
 
 extern PERMUTATION d6Compose(PERMUTATION a, PERMUTATION b);
 
@@ -56,5 +56,10 @@ extern PERMUTATION d6Closure(int *sizeReturn, int numberOfGenerators,
                              PERMUTATION generator1, ...);
 
 extern PERMUTATION d6Permutation(int a1, ...);
+
+extern PERMUTATION d6InvertingPermutation(void);
+
+extern PERMUTATION d6CycleAsPermutation(CYCLE cycle);
+extern char *d6Permutation2str(PERMUTATION permutation);
 
 #endif  // D6_H

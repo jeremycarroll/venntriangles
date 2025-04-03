@@ -3,6 +3,7 @@
 #include "utils.h"
 
 #include "color.h"
+#include "d6.h"
 #include "edge.h"
 #include "face.h"
 #include "memory.h"
@@ -32,4 +33,5 @@ void initialize()
   initializePoints();
   initializeTrail();
   initializeMemory();
+  initializeSequenceOrder();
 }
