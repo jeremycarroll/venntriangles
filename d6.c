@@ -46,6 +46,9 @@ static FACE_DEGREE_SEQUENCE d6FaceDegreesInSequenceOrder(void);
 static void canoncialCallbackImpl(int depth, int sum, FACE_DEGREE *args,
                                   UseFaceDegrees callback, void *data);
 
+static FACE_DEGREE_SEQUENCE sortPermutationsOfSequence(
+    const int count, const FACE_DEGREE_SEQUENCE first, va_list moreSequences);
+
 // static COLOR colorPermute(COLOR color, PERMUTATION permutation);
 static COLORSET colorSetPermute(COLORSET colorSet, PERMUTATION permutation);
 
@@ -257,9 +260,6 @@ FACE_DEGREE_SEQUENCE d6ConvertToSequenceOrder(
   return faceDegrees;
 }
 
-static FACE_DEGREE_SEQUENCE sortPermutationsOfSequence(
-    int count, FACE_DEGREE_SEQUENCE first, va_list moreSequences);
-
 FACE_DEGREE_SEQUENCE d6MaxInSequenceOrder(
     int count, FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...);
 
@@ -269,7 +269,7 @@ bool d6Equal(FACE_DEGREE_SEQUENCE faceDegrees, FACE_DEGREE_SEQUENCE other)
 }
 
 SYMMETRY_TYPE d6IsMaxInSequenceOrder(
-    int count, FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...)
+    const int count, const FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...)
 {
   FACE_DEGREE_SEQUENCE sorted;
   va_list args;
@@ -323,7 +323,7 @@ To find the color we have to use InverseSequenceOrder, then permute, then map
 back
 */
 static FACE_DEGREE_SEQUENCE sortPermutationsOfSequence(
-    const int count, FACE_DEGREE_SEQUENCE first, va_list moreSequences)
+    const int count, const FACE_DEGREE_SEQUENCE first, va_list moreSequences)
 {
   int i;
   FACE_DEGREE_SEQUENCE sequences =
@@ -346,28 +346,9 @@ static FACE_DEGREE_SEQUENCE sortPermutationsOfSequence(
   return sequences;
 }
 
-static SYMMETRY_TYPE d6SymmetryType64(FACE_DEGREE_SEQUENCE sizes)
+static SYMMETRY_TYPE d6SymmetryType64(const FACE_DEGREE_SEQUENCE sizes)
 {
-  FACE_DEGREE_SEQUENCE permuted = NEW_ARRAY(FACE_DEGREE_SEQUENCE, NCOLORS * 2);
-  int i, j;
-  for (i = 0; i < 2 * NCOLORS; i++) {
-    for (j = 0; j < NFACES; j++) {
-      permuted[i].faceDegrees[j] =
-          sizes->faceDegrees[InverseSequenceOrder[colorSetPermute(
-              SequenceOrder[j], &group[i])]];
-    }
-  }
-  assert(memcmp(permuted, sizes, sizeof(permuted[0])) == 0);
-  qsort(permuted, 2 * NCOLORS, sizeof(permuted[0]), compareFaceDegree);
-  if (memcmp(permuted, sizes, sizeof(permuted[0])) != 0) {
-    return NON_CANONICAL;
-  }
-
-  if (memcmp(permuted, permuted + 1, sizeof(permuted[0])) == 0) {
-    return EQUIVOCAL;
-  }
-
-  return CANONICAL;
+  return d6IsMaxInSequenceOrder(1, sizes);
 }
 
 static SYMMETRY_TYPE d6SymmetryTypeN(int n, FACE_DEGREE_SEQUENCE args)
