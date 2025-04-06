@@ -146,26 +146,6 @@ void canonicalCallback(UseFaceDegrees callback, void *data)
   canoncialCallbackImpl(0, 0, args, callback, data);
 }
 
-static FACE_DEGREE_SEQUENCE d6FaceDegreesInNaturalOrder(void)
-{
-  FACE_DEGREE_SEQUENCE faceDegrees = NEW(FACE_DEGREE_SEQUENCE);
-  for (int i = 0; i < NFACES; i++) {
-    faceDegrees->faceDegrees[i] = Faces[i].cycle->length;
-  }
-  return faceDegrees;
-}
-
-static FACE_DEGREE_SEQUENCE d6InvertedFaceDegreesInNaturalOrder(void)
-{
-  PERMUTATION permute = d6InvertingPermutation();
-  FACE_DEGREE_SEQUENCE faceDegrees = NEW(FACE_DEGREE_SEQUENCE);
-  for (int i = 0; i < NFACES; i++) {
-    faceDegrees->faceDegrees[colorSetPermute(i, permute)] =
-        Faces[(NFACES - 1) & ~i].cycle->length;
-  }
-  return faceDegrees;
-}
-
 PERMUTATION d6Compose(PERMUTATION a, PERMUTATION b)
 {
   PERMUTATION result = NEW(PERMUTATION);
@@ -310,28 +290,6 @@ char *permutationToString(PERMUTATION permutation)
   return usingBuffer(buffer);
 }
 
-static FACE_DEGREE_SEQUENCE d6ConvertToSequenceOrder(
-    FACE_DEGREE_SEQUENCE faceDegreesInNaturalOrder)
-{
-  FACE_DEGREE_SEQUENCE faceDegrees = NEW(FACE_DEGREE_SEQUENCE);
-  for (int i = 0; i < NFACES; i++) {
-    faceDegrees->faceDegrees[i] =
-        faceDegreesInNaturalOrder->faceDegrees[SequenceOrder[i]];
-  }
-  return faceDegrees;
-}
-
-static FACE_DEGREE_SEQUENCE d6MaxInSequenceOrder(
-    int count, FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...)
-{
-  FACE_DEGREE_SEQUENCE sorted;
-  va_list args;
-  va_start(args, faceDegreesInSequenceOrder);
-  sorted = sortPermutationsOfSequence(count, faceDegreesInSequenceOrder, args);
-  va_end(args);
-  return sorted;
-}
-
 static bool d6Equal(FACE_DEGREE_SEQUENCE faceDegrees,
                     FACE_DEGREE_SEQUENCE other)
 {
@@ -355,36 +313,10 @@ static SYMMETRY_TYPE d6IsMaxInSequenceOrder(
   return CANONICAL;
 }
 
-static char *d6SequenceToString(FACE_DEGREE_SEQUENCE faceDegrees)
-{
-  char *result = getBuffer();
-  char *p = result;
-  for (int i = 0; i < NFACES; i++) {
-    *p++ = '0' + faceDegrees->faceDegrees[i];
-  }
-  *p = '\0';
-  return usingBuffer(result);
-}
-
-static char *d6SolutionSequenceString(void)
-{
-  return d6SequenceToString(d6FaceDegreesInSequenceOrder());
-}
-
-static char *d6SolutionClassSequenceString(void)
-{
-  FACE_DEGREE_SEQUENCE inverted =
-      d6ConvertToSequenceOrder(d6InvertedFaceDegreesInNaturalOrder());
-  FACE_DEGREE_SEQUENCE normal = d6FaceDegreesInSequenceOrder();
-  FACE_DEGREE_SEQUENCE sorted = d6MaxInSequenceOrder(2, normal, inverted);
-  return d6SequenceToString(sorted);
-}
-
 static SIGNATURE maxSpunSignature(SIGNATURE onCurrentFace)
 {
   int counter;
   PERMUTATION abcNCycle = &group[1];
-  PERMUTATION cbaNCycle = &group[NCOLORS - 1];
   SIGNATURE best = onCurrentFace;
   PERMUTATION permutation =
       d6Automorphism(onCurrentFace->classSignature.faceCycleId[0]);
@@ -419,35 +351,7 @@ SIGNATURE d6MaxSignature(void)
           maxSpunSignature(d6SignatureReflected(recentered));
     }
   }
-#if DEBUG
-  printf("1/%d: %s\n", resultsIndex, d6SignatureToLongString(results[0]));
-  printf("2/%d: %s\n", resultsIndex, d6SignatureToLongString(results[1]));
-  printf("3/%d: %s\n", resultsIndex, d6SignatureToLongString(results[2]));
-  printf("4/%d: %s\n", resultsIndex, d6SignatureToLongString(results[3]));
-  printf("5/%d: %s\n", resultsIndex, d6SignatureToLongString(results[4]));
-  printf("6/%d: %s\n", resultsIndex, d6SignatureToLongString(results[5]));
-  printf("7/%d: %s\n", resultsIndex, d6SignatureToLongString(results[6]));
-  printf("8/%d: %s\n", resultsIndex, d6SignatureToLongString(results[7]));
-  printf("9/%d: %s\n", resultsIndex, d6SignatureToLongString(results[8]));
-  printf("10/%d: %s\n", resultsIndex, d6SignatureToLongString(results[9]));
-  printf("11/%d: %s\n", resultsIndex, d6SignatureToLongString(results[10]));
-  printf("12/%d: %s\n", resultsIndex, d6SignatureToLongString(results[11]));
-#endif
   qsort(results, resultsIndex, sizeof(results[0]), compareCycleIdSequence);
-#if DEBUG
-  printf("1/%d: %s\n", resultsIndex, d6SignatureToLongString(results[0]));
-  printf("2/%d: %s\n", resultsIndex, d6SignatureToLongString(results[1]));
-  printf("3/%d: %s\n", resultsIndex, d6SignatureToLongString(results[2]));
-  printf("4/%d: %s\n", resultsIndex, d6SignatureToLongString(results[3]));
-  printf("5/%d: %s\n", resultsIndex, d6SignatureToLongString(results[4]));
-  printf("6/%d: %s\n", resultsIndex, d6SignatureToLongString(results[5]));
-  printf("7/%d: %s\n", resultsIndex, d6SignatureToLongString(results[6]));
-  printf("8/%d: %s\n", resultsIndex, d6SignatureToLongString(results[7]));
-  printf("9/%d: %s\n", resultsIndex, d6SignatureToLongString(results[8]));
-  printf("10/%d: %s\n", resultsIndex, d6SignatureToLongString(results[9]));
-  printf("11/%d: %s\n", resultsIndex, d6SignatureToLongString(results[10]));
-  printf("12/%d: %s\n", resultsIndex, d6SignatureToLongString(results[11]));
-#endif
   return results[0];
 }
 
