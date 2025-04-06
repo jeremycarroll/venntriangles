@@ -2,7 +2,13 @@
 
 #ifndef CORE_H
 #define CORE_H
+#include "memory.h"
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 /* The curves are _colored_ from 0 to 5. */
 #ifndef NCOLORS
 #define NCOLORS 6
@@ -14,6 +20,7 @@
 #define FACTORIAL3 6u
 #define FACTORIAL4 24u
 #define FACTORIAL5 120u
+#define FACTORIAL6 720u
 #define CHOOSE_6_0 1u
 #define CHOOSE_6_1 6u
 #define CHOOSE_6_2 15u
@@ -26,6 +33,11 @@
 #define CHOOSE_3_0 1u
 #define NFACES (1 << NCOLORS)
 
+#define NCYCLES3 (CHOOSE_3_0 * FACTORIAL2)
+#define NCYCLES4 (CHOOSE_4_0 * FACTORIAL3 + CHOOSE_4_1 * FACTORIAL2)
+#define NCYCLES5 \
+  (CHOOSE_5_0 * FACTORIAL4 + CHOOSE_5_1 * FACTORIAL3 + CHOOSE_5_2 * FACTORIAL2)
+
 #if NCOLORS == 6
 #define NCYCLES                                        \
   (CHOOSE_6_0 * FACTORIAL5 + CHOOSE_6_1 * FACTORIAL4 + \
@@ -34,15 +46,14 @@
   (CHOOSE_6_0 * FACTORIAL5 * 6 + CHOOSE_6_1 * FACTORIAL4 * 5 + \
    CHOOSE_6_2 * FACTORIAL3 * 4 + CHOOSE_6_3 * FACTORIAL2 * 3)
 #elif NCOLORS == 4
-#define NCYCLES (CHOOSE_4_0 * FACTORIAL3 + CHOOSE_4_1 * FACTORIAL2)
+#define NCYCLES NCYCLES4
 #define NCYCLE_ENTRIES (CHOOSE_4_0 * FACTORIAL4 + CHOOSE_4_1 * FACTORIAL3)
 #elif NCOLORS == 5
-#define NCYCLES \
-  (CHOOSE_5_0 * FACTORIAL4 + CHOOSE_5_1 * FACTORIAL3 + CHOOSE_5_2 * FACTORIAL2)
+#define NCYCLES NCYCLES5
 #define NCYCLE_ENTRIES \
   (CHOOSE_5_0 * FACTORIAL5 + CHOOSE_5_1 * FACTORIAL4 + CHOOSE_5_2 * FACTORIAL3)
 #else
-#define NCYCLES (CHOOSE_3_0 * FACTORIAL2)
+#define NCYCLES NCYCLES3
 #define NCYCLE_ENTRIES (CHOOSE_3_0 * FACTORIAL3)
 #endif
 
@@ -63,13 +74,9 @@
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 
 typedef struct edge *EDGE;
-typedef struct face *FACE;
 
-#include <assert.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+typedef struct face *FACE;
+typedef uint64_t FACE_DEGREE;
+typedef uint64_t CYCLE_ID;
 
 #endif  // CORE_H

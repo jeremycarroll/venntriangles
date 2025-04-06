@@ -36,7 +36,7 @@ extern FAILURE dynamicFaceBacktrackableChoice(FACE face);
 extern FAILURE dynamicFaceChoice(FACE face, int depth);
 
 extern FAILURE faceFinalCorrectnessChecks(void);
-extern void dynamicFaceSetupCentral(int *faceDegrees);
+extern void dynamicFaceSetupCentral(FACE_DEGREE *faceDegrees);
 extern FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
                                        int depth);
 extern bool dynamicColorRemoveFromSearch(COLOR color);
@@ -50,7 +50,7 @@ extern FACE faceFromColors(char *colors);
 extern FACE dynamicFaceAddSpecific(char *colors, char *cycle);
 extern void facePrintSelected(void);
 extern void facePrint(FACE face);
-extern bool dynamicFaceSetCycleLength(uint32_t faceColors, uint32_t length);
+extern bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length);
 extern void initializeFacesAndEdges(void);
 extern void resetFaces(void);
 extern FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,

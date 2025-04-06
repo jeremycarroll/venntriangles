@@ -3,7 +3,6 @@
 #include "edge.h"
 
 #include "trail.h"
-#include "utils.h"
 
 #include <stdlib.h>
 

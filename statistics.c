@@ -10,7 +10,7 @@
 
 /* Global variables (file scoped static) */
 static Statistic Statistics[MAX_STATISTICS];
-static Failure Failures[MAX_STATISTICS];
+static Failure* Failures[MAX_STATISTICS];
 static time_t StartTime;
 static time_t LastLogTime;
 static int CheckFrequency = 1;
@@ -38,8 +38,11 @@ void statisticIncludeInteger(uint64_t* counter, char* shortName, char* name)
 void statisticIncludeFailure(Failure* failure)
 {
   for (int i = 0; i < MAX_STATISTICS; i++) {
-    if (Failures[i].count[0] == 0) {
-      Failures[i] = *failure;
+    if (Failures[i] == failure) {
+      return;
+    }
+    if (Failures[i] == 0) {
+      Failures[i] = failure;
       return;
     }
   }
@@ -56,10 +59,13 @@ void resetStatistics(void)
     Statistics[i].countPtr = NULL;
   }
   for (int i = 0; i < MAX_STATISTICS; i++) {
-    if (Failures[i].count[0] == 0) {
+    if (Failures[i] == NULL) {
       break;
     }
-    memset(Failures[i].count, 0, sizeof(Failures[i].count));
+    if (Failures[i]->count[0] == 0) {
+      break;
+    }
+    memset(Failures[i]->count, 0, sizeof(Failures[i]->count));
   }
 }
 
@@ -107,19 +113,19 @@ void statisticPrintOneLine(int position, bool force)
                 *Statistics[i].countPtr);
       }
       for (int i = 0; i < MAX_STATISTICS; i++) {
-        if (Failures[i].count[0] == 0) {
+        if (Failures[i]->count[0] == 0) {
           break;
         }
         int j;
         for (j = NFACES - 1; j > 0; j--) {
-          if (Failures[i].count[j]) {
+          if (Failures[i]->count[j]) {
             break;
           }
         }
         char separator = '[';
-        fprintf(LogFile, "%s: ", Failures[i].shortLabel);
+        fprintf(LogFile, "%s: ", Failures[i]->shortLabel);
         for (int k = 0; k <= j; k++) {
-          fprintf(LogFile, "%c%llu", separator, Failures[i].count[k]);
+          fprintf(LogFile, "%c%llu", separator, Failures[i]->count[k]);
           separator = ' ';
         }
         fprintf(LogFile, "] ");
@@ -154,12 +160,12 @@ void statisticPrintFull(void)
             *Statistics[i].countPtr);
   }
   for (int i = 0; i < MAX_STATISTICS; i++) {
-    if (Failures[i].count[0] == 0) {
+    if (Failures[i]->count[0] == 0) {
       break;
     }
     int j;
     for (j = NFACES - 1; j > 0; j--) {
-      if (Failures[i].count[j]) {
+      if (Failures[i]->count[j]) {
         break;
       }
     }
@@ -167,11 +173,11 @@ void statisticPrintFull(void)
     char buf[4096];
     char* bufptr = buf;
     for (int k = 0; k <= j; k++) {
-      bufptr += sprintf(bufptr, "%c%llu", separator, Failures[i].count[k]);
+      bufptr += sprintf(bufptr, "%c%llu", separator, Failures[i]->count[k]);
       separator = ' ';
     }
     sprintf(bufptr, "]");
-    fprintf(LogFile, "%30s %30s\n", Failures[i].label, buf);
+    fprintf(LogFile, "%30s %30s\n", Failures[i]->label, buf);
   }
   fprintf(LogFile, "\n");
   LastLogTime = now;

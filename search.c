@@ -4,6 +4,7 @@
 
 #include "d6.h"
 #include "face.h"
+#include "memory.h"
 #include "statistics.h"
 #include "trail.h"
 #include "utils.h"
@@ -24,9 +25,9 @@ static int UsefulSearchCount = 0;
 static TRAIL StartPoint;
 
 /* Declaration of file scoped static functions */
-static void setToSingletonCycleSet(FACE face, uint64_t cycleId);
+static void setFaceCycleSetToSingleton(FACE face, uint64_t cycleId);
 static CYCLE chooseCycle(FACE face, CYCLE cycle);
-static void fullSearchCallback(void* foundSolutionVoidPtr, int* args);
+static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args);
 
 /* Externally linked functions */
 FAILURE dynamicFaceChoice(FACE face, int depth)
@@ -106,7 +107,7 @@ FAILURE dynamicFaceBacktrackableChoice(FACE face)
   assert(cycleId < NCYCLES);
   assert(cycleId >= 0);
   assert(cycleSetMember(cycleId, face->possibleCycles));
-  setToSingletonCycleSet(face, cycleId);
+  setFaceCycleSetToSingleton(face, cycleId);
 
   failure = dynamicFaceChoice(face, 0);
   if (failure != NULL) {
@@ -153,6 +154,7 @@ void searchHere(bool smallestFirst, void (*foundSolution)(void))
       case NEXT_FACE:
         face = chooseNextFaceForSearch(smallestFirst);
         if (face == NULL) {
+          freeAll();
           if (faceFinalCorrectnessChecks() == NULL) {
             SolutionCount++;
             foundSolution();
@@ -211,12 +213,19 @@ void solutionPrint(FILE* fp)
   while (true) {
     FACE face = Faces + colors;
     do {
+      char buffer[1024];
       FACE next = face->next;
       COLORSET colorBeingDropped = face->colors & ~next->colors;
       COLORSET colorBeingAdded = next->colors & ~face->colors;
-      fprintf(fp, "%s [%c,%c] ", faceToStr(face),
+      sprintf(buffer, "%s [%c,%c] ", faceToStr(face),
               colorToChar(ffs(colorBeingDropped) - 1),
               colorToChar(ffs(colorBeingAdded) - 1));
+      if (strchr(buffer, '@')) {
+        fprintf(stderr, "buffer: %s\n", buffer);
+        fprintf(stderr, "faceToStr: %s\n", faceToStr(face));
+        exit(EXIT_FAILURE);
+      }
+      fputs(buffer, fp);
       face = next;
     } while (face->colors != colors);
     fprintf(fp, "\n");
@@ -225,7 +234,6 @@ void solutionPrint(FILE* fp)
     }
     colors |= (face->previous->colors | 1);
   }
-  fprintf(fp, "\n");
 }
 
 void solutionWrite(const char* prefix)
@@ -265,11 +273,14 @@ void solutionWrite(const char* prefix)
     }
   }
   fprintf(fp, "\n\nVariations = %d\n", numberOfVariations);
+  fprintf(fp, "\nSolution signature %s\nClass signature %s\n",
+          d6SignatureToString(d6SignatureFromFaces()),
+          d6SignatureToString(d6MaxSignature()));
   fclose(fp);
 }
 
 /* File scoped static functions */
-static void setToSingletonCycleSet(FACE face, uint64_t cycleId)
+static void setFaceCycleSetToSingleton(FACE face, uint64_t cycleId)
 {
   CYCLESET_DECLARE cycleSet;
   uint64_t i;
@@ -286,7 +297,7 @@ static CYCLE chooseCycle(FACE face, CYCLE cycle)
   return cycleSetNext(face->possibleCycles, cycle);
 }
 
-static void fullSearchCallback(void* foundSolutionVoidPtr, int* args)
+static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
 {
   clock_t now = clock();
   clock_t used;
@@ -308,7 +319,7 @@ static void fullSearchCallback(void* foundSolutionVoidPtr, int* args)
     PRINT_TIME(TotalUsefulTime, UsefulSearchCount);
     PRINT_TIME(TotalWastedTime, WastedSearchCount);
     for (i = 0; i < NCOLORS; i++) {
-      printf("%d ", args[i]);
+      printf("%llu ", args[i]);
     }
     printf(" gives %d new solutions\n", SolutionCount - initialSolutionCount);
     statisticPrintOneLine(position, true);

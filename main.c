@@ -2,6 +2,7 @@
 
 #include "main.h"
 
+#include "memory.h"
 #include "search.h"
 #include "statistics.h"
 #include "utils.h"
@@ -48,8 +49,7 @@ int dynamicMain0(int argc, char *argv[])
 static void saveResult(void)
 {
   char *buffer = getBuffer();
-  snprintf(buffer, sizeof(buffer), "%s/%s", TargetFolder,
-           faceDegreeSignature());
+  sprintf(buffer, "%s/%s", TargetFolder, faceDegreeSignature());
   solutionWrite(usingBuffer(buffer));
 }
 
