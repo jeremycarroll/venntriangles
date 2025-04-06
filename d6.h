@@ -21,6 +21,21 @@ typedef struct cycleIdSequence {
 
 typedef int (*PERMUTATION)[NCOLORS];
 
+/*
+The classSignature is the largest signature based on any face, and any
+labelling. By construction the first element of the classSignature is NCYCLES-1,
+the cycle a,b,c,d,e,f, around face 0. The isomorphism class corresponds to
+drawing the diagram on a sphere, rather than the Euclidean plane. To identify a
+specific venn diagram we identify the center face, by the offset. Conventionally
+we take the cycle a,b,c,d,e,f around that face (NFACES-1), and it may have been
+reflected from the class representative identified by the classSignature.
+*/
+typedef struct signature {
+  struct cycleIdSequence classSignature;
+  COLORSET offset;
+  bool reflected;
+} *SIGNATURE;
+
 extern void initializeSequenceOrder(void);
 extern SYMMETRY_TYPE symmetryTypeFaces(void);
 
@@ -67,16 +82,15 @@ extern PERMUTATION d6CycleAsPermutation(CYCLE cycle);
 extern char *d6Permutation2str(PERMUTATION permutation);
 extern char *d6SolutionSequenceString(void);
 extern char *d6SolutionClassSequenceString(void);
-extern CYCLE_ID_SEQUENCE d6MaxSignature(void);
-extern CYCLE_ID_SEQUENCE d6SignatureRecentered(CYCLE_ID_SEQUENCE sequence,
-                                               COLORSET center);
-extern CYCLE_ID_SEQUENCE d6SignaturePermuted(CYCLE_ID_SEQUENCE sequence,
-                                             PERMUTATION permutation);
-extern CYCLE_ID_SEQUENCE d6SignatureFromFaces(void);
-extern int d6SignatureCompare(CYCLE_ID_SEQUENCE a, CYCLE_ID_SEQUENCE b);
-extern CYCLE_ID_SEQUENCE d6SignatureReflected(CYCLE_ID_SEQUENCE sequence);
-extern char *d6SignatureToString(CYCLE_ID_SEQUENCE signature);
-extern char *d6SignatureToLongString(CYCLE_ID_SEQUENCE signature);
+extern SIGNATURE d6MaxSignature(void);
+extern SIGNATURE d6SignatureRecentered(SIGNATURE sequence, COLORSET center);
+extern SIGNATURE d6SignaturePermuted(SIGNATURE sequence,
+                                     PERMUTATION permutation);
+extern SIGNATURE d6SignatureFromFaces(void);
+extern int d6SignatureCompare(SIGNATURE a, SIGNATURE b);
+extern SIGNATURE d6SignatureReflected(SIGNATURE sequence);
+extern char *d6SignatureToString(SIGNATURE signature);
+extern char *d6SignatureToLongString(SIGNATURE signature);
 extern CYCLE_ID cycleIdPermute(CYCLE_ID originalCycleId,
                                PERMUTATION permutation);
 extern char *permutationToString(PERMUTATION permutation);

@@ -10,6 +10,7 @@
 #define TOTAL_5FACE_DEGREE 27
 
 #define TOTAL_SEQUENCE_STORAGE 100
+#define DEBUG 0
 
 static COLORSET SequenceOrder[NFACES];
 static COLORSET InverseSequenceOrder[NFACES];
@@ -379,16 +380,17 @@ char *d6SolutionClassSequenceString(void)
   return d6SequenceToString(sorted);
 }
 
-static CYCLE_ID_SEQUENCE maxSpunSignature(CYCLE_ID_SEQUENCE onCurrentFace)
+static SIGNATURE maxSpunSignature(SIGNATURE onCurrentFace)
 {
   int counter;
   PERMUTATION abcNCycle = &group[1];
   PERMUTATION cbaNCycle = &group[NCOLORS - 1];
-  CYCLE_ID_SEQUENCE best = onCurrentFace;
-  PERMUTATION permutation = d6Automorphism(onCurrentFace->faceCycleId[0]);
-  CYCLE_ID_SEQUENCE permuted = d6SignaturePermuted(onCurrentFace, permutation);
+  SIGNATURE best = onCurrentFace;
+  PERMUTATION permutation =
+      d6Automorphism(onCurrentFace->classSignature.faceCycleId[0]);
+  SIGNATURE permuted = d6SignaturePermuted(onCurrentFace, permutation);
   for (counter = 0; counter < NFACES; counter++) {
-    assert(permuted->faceCycleId[0] == NCYCLES - 1);
+    assert(permuted->classSignature.faceCycleId[0] == NCYCLES - 1);
     if (d6SignatureCompare(permuted, best) > 0) {
       best = permuted;
     }
@@ -399,16 +401,16 @@ static CYCLE_ID_SEQUENCE maxSpunSignature(CYCLE_ID_SEQUENCE onCurrentFace)
 
 static int compareCycleIdSequence(const void *a, const void *b)
 {
-  return -d6SignatureCompare(*(CYCLE_ID_SEQUENCE *)a, *(CYCLE_ID_SEQUENCE *)b);
+  return -d6SignatureCompare(*(SIGNATURE *)a, *(SIGNATURE *)b);
 }
 
-CYCLE_ID_SEQUENCE d6MaxSignature(void)
+SIGNATURE d6MaxSignature(void)
 {
   int resultsIndex = 0;
-  CYCLE_ID_SEQUENCE fromFaces = d6SignatureFromFaces();
+  SIGNATURE fromFaces = d6SignatureFromFaces();
   COLORSET center = 0;
-  CYCLE_ID_SEQUENCE recentered;
-  CYCLE_ID_SEQUENCE results[NFACES * 2];
+  SIGNATURE recentered;
+  SIGNATURE results[NFACES * 2];
   for (center = 0; center < NFACES; center++) {
     if (Faces[center].cycle->length == NCOLORS) {
       recentered = d6SignatureRecentered(fromFaces, center);
@@ -417,72 +419,111 @@ CYCLE_ID_SEQUENCE d6MaxSignature(void)
           maxSpunSignature(d6SignatureReflected(recentered));
     }
   }
+#if DEBUG
+  printf("1/%d: %s\n", resultsIndex, d6SignatureToLongString(results[0]));
+  printf("2/%d: %s\n", resultsIndex, d6SignatureToLongString(results[1]));
+  printf("3/%d: %s\n", resultsIndex, d6SignatureToLongString(results[2]));
+  printf("4/%d: %s\n", resultsIndex, d6SignatureToLongString(results[3]));
+  printf("5/%d: %s\n", resultsIndex, d6SignatureToLongString(results[4]));
+  printf("6/%d: %s\n", resultsIndex, d6SignatureToLongString(results[5]));
+  printf("7/%d: %s\n", resultsIndex, d6SignatureToLongString(results[6]));
+  printf("8/%d: %s\n", resultsIndex, d6SignatureToLongString(results[7]));
+  printf("9/%d: %s\n", resultsIndex, d6SignatureToLongString(results[8]));
+  printf("10/%d: %s\n", resultsIndex, d6SignatureToLongString(results[9]));
+  printf("11/%d: %s\n", resultsIndex, d6SignatureToLongString(results[10]));
+  printf("12/%d: %s\n", resultsIndex, d6SignatureToLongString(results[11]));
+#endif
   qsort(results, resultsIndex, sizeof(results[0]), compareCycleIdSequence);
+#if DEBUG
+  printf("1/%d: %s\n", resultsIndex, d6SignatureToLongString(results[0]));
+  printf("2/%d: %s\n", resultsIndex, d6SignatureToLongString(results[1]));
+  printf("3/%d: %s\n", resultsIndex, d6SignatureToLongString(results[2]));
+  printf("4/%d: %s\n", resultsIndex, d6SignatureToLongString(results[3]));
+  printf("5/%d: %s\n", resultsIndex, d6SignatureToLongString(results[4]));
+  printf("6/%d: %s\n", resultsIndex, d6SignatureToLongString(results[5]));
+  printf("7/%d: %s\n", resultsIndex, d6SignatureToLongString(results[6]));
+  printf("8/%d: %s\n", resultsIndex, d6SignatureToLongString(results[7]));
+  printf("9/%d: %s\n", resultsIndex, d6SignatureToLongString(results[8]));
+  printf("10/%d: %s\n", resultsIndex, d6SignatureToLongString(results[9]));
+  printf("11/%d: %s\n", resultsIndex, d6SignatureToLongString(results[10]));
+  printf("12/%d: %s\n", resultsIndex, d6SignatureToLongString(results[11]));
+#endif
   return results[0];
 }
 
-CYCLE_ID_SEQUENCE d6SignatureRecentered(CYCLE_ID_SEQUENCE sequence,
-                                        COLORSET center)
+SIGNATURE d6SignatureRecentered(SIGNATURE sequence, COLORSET center)
 {
-  CYCLE_ID_SEQUENCE result = NEW(CYCLE_ID_SEQUENCE);
+  SIGNATURE result = NEW(SIGNATURE);
   for (int i = 0; i < NFACES; i++) {
-    result->faceCycleId[i] = sequence->faceCycleId[i ^ center];
+    result->classSignature.faceCycleId[i] =
+        sequence->classSignature.faceCycleId[i ^ center];
   }
+  result->offset = center ^ sequence->offset;
+  result->reflected = sequence->reflected;
   return result;
 }
 
-CYCLE_ID_SEQUENCE d6SignaturePermuted(CYCLE_ID_SEQUENCE sequence,
-                                      PERMUTATION permutation)
+SIGNATURE d6SignaturePermuted(SIGNATURE sequence, PERMUTATION permutation)
 {
-  CYCLE_ID_SEQUENCE result = NEW(CYCLE_ID_SEQUENCE);
+  SIGNATURE result = NEW(SIGNATURE);
   for (COLORSET i = 0; i < NFACES; i++) {
-    result->faceCycleId[colorSetPermute(i, permutation)] =
-        cycleIdPermute(sequence->faceCycleId[i], permutation);
+    result->classSignature.faceCycleId[colorSetPermute(i, permutation)] =
+        cycleIdPermute(sequence->classSignature.faceCycleId[i], permutation);
   }
+  result->offset = colorSetPermute(sequence->offset, permutation);
+  result->reflected = sequence->reflected;
   return result;
 }
 
-CYCLE_ID_SEQUENCE d6SignatureReflected(CYCLE_ID_SEQUENCE sequence)
+SIGNATURE d6SignatureReflected(SIGNATURE sequence)
 {
-  CYCLE_ID_SEQUENCE result = NEW(CYCLE_ID_SEQUENCE);
+  SIGNATURE result = NEW(SIGNATURE);
   for (int i = 0; i < NFACES; i++) {
-    result->faceCycleId[i] = cycleIdReverseDirection(sequence->faceCycleId[i]);
+    result->classSignature.faceCycleId[i] =
+        cycleIdReverseDirection(sequence->classSignature.faceCycleId[i]);
   }
+  result->offset = sequence->offset;
+  result->reflected = !sequence->reflected;
   return result;
 }
 
-int d6SignatureCompare(CYCLE_ID_SEQUENCE a, CYCLE_ID_SEQUENCE b)
+int d6SignatureCompare(SIGNATURE a, SIGNATURE b)
 {
   return bcmp(a, b, sizeof(((CYCLE_ID_SEQUENCE)NULL)[0]));
 }
 
-CYCLE_ID_SEQUENCE d6SignatureFromFaces(void)
+SIGNATURE d6SignatureFromFaces(void)
 {
-  CYCLE_ID_SEQUENCE result = NEW(CYCLE_ID_SEQUENCE);
+  SIGNATURE result = NEW(SIGNATURE);
   for (int i = 0; i < NFACES; i++) {
-    result->faceCycleId[i] = Faces[i].cycle - Cycles;
+    result->classSignature.faceCycleId[i] = Faces[i].cycle - Cycles;
   }
+  result->offset = NFACES - 1;
+  result->reflected = false;
   return result;
 }
 
-char *d6SignatureToString(CYCLE_ID_SEQUENCE signature)
+char *d6SignatureToString(SIGNATURE signature)
 {
   char *result = getBuffer();
   char *p = result;
   for (int i = 0; i < NFACES; i++) {
-    *p++ = 'A' + signature->faceCycleId[i] / 26;
-    *p++ = 'a' + signature->faceCycleId[i] % 26;
+    *p++ = 'A' + signature->classSignature.faceCycleId[i] / 26;
+    *p++ = 'a' + signature->classSignature.faceCycleId[i] % 26;
   }
   *p = '\0';
   return usingBuffer(result);
 }
 
-char *d6SignatureToLongString(CYCLE_ID_SEQUENCE signature)
+char *d6SignatureToLongString(SIGNATURE signature)
 {
   char *result = tempMalloc(1024);
   char *p = result;
+  p += sprintf(p, "%c%s:", signature->reflected ? '!' : ' ',
+               colorSetToStr(signature->offset));
   for (int i = 0; i < NFACES; i++) {
-    p += sprintf(p, "%s ", cycleToStr(Cycles + signature->faceCycleId[i]));
+    p += sprintf(p, " %s",
+                 cycleToStr(Cycles + signature->classSignature.faceCycleId[i]));
   }
   *p = '\0';
   return result;
