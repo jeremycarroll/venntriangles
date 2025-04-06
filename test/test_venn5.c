@@ -31,7 +31,7 @@ void tearDown(void)
 static int SolutionCount = 0;
 static int EquivocalCount = 0;
 static int CanonicalCount = 0;
-
+static int MatchingSolutions = 0;
 /* Callback functions */
 static void countSolutions()
 {
@@ -176,15 +176,27 @@ static void invertSolution()
 }
 
 /* Callback functions */
-static void foundSolution() { SolutionCount++; }
+static void foundSolution()
+{
+  SolutionCount++;
+
+  if (strcmp(
+          d6SignatureToString(d6MaxSignature()),
+          "CvCgByBuBaBcBfAqAoAcApBeApAdAoBbAuBiAvAuArBdAqArBhAfBnBhChAmCqCh") ==
+      0) {
+    MatchingSolutions++;
+  }
+}
 
 /* Test functions */
 static void testSearchAbcde()
 {
   SolutionCount = 0;
+  MatchingSolutions = 0;
   dynamicFaceSetupCentral(intArray(0, 0, 0, 0, 0));
   searchHere(false, foundSolution);
   TEST_ASSERT_EQUAL(152, SolutionCount);
+  TEST_ASSERT_EQUAL(40, MatchingSolutions); // 4 actual solutions, times 5 rotations times 2 reflections.
 }
 
 static void testSearch44444()
