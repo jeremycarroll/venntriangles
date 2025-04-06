@@ -275,6 +275,9 @@ void solutionWrite(const char* prefix)
   fprintf(fp, "\n\nVariations = %d\n", numberOfVariations);
   fprintf(fp, "\nSolution signature %s\nClass signature %s\n",
           d6SolutionSequenceString(), d6SolutionClassSequenceString());
+  fprintf(fp, "\nSolution signature2 %s\nClass signature2 %s\n",
+          d6SignatureToString(d6SignatureFromFaces()),
+          d6SignatureToString(d6MaxSignature()));
   fclose(fp);
 }
 

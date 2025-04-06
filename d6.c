@@ -417,31 +417,7 @@ CYCLE_ID_SEQUENCE d6MaxSignature(void)
           maxSpunSignature(d6SignatureReflected(recentered));
     }
   }
-  printf("1/%d: %s\n", resultsIndex, d6SignatureToLongString(results[0]));
-  printf("2/%d: %s\n", resultsIndex, d6SignatureToLongString(results[1]));
-  printf("3/%d: %s\n", resultsIndex, d6SignatureToLongString(results[2]));
-  printf("4/%d: %s\n", resultsIndex, d6SignatureToLongString(results[3]));
-  printf("5/%d: %s\n", resultsIndex, d6SignatureToLongString(results[4]));
-  printf("6/%d: %s\n", resultsIndex, d6SignatureToLongString(results[5]));
-  printf("7/%d: %s\n", resultsIndex, d6SignatureToLongString(results[6]));
-  printf("8/%d: %s\n", resultsIndex, d6SignatureToLongString(results[7]));
-  printf("9/%d: %s\n", resultsIndex, d6SignatureToLongString(results[8]));
-  printf("10/%d: %s\n", resultsIndex, d6SignatureToLongString(results[9]));
-  printf("11/%d: %s\n", resultsIndex, d6SignatureToLongString(results[10]));
-  printf("12/%d: %s\n", resultsIndex, d6SignatureToLongString(results[11]));
   qsort(results, resultsIndex, sizeof(results[0]), compareCycleIdSequence);
-  printf("1/%d: %s\n", resultsIndex, d6SignatureToLongString(results[0]));
-  printf("2/%d: %s\n", resultsIndex, d6SignatureToLongString(results[1]));
-  printf("3/%d: %s\n", resultsIndex, d6SignatureToLongString(results[2]));
-  printf("4/%d: %s\n", resultsIndex, d6SignatureToLongString(results[3]));
-  printf("5/%d: %s\n", resultsIndex, d6SignatureToLongString(results[4]));
-  printf("6/%d: %s\n", resultsIndex, d6SignatureToLongString(results[5]));
-  printf("7/%d: %s\n", resultsIndex, d6SignatureToLongString(results[6]));
-  printf("8/%d: %s\n", resultsIndex, d6SignatureToLongString(results[7]));
-  printf("9/%d: %s\n", resultsIndex, d6SignatureToLongString(results[8]));
-  printf("10/%d: %s\n", resultsIndex, d6SignatureToLongString(results[9]));
-  printf("11/%d: %s\n", resultsIndex, d6SignatureToLongString(results[10]));
-  printf("12/%d: %s\n", resultsIndex, d6SignatureToLongString(results[11]));
   return results[0];
 }
 

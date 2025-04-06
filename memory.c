@@ -16,7 +16,7 @@ typedef struct AllocationHeader {
 // Global pointer to the start of the allocation chain
 static AllocationHeader *chain = NULL;
 /* Constants */
-#define BUFFER_SIZE 128
+#define BUFFER_SIZE 256
 
 /* Global variables (file scoped static) */
 static uint64_t MaxBufferSize = 0;
