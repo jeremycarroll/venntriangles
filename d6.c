@@ -146,7 +146,7 @@ void canonicalCallback(UseFaceDegrees callback, void *data)
   canoncialCallbackImpl(0, 0, args, callback, data);
 }
 
-FACE_DEGREE_SEQUENCE d6FaceDegreesInNaturalOrder(void)
+static FACE_DEGREE_SEQUENCE d6FaceDegreesInNaturalOrder(void)
 {
   FACE_DEGREE_SEQUENCE faceDegrees = NEW(FACE_DEGREE_SEQUENCE);
   for (int i = 0; i < NFACES; i++) {
@@ -155,7 +155,7 @@ FACE_DEGREE_SEQUENCE d6FaceDegreesInNaturalOrder(void)
   return faceDegrees;
 }
 
-FACE_DEGREE_SEQUENCE d6InvertedFaceDegreesInNaturalOrder(void)
+static FACE_DEGREE_SEQUENCE d6InvertedFaceDegreesInNaturalOrder(void)
 {
   PERMUTATION permute = d6InvertingPermutation();
   FACE_DEGREE_SEQUENCE faceDegrees = NEW(FACE_DEGREE_SEQUENCE);
@@ -310,7 +310,7 @@ char *permutationToString(PERMUTATION permutation)
   return usingBuffer(buffer);
 }
 
-FACE_DEGREE_SEQUENCE d6ConvertToSequenceOrder(
+static FACE_DEGREE_SEQUENCE d6ConvertToSequenceOrder(
     FACE_DEGREE_SEQUENCE faceDegreesInNaturalOrder)
 {
   FACE_DEGREE_SEQUENCE faceDegrees = NEW(FACE_DEGREE_SEQUENCE);
@@ -321,9 +321,8 @@ FACE_DEGREE_SEQUENCE d6ConvertToSequenceOrder(
   return faceDegrees;
 }
 
-FACE_DEGREE_SEQUENCE d6MaxInSequenceOrder(
+static FACE_DEGREE_SEQUENCE d6MaxInSequenceOrder(
     int count, FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...)
-
 {
   FACE_DEGREE_SEQUENCE sorted;
   va_list args;
@@ -333,12 +332,13 @@ FACE_DEGREE_SEQUENCE d6MaxInSequenceOrder(
   return sorted;
 }
 
-bool d6Equal(FACE_DEGREE_SEQUENCE faceDegrees, FACE_DEGREE_SEQUENCE other)
+static bool d6Equal(FACE_DEGREE_SEQUENCE faceDegrees,
+                    FACE_DEGREE_SEQUENCE other)
 {
   return memcmp(faceDegrees, other, sizeof(faceDegrees[0])) == 0;
 }
 
-SYMMETRY_TYPE d6IsMaxInSequenceOrder(
+static SYMMETRY_TYPE d6IsMaxInSequenceOrder(
     const int count, const FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...)
 {
   FACE_DEGREE_SEQUENCE sorted;
@@ -355,7 +355,7 @@ SYMMETRY_TYPE d6IsMaxInSequenceOrder(
   return CANONICAL;
 }
 
-char *d6SequenceToString(FACE_DEGREE_SEQUENCE faceDegrees)
+static char *d6SequenceToString(FACE_DEGREE_SEQUENCE faceDegrees)
 {
   char *result = getBuffer();
   char *p = result;
@@ -366,12 +366,12 @@ char *d6SequenceToString(FACE_DEGREE_SEQUENCE faceDegrees)
   return usingBuffer(result);
 }
 
-char *d6SolutionSequenceString(void)
+static char *d6SolutionSequenceString(void)
 {
   return d6SequenceToString(d6FaceDegreesInSequenceOrder());
 }
 
-char *d6SolutionClassSequenceString(void)
+static char *d6SolutionClassSequenceString(void)
 {
   FACE_DEGREE_SEQUENCE inverted =
       d6ConvertToSequenceOrder(d6InvertedFaceDegreesInNaturalOrder());

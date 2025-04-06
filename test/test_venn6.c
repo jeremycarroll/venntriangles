@@ -30,17 +30,9 @@ void tearDown(void)
 
 /* Global variables */
 static int SolutionCount = 0;
-static int ClassSolutionCount = 0;
 
 /* Callback functions */
-static void foundSolution()
-{
-  SolutionCount++;
-  if (strcmp(d6SolutionSequenceString(), d6SolutionClassSequenceString()) ==
-      0) {
-    ClassSolutionCount++;
-  }
-}
+static void foundSolution() { SolutionCount++; }
 
 /* Test functions */
 static void testCentralFaceEdge(void)
@@ -89,10 +81,8 @@ static void testFullSearch(void)
   /* dyanmicSearchFull includes initialization, so we undo our own setUp. */
   tearDown();
   SolutionCount = 0;
-  ClassSolutionCount = 0;
   searchFull(foundSolution);
   TEST_ASSERT_EQUAL(233, SolutionCount);
-  TEST_ASSERT_EQUAL(82, ClassSolutionCount);
 }
 
 /* Main test runner */

@@ -49,20 +49,6 @@ typedef void (*UseFaceDegrees)(void *data, FACE_DEGREE *faceDegrees);
 extern void canonicalCallback(UseFaceDegrees callback, void *data);
 extern char *faceDegreeSignature(void);
 
-extern FACE_DEGREE_SEQUENCE d6FaceDegreesInNaturalOrder(void);
-extern FACE_DEGREE_SEQUENCE d6InvertedFaceDegreesInNaturalOrder(void);
-extern FACE_DEGREE_SEQUENCE d6ConvertToSequenceOrder(
-    FACE_DEGREE_SEQUENCE faceDegreesInNaturalOrder);
-extern FACE_DEGREE_SEQUENCE d6ConvertToNaturalOrder(
-    FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder);
-extern FACE_DEGREE_SEQUENCE d6MaxInSequenceOrder(
-    int count, FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...);
-extern SYMMETRY_TYPE d6IsMaxInSequenceOrder(
-    int count, FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...);
-extern bool d6Equal(FACE_DEGREE_SEQUENCE faceDegrees,
-                    FACE_DEGREE_SEQUENCE other);
-extern char *d6SequenceToString(FACE_DEGREE_SEQUENCE faceDegrees);
-
 extern PERMUTATION d6Compose(PERMUTATION a, PERMUTATION b);
 
 extern PERMUTATION d6Inverse(PERMUTATION permutation);
@@ -80,8 +66,6 @@ extern PERMUTATION d6InvertingPermutation(void);
 
 extern PERMUTATION d6CycleAsPermutation(CYCLE cycle);
 extern char *d6Permutation2str(PERMUTATION permutation);
-extern char *d6SolutionSequenceString(void);
-extern char *d6SolutionClassSequenceString(void);
 extern SIGNATURE d6MaxSignature(void);
 extern SIGNATURE d6SignatureRecentered(SIGNATURE sequence, COLORSET center);
 extern SIGNATURE d6SignaturePermuted(SIGNATURE sequence,
