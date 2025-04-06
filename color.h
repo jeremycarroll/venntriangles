@@ -38,19 +38,19 @@ extern CYCLESET_DECLARE CycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
 extern CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
 extern CYCLESET_DECLARE CycleSetOmittingColorPair[NCOLORS][NCOLORS];
 
-extern void cycleSetAdd(uint32_t cycleId, CYCLESET cycleSet);
-extern void cycleSetRemove(uint32_t cycleId, CYCLESET cycleSet);
-extern bool cycleSetMember(uint32_t cycleId, CYCLESET cycleSet);
+extern void cycleSetAdd(CYCLE_ID cycleId, CYCLESET cycleSet);
+extern void cycleSetRemove(CYCLE_ID cycleId, CYCLESET cycleSet);
+extern bool cycleSetMember(CYCLE_ID cycleId, CYCLESET cycleSet);
 extern CYCLE cycleSetFirst(CYCLESET cycleSet);
 extern CYCLE cycleSetNext(CYCLESET cycleSet, CYCLE cycle);
 extern uint32_t cycleSetSize(CYCLESET cycleSet);
-extern uint32_t cycleId(uint32_t *cycle, uint32_t length);
+extern CYCLE_ID getCycleId(uint32_t *cycle, uint32_t length);
 extern bool cycleContainsAthenB(CYCLE cycle, uint32_t i, uint32_t j);
 extern bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t i, uint32_t j,
                                      uint32_t k);
 extern uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color);
 extern struct facialCycle Cycles[NCYCLES];
-extern uint32_t cycleIdFromColors(char *colors);
+extern CYCLE_ID cycleIdFromColors(char *colors);
 extern int colorToChar(COLOR c);
 extern char *colorSetToStr(COLORSET colors);
 extern char *cycleToStr(CYCLE cycle);
@@ -58,4 +58,6 @@ extern void removeFromCycleSetWithTrail(uint32_t cycleId, CYCLESET cycleSet);
 extern void initializeCycleSets(void);
 extern void resetCycles(void);
 extern void initializeCycleSetUniversal(CYCLESET cycleSet);
+extern CYCLE_ID cycleIdReverseDirection(CYCLE_ID cycleId);
+
 #endif  // COLOR_H

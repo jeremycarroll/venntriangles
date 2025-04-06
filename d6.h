@@ -15,6 +15,10 @@ typedef struct faceDegreeSequence {
   FACE_DEGREE faceDegrees[NFACES];
 } *FACE_DEGREE_SEQUENCE;
 
+typedef struct cycleIdSequence {
+  CYCLE_ID faceCycleId[NFACES];
+} *CYCLE_ID_SEQUENCE;
+
 typedef int (*PERMUTATION)[NCOLORS];
 
 extern void initializeSequenceOrder(void);
@@ -61,5 +65,22 @@ extern PERMUTATION d6InvertingPermutation(void);
 
 extern PERMUTATION d6CycleAsPermutation(CYCLE cycle);
 extern char *d6Permutation2str(PERMUTATION permutation);
+extern char *d6SolutionSequenceString(void);
+extern char *d6SolutionClassSequenceString(void);
+extern CYCLE_ID_SEQUENCE d6MaxSignature(void);
+extern CYCLE_ID_SEQUENCE d6SignatureRecentered(CYCLE_ID_SEQUENCE sequence,
+                                               COLORSET center);
+extern CYCLE_ID_SEQUENCE d6SignaturePermuted(CYCLE_ID_SEQUENCE sequence,
+                                             PERMUTATION permutation);
+extern CYCLE_ID_SEQUENCE d6SignatureFromFaces(void);
+extern int d6SignatureCompare(CYCLE_ID_SEQUENCE a, CYCLE_ID_SEQUENCE b);
+extern CYCLE_ID_SEQUENCE d6SignatureReflected(CYCLE_ID_SEQUENCE sequence);
+extern char *d6SignatureToString(CYCLE_ID_SEQUENCE signature);
+extern char *d6SignatureToLongString(CYCLE_ID_SEQUENCE signature);
+extern CYCLE_ID cycleIdPermute(CYCLE_ID originalCycleId,
+                               PERMUTATION permutation);
+extern char *permutationToString(PERMUTATION permutation);
+extern int group[2 * NCOLORS][NCOLORS];
+extern PERMUTATION d6Automorphism(CYCLE_ID cycleId);
 
 #endif  // D6_H

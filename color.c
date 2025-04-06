@@ -74,19 +74,19 @@ void initializeCycleSetUniversal(CYCLESET cycleSet)
 }
 
 /* Externally linked functions - cycleSet... */
-void cycleSetAdd(uint32_t cycleId, CYCLESET cycleSet)
+void cycleSetAdd(CYCLE_ID cycleId, CYCLESET cycleSet)
 {
   assert(cycleId < NCYCLES);
   cycleSet[cycleId / BITS_PER_WORD] |= 1ul << (cycleId % BITS_PER_WORD);
 }
 
-bool cycleSetMember(uint32_t cycleId, CYCLESET cycleSet)
+bool cycleSetMember(CYCLE_ID cycleId, CYCLESET cycleSet)
 {
   assert(cycleId < NCYCLES);
   return (cycleSet[cycleId / BITS_PER_WORD] >> (cycleId % BITS_PER_WORD)) & 1ul;
 }
 
-void cycleSetRemove(uint32_t cycleId, CYCLESET cycleSet)
+void cycleSetRemove(CYCLE_ID cycleId, CYCLESET cycleSet)
 {
   assert(cycleId < NCYCLES);
   cycleSet[cycleId / BITS_PER_WORD] &= ~(1ul << (cycleId % BITS_PER_WORD));
@@ -148,7 +148,7 @@ bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k)
           cycle->curves[0] == k);
 }
 
-uint32_t cycleId(COLOR* cycle, uint32_t length)
+CYCLE_ID getCycleId(COLOR* cycle, uint32_t length)
 {
   uint32_t cycleId;
   uint32_t i;
@@ -165,6 +165,17 @@ uint32_t cycleId(COLOR* cycle, uint32_t length)
     }
   }
   assert(NULL == "Unreachable");
+}
+
+CYCLE_ID cycleIdReverseDirection(CYCLE_ID forwardCycleId)
+{
+  COLOR reversed[NCOLORS];
+  reversed[0] = Cycles[forwardCycleId].curves[0];
+  for (uint32_t i = 1; i < Cycles[forwardCycleId].length; i++) {
+    reversed[i] =
+        Cycles[forwardCycleId].curves[Cycles[forwardCycleId].length - i];
+  }
+  return getCycleId(reversed, Cycles[forwardCycleId].length);
 }
 
 uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color)
@@ -233,65 +244,85 @@ char* cycleToStr(CYCLE cycle)
   return usingBuffer(buffer);
 }
 
-uint32_t cycleIdFromColors(char* colors)
+CYCLE_ID cycleIdFromColors(char* colors)
 {
   COLOR cycle[NCOLORS];
   int i;
   for (i = 0; *colors; i++, colors++) {
     cycle[i] = *colors - 'a';
   }
-  return cycleId(cycle, i);
+  return getCycleId(cycle, i);
 }
 
 /* File scoped static functions */
-static void addCycle(int length, ...)
+static void addCycle(int length, COLOR* colors)
 {
   uint32_t color;
-  va_list ap;
   CYCLE cycle = &Cycles[NextCycle++];
   int ix = 0;
   cycle->colors = 0;
   cycle->length = length;
-  va_start(ap, length);
   for (ix = 0; ix < length; ix++) {
-    color = va_arg(ap, uint32_t);
+    color = colors[ix];
     cycle->curves[ix] = color;
     cycle->colors |= 1u << color;
   }
-  va_end(ap);
+}
+
+static void initializeCyclesWithLengthArrayAndMaxValue(uint32_t length,
+                                                       int position,
+                                                       COLOR* colors)
+{
+  int nextColor, i;
+  COLOR swap;
+  if (position == length) {
+    for (i = 1; i < length; i++) {
+      addCycle(length, colors);
+      swap = colors[i];
+      colors[i] = colors[i + 1];
+      colors[i + 1] = swap;
+    }
+    for (; i > 1; i--) {
+      swap = colors[i];
+      colors[i] = colors[i - 1];
+      colors[i - 1] = swap;
+    }
+  } else {
+    for (nextColor = colors[1] - 1; nextColor > colors[0]; nextColor--) {
+      for (i = 0; i < position; i++) {
+        if (colors[i] == nextColor) goto skip;
+      }
+      colors[position] = nextColor;
+      initializeCyclesWithLengthArrayAndMaxValue(length, position + 1, colors);
+    skip:;
+    }
+  }
+}
+
+static void initializeCyclesWithLengthAndMaxValue(uint32_t length, COLOR color)
+{
+  int c1;
+  int colors[NCOLORS + 1];
+  for (c1 = color - 1; c1 >= 0; c1--) {
+    colors[0] = c1;
+    colors[1] = color;
+    initializeCyclesWithLengthArrayAndMaxValue(length, 2, colors);
+  }
+}
+
+static void initializeCyclesWithMaxValue(COLOR color)
+{
+  for (uint32_t length = 3; length <= color + 1; length++) {
+    initializeCyclesWithLengthAndMaxValue(length, color);
+  }
 }
 
 static void initializeCycles(void)
 {
   assert(NextCycle == 0);
-  uint32_t c1, c2, c3, c4, c5, c6;
-  for (c1 = 0; c1 < NCOLORS; c1++) {
-    for (c2 = c1 + 1; c2 < NCOLORS; c2++) {
-      for (c3 = c1 + 1; c3 < NCOLORS; c3++) {
-        if (c3 == c2) {
-          continue;
-        }
-        addCycle(3, c1, c2, c3);
-        for (c4 = c1 + 1; c4 < NCOLORS; c4++) {
-          if (c4 == c2 || c4 == c3) {
-            continue;
-          }
-          addCycle(4, c1, c2, c3, c4);
-          for (c5 = c1 + 1; c5 < NCOLORS; c5++) {
-            if (c5 == c2 || c5 == c3 || c5 == c4) {
-              continue;
-            }
-            addCycle(5, c1, c2, c3, c4, c5);
-            for (c6 = c1 + 1; c6 < NCOLORS; c6++) {
-              if (c6 == c2 || c6 == c3 || c6 == c4 || c6 == c5) {
-                continue;
-              }
-              addCycle(6, c1, c2, c3, c4, c5, c6);
-            }
-          }
-        }
-      }
-    }
+  uint32_t c1;
+  for (c1 = 2; c1 < NCOLORS; c1++) {
+    initializeCyclesWithMaxValue(c1);
   }
   assert(NextCycle == ARRAY_LEN(Cycles));
 }

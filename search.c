@@ -234,7 +234,6 @@ void solutionPrint(FILE* fp)
     }
     colors |= (face->previous->colors | 1);
   }
-  fprintf(fp, "\n");
 }
 
 void solutionWrite(const char* prefix)
@@ -274,6 +273,8 @@ void solutionWrite(const char* prefix)
     }
   }
   fprintf(fp, "\n\nVariations = %d\n", numberOfVariations);
+  fprintf(fp, "\nSolution signature %s\nClass signature %s\n",
+          d6SolutionSequenceString(), d6SolutionClassSequenceString());
   fclose(fp);
 }
 
