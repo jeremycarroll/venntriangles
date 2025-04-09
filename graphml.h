@@ -11,7 +11,7 @@
 /* GraphML output functions */
 extern void graphmlBegin(FILE *fp);
 extern void graphmlEnd(FILE *fp);
-extern void graphmlAddPoint(FILE *fp, POINT point);
+extern void graphmlAddNode(FILE *fp, POINT point, const char *id);
 extern void graphmlAddEdge(FILE *fp, EDGE edge);
 extern void graphmlAddCurve(FILE *fp, COLOR color, const char *id);
 

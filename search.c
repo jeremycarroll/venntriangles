@@ -261,10 +261,10 @@ void solutionWrite(const char* prefix)
       fprintf(fp, "{%c:%d} ", colorToChar(a), i);
       if (corners[i][0] == NULL) {
         EDGE edge = edgeOnCentralFace(a);
-        pLength = edgePathLength(edge, edgeFollowBackwards(edge));
+        pLength = edgePathLength(edge, edgeFollowBackwards(edge), NULL);
         fprintf(fp, "NULL/%d ", pLength);
       } else {
-        pLength = edgePathLength(corners[i][0]->reversed, corners[i][1]);
+        pLength = edgePathLength(corners[i][0]->reversed, corners[i][1], NULL);
         fprintf(fp, "(%s => %s/%d) ", edgeToStr(corners[i][0]),
                 edgeToStr(corners[i][1]), pLength);
       }
