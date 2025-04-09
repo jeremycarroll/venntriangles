@@ -34,8 +34,8 @@ void graphmlEnd(FILE *fp) {
 }
 
 /* Add a point (vertex) to the graph */
-void graphmlAddNode(FILE *fp, POINT point, const char *id) {
-  fprintf(fp, "    <node id=\"%s\">\n", id);
+void graphmlAddPoint(FILE *fp, POINT point) {
+  fprintf(fp, "    <node id=\"%s\">\n", graphmlPointId(point));
   fprintf(fp, "      <data key=\"colors\">%s</data>\n", colorSetToStr(point->colors));
   fprintf(fp, "      <data key=\"primary\">%c</data>\n", 'a' + point->primary);
   fprintf(fp, "      <data key=\"secondary\">%c</data>\n", 'a' + point->secondary);
