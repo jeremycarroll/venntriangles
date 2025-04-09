@@ -23,7 +23,6 @@ void graphmlBegin(FILE *fp) {
   fprintf(fp, "  <key id=\"primary\" for=\"node\" attr.name=\"primary\" attr.type=\"string\"/>\n");
   fprintf(fp, "  <key id=\"secondary\" for=\"node\" attr.name=\"secondary\" attr.type=\"string\"/>\n");
   fprintf(fp, "  <key id=\"color\" for=\"edge\" attr.name=\"color\" attr.type=\"string\"/>\n");
-  fprintf(fp, "  <key id=\"face_colors\" for=\"node\" attr.name=\"face_colors\" attr.type=\"string\"/>\n");
   
   fprintf(fp, "  <graph id=\"venn_diagram\" edgedefault=\"undirected\">\n");
 }
@@ -44,17 +43,16 @@ void graphmlAddNode(FILE *fp, POINT point, const char *id) {
 }
 
 /* Add an edge to the graph */
-void graphmlAddEdge(FILE *fp, EDGE edge, const char *sourceId, const char *targetId) {
-  fprintf(fp, "    <edge source=\"%s\" target=\"%s\">\n", sourceId, targetId);
+void graphmlAddEdge(FILE *fp, EDGE edge) {
+  /* Only output the primary edge */
+  if (!IS_PRIMARY_EDGE(edge)) {
+    return;
+  }
+  fprintf(fp, "    <edge source=\"%s\" target=\"%s\">\n", 
+          graphmlPointId(edge->reversed->to->point),
+          graphmlPointId(edge->to->point));
   fprintf(fp, "      <data key=\"color\">%c</data>\n", 'a' + edge->color);
   fprintf(fp, "    </edge>\n");
-}
-
-/* Add a face to the graph */
-void graphmlAddFace(FILE *fp, FACE face, const char *id) {
-  fprintf(fp, "    <node id=\"%s\">\n", id);
-  fprintf(fp, "      <data key=\"face_colors\">%s</data>\n", colorSetToStr(face->colors));
-  fprintf(fp, "    </node>\n");
 }
 
 /* Add a curve to the graph */
@@ -67,19 +65,17 @@ void graphmlAddCurve(FILE *fp, COLOR color, const char *id) {
 /* Generate unique IDs for graph elements */
 char *graphmlPointId(POINT point) {
   char *buffer = getBuffer();
-  sprintf(buffer, "p_%s", colorSetToStr(point->colors));
+  sprintf(buffer, "p_%s_%c_%c", colorSetToStr(point->colors), 'a' + point->primary, 'a' + point->secondary);
   return usingBuffer(buffer);
 }
 
 char *graphmlEdgeId(EDGE edge) {
   char *buffer = getBuffer();
+  /* Use the primary edge for consistent ID generation */
+  if (!IS_PRIMARY_EDGE(edge)) {
+    edge = edge->reversed;
+  }
   sprintf(buffer, "e_%c_%s", 'a' + edge->color, colorSetToStr(edge->colors));
-  return usingBuffer(buffer);
-}
-
-char *graphmlFaceId(FACE face) {
-  char *buffer = getBuffer();
-  sprintf(buffer, "f_%s", colorSetToStr(face->colors));
   return usingBuffer(buffer);
 }
 

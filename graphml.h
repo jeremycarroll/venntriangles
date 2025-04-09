@@ -12,14 +12,12 @@
 extern void graphmlBegin(FILE *fp);
 extern void graphmlEnd(FILE *fp);
 extern void graphmlAddNode(FILE *fp, POINT point, const char *id);
-extern void graphmlAddEdge(FILE *fp, EDGE edge, const char *sourceId, const char *targetId);
-extern void graphmlAddFace(FILE *fp, FACE face, const char *id);
+extern void graphmlAddEdge(FILE *fp, EDGE edge);
 extern void graphmlAddCurve(FILE *fp, COLOR color, const char *id);
 
 /* Helper functions for generating IDs */
 extern char *graphmlPointId(POINT point);
 extern char *graphmlEdgeId(EDGE edge);
-extern char *graphmlFaceId(FACE face);
 extern char *graphmlCurveId(COLOR color);
 
 #endif  // GRAPHML_H 
