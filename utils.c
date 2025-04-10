@@ -10,6 +10,10 @@
 #include "point.h"
 #include "statistics.h"
 #include "trail.h"
+#include <sys/stat.h>
+
+#include <stdlib.h>
+#include <unistd.h>
 
 /* Externally linked functions */
 void resetGlobals()
@@ -34,4 +38,23 @@ void initialize()
   initializeTrail();
   initializeMemory();
   initializeSequenceOrder();
+}
+
+void initializeFolder(const char *folder)
+{
+  struct stat st = {0};
+
+  if (stat(folder, &st) == -1) {
+    // Directory does not exist, create it
+    if (mkdir(folder, 0700) != 0) {
+      perror("Failed to create directory");
+      exit(EXIT_FAILURE);
+    }
+  } else {
+    // Directory exists, check if it is writable
+    if (!S_ISDIR(st.st_mode) || access(folder, W_OK) != 0) {
+      fprintf(stderr, "Target folder exists but is not writable\n");
+      exit(EXIT_FAILURE);
+    }
+  }
 }

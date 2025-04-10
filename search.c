@@ -4,6 +4,7 @@
 
 #include "d6.h"
 #include "face.h"
+#include "graphml.h"
 #include "memory.h"
 #include "statistics.h"
 #include "trail.h"
@@ -258,21 +259,17 @@ void solutionWrite(const char* prefix)
   for (COLOR a = 0; a < NCOLORS; a++) {
     edgeFindCorners(a, corners);
     for (int i = 0; i < 3; i++) {
-      fprintf(fp, "{%c:%d} ", colorToChar(a), i);
       if (corners[i][0] == NULL) {
         EDGE edge = edgeOnCentralFace(a);
         pLength = edgePathLength(edge, edgeFollowBackwards(edge), NULL);
-        fprintf(fp, "NULL/%d ", pLength);
       } else {
         pLength = edgePathLength(corners[i][0]->reversed, corners[i][1], NULL);
-        fprintf(fp, "(%s => %s/%d) ", edgeToStr(corners[i][0]),
-                edgeToStr(corners[i][1]), pLength);
       }
       numberOfVariations *= pLength;
-      fprintf(fp, "\n");
     }
   }
-  fprintf(fp, "\n\nVariations = %d\n", numberOfVariations);
+  filename[strlen(filename) - 4] = '\0';
+  graphmlSaveAllVariations(filename, numberOfVariations);
   fprintf(fp, "\nSolution signature %s\nClass signature %s\n",
           d6SignatureToString(d6SignatureFromFaces()),
           d6SignatureToString(d6MaxSignature()));

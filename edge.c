@@ -41,8 +41,9 @@ EDGE edgeFollowBackwards(EDGE edge)
   return reversedNext == NULL ? NULL : reversedNext->reversed;
 }
 
-int edgePathLength(EDGE from, EDGE to, EDGE *pathReturn)
-{ EDGE dummyReturn[NFACES];
+int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn)
+{
+  EDGE dummyReturn[NFACES];
   int i = 0;
   if (pathReturn == NULL) {
     pathReturn = dummyReturn;
@@ -51,6 +52,7 @@ int edgePathLength(EDGE from, EDGE to, EDGE *pathReturn)
   while (from != to) {
     from = edgeFollowForwards(from);
     assert(from != NULL);
+    assert(i < NFACES);
     pathReturn[i++] = from;
   }
   return i;

@@ -6,7 +6,6 @@
 #include "search.h"
 #include "statistics.h"
 #include "utils.h"
-#include <sys/stat.h>
 
 #include <getopt.h>
 #include <stdlib.h>
@@ -53,21 +52,4 @@ static void saveResult(void)
   solutionWrite(usingBuffer(buffer));
 }
 
-static void initializeOutputFolder()
-{
-  struct stat st = {0};
-
-  if (stat(TargetFolder, &st) == -1) {
-    // Directory does not exist, create it
-    if (mkdir(TargetFolder, 0700) != 0) {
-      perror("Failed to create directory");
-      exit(EXIT_FAILURE);
-    }
-  } else {
-    // Directory exists, check if it is writable
-    if (!S_ISDIR(st.st_mode) || access(TargetFolder, W_OK) != 0) {
-      fprintf(stderr, "Target folder exists but is not writable\n");
-      exit(EXIT_FAILURE);
-    }
-  }
-}
+static void initializeOutputFolder() { initializeFolder(TargetFolder); }
