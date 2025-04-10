@@ -83,3 +83,4 @@ const char *faceDegreeSignature(void) { return "stub"; }
 void solutionWrite(const char *buffer) { /* stub for testing. */ }
 
 char *getBuffer() { return NULL; }
+void initializeFolder(const char *folder) {}
