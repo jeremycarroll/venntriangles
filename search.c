@@ -237,6 +237,30 @@ void solutionPrint(FILE* fp)
   }
 }
 
+int searchCountVariations(void)
+{
+  EDGE corners[3][2];
+  int numberOfVariations = 1;
+  int pLength;
+  for (COLOR a = 0; a < NCOLORS; a++) {
+    edgeFindCorners(a, corners);
+    for (int i = 0; i < 3; i++) {
+      if (corners[i][0] == NULL) {
+        EDGE edge = edgeOnCentralFace(a);
+        pLength = edgePathLength(edge, edgeFollowBackwards(edge), NULL);
+        printf("edge: %c %x -> %x %d\n", 'A' + a, edge,
+               edgeFollowBackwards(edge), pLength);
+      } else {
+        pLength = edgePathLength(corners[i][0]->reversed, corners[i][1], NULL);
+        printf("edge: %c %x -> %x %d\n", 'A' + a, corners[i][0]->reversed,
+               corners[i][1], pLength);
+      }
+      numberOfVariations *= pLength;
+    }
+  }
+  return numberOfVariations;
+}
+
 void solutionWrite(const char* prefix)
 {
   EDGE corners[3][2];
@@ -256,20 +280,8 @@ void solutionWrite(const char* prefix)
     exit(EXIT_FAILURE);
   }
   solutionPrint(fp);
-  for (COLOR a = 0; a < NCOLORS; a++) {
-    edgeFindCorners(a, corners);
-    for (int i = 0; i < 3; i++) {
-      if (corners[i][0] == NULL) {
-        EDGE edge = edgeOnCentralFace(a);
-        pLength = edgePathLength(edge, edgeFollowBackwards(edge), NULL);
-      } else {
-        pLength = edgePathLength(corners[i][0]->reversed, corners[i][1], NULL);
-      }
-      numberOfVariations *= pLength;
-    }
-  }
   filename[strlen(filename) - 4] = '\0';
-  graphmlSaveAllVariations(filename, numberOfVariations);
+  graphmlSaveAllVariations(filename, searchCountVariations());
   fprintf(fp, "\nSolution signature %s\nClass signature %s\n",
           d6SignatureToString(d6SignatureFromFaces()),
           d6SignatureToString(d6MaxSignature()));

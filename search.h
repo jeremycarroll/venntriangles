@@ -16,4 +16,5 @@ extern void dynamicSolutionEnumerate(FILE *(*fp)(char *signature, int soln,
 
 extern void solutionPrint(FILE *fp);
 extern void solutionWrite(const char *prefix);
+extern int searchCountVariations(void);
 #endif  // SEARCH_H
