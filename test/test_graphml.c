@@ -12,11 +12,26 @@
 #include <stdlib.h>
 #include <unity.h>
 
+static void mockInitializeFolder(const char* folder)
+{
+  printf("Mock initializeFolder called with folder: %s\n", folder);
+}
+
+static char outputBuffer[50000];
+static FILE* mockFopen(const char* filename, const char* mode)
+{
+  FILE* result = fmemopen(outputBuffer, 50000, mode);
+  assert(result != NULL);
+  return result;
+}
+
 /* Test setup and teardown */
 void setUp(void)
 {
   initialize();
   initializeStatisticLogging("/dev/null", 1000, 1000);  // Reduce logging output
+  graphmlFileOps.initializeFolder = mockInitializeFolder;
+  graphmlFileOps.fopen = mockFopen;
 }
 
 void tearDown(void)
@@ -31,8 +46,9 @@ void tearDown(void)
 /* Global variables */
 static int SolutionCount = 0;
 
-/* Callback function */
-static void foundSolution()
+static void (*FoundSolution)(void);
+/* Callback functions */
+static void foundBasicSolution()
 {
   SolutionCount++;
   SIGNATURE signature = d6MaxSignature();
@@ -40,25 +56,73 @@ static void foundSolution()
       "PdJeIgFuAcEhAdDeDqAcDuGqElAdGnGhKoDpAbFnAnFeAaFwJdDmCzCyAeFkCyCzErDnDlDk"
       "BqFwAzHcEsAxEpEyJjAwDcCxKjDoAaFwAsDeBvNwDiEtFhEsAyOrJwMx",
       d6SignatureToString(signature));
-  graphmlSaveAllVariations("/tmp/foo", 128);
+  // graphmlSaveAllVariations("/tmp/foo", 128);
+  if (FoundSolution) FoundSolution();
 }
 
-/* Test function */
-static void testGraphml()
+static void testVariationCount()
 {
+  TEST_ASSERT_EQUAL(128, searchCountVariations());
+}
+
+static int ContinuationCount = 0;
+static int countContinuation(COLOR ignored, EDGE (*corners)[3])
+{
+  ContinuationCount++;
+  return 0;
+}
+
+static void testColorContinuations(COLOR color, int expectedCount)
+{
+  EDGE cornerPairs[3][2];
+  EDGE corners[NCOLORS][3];
+  ContinuationCount = 0;
+
+  edgeFindCorners(color, cornerPairs);
+  for (int i = 0; i < 3; i++) {
+    printf("cornerPairs[%d][0]: %x\n", i, cornerPairs[i][0]->reversed);
+    printf("cornerPairs[%d][1]: %x\n", i, cornerPairs[i][1]);
+  }
+  chooseCornersWithContinuation(0, cornerPairs, color, corners,
+                                countContinuation);
+  TEST_ASSERT_EQUAL(expectedCount, ContinuationCount);
+}
+
+static void foundSolutionColor0() { testColorContinuations(0, 8); }
+static void foundSolutionColor1() { testColorContinuations(1, 1); }
+static void foundSolutionColor2() { testColorContinuations(2, 2); }
+static void foundSolutionColor3() { testColorContinuations(3, 1); }
+static void foundSolutionColor4() { testColorContinuations(4, 2); }
+static void foundSolutionColor5() { testColorContinuations(5, 4); }
+
+static char* TestName;
+
+static void run645534(void)
+{
+  Unity.NumberOfTests--;
+  UNITY_NEW_TEST(TestName);
   SolutionCount = 0;
-
   dynamicFaceSetupCentral(intArray(6, 4, 5, 5, 3, 4));
-  searchHere(true, foundSolution);
-
-  // Verify we found exactly one solution with 128 variations
+  searchHere(true, foundBasicSolution);
   TEST_ASSERT_EQUAL(1, SolutionCount);
 }
+
+#define RUN_645534(foundSolution) \
+  TestName = #foundSolution;      \
+  FoundSolution = foundSolution;  \
+  RUN_TEST(run645534);
 
 /* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();
-  RUN_TEST(testGraphml);
+  RUN_645534(NULL);
+  RUN_645534(testVariationCount);
+  RUN_645534(foundSolutionColor0);
+  RUN_645534(foundSolutionColor1);
+  RUN_645534(foundSolutionColor2);
+  RUN_645534(foundSolutionColor3);
+  RUN_645534(foundSolutionColor4);
+  RUN_645534(foundSolutionColor5);
   return UNITY_END();
 }
