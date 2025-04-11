@@ -9,6 +9,11 @@
 #include <stdio.h>
 #include <string.h>
 
+/* GraphML namespace and schema definitions */
+static const char *GRAPHML_NS = "http://graphml.graphdrawing.org/xmlns";
+static const char *GRAPHML_SCHEMA =
+    "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd";
+
 /* Forward declarations */
 static char *cornerId(COLOR color, int counter);
 static void graphmlAddCorner(FILE *fp, COLOR color, int counter);
@@ -22,11 +27,6 @@ static void chooseCornersThenSavePartialVariations(int cornerIndex,
 static int savePartialVariations(COLOR current, EDGE (*corners)[3]);
 char *graphmlPointId(POINT point);
 char *graphmlCurveId(COLOR color);
-
-/* GraphML namespace and schema definitions */
-static const char *GRAPHML_NS = "http://graphml.graphdrawing.org/xmlns";
-static const char *GRAPHML_SCHEMA =
-    "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd";
 
 /* Begin GraphML document */
 static void graphmlBegin(FILE *fp)
