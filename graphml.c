@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#define DEBUG 0
 
 /* GraphML namespace and schema definitions */
 static const char *GRAPHML_NS = "http://graphml.graphdrawing.org/xmlns";
@@ -253,7 +254,9 @@ static void saveVariation(EDGE (*corners)[3])
 static EDGE *getPath(EDGE from, EDGE to)
 {
   int length = edgePathLength(from, to, NULL);
+#if DEBUG
   printf("getPath: %c %x -> %x %d\n", 'A' + from->color, from, to, length);
+#endif
   EDGE *path = (EDGE *)NEW_ARRAY(EDGE, length + 1);
   assert(path != NULL);
 
@@ -282,9 +285,11 @@ void chooseCornersWithContinuation(int cornerIndex, EDGE (*cornerPairs)[2],
   int i, total;
 
   for (int i = 0; i < 3; i++) {
+#if DEBUG
     printf("%d cornerPairs[%d][0]: %x\n", cornerIndex, i,
            cornerPairs[i][0]->reversed);
     printf("%d cornerPairs[%d][1]: %x\n", cornerIndex, i, cornerPairs[i][1]);
+#endif
   }
 
   if (cornerIndex == 3) {
@@ -294,13 +299,17 @@ void chooseCornersWithContinuation(int cornerIndex, EDGE (*cornerPairs)[2],
   possibilities = possibleCorners(current, cornerPairs[cornerIndex][0],
                                   cornerPairs[cornerIndex][1]);
   for (i = 0; possibilities[i] != NULL; i++);
+#if DEBUG
   printf("!! cornerIndex: %d, current: %d, possibilities: %d\n", cornerIndex,
          current, i);
+#endif
   total = i;
   for (i = 0; possibilities[i] != NULL; i++) {
     corners[current][cornerIndex] = possibilities[i];
+#if DEBUG
     printf("cornerIndex: %d, current: %d, possibilities[i]: %s %d/%d\n",
            cornerIndex, current, edgeToStr(possibilities[i]), i, total);
+#endif
     chooseCornersWithContinuation(cornerIndex + 1, cornerPairs, current,
                                   corners, continuation);
   }

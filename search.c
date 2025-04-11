@@ -248,12 +248,16 @@ int searchCountVariations(void)
       if (corners[i][0] == NULL) {
         EDGE edge = edgeOnCentralFace(a);
         pLength = edgePathLength(edge, edgeFollowBackwards(edge), NULL);
+#if DEBUG
         printf("edge: %c %x -> %x %d\n", 'A' + a, edge,
                edgeFollowBackwards(edge), pLength);
+#endif
       } else {
         pLength = edgePathLength(corners[i][0]->reversed, corners[i][1], NULL);
+#if DEBUG
         printf("edge: %c %x -> %x %d\n", 'A' + a, corners[i][0]->reversed,
                corners[i][1], pLength);
+#endif
       }
       numberOfVariations *= pLength;
     }

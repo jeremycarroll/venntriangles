@@ -18,10 +18,12 @@ static void mockInitializeFolder(const char* folder)
 }
 
 static char outputBuffer[50000];
+static int FopenCount = 0;
 static FILE* mockFopen(const char* filename, const char* mode)
 {
   FILE* result = fmemopen(outputBuffer, 50000, mode);
   assert(result != NULL);
+  FopenCount++;
   return result;
 }
 
@@ -60,6 +62,13 @@ static void foundBasicSolution()
   if (FoundSolution) FoundSolution();
 }
 
+static void saveAllVariations()
+{
+  FopenCount = 0;
+  graphmlSaveAllVariations("/tmp/foo", 100000);
+  TEST_ASSERT_EQUAL(128, FopenCount);
+}
+
 static void testVariationCount()
 {
   TEST_ASSERT_EQUAL(128, searchCountVariations());
@@ -79,10 +88,14 @@ static void testColorContinuations(COLOR color, int expectedCount)
   ContinuationCount = 0;
 
   edgeFindCorners(color, cornerPairs);
+#if 0
   for (int i = 0; i < 3; i++) {
     printf("cornerPairs[%d][0]: %x\n", i, cornerPairs[i][0]->reversed);
     printf("cornerPairs[%d][1]: %x\n", i, cornerPairs[i][1]);
   }
+
+#endif
+
   chooseCornersWithContinuation(0, cornerPairs, color, corners,
                                 countContinuation);
   TEST_ASSERT_EQUAL(expectedCount, ContinuationCount);
@@ -124,5 +137,6 @@ int main(void)
   RUN_645534(foundSolutionColor3);
   RUN_645534(foundSolutionColor4);
   RUN_645534(foundSolutionColor5);
+  RUN_645534(saveAllVariations);
   return UNITY_END();
 }
