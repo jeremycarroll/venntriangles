@@ -19,7 +19,7 @@ static const char *GRAPHML_SCHEMA =
 static char *cornerId(COLOR color, int counter);
 static void graphmlAddCorner(FILE *fp, COLOR color, int counter);
 static void addEdge(FILE *fp, COLOR color, char *source, char *target);
-static EDGE *getPath(EDGE from, EDGE to);
+static void getPath(EDGE *path, EDGE from, EDGE to);
 static void saveVariation(EDGE (*corners)[3]);
 static void chooseCornersThenSavePartialVariations(int cornerIndex,
                                                    EDGE (*cornerPairs)[2],
@@ -145,18 +145,21 @@ char *graphmlPointId(POINT point)
   return usingBuffer(buffer);
 }
 
-/* Generate a curve ID */
-char *graphmlCurveId(COLOR color)
-{
-  char *buffer = getBuffer();
-  sprintf(buffer, "c_%c", 'a' + color);
-  return usingBuffer(buffer);
-}
-
 static int savePartialVariations(COLOR current, EDGE (*corners)[3]);
 static const char *CurrentPrefix = NULL;
 static int VariationNumber = 1;
 static int ExpectedVariations = 0;
+static int Levels = 0;
+static int numberOfLevels(int expectedVariations)
+{
+  int result = 1;
+  while (expectedVariations >= 4096) {
+    result++;
+    expectedVariations /= 256;
+  }
+  return result;
+}
+
 /**
  * @brief Find and save all variations of the solution to graphml files
  *
@@ -168,6 +171,7 @@ void graphmlSaveAllVariations(const char *prefix, int expectedVariations)
   CurrentPrefix = prefix;
   VariationNumber = 1;
   ExpectedVariations = expectedVariations;
+  Levels = numberOfLevels(expectedVariations);
   graphmlFileOps.initializeFolder(prefix);
   savePartialVariations(0, corners);
 }
@@ -194,7 +198,7 @@ static int edgeIsCorner(EDGE edge, EDGE (*corners)[3], int *low, int *high)
 static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
 {
   EDGE edge;
-  EDGE *path;
+  EDGE path[NFACES];
   EDGE current;
   int ix;
   int low, high;
@@ -202,7 +206,7 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
   graphmlAddCorner(fp, color, 1);
   graphmlAddCorner(fp, color, 2);
   edge = edgeOnCentralFace(color);
-  path = getPath(edge, edgeFollowBackwards(edge));
+  getPath(path, edge, edgeFollowBackwards(edge));
   for (ix = 0; path[ix] != NULL; ix++) {
     current = path[ix];
     switch (edgeIsCorner(current, corners, &low, &high)) {
@@ -233,14 +237,32 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
   }
 }
 
+static char *subFilename(void)
+{
+  char *buffer = getBuffer();
+  int levels = Levels;
+  char *p = buffer;
+  int variationNumber = VariationNumber;
+  p = p + sprintf(p, "%s", CurrentPrefix);
+
+  while (levels > 1) {
+    p += sprintf(p, "/%2.2x", variationNumber % 256);
+    graphmlFileOps.initializeFolder(buffer);
+    variationNumber /= 256;
+    levels--;
+  }
+  p += sprintf(p, "/%3.3x.xml", variationNumber);
+  return usingBuffer(buffer);
+}
+
 static void saveVariation(EDGE (*corners)[3])
 {
   COLOR a;
-  char *filename = getBuffer();
+  char *filename = subFilename();
 
   FILE *fp;
   assert(VariationNumber <= ExpectedVariations);
-  sprintf(filename, "%s/%7.7d.txt", CurrentPrefix, VariationNumber++);
+  VariationNumber++;
   fp = graphmlFileOps.fopen(filename, "w");
   graphmlBegin(fp);
   for (a = 0; a < NCOLORS; a++, corners++) {
@@ -248,30 +270,28 @@ static void saveVariation(EDGE (*corners)[3])
   }
   graphmlEnd(fp);
   fclose(fp);
+  freeAll();
 }
 
 /* Get path between two edges */
-static EDGE *getPath(EDGE from, EDGE to)
+static void getPath(EDGE *path, EDGE from, EDGE to)
 {
-  int length = edgePathLength(from, to, NULL);
+  int length = edgePathLength(from, to, path);
 #if DEBUG
   printf("getPath: %c %x -> %x %d\n", 'A' + from->color, from, to, length);
 #endif
-  EDGE *path = (EDGE *)NEW_ARRAY(EDGE, length + 1);
-  assert(path != NULL);
-
-  edgePathLength(from, to, path);
   path[length] = NULL;
-  return path;
 }
 
-static EDGE *possibleCorners(COLOR color, EDGE from, EDGE to)
+static void possibleCorners(EDGE *possibilities, COLOR color, EDGE from,
+                            EDGE to)
 {
   if (from == NULL) {
     EDGE edge = edgeOnCentralFace(color);
-    return getPath(edge, edgeFollowBackwards(edge));
+    getPath(possibilities, edge, edgeFollowBackwards(edge));
+  } else {
+    getPath(possibilities, from->reversed, to);
   }
-  return getPath(from->reversed, to);
 }
 
 static int savePartialVariations(COLOR current, EDGE (*corners)[3]);
@@ -281,7 +301,7 @@ void chooseCornersWithContinuation(int cornerIndex, EDGE (*cornerPairs)[2],
                                    int (*continuation)(COLOR,
                                                        EDGE (*corners)[3]))
 {
-  EDGE *possibilities;
+  EDGE possibilities[NFACES];
   int i, total;
 
   for (int i = 0; i < 3; i++) {
@@ -296,8 +316,8 @@ void chooseCornersWithContinuation(int cornerIndex, EDGE (*cornerPairs)[2],
     continuation(current + 1, corners);
     return;
   }
-  possibilities = possibleCorners(current, cornerPairs[cornerIndex][0],
-                                  cornerPairs[cornerIndex][1]);
+  possibleCorners(possibilities, current, cornerPairs[cornerIndex][0],
+                  cornerPairs[cornerIndex][1]);
   for (i = 0; possibilities[i] != NULL; i++);
 #if DEBUG
   printf("!! cornerIndex: %d, current: %d, possibilities: %d\n", cornerIndex,

@@ -18,6 +18,7 @@
 static int SolutionNumber = 0;
 static char LastPrefix[128] = "";
 static int SolutionCount = 0;
+static int VariationCount = 0;
 static int position = 0;
 static clock_t TotalWastedTime = 0;
 static clock_t TotalUsefulTime = 0;
@@ -269,7 +270,7 @@ void solutionWrite(const char* prefix)
 {
   EDGE corners[3][2];
   char filename[1024];
-  int numberOfVariations = 1;
+  int numberOfVariations;
   int pLength;
   FILE* fp;
   if (strcmp(prefix, LastPrefix) != 0) {
@@ -285,11 +286,13 @@ void solutionWrite(const char* prefix)
   }
   solutionPrint(fp);
   filename[strlen(filename) - 4] = '\0';
-  graphmlSaveAllVariations(filename, searchCountVariations());
   fprintf(fp, "\nSolution signature %s\nClass signature %s\n",
           d6SignatureToString(d6SignatureFromFaces()),
           d6SignatureToString(d6MaxSignature()));
   fclose(fp);
+  numberOfVariations += searchCountVariations();
+  VariationCount += numberOfVariations;
+  graphmlSaveAllVariations(filename, numberOfVariations);
 }
 
 /* File scoped static functions */
@@ -315,6 +318,7 @@ static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
   clock_t now = clock();
   clock_t used;
   int initialSolutionCount = SolutionCount;
+  int initialVariationCount = VariationCount;
   int i;
   void (*foundSolution)(void) = foundSolutionVoidPtr;
   trailBacktrackTo(StartPoint);  // Start with backtracking
@@ -334,7 +338,8 @@ static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
     for (i = 0; i < NCOLORS; i++) {
       printf("%llu ", args[i]);
     }
-    printf(" gives %d new solutions\n", SolutionCount - initialSolutionCount);
+    printf(" gives %d/%d new solutions\n", SolutionCount - initialSolutionCount,
+           VariationCount - initialVariationCount);
     statisticPrintOneLine(position, true);
   } else {
     WastedSearchCount += 1;

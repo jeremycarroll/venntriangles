@@ -13,8 +13,7 @@
 #include <unity.h>
 
 static void mockInitializeFolder(const char* folder)
-{
-  printf("Mock initializeFolder called with folder: %s\n", folder);
+{  // nothing.
 }
 
 static char outputBuffer[50000];
@@ -65,7 +64,7 @@ static void foundBasicSolution()
 static void saveAllVariations()
 {
   FopenCount = 0;
-  graphmlSaveAllVariations("/tmp/foo", 100000);
+  graphmlSaveAllVariations("/tmp/foo", 256);
   TEST_ASSERT_EQUAL(128, FopenCount);
 }
 
