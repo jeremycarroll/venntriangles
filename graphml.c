@@ -239,8 +239,8 @@ static void saveVariation(EDGE (*corners)[3])
   char *filename = getBuffer();
 
   FILE *fp;
-  sprintf(filename, "%s/%7.7d.txt", CurrentPrefix, VariationNumber++);
   assert(VariationNumber <= ExpectedVariations);
+  sprintf(filename, "%s/%7.7d.txt", CurrentPrefix, VariationNumber++);
   fp = graphmlFileOps.fopen(filename, "w");
   graphmlBegin(fp);
   for (a = 0; a < NCOLORS; a++, corners++) {
