@@ -5,6 +5,10 @@
 
 #include "face.h"
 
+// Global configuration constants
+extern int MaxVariantsPerSolution;
+extern int MaxSolutions;
+
 // Declare functions used in main.c
 extern const char* faceDegreeSignature(void);
 extern int dynamicMain0(int argc, char* argv[]);
