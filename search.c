@@ -286,11 +286,12 @@ void solutionWrite(const char* prefix)
   }
   solutionPrint(fp);
   filename[strlen(filename) - 4] = '\0';
+  numberOfVariations += searchCountVariations();
   fprintf(fp, "\nSolution signature %s\nClass signature %s\n",
           d6SignatureToString(d6SignatureFromFaces()),
           d6SignatureToString(d6MaxSignature()));
+  fprintf(fp, "Number of variations: %d\n", numberOfVariations);
   fclose(fp);
-  numberOfVariations += searchCountVariations();
   VariationCount += numberOfVariations;
   graphmlSaveAllVariations(filename, numberOfVariations);
 }
