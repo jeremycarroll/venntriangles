@@ -5,6 +5,7 @@
 #include "d6.h"
 #include "face.h"
 #include "graphml.h"
+#include "main.h"
 #include "memory.h"
 #include "statistics.h"
 #include "trail.h"
@@ -322,6 +323,9 @@ static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
   int initialVariationCount = VariationCount;
   int i;
   void (*foundSolution)(void) = foundSolutionVoidPtr;
+  if (SolutionCount >= MaxSolutions) {
+    return;
+  }
   trailBacktrackTo(StartPoint);  // Start with backtracking
   dynamicFaceSetupCentral(args);
   searchHere(true, foundSolution);
