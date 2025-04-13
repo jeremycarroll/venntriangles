@@ -8,8 +8,8 @@
 #include "utils.h"
 
 #include <getopt.h>
-#include <stdlib.h>
 #include <limits.h>
+#include <stdlib.h>
 
 static char *TargetFolder = NULL;
 int MaxVariantsPerSolution = INT_MAX;  // Maximum value means unlimited

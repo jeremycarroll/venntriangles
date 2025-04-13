@@ -10,7 +10,7 @@ extern int MaxVariantsPerSolution;
 extern int MaxSolutions;
 
 // Declare functions used in main.c
-extern const char* faceDegreeSignature(void);
+extern char* faceDegreeSignature(void);
 extern int dynamicMain0(int argc, char* argv[]);
 extern void solutionWrite(const char* prefix);
 extern void searchFull(void (*foundSolution)(void));

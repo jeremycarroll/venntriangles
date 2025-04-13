@@ -18,8 +18,9 @@ struct graphmlFileIO {
 extern struct graphmlFileIO graphmlFileOps;
 
 // Internal function exposed for testing.
-void chooseCornersWithContinuation(int cornerIndex, EDGE (*cornerPairs)[2],
-                                   COLOR current, EDGE (*corners)[3],
+void computePossibleCorners(void);
+void chooseCornersWithContinuation(int cornerIndex, COLOR current,
+                                   EDGE (*corners)[3],
                                    int (*continuation)(COLOR,
                                                        EDGE (*corners)[3]));
 #endif  // GRAPHML_H

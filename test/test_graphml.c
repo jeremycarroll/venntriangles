@@ -3,6 +3,7 @@
 #include "d6.h"
 #include "face.h"
 #include "graphml.h"
+#include "main.h"
 #include "search.h"
 #include "statistics.h"
 #include "test_helpers.h"
@@ -68,6 +69,14 @@ static void saveAllVariations()
   TEST_ASSERT_EQUAL(128, FopenCount);
 }
 
+static void checkFirstVariation()
+{
+  FopenCount = 0;
+  MaxVariantsPerSolution = 1;
+  graphmlSaveAllVariations("/tmp/foo", 256);
+  TEST_ASSERT_EQUAL(1, FopenCount);
+}
+
 static void testVariationCount()
 {
   TEST_ASSERT_EQUAL(128, searchCountVariations());
@@ -82,11 +91,9 @@ static int countContinuation(COLOR ignored, EDGE (*corners)[3])
 
 static void testColorContinuations(COLOR color, int expectedCount)
 {
-  EDGE cornerPairs[3][2];
   EDGE corners[NCOLORS][3];
   ContinuationCount = 0;
-
-  edgeFindCorners(color, cornerPairs);
+  computePossibleCorners();
 #if 0
   for (int i = 0; i < 3; i++) {
     printf("cornerPairs[%d][0]: %x\n", i, cornerPairs[i][0]->reversed);
@@ -95,8 +102,7 @@ static void testColorContinuations(COLOR color, int expectedCount)
 
 #endif
 
-  chooseCornersWithContinuation(0, cornerPairs, color, corners,
-                                countContinuation);
+  chooseCornersWithContinuation(0, color, corners, countContinuation);
   TEST_ASSERT_EQUAL(expectedCount, ContinuationCount);
 }
 
@@ -137,5 +143,6 @@ int main(void)
   RUN_645534(foundSolutionColor4);
   RUN_645534(foundSolutionColor5);
   RUN_645534(saveAllVariations);
+  RUN_645534(checkFirstVariation);
   return UNITY_END();
 }
