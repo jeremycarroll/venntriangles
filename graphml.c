@@ -82,6 +82,8 @@ static void graphmlAddPoint(FILE *fp, POINT point)
 static char *cornerId(COLOR color, int counter)
 {
   char *buffer = getBuffer();
+  assert(counter < 4);
+  assert(color > 0);
   sprintf(buffer, "%c-%d", colorToChar(color), counter);
   return usingBuffer(buffer);
 }
@@ -140,8 +142,7 @@ static void addEdgeFromCorner(FILE *fp, int corner, EDGE edge)
 char *graphmlPointId(POINT point)
 {
   char *buffer = getBuffer();
-  sprintf(buffer, "p_%s_%c_%c", colorSetToStr(point->colors),
-          'a' + point->primary, 'a' + point->secondary);
+  sprintf(buffer, "p_%s", pointToStr(point));
   return usingBuffer(buffer);
 }
 
@@ -199,7 +200,7 @@ static int edgeIsCorner(EDGE edge, EDGE (*corners)[3], int *low, int *high)
   for (ix = 0; ix < 3; ix++) {
     if ((*corners)[ix] == edge) {
       result |= 1 << ix;
-      if (*low) {
+      if (*low != -1) {
         *high = ix;
       } else {
         *low = ix;
@@ -214,6 +215,7 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
   EDGE edge;
   EDGE path[NFACES];
   EDGE current;
+  POINT currentPoint;
   int ix;
   int low, high;
   graphmlAddCorner(fp, color, 0);
@@ -247,7 +249,10 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
         addEdgeFromCorner(fp, 2, current);
         break;
     }
-    graphmlAddPoint(fp, current->to->point);
+    currentPoint = current->to->point;
+    if (currentPoint->primary == color) {
+      graphmlAddPoint(fp, currentPoint);
+    }
   }
 }
 
@@ -294,6 +299,8 @@ static void getPath(EDGE *path, EDGE from, EDGE to)
 #if DEBUG
   printf("getPath: %c %x -> %x %d\n", 'A' + from->color, from, to, length);
 #endif
+  assert(length > 0);
+  assert(length == 1 || path[0] != path[length - 1]);
   path[length] = NULL;
 }
 

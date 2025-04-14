@@ -154,7 +154,7 @@ static void checkGraphML()
     }
     if (offsets[1].rm_eo != -1) {
       entry = findNode(nodes, &nodeCount, p, offsets + 1);
-      printf("Added node %s\n", entry->id);
+      // printf("Added node %s\n", entry->id);
       TEST_ASSERT_NOT_NULL(entry);
       TEST_ASSERT_EQUAL_INT(0, entry->node);
       entry->node = 1;
@@ -163,6 +163,8 @@ static void checkGraphML()
       }
       // printf("Found node at %d\n>>>> %.30s\n", p - outputBuffer, p);
     } else if (offsets[3].rm_eo != -1) {
+      // printf("Found edge at %d\n>>>> %.50s\n", p - outputBuffer,
+      //        p + offsets[3].rm_so - 8);
       entry = findNode(nodes, &nodeCount, p, offsets + 3);
       TEST_ASSERT_NOT_NULL(entry);
       TEST_ASSERT_LESS_OR_EQUAL(1, entry->source);
@@ -170,7 +172,6 @@ static void checkGraphML()
       entry = findNode(nodes, &nodeCount, p, offsets + 4);
       TEST_ASSERT_LESS_OR_EQUAL(1, entry->target);
       entry->target++;
-      //  printf("Found edge at %d\n>>>> %.30s\n", p - outputBuffer, p);
     } else if (offsets[5].rm_eo != -1) {
       //  printf("Found end of graph at %d\n>>>> %.30s\n", p - outputBuffer, p);
       break;

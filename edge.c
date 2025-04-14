@@ -41,6 +41,7 @@ EDGE edgeFollowBackwards(EDGE edge)
   return reversedNext == NULL ? NULL : reversedNext->reversed;
 }
 
+extern char* graphmlPointId(POINT point);
 int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn)
 {
   EDGE dummyReturn[NFACES];
@@ -51,6 +52,12 @@ int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn)
   pathReturn[i++] = from;
   while (from != to) {
     from = edgeFollowForwards(from);
+#if 0
+    if (strcmp(graphmlPointId(from->to->point), "p_|ab|_a_b") == 0) {
+      printf("from %s %s\n", edgeToStr(from), colorSetToStr(from->colors));
+    }
+#endif
+    assert(from != to->reversed);
     assert(from != NULL);
     assert(i < NFACES);
     pathReturn[i++] = from;

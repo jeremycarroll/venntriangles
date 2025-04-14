@@ -99,8 +99,10 @@ POINT initializePointIncomingEdge(COLORSET colors, EDGE incomingEdge,
 char* pointToStr(POINT up)
 {
   char* buffer = getBuffer();
-  char* colors = colorSetToStr(up->colors);
-  sprintf(buffer, "%s(%c,%c)", colors, 'a' + up->primary, 'a' + up->secondary);
+  COLORSET colors = up->incomingEdges[0]->colors & (~(1ll << up->primary)) &
+                    (~(1ll << up->secondary));
+  sprintf(buffer, "%s_%c_%c", colorSetToStr(colors), 'a' + up->primary,
+          'a' + up->secondary);
   return usingBuffer(buffer);
 }
 
