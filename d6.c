@@ -3,6 +3,7 @@
 #include "d6.h"
 
 #include "face.h"
+#include "main.h"
 #include "memory.h"
 
 #include <stdarg.h>
@@ -535,6 +536,9 @@ static void canoncialCallbackImpl(int depth, int sum, FACE_DEGREE *args,
   }
   for (int i = NCOLORS; i >= 3; i--) {
     args[depth] = i;
+    if (CentralFaceDegrees[depth] > 0 && i != CentralFaceDegrees[depth]) {
+      continue;
+    }
     canoncialCallbackImpl(depth + 1, sum + i, args, callback, data);
   }
 }

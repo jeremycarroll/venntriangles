@@ -10,10 +10,12 @@
 #include <getopt.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <string.h>
 
 static char *TargetFolder = NULL;
-int MaxVariantsPerSolution = INT_MAX;  // Maximum value means unlimited
-int MaxSolutions = INT_MAX;            // Maximum value means unlimited
+int MaxVariantsPerSolution = INT_MAX;   // Maximum value means unlimited
+int MaxSolutions = INT_MAX;             // Maximum value means unlimited
+int CentralFaceDegrees[NCOLORS] = {0};  // Initialize all to 0
 
 /* Declaration of file scoped static functions */
 static void saveResult(void);
@@ -24,7 +26,7 @@ int dynamicMain0(int argc, char *argv[])
 {
   int opt;
   TargetFolder = NULL;
-  while ((opt = getopt(argc, argv, "f:v:s:")) != -1) {
+  while ((opt = getopt(argc, argv, "f:v:s:c:")) != -1) {
     switch (opt) {
       case 'f':
         TargetFolder = optarg;
@@ -44,10 +46,28 @@ int dynamicMain0(int argc, char *argv[])
           return EXIT_FAILURE;
         }
         break;
+      case 'c':
+        if (strlen(optarg) != NCOLORS) {
+          fprintf(stderr,
+                  "Central face degrees string must be exactly %d digits\n",
+                  NCOLORS);
+          return EXIT_FAILURE;
+        }
+        for (int i = 0; i < NCOLORS; i++) {
+          char c = optarg[i];
+          if (c < '3' || c > '6') {
+            fprintf(
+                stderr,
+                "Each digit in central face degrees must be between 3 and 6\n");
+            return EXIT_FAILURE;
+          }
+          CentralFaceDegrees[i] = c - '0';
+        }
+        break;
       default:
         fprintf(stderr,
                 "Usage: %s -f outputFolder [-v maxVariantsPerSolution] [-s "
-                "maxSolutions]\n",
+                "maxSolutions] [-c centralFaceDegrees]\n",
                 argv[0]);
         return EXIT_FAILURE;
     }
@@ -56,7 +76,7 @@ int dynamicMain0(int argc, char *argv[])
   if (optind != argc || TargetFolder == NULL) {
     fprintf(stderr,
             "Usage: %s -f outputFolder [-v maxVariantsPerSolution] [-s "
-            "maxSolutions]\n",
+            "maxSolutions] [-c centralFaceDegrees]\n",
             argv[0]);
     return EXIT_FAILURE;
   }

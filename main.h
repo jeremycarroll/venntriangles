@@ -5,6 +5,8 @@
 
 #include "face.h"
 
+extern int CentralFaceDegrees[NCOLORS];
+
 // Global configuration constants
 extern int MaxVariantsPerSolution;
 extern int MaxSolutions;
