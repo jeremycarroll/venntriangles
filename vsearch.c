@@ -1,6 +1,6 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "search.h"
+#include "vsearch.h"
 
 #include "d6.h"
 #include "face.h"

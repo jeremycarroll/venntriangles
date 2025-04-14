@@ -4,11 +4,13 @@
 #include "face.h"
 #include "graphml.h"
 #include "main.h"
-#include "search.h"
 #include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"
+#include "vsearch.h"
 
+#include <regex.h>
+#include <search.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unity.h>
@@ -69,12 +71,115 @@ static void saveAllVariations()
   TEST_ASSERT_EQUAL(128, FopenCount);
 }
 
-static void checkFirstVariation()
+struct nodeInfo {
+  char id[64];
+  char color1[8];
+  char line1[8];
+  char color2[8];
+  char line2[8];
+  unsigned source : 2;
+  unsigned target : 2;
+  unsigned node : 1;
+  unsigned corner : 1;
+};
+
+static void copyNodeIdToKey(struct nodeInfo* key, const char* p,
+                            regmatch_t* offsets)
 {
+  int length = offsets[0].rm_eo - offsets[0].rm_so;
+  strncpy(key->id, p + offsets[0].rm_so, length);
+  key->id[length] = '\0';
+}
+
+static struct nodeInfo* findNode(struct nodeInfo* nodes, size_t* nodeCount,
+                                 const char* p, regmatch_t* offsets)
+{
+  struct nodeInfo key;
+  memset(&key, 0, sizeof(key));
+  copyNodeIdToKey(&key, p, offsets);
+  return (struct nodeInfo*)lsearch(&key, nodes, nodeCount,
+                                   sizeof(struct nodeInfo),
+                                   (int (*)(const void*, const void*))strcmp);
+}
+
+static void checkGraphML()
+{
+  regex_t graphRegex;
+  regex_t nodeOrEdgeRegex;
+  regmatch_t offsets[10];
+  struct nodeInfo nodes[500];
+  struct nodeInfo* entry;
+  size_t nodeCount = 0;
+  char errbuf[256];
+  char* p;
+  int ret;
+  memset(nodes, 0, sizeof(nodes));
   FopenCount = 0;
   MaxVariantsPerSolution = 1;
   graphmlSaveAllVariations("/tmp/foo", 256);
   TEST_ASSERT_EQUAL(1, FopenCount);
+  ret = regcomp(&graphRegex, "<graph [^>]*>", REG_EXTENDED);
+  if (ret != 0) {
+    regerror(ret, &graphRegex, errbuf, sizeof(errbuf));
+    printf("Error compiling graphRegex: %s\n", errbuf);
+  }
+  TEST_ASSERT_EQUAL(0, ret);
+  ret = regexec(&graphRegex, outputBuffer, sizeof(offsets) / sizeof(offsets[0]),
+                offsets, REG_EXTENDED);
+  TEST_ASSERT_EQUAL(0, ret);
+
+//        "<node id=\"\\([^\"]*\\)\">|"
+#if 0
+  "<\\(node\\)|"
+                "<edge source=\"\\([^\"]*\\)\" target=\"\\([^\"]*\\)\">|"
+                "\\(</graph>\\)"
+#endif
+  ret = regcomp(&nodeOrEdgeRegex,
+                "<node id=\"(([a-z]-[1-3])|[^\"]*)\">|"
+                "<edge source=\"([^\"]*)\" target=\"([^\"]*)\">|"
+                "(</graph>)",
+                REG_EXTENDED);
+  if (ret != 0) {
+    regerror(ret, &nodeOrEdgeRegex, errbuf, sizeof(errbuf));
+    printf("Error compiling nodeOrEdgeRegex: %s\n", errbuf);
+  }
+  TEST_ASSERT_EQUAL(0, ret);
+  p = outputBuffer + offsets[0].rm_eo;
+  while (p < outputBuffer + 50000) {
+    ret = regexec(&nodeOrEdgeRegex, p, sizeof(offsets) / sizeof(offsets[0]),
+                  offsets, 0);
+    if (ret != 0) {
+      printf("Failed at %d\n>>>> %.30s\n", p - outputBuffer, p);
+      TEST_FAIL();
+    }
+    if (offsets[1].rm_eo != -1) {
+      entry = findNode(nodes, &nodeCount, p, offsets + 1);
+      printf("Added node %s\n", entry->id);
+      TEST_ASSERT_NOT_NULL(entry);
+      TEST_ASSERT_EQUAL_INT(0, entry->node);
+      entry->node = 1;
+      if (offsets[2].rm_eo != -1) {
+        entry->corner = 1;
+      }
+      // printf("Found node at %d\n>>>> %.30s\n", p - outputBuffer, p);
+    } else if (offsets[3].rm_eo != -1) {
+      entry = findNode(nodes, &nodeCount, p, offsets + 3);
+      TEST_ASSERT_NOT_NULL(entry);
+      TEST_ASSERT_LESS_OR_EQUAL(1, entry->source);
+      entry->source++;
+      entry = findNode(nodes, &nodeCount, p, offsets + 4);
+      TEST_ASSERT_LESS_OR_EQUAL(1, entry->target);
+      entry->target++;
+      //  printf("Found edge at %d\n>>>> %.30s\n", p - outputBuffer, p);
+    } else if (offsets[5].rm_eo != -1) {
+      //  printf("Found end of graph at %d\n>>>> %.30s\n", p - outputBuffer, p);
+      break;
+    }
+    p += offsets[0].rm_eo;
+  }
+
+  regfree(&graphRegex);
+  regfree(&nodeOrEdgeRegex);
 }
 
 static void testVariationCount()
@@ -143,6 +248,6 @@ int main(void)
   RUN_645534(foundSolutionColor4);
   RUN_645534(foundSolutionColor5);
   RUN_645534(saveAllVariations);
-  RUN_645534(checkFirstVariation);
+  RUN_645534(checkGraphML);
   return UNITY_END();
 }

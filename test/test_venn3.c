@@ -1,9 +1,9 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #include "face.h"
-#include "search.h"
 #include "statistics.h"
 #include "utils.h"
+#include "vsearch.h"
 
 #include <unity.h>
 

@@ -78,7 +78,7 @@ void initializeStatisticLogging(char *filename, int frequency, int seconds)
 
 void searchFull(void (*foundSolution)(void)) { /* stub for testing. */ }
 
-const char *faceDegreeSignature(void) { return "stub"; }
+char *faceDegreeSignature(void) { return "stub"; }
 
 void solutionWrite(const char *buffer) { /* stub for testing. */ }
 
