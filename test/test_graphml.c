@@ -113,6 +113,7 @@ static void checkGraphML()
   char errbuf[256];
   char* p;
   int ret;
+  int i;
   memset(nodes, 0, sizeof(nodes));
   FopenCount = 0;
   MaxVariantsPerSolution = 1;
@@ -135,7 +136,7 @@ static void checkGraphML()
                 "\\(</graph>\\)"
 #endif
   ret = regcomp(&nodeOrEdgeRegex,
-                "<node id=\"(([a-z]-[1-3])|[^\"]*)\">|"
+                "<node id=\"(([a-z]_[0-2])|[^\"]*)\">|"
                 "<edge source=\"([^\"]*)\" target=\"([^\"]*)\">|"
                 "(</graph>)",
                 REG_EXTENDED);
@@ -177,6 +178,19 @@ static void checkGraphML()
       break;
     }
     p += offsets[0].rm_eo;
+  }
+
+  for (i = 0; i < nodeCount; i++) {
+    printf("node %d: %s\n", i, nodes[i].id);
+    entry = &nodes[i];
+    TEST_ASSERT_EQUAL(1, entry->node);
+    if (entry->corner) {
+      TEST_ASSERT_EQUAL(1, entry->target);
+      TEST_ASSERT_EQUAL(1, entry->source);
+    } else {
+      TEST_ASSERT_EQUAL(2, entry->target);
+      TEST_ASSERT_EQUAL(2, entry->source);
+    }
   }
 
   regfree(&graphRegex);

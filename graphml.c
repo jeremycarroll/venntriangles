@@ -18,7 +18,7 @@ static const char *GRAPHML_SCHEMA =
 
 /* Forward declarations */
 static char *cornerId(COLOR color, int counter);
-static void graphmlAddCorner(FILE *fp, COLOR color, int counter);
+static void graphmlAddCorner(FILE *fp, EDGE edge, COLOR color, int counter);
 static void addEdge(FILE *fp, COLOR color, char *source, char *target);
 static void getPath(EDGE *path, EDGE from, EDGE to);
 static void saveVariation(EDGE (*corners)[3]);
@@ -71,7 +71,7 @@ static void graphmlAddPoint(FILE *fp, POINT point)
   char *id = graphmlPointId(point);
   fprintf(fp, "    <node id=\"%s\">\n", id);
   fprintf(fp, "      <data key=\"colors\">%s</data>\n",
-          colorSetToStr(point->colors));
+          pointToColorSetString(point));
   fprintf(fp, "      <data key=\"primary\">%c</data>\n", 'a' + point->primary);
   fprintf(fp, "      <data key=\"secondary\">%c</data>\n",
           'a' + point->secondary);
@@ -82,18 +82,22 @@ static void graphmlAddPoint(FILE *fp, POINT point)
 static char *cornerId(COLOR color, int counter)
 {
   char *buffer = getBuffer();
-  assert(counter < 4);
-  assert(color > 0);
-  sprintf(buffer, "%c-%d", colorToChar(color), counter);
+  assert(counter < 3);
+  assert(color >= 0);
+  sprintf(buffer, "%c_%d", colorToChar(color), counter);
   return usingBuffer(buffer);
 }
 
 /* Add a corner point to the graph */
-static void graphmlAddCorner(FILE *fp, COLOR color, int counter)
+static void graphmlAddCorner(FILE *fp, EDGE edge, COLOR color, int counter)
 {
+  COLORSET colors = edge->colors | (1ll << color);
   char *id = cornerId(color, counter);
   fprintf(fp, "    <node id=\"%s\">\n", id);
+  fprintf(fp, "      <data key=\"colors\">%s</data>\n",
+          colorSetToBareString(colors));
   fprintf(fp, "      <data key=\"primary\">%c</data>\n", colorToChar(color));
+  fprintf(fp, "      <data key=\"secondary\">%c</data>\n", colorToChar(color));
   fprintf(fp, "    </node>\n");
 }
 
@@ -218,9 +222,9 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
   POINT currentPoint;
   int ix;
   int low, high;
-  graphmlAddCorner(fp, color, 0);
-  graphmlAddCorner(fp, color, 1);
-  graphmlAddCorner(fp, color, 2);
+  graphmlAddCorner(fp, (*corners)[0], color, 0);
+  graphmlAddCorner(fp, (*corners)[1], color, 1);
+  graphmlAddCorner(fp, (*corners)[2], color, 2);
   edge = edgeOnCentralFace(color);
   getPath(path, edge, edgeFollowBackwards(edge));
   for (ix = 0; path[ix] != NULL; ix++) {
