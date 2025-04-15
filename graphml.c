@@ -19,7 +19,8 @@ static const char *GRAPHML_SCHEMA =
 /* Forward declarations */
 static char *cornerId(COLOR color, int counter);
 static void graphmlAddCorner(FILE *fp, EDGE edge, COLOR color, int counter);
-static void addEdge(FILE *fp, COLOR color, char *source, char *target);
+static void addEdge(FILE *fp, COLOR color, int line, char *source,
+                    char *target);
 static void getPath(EDGE *path, EDGE from, EDGE to);
 static void saveVariation(EDGE (*corners)[3]);
 static void chooseCornersThenSavePartialVariations(int cornerIndex,
@@ -53,6 +54,9 @@ static void graphmlBegin(FILE *fp)
           "attr.type=\"string\"/>\n");
   fprintf(fp,
           "  <key id=\"color\" for=\"edge\" attr.name=\"color\" "
+          "attr.type=\"string\"/>\n");
+  fprintf(fp,
+          "  <key id=\"line\" for=\"edge\" attr.name=\"line\" "
           "attr.type=\"string\"/>\n");
 
   fprintf(fp, "  <graph id=\"venn_diagram\" edgedefault=\"undirected\">\n");
@@ -102,15 +106,17 @@ static void graphmlAddCorner(FILE *fp, EDGE edge, COLOR color, int counter)
 }
 
 /* Add an edge between two points */
-static void addEdge(FILE *fp, COLOR color, char *source, char *target)
+static void addEdge(FILE *fp, COLOR color, int line, char *source, char *target)
 {
   fprintf(fp, "    <edge source=\"%s\" target=\"%s\">\n", source, target);
   fprintf(fp, "      <data key=\"color\">%c</data>\n", colorToChar(color));
+  fprintf(fp, "      <data key=\"line\">%c%d</data>\n", colorToChar(color),
+          line);
   fprintf(fp, "    </edge>\n");
 }
 
 /* Add an edge to the graph */
-static void graphmlAddEdge(FILE *fp, EDGE edge)
+static void graphmlAddEdge(FILE *fp, EDGE edge, int line)
 {
   /* Use the primary edge for consistent ID generation */
   if (!IS_PRIMARY_EDGE(edge)) {
@@ -118,28 +124,31 @@ static void graphmlAddEdge(FILE *fp, EDGE edge)
   }
   char *source = graphmlPointId(edge->reversed->to->point);
   char *target = graphmlPointId(edge->to->point);
-  addEdge(fp, edge->color, source, target);
+  addEdge(fp, edge->color, line, source, target);
 }
 
-static void addEdgeToCorner(FILE *fp, EDGE edge, int corner)
+static void addEdgeToCorner(FILE *fp, EDGE edge, int corner, int line)
 {
   char *source = graphmlPointId(edge->reversed->to->point);
   char *target = cornerId(edge->color, corner);
-  addEdge(fp, edge->color, source, target);
+  assert(line != corner);
+  addEdge(fp, edge->color, line, source, target);
 }
 
 static void addEdgeBetweenCorners(FILE *fp, COLOR color, int low, int high)
 {
   char *source = cornerId(color, low);
   char *target = cornerId(color, high);
-  addEdge(fp, color, source, target);
+  int line = 3 - high - low;
+  addEdge(fp, color, line, source, target);
 }
 
-static void addEdgeFromCorner(FILE *fp, int corner, EDGE edge)
+static void addEdgeFromCorner(FILE *fp, int corner, EDGE edge, int line)
 {
   char *source = cornerId(edge->color, corner);
   char *target = graphmlPointId(edge->to->point);
-  addEdge(fp, edge->color, source, target);
+  assert(line != corner);
+  addEdge(fp, edge->color, line, source, target);
 }
 
 /* Generate unique IDs for graph elements */
@@ -227,30 +236,33 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
   graphmlAddCorner(fp, (*corners)[2], color, 2);
   edge = edgeOnCentralFace(color);
   getPath(path, edge, edgeFollowBackwards(edge));
+  int line = 1;
   for (ix = 0; path[ix] != NULL; ix++) {
     current = path[ix];
     switch (edgeIsCorner(current->reversed, corners, &low, &high)) {
       case 0:
-        graphmlAddEdge(fp, current);
+        graphmlAddEdge(fp, current, line);
         break;
       case 1:
       case 2:
       case 4:
-        addEdgeToCorner(fp, current, low);
-        addEdgeFromCorner(fp, low, current);
+        addEdgeToCorner(fp, current, low, line);
+        line = (line + 1) % 3;
+        addEdgeFromCorner(fp, low, current, line);
         break;
       case 3:
       case 5:
       case 6:
-        addEdgeToCorner(fp, current, low);
+        addEdgeToCorner(fp, current, low, line);
+        line = (line + 1) % 3;
         addEdgeBetweenCorners(fp, color, low, high);
-        addEdgeFromCorner(fp, high, current);
+        addEdgeFromCorner(fp, high, current, low);
         break;
       case 7:
-        addEdgeToCorner(fp, current, 0);
+        addEdgeToCorner(fp, current, 0, 1);
         addEdgeBetweenCorners(fp, color, 0, 1);
         addEdgeBetweenCorners(fp, color, 1, 2);
-        addEdgeFromCorner(fp, 2, current);
+        addEdgeFromCorner(fp, 2, current, 1);
         break;
     }
     currentPoint = current->to->point;
