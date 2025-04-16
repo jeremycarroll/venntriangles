@@ -12,12 +12,25 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define USAGE_ONE_LINE                                                   \
+  "Usage: %s -f outputFolder [-d centralFaceDegrees] [-m maxSolutions] " \
+  "[-n maxVariantsPerSolution] [-k skipFirstSolutions] [-j "             \
+  "skipFirstVariantsPerSolution]\n"
+
+#define USAGE_WITH_D_EXPLANATION                                              \
+  "When -d is specified, -m and -k apply to solutions with that face degree " \
+  "pattern.\n"                                                                \
+  "Otherwise, they apply globally across all face degree patterns.\n"
+
 static char *TargetFolder = NULL;
-int MaxVariantsPerSolution = INT_MAX;    // Maximum value means unlimited
-int MaxSolutions = INT_MAX;              // Maximum value means unlimited
+int MaxVariantsPerSolution = INT_MAX;     // Maximum value means unlimited
+int GlobalMaxSolutions = INT_MAX;         // Global maximum solutions
+int PerFaceDegreeMaxSolutions = INT_MAX;  // Per face degree maximum solutions
+int GlobalSkipSolutions = 0;              // Global solutions to skip
+int PerFaceDegreeSkipSolutions = 0;       // Per face degree solutions to skip
 int IgnoreFirstVariantsPerSolution = 0;  // Default to not ignoring any variants
-int IgnoreFirstSolutions = 0;           // Default to not ignoring any solutions
-int CentralFaceDegrees[NCOLORS] = {0};  // Initialize all to 0
+int CentralFaceDegrees[NCOLORS] = {0};   // Initialize all to 0
+int GlobalSolutionsFound = 0;            // Counter for solutions found
 
 /* Declaration of file scoped static functions */
 static void saveResult(void);
@@ -28,12 +41,17 @@ int dynamicMain0(int argc, char *argv[])
 {
   int opt;
   TargetFolder = NULL;
+  bool hasFaceDegrees = false;
+  int localMaxSolutions = INT_MAX;
+  int localSkipSolutions = 0;
+
   while ((opt = getopt(argc, argv, "f:d:m:n:k:j:")) != -1) {
     switch (opt) {
       case 'f':
         TargetFolder = optarg;
         break;
       case 'd':
+        hasFaceDegrees = true;
         if (strlen(optarg) != NCOLORS) {
           fprintf(stderr,
                   "Central face degrees string must be exactly %d digits\n",
@@ -52,8 +70,8 @@ int dynamicMain0(int argc, char *argv[])
         }
         break;
       case 'm':
-        MaxSolutions = atoi(optarg);
-        if (MaxSolutions <= 0) {
+        localMaxSolutions = atoi(optarg);
+        if (localMaxSolutions <= 0) {
           fprintf(stderr, "maxSolutions must be a positive integer\n");
           return EXIT_FAILURE;
         }
@@ -67,9 +85,9 @@ int dynamicMain0(int argc, char *argv[])
         }
         break;
       case 'k':
-        IgnoreFirstSolutions = atoi(optarg);
-        if (IgnoreFirstSolutions < 0) {
-          fprintf(stderr, "ignoreFirstSolutions must be non-negative\n");
+        localSkipSolutions = atoi(optarg);
+        if (localSkipSolutions < 0) {
+          fprintf(stderr, "skipFirstSolutions must be non-negative\n");
           return EXIT_FAILURE;
         }
         break;
@@ -77,29 +95,30 @@ int dynamicMain0(int argc, char *argv[])
         IgnoreFirstVariantsPerSolution = atoi(optarg);
         if (IgnoreFirstVariantsPerSolution < 0) {
           fprintf(stderr,
-                  "ignoreFirstVariantsPerSolution must be non-negative\n");
+                  "skipFirstVariantsPerSolution must be non-negative\n");
           return EXIT_FAILURE;
         }
         break;
       default:
-        fprintf(stderr,
-                "Usage: %s -f outputFolder [-d centralFaceDegrees] [-m "
-                "maxSolutions] "
-                "[-n maxVariantsPerSolution] [-k skipFirstSolutions] [-j "
-                "skipFirstVariantsPerSolution]\n",
-                argv[0]);
+        fprintf(stderr, USAGE_ONE_LINE, argv[0]);
+        fprintf(stderr, USAGE_WITH_D_EXPLANATION);
         return EXIT_FAILURE;
     }
   }
 
   if (optind != argc || TargetFolder == NULL) {
-    fprintf(
-        stderr,
-        "Usage: %s -f outputFolder [-d centralFaceDegrees] [-m maxSolutions] "
-        "[-n maxVariantsPerSolution] [-k skipFirstSolutions] [-j "
-        "skipFirstVariantsPerSolution]\n",
-        argv[0]);
+    fprintf(stderr, USAGE_ONE_LINE, argv[0]);
+    fprintf(stderr, USAGE_WITH_D_EXPLANATION);
     return EXIT_FAILURE;
+  }
+
+  // Set the appropriate static variables based on whether -d was specified
+  if (hasFaceDegrees) {
+    PerFaceDegreeMaxSolutions = localMaxSolutions;
+    PerFaceDegreeSkipSolutions = localSkipSolutions;
+  } else {
+    GlobalMaxSolutions = localMaxSolutions;
+    GlobalSkipSolutions = localSkipSolutions;
   }
 
   initializeOutputFolder();
@@ -112,6 +131,18 @@ int dynamicMain0(int argc, char *argv[])
 /* File scoped static functions */
 static void saveResult(void)
 {
+  // GlobalSolutionsFound is incremented in vsearch.c
+
+  // Check if we should skip this solution based on global limits
+  if (GlobalSolutionsFound <= GlobalSkipSolutions) {
+    return;
+  }
+
+  // Check if we've hit the global maximum limit
+  if (GlobalSolutionsFound > GlobalMaxSolutions) {
+    return;
+  }
+
   char *buffer = getBuffer();
   sprintf(buffer, "%s/%s", TargetFolder, faceDegreeSignature());
   solutionWrite(usingBuffer(buffer));
