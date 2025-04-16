@@ -304,7 +304,7 @@ static void checkGraphML()
 
 static void testVariationCount()
 {
-  TEST_ASSERT_EQUAL(128, searchCountVariations());
+  TEST_ASSERT_EQUAL(128, searchCountVariations(NULL));
 }
 
 static int ContinuationCount = 0;
