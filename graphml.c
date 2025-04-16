@@ -298,6 +298,9 @@ static void saveVariation(EDGE (*corners)[3])
   FILE *fp;
   assert(VariationNumber <= ExpectedVariations);
   VariationNumber++;
+  if (VariationNumber - 1 <= IgnoreFirstVariantsPerSolution) {
+    return;
+  }
   fp = graphmlFileOps.fopen(filename, "w");
   graphmlBegin(fp);
   for (a = 0; a < NCOLORS; a++, corners++) {

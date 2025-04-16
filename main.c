@@ -13,9 +13,10 @@
 #include <string.h>
 
 static char *TargetFolder = NULL;
-int MaxVariantsPerSolution = INT_MAX;   // Maximum value means unlimited
-int MaxSolutions = INT_MAX;             // Maximum value means unlimited
-int CentralFaceDegrees[NCOLORS] = {0};  // Initialize all to 0
+int MaxVariantsPerSolution = INT_MAX;    // Maximum value means unlimited
+int MaxSolutions = INT_MAX;              // Maximum value means unlimited
+int IgnoreFirstVariantsPerSolution = 0;  // Default to not ignoring any variants
+int CentralFaceDegrees[NCOLORS] = {0};   // Initialize all to 0
 
 /* Declaration of file scoped static functions */
 static void saveResult(void);
@@ -26,7 +27,7 @@ int dynamicMain0(int argc, char *argv[])
 {
   int opt;
   TargetFolder = NULL;
-  while ((opt = getopt(argc, argv, "f:v:s:c:")) != -1) {
+  while ((opt = getopt(argc, argv, "f:v:s:c:x:")) != -1) {
     switch (opt) {
       case 'f':
         TargetFolder = optarg;
@@ -64,10 +65,19 @@ int dynamicMain0(int argc, char *argv[])
           CentralFaceDegrees[i] = c - '0';
         }
         break;
+      case 'x':
+        IgnoreFirstVariantsPerSolution = atoi(optarg);
+        if (IgnoreFirstVariantsPerSolution < 0) {
+          fprintf(stderr,
+                  "ignoreFirstVariantsPerSolution must be non-negative\n");
+          return EXIT_FAILURE;
+        }
+        break;
       default:
         fprintf(stderr,
                 "Usage: %s -f outputFolder [-v maxVariantsPerSolution] [-s "
-                "maxSolutions] [-c centralFaceDegrees]\n",
+                "maxSolutions] [-c centralFaceDegrees] [-x "
+                "ignoreFirstVariantsPerSolution]\n",
                 argv[0]);
         return EXIT_FAILURE;
     }
@@ -76,7 +86,8 @@ int dynamicMain0(int argc, char *argv[])
   if (optind != argc || TargetFolder == NULL) {
     fprintf(stderr,
             "Usage: %s -f outputFolder [-v maxVariantsPerSolution] [-s "
-            "maxSolutions] [-c centralFaceDegrees]\n",
+            "maxSolutions] [-c centralFaceDegrees] [-x "
+            "ignoreFirstVariantsPerSolution]\n",
             argv[0]);
     return EXIT_FAILURE;
   }
