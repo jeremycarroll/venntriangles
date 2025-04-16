@@ -11,6 +11,7 @@ extern int CentralFaceDegrees[NCOLORS];
 extern int MaxVariantsPerSolution;
 extern int MaxSolutions;
 extern int IgnoreFirstVariantsPerSolution;
+extern int IgnoreFirstSolutions;
 
 // Declare functions used in main.c
 extern char* faceDegreeSignature(void);
