@@ -15,15 +15,38 @@
 #include <stdlib.h>
 #include <unity.h>
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-static void mockInitializeFolder(const char* folder)
-{  // nothing.
-}
 
+struct nodeInfo {
+  char id[64];
+  struct colorInfo {
+    char color[8];
+    char line[8];
+  } info[2];
+  unsigned source : 2;
+  unsigned target : 2;
+  unsigned node : 1;
+  unsigned corner : 1;
+};
+
+static regmatch_t offsets[10];
 static char outputBuffer[50000];
 static char* outputBufferPtr = outputBuffer;
+static struct nodeInfo nodes[500];
+static size_t nodeCount = 0;
+static char* offsetBase;
+
+static void mockInitializeFolder(const char* folder)
+{
+  (void)folder;  // Explicitly mark as unused
+}
+
 static int FopenCount = 0;
+
+static regex_t graphRegex, nodeOrEdgeRegex, nodeDataRegex, edgeDataRegex;
+
 static FILE* mockFopen(const char* filename, const char* mode)
 {
+  (void)filename;  // Explicitly mark as unused
   FILE* result = fmemopen(outputBuffer, 50000, mode);
   assert(result != NULL);
   FopenCount++;
@@ -73,41 +96,26 @@ static void saveAllVariations()
   TEST_ASSERT_EQUAL(128, FopenCount);
 }
 
-struct nodeInfo {
-  char id[64];
-  struct colorInfo {
-    char color[8];
-    char line[8];
-  } info[2];
-  unsigned source : 2;
-  unsigned target : 2;
-  unsigned node : 1;
-  unsigned corner : 1;
-};
-
-static regex_t graphRegex, nodeOrEdgeRegex, nodeDataRegex, edgeDataRegex;
-static regmatch_t offsets[10];
-static char* offsetBase;
-static void copyFromBufferToString(char* key, regmatch_t* offsets)
+static void copyFromBufferToString(char* key, const regmatch_t* match_offsets)
 {
-  int length = offsets[0].rm_eo - offsets[0].rm_so;
-  assert(length < 16);
-  strncpy(key, offsetBase + offsets[0].rm_so, length);
-  key[length] = '\0';
+  size_t len = match_offsets->rm_eo - match_offsets->rm_so;
+  strncpy(key, offsetBase + match_offsets->rm_so, len);
+  key[len] = 0;
 }
 
-static void copyNodeIdToKey(struct nodeInfo* key, regmatch_t* offsets)
+static void copyNodeIdToKey(struct nodeInfo* key,
+                            const regmatch_t* match_offsets)
 {
-  copyFromBufferToString(key->id, offsets);
+  copyFromBufferToString(key->id, match_offsets);
 }
 
-static struct nodeInfo* findNode(struct nodeInfo* nodes, size_t* nodeCount,
-                                 regmatch_t* offsets)
+static struct nodeInfo* findNode(struct nodeInfo* node_list, size_t* count,
+                                 const regmatch_t* match_offsets)
 {
   struct nodeInfo key;
   memset(&key, 0, sizeof(key));
-  copyNodeIdToKey(&key, offsets);
-  return (struct nodeInfo*)lsearch(&key, nodes, nodeCount,
+  copyNodeIdToKey(&key, match_offsets);
+  return (struct nodeInfo*)lsearch(&key, node_list, count,
                                    sizeof(struct nodeInfo),
                                    (int (*)(const void*, const void*))strcmp);
 }
@@ -129,10 +137,11 @@ static bool copyLineByColor(struct colorInfo* info, const char* edgeColor,
 }
 
 static void checkLineAndColorInNode(struct nodeInfo* node,
-                                    const char* edgeColor, regmatch_t* offsets)
+                                    const char* edgeColor,
+                                    const regmatch_t* match_offsets)
 {
   char line[8];
-  copyFromBufferToString(line, offsets);
+  copyFromBufferToString(line, match_offsets);
   if (colorLineEqual(&node->info[0], edgeColor, line)) {
     return;
   }
@@ -163,20 +172,10 @@ static void compileRegexes()
                "<node id=\"(([a-z]_[0-2])|[^\"]*)\">|"
                "<edge source=\"([^\"]*)\" target=\"([^\"]*)\">|"
                "(</graph>)");
-#if 0
-      <data key="colors">acdf</data>
-      <data key="primary">a</data>
-      <data key="secondary">d</data>
-#endif
   compileRegex(&nodeDataRegex,
                "<data key=\"colors\">([^<]*)</data>[ \n]*<data "
                "key=\"primary\">([^<]*)</data>[ \n]*<data "
                "key=\"secondary\">([^<]*)</data>");
-#if 0
-      <data key="color">a</data>
-      <data key="line">a1</data>
-
-#endif
   compileRegex(&edgeDataRegex,
                "<data key=\"color\">([^<]*)</data>[ \n]*<data "
                "key=\"line\">([^<]*)</data>");
@@ -196,31 +195,82 @@ static void matchRegex(regex_t* regex)
                     sizeof(offsets) / sizeof(offsets[0]), offsets, 0);
   offsetBase = outputBufferPtr;
   if (ret != 0) {
-    printf("Failed at %d\n>>>> %.30s\n", outputBufferPtr - outputBuffer,
+    printf("Failed at %ld\n>>>> %.30s\n", outputBufferPtr - outputBuffer,
            outputBufferPtr);
     TEST_FAIL();
   }
   outputBufferPtr += offsets[0].rm_eo;
 }
 
-static void checkGraphML()
+static void firstNodeMatch()
 {
-  struct nodeInfo nodes[500];
-  struct nodeInfo *entry, *source, *target;
-  size_t nodeCount = 0;
-  size_t completeNodeCount;
+  struct nodeInfo* entry;
   char nodeColors[8];
+  char message[100];
+  entry = findNode(nodes, &nodeCount, offsets + 1);
+  // printf("Added node %s\n", entry->id);
+  TEST_ASSERT_NOT_NULL(entry);
+  sprintf(message, "Added node %s", entry->id);
+  TEST_ASSERT_EQUAL_INT_MESSAGE(0, entry->node, message);
+  entry->node = 1;
+  if (offsets[2].rm_eo != -1) {
+    entry->corner = 1;
+  }
+  matchRegex(&nodeDataRegex);
+  copyFromBufferToString(nodeColors, offsets + 1);
+  copyFromBufferToString(entry->info[0].color, offsets + 2);
+  copyFromBufferToString(entry->info[1].color, offsets + 3);
+  sprintf(message + strlen(message),
+          "nodeColors: %s, primary: %s, secondary: %s", nodeColors,
+          entry->info[0].color, entry->info[1].color);
+  size_t i;
+  for (i = 0;; i++) {
+    if (nodeColors[i] == 0) {
+      break;
+    }
+    TEST_ASSERT_MESSAGE(nodeColors[i] >= 'a' || nodeColors[i] <= 'f', message);
+    if (i == 0) continue;
+    TEST_ASSERT_MESSAGE(nodeColors[i] > nodeColors[i - 1], message);
+  }
+  TEST_ASSERT_MESSAGE(strchr(nodeColors, entry->info[0].color[0]) != NULL,
+                      message);
+  TEST_ASSERT_MESSAGE(strchr(nodeColors, entry->info[1].color[0]) != NULL,
+                      message);
+}
+
+static void firstEdgeMatch(void)
+{
+  struct nodeInfo* entry;
+  entry = findNode(nodes, &nodeCount, offsets + 3);
+  TEST_ASSERT_NOT_NULL(entry);
+  TEST_ASSERT_LESS_OR_EQUAL(1, entry->source);
+  entry->source++;
+  struct nodeInfo* target = findNode(nodes, &nodeCount, offsets + 4);
+  TEST_ASSERT_LESS_OR_EQUAL(1, target->target);
+  target->target++;
+}
+
+static void noop(void)
+{
+  // nothing.
+}
+
+static void secondEdgeMatch(void)
+{
   char edgeColor[8];
-  unsigned int i;
-  memset(nodes, 0, sizeof(nodes));
-  FopenCount = 0;
-  MaxVariantsPerSolution = 1;
-  compileRegexes();
-  graphmlSaveAllVariations("/tmp/foo", 256);
-  TEST_ASSERT_EQUAL(1, FopenCount);
+  struct nodeInfo* source = findNode(nodes, &nodeCount, offsets + 3);
+  struct nodeInfo* target = findNode(nodes, &nodeCount, offsets + 4);
+  matchRegex(&edgeDataRegex);
+  copyFromBufferToString(edgeColor, offsets + 1);
+  TEST_ASSERT_EQUAL(0, edgeColor[1]);
+  checkLineAndColorInNode(source, edgeColor, offsets + 2);
+  checkLineAndColorInNode(target, edgeColor, offsets + 2);
+}
+
+static void matchGraphMlFile(void (*nodeMatch)(void), void (*edgeMatch)(void))
+{
   outputBufferPtr = outputBuffer;
   matchRegex(&graphRegex);
-
   while (outputBufferPtr < outputBuffer + 50000) {
     matchRegex(&nodeOrEdgeRegex);
 
@@ -228,61 +278,32 @@ static void checkGraphML()
       break;
     }
     if (offsets[1].rm_eo != -1) {
-      entry = findNode(nodes, &nodeCount, offsets + 1);
-      // printf("Added node %s\n", entry->id);
-      TEST_ASSERT_NOT_NULL(entry);
-      TEST_ASSERT_EQUAL_INT_MESSAGE(0, entry->node, entry->id);
-      entry->node = 1;
-      if (offsets[2].rm_eo != -1) {
-        entry->corner = 1;
-      }
-      matchRegex(&nodeDataRegex);
-      copyFromBufferToString(entry->info[0].color, offsets + 2);
-      copyFromBufferToString(entry->info[1].color, offsets + 3);
-      copyFromBufferToString(nodeColors, offsets + 1);
-      for (i = 0;; i++) {
-        if (nodeColors[i] == 0) {
-          break;
-        }
-        TEST_ASSERT(nodeColors[i] >= 'a' || nodeColors[i] <= 'f');
-        if (i == 0) continue;
-        TEST_ASSERT(nodeColors[i] > nodeColors[i - 1]);
-      }
-      TEST_ASSERT(strchr(nodeColors, entry->info[0].color[0]) != NULL);
-      TEST_ASSERT(strchr(nodeColors, entry->info[1].color[0]) != NULL);
+      nodeMatch();
     } else if (offsets[3].rm_eo != -1) {
-      entry = findNode(nodes, &nodeCount, offsets + 3);
-      TEST_ASSERT_NOT_NULL(entry);
-      TEST_ASSERT_LESS_OR_EQUAL(1, entry->source);
-      entry->source++;
-      entry = findNode(nodes, &nodeCount, offsets + 4);
-      TEST_ASSERT_LESS_OR_EQUAL(1, entry->target);
-      entry->target++;
+      edgeMatch();
     }
   }
+}
+static void checkGraphML()
+{
+  size_t completeNodeCount;
+  unsigned int i;
+  struct nodeInfo* entry;
+
+  memset(nodes, 0, sizeof(nodes));
+  FopenCount = 0;
+  MaxVariantsPerSolution = 1;
+  compileRegexes();
+  graphmlSaveAllVariations("/tmp/foo", 256);
+  TEST_ASSERT_EQUAL(1, FopenCount);
+
+  matchGraphMlFile(firstNodeMatch, firstEdgeMatch);
 
   completeNodeCount = nodeCount;
-
-  outputBufferPtr = outputBuffer;
-  while (outputBufferPtr < outputBuffer + 50000) {
-    matchRegex(&nodeOrEdgeRegex);
-    if (offsets[5].rm_eo != -1) {
-      break;
-    }
-    if (offsets[3].rm_eo != -1) {
-      source = findNode(nodes, &nodeCount, offsets + 3);
-      target = findNode(nodes, &nodeCount, offsets + 4);
-      TEST_ASSERT_EQUAL(completeNodeCount, nodeCount);
-      matchRegex(&edgeDataRegex);
-      copyFromBufferToString(edgeColor, offsets + 1);
-      TEST_ASSERT_EQUAL(0, edgeColor[1]);
-      checkLineAndColorInNode(source, edgeColor, offsets + 2);
-      checkLineAndColorInNode(target, edgeColor, offsets + 2);
-    }
-  }
+  matchGraphMlFile(noop, secondEdgeMatch);
+  TEST_ASSERT_EQUAL(completeNodeCount, nodeCount);
 
   for (i = 0; i < nodeCount; i++) {
-    // printf("node %d: %s\n", i, nodes[i].id);
     entry = &nodes[i];
     TEST_ASSERT_EQUAL(1, entry->node);
     if (entry->corner) {
@@ -304,8 +325,10 @@ static void testVariationCount()
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 static int ContinuationCount = 0;
-static int countContinuation(COLOR ignored, EDGE (*corners)[3])
+static int countContinuation(COLOR color, EDGE (*corners)[3])
 {
+  (void)color;    // Explicitly mark as unused
+  (void)corners;  // Explicitly mark as unused
   ContinuationCount++;
   return 0;
 }
