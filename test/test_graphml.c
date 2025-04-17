@@ -109,13 +109,12 @@ static void copyNodeIdToKey(struct nodeInfo* key,
   copyFromBufferToString(key->id, match_offsets);
 }
 
-static struct nodeInfo* findNode(struct nodeInfo* node_list, size_t* count,
-                                 const regmatch_t* match_offsets)
+static struct nodeInfo* findNode(const regmatch_t* match_offsets)
 {
   struct nodeInfo key;
   memset(&key, 0, sizeof(key));
   copyNodeIdToKey(&key, match_offsets);
-  return (struct nodeInfo*)lsearch(&key, node_list, count,
+  return (struct nodeInfo*)lsearch(&key, nodes, &nodeCount,
                                    sizeof(struct nodeInfo),
                                    (int (*)(const void*, const void*))strcmp);
 }
@@ -202,12 +201,12 @@ static void matchRegex(regex_t* regex)
   outputBufferPtr += offsets[0].rm_eo;
 }
 
-static void firstNodeMatch()
+static void firstNodeMatch(regmatch_t* nodeIdOffsets)
 {
   struct nodeInfo* entry;
   char nodeColors[8];
   char message[100];
-  entry = findNode(nodes, &nodeCount, offsets + 1);
+  entry = findNode(nodeIdOffsets);
   // printf("Added node %s\n", entry->id);
   TEST_ASSERT_NOT_NULL(entry);
   sprintf(message, "Added node %s", entry->id);
@@ -238,28 +237,30 @@ static void firstNodeMatch()
                       message);
 }
 
-static void firstEdgeMatch(void)
+static void firstEdgeMatch(regmatch_t* sourceOffsets, regmatch_t* targetOffsets)
 {
-  struct nodeInfo* entry;
-  entry = findNode(nodes, &nodeCount, offsets + 3);
+  struct nodeInfo *entry, *target;
+  entry = findNode(sourceOffsets);
   TEST_ASSERT_NOT_NULL(entry);
   TEST_ASSERT_LESS_OR_EQUAL(1, entry->source);
   entry->source++;
-  struct nodeInfo* target = findNode(nodes, &nodeCount, offsets + 4);
+  target = findNode(targetOffsets);
   TEST_ASSERT_LESS_OR_EQUAL(1, target->target);
   target->target++;
 }
 
-static void noop(void)
+static void noop(regmatch_t* nodeIdOffsets)
 {
+  (void)nodeIdOffsets;
   // nothing.
 }
 
-static void secondEdgeMatch(void)
+static void secondEdgeMatch(regmatch_t* sourceOffsets,
+                            regmatch_t* targetOffsets)
 {
   char edgeColor[8];
-  struct nodeInfo* source = findNode(nodes, &nodeCount, offsets + 3);
-  struct nodeInfo* target = findNode(nodes, &nodeCount, offsets + 4);
+  struct nodeInfo* source = findNode(sourceOffsets);
+  struct nodeInfo* target = findNode(targetOffsets);
   matchRegex(&edgeDataRegex);
   copyFromBufferToString(edgeColor, offsets + 1);
   TEST_ASSERT_EQUAL(0, edgeColor[1]);
@@ -267,7 +268,8 @@ static void secondEdgeMatch(void)
   checkLineAndColorInNode(target, edgeColor, offsets + 2);
 }
 
-static void matchGraphMlFile(void (*nodeMatch)(void), void (*edgeMatch)(void))
+static void matchGraphMlFile(void (*nodeMatch)(regmatch_t*),
+                             void (*edgeMatch)(regmatch_t*, regmatch_t*))
 {
   outputBufferPtr = outputBuffer;
   matchRegex(&graphRegex);
@@ -278,9 +280,9 @@ static void matchGraphMlFile(void (*nodeMatch)(void), void (*edgeMatch)(void))
       break;
     }
     if (offsets[1].rm_eo != -1) {
-      nodeMatch();
+      nodeMatch(offsets + 1);
     } else if (offsets[3].rm_eo != -1) {
-      edgeMatch();
+      edgeMatch(offsets + 3, offsets + 4);
     }
   }
 }
