@@ -14,12 +14,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unity.h>
-
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 static void mockInitializeFolder(const char* folder)
 {  // nothing.
 }
 
 static char outputBuffer[50000];
+static char* outputBufferPtr = outputBuffer;
 static int FopenCount = 0;
 static FILE* mockFopen(const char* filename, const char* mode)
 {
@@ -28,6 +29,7 @@ static FILE* mockFopen(const char* filename, const char* mode)
   FopenCount++;
   return result;
 }
+#pragma GCC diagnostic warning "-Wunused-parameter"
 
 /* Test setup and teardown */
 void setUp(void)
@@ -73,127 +75,160 @@ static void saveAllVariations()
 
 struct nodeInfo {
   char id[64];
-  char color1[8];
-  char line1[8];
-  char color2[8];
-  char line2[8];
+  struct colorInfo {
+    char color[8];
+    char line[8];
+  } info[2];
   unsigned source : 2;
   unsigned target : 2;
   unsigned node : 1;
   unsigned corner : 1;
 };
 
-static void copyFromBufferToString(char* key, const char* p,
-                                   regmatch_t* offsets)
+static regex_t graphRegex, nodeOrEdgeRegex, nodeDataRegex, edgeDataRegex;
+static regmatch_t offsets[10];
+static char* offsetBase;
+static void copyFromBufferToString(char* key, regmatch_t* offsets)
 {
   int length = offsets[0].rm_eo - offsets[0].rm_so;
   assert(length < 16);
-  strncpy(key, p + offsets[0].rm_so, length);
+  strncpy(key, offsetBase + offsets[0].rm_so, length);
   key[length] = '\0';
 }
 
-static void copyNodeIdToKey(struct nodeInfo* key, const char* p,
-                            regmatch_t* offsets)
+static void copyNodeIdToKey(struct nodeInfo* key, regmatch_t* offsets)
 {
-  copyFromBufferToString(key->id, p, offsets);
+  copyFromBufferToString(key->id, offsets);
 }
 
 static struct nodeInfo* findNode(struct nodeInfo* nodes, size_t* nodeCount,
-                                 const char* p, regmatch_t* offsets)
+                                 regmatch_t* offsets)
 {
   struct nodeInfo key;
   memset(&key, 0, sizeof(key));
-  copyNodeIdToKey(&key, p, offsets);
+  copyNodeIdToKey(&key, offsets);
   return (struct nodeInfo*)lsearch(&key, nodes, nodeCount,
                                    sizeof(struct nodeInfo),
                                    (int (*)(const void*, const void*))strcmp);
 }
 
-static void checkGraphML()
+static bool colorLineEqual(struct colorInfo* info, const char* edgeColor,
+                           const char* line)
 {
-  regex_t graphRegex;
-  regex_t nodeOrEdgeRegex;
-  regex_t nodeDataRegex;
-  regex_t edgeDataRegex;
-  regmatch_t offsets[10];
-  struct nodeInfo nodes[500];
-  struct nodeInfo *entry, *source, *target;
-  size_t nodeCount = 0;
-  size_t completeNodeCount;
-  char errbuf[256];
-  char nodeColors[8];
-  char edgeColor[8];
-  char* p;
-  int ret;
-  int i;
-  memset(nodes, 0, sizeof(nodes));
-  FopenCount = 0;
-  MaxVariantsPerSolution = 1;
-  graphmlSaveAllVariations("/tmp/foo", 256);
-  TEST_ASSERT_EQUAL(1, FopenCount);
-  ret = regcomp(&graphRegex, "<graph [^>]*>", REG_EXTENDED);
-  if (ret != 0) {
-    regerror(ret, &graphRegex, errbuf, sizeof(errbuf));
-    printf("Error compiling graphRegex: %s\n", errbuf);
-  }
-  TEST_ASSERT_EQUAL(0, ret);
-  ret = regexec(&graphRegex, outputBuffer, sizeof(offsets) / sizeof(offsets[0]),
-                offsets, REG_EXTENDED);
-  TEST_ASSERT_EQUAL(0, ret);
+  return strcmp(info->color, edgeColor) == 0 && strcmp(info->line, line) == 0;
+}
 
-  ret = regcomp(&nodeOrEdgeRegex,
-                "<node id=\"(([a-z]_[0-2])|[^\"]*)\">|"
-                "<edge source=\"([^\"]*)\" target=\"([^\"]*)\">|"
-                "(</graph>)",
-                REG_EXTENDED);
+static bool copyLineByColor(struct colorInfo* info, const char* edgeColor,
+                            const char* line)
+{
+  if (strcmp(info->color, edgeColor) != 0) {
+    return false;
+  }
+  strcpy(info->line, line);
+  return true;
+}
+
+static void checkLineAndColorInNode(struct nodeInfo* node,
+                                    const char* edgeColor, regmatch_t* offsets)
+{
+  char line[8];
+  copyFromBufferToString(line, offsets);
+  if (colorLineEqual(&node->info[0], edgeColor, line)) {
+    return;
+  }
+  if (colorLineEqual(&node->info[1], edgeColor, line)) {
+    return;
+  }
+  if (copyLineByColor(&node->info[0], edgeColor, line)) {
+    return;
+  }
+  TEST_ASSERT(copyLineByColor(&node->info[1], edgeColor, line));
+}
+
+static void compileRegex(regex_t* regex, const char* pattern)
+{
+  char errbuf[256];
+  int ret = regcomp(regex, pattern, REG_EXTENDED);
   if (ret != 0) {
-    regerror(ret, &nodeOrEdgeRegex, errbuf, sizeof(errbuf));
-    printf("Error compiling nodeOrEdgeRegex: %s\n", errbuf);
+    regerror(ret, regex, errbuf, sizeof(errbuf));
+    printf("Error compiling regex: %s\n", errbuf);
   }
   TEST_ASSERT_EQUAL(0, ret);
+}
+
+static void compileRegexes()
+{
+  compileRegex(&graphRegex, "<graph [^>]*>");
+  compileRegex(&nodeOrEdgeRegex,
+               "<node id=\"(([a-z]_[0-2])|[^\"]*)\">|"
+               "<edge source=\"([^\"]*)\" target=\"([^\"]*)\">|"
+               "(</graph>)");
 #if 0
       <data key="colors">acdf</data>
       <data key="primary">a</data>
       <data key="secondary">d</data>
 #endif
-  ret = regcomp(&nodeDataRegex,
-                "<data key=\"colors\">([^<]*)</data>[ \n]*<data "
-                "key=\"primary\">([^<]*)</data>[ \n]*<data "
-                "key=\"secondary\">([^<]*)</data>",
-                REG_EXTENDED);
-  if (ret != 0) {
-    regerror(ret, &nodeDataRegex, errbuf, sizeof(errbuf));
-    printf("Error compiling nodeDataRegex: %s\n", errbuf);
-  }
-  TEST_ASSERT_EQUAL(0, ret);
+  compileRegex(&nodeDataRegex,
+               "<data key=\"colors\">([^<]*)</data>[ \n]*<data "
+               "key=\"primary\">([^<]*)</data>[ \n]*<data "
+               "key=\"secondary\">([^<]*)</data>");
 #if 0
       <data key="color">a</data>
       <data key="line">a1</data>
 
 #endif
-  ret = regcomp(&edgeDataRegex,
-                "<data key=\"color\">([^<]*)</data>[ \n]*<data "
-                "key=\"line\">([^<]*)</data>",
-                REG_EXTENDED);
-  if (ret != 0) {
-    regerror(ret, &edgeDataRegex, errbuf, sizeof(errbuf));
-    printf("Error compiling edgeDataRegex: %s\n", errbuf);
-  }
-  TEST_ASSERT_EQUAL(0, ret);
+  compileRegex(&edgeDataRegex,
+               "<data key=\"color\">([^<]*)</data>[ \n]*<data "
+               "key=\"line\">([^<]*)</data>");
+}
 
-  p = outputBuffer + offsets[0].rm_eo;
-  while (p < outputBuffer + 50000) {
-    ret = regexec(&nodeOrEdgeRegex, p, sizeof(offsets) / sizeof(offsets[0]),
-                  offsets, 0);
-    if (ret != 0) {
-      printf("Failed at %d\n>>>> %.30s\n", p - outputBuffer, p);
-      TEST_FAIL();
-    }
+static void freeRegexes()
+{
+  regfree(&graphRegex);
+  regfree(&nodeOrEdgeRegex);
+  regfree(&nodeDataRegex);
+  regfree(&edgeDataRegex);
+}
+
+static void matchRegex(regex_t* regex)
+{
+  int ret = regexec(regex, outputBufferPtr,
+                    sizeof(offsets) / sizeof(offsets[0]), offsets, 0);
+  offsetBase = outputBufferPtr;
+  if (ret != 0) {
+    printf("Failed at %d\n>>>> %.30s\n", outputBufferPtr - outputBuffer,
+           outputBufferPtr);
+    TEST_FAIL();
+  }
+  outputBufferPtr += offsets[0].rm_eo;
+}
+
+static void checkGraphML()
+{
+  struct nodeInfo nodes[500];
+  struct nodeInfo *entry, *source, *target;
+  size_t nodeCount = 0;
+  size_t completeNodeCount;
+  char nodeColors[8];
+  char edgeColor[8];
+  unsigned int i;
+  memset(nodes, 0, sizeof(nodes));
+  FopenCount = 0;
+  MaxVariantsPerSolution = 1;
+  compileRegexes();
+  graphmlSaveAllVariations("/tmp/foo", 256);
+  TEST_ASSERT_EQUAL(1, FopenCount);
+  outputBufferPtr = outputBuffer;
+  matchRegex(&graphRegex);
+
+  while (outputBufferPtr < outputBuffer + 50000) {
+    matchRegex(&nodeOrEdgeRegex);
+
     if (offsets[5].rm_eo != -1) {
       break;
     }
     if (offsets[1].rm_eo != -1) {
-      entry = findNode(nodes, &nodeCount, p, offsets + 1);
+      entry = findNode(nodes, &nodeCount, offsets + 1);
       // printf("Added node %s\n", entry->id);
       TEST_ASSERT_NOT_NULL(entry);
       TEST_ASSERT_EQUAL_INT_MESSAGE(0, entry->node, entry->id);
@@ -201,16 +236,10 @@ static void checkGraphML()
       if (offsets[2].rm_eo != -1) {
         entry->corner = 1;
       }
-      p += offsets[0].rm_eo;
-      ret = regexec(&nodeDataRegex, p, sizeof(offsets) / sizeof(offsets[0]),
-                    offsets, 0);
-      if (ret != 0) {
-        printf("Failed at %d\n>>>> %.30s\n", p - outputBuffer, p);
-        TEST_FAIL();
-      }
-      copyFromBufferToString(entry->color1, p, offsets + 2);
-      copyFromBufferToString(entry->color2, p, offsets + 3);
-      copyFromBufferToString(nodeColors, p, offsets + 1);
+      matchRegex(&nodeDataRegex);
+      copyFromBufferToString(entry->info[0].color, offsets + 2);
+      copyFromBufferToString(entry->info[1].color, offsets + 3);
+      copyFromBufferToString(nodeColors, offsets + 1);
       for (i = 0;; i++) {
         if (nodeColors[i] == 0) {
           break;
@@ -219,65 +248,36 @@ static void checkGraphML()
         if (i == 0) continue;
         TEST_ASSERT(nodeColors[i] > nodeColors[i - 1]);
       }
-      TEST_ASSERT(strchr(nodeColors, entry->color1[0]) != NULL);
-      TEST_ASSERT(strchr(nodeColors, entry->color2[0]) != NULL);
-      p += offsets[0].rm_eo;
+      TEST_ASSERT(strchr(nodeColors, entry->info[0].color[0]) != NULL);
+      TEST_ASSERT(strchr(nodeColors, entry->info[1].color[0]) != NULL);
     } else if (offsets[3].rm_eo != -1) {
-      entry = findNode(nodes, &nodeCount, p, offsets + 3);
+      entry = findNode(nodes, &nodeCount, offsets + 3);
       TEST_ASSERT_NOT_NULL(entry);
       TEST_ASSERT_LESS_OR_EQUAL(1, entry->source);
       entry->source++;
-      entry = findNode(nodes, &nodeCount, p, offsets + 4);
+      entry = findNode(nodes, &nodeCount, offsets + 4);
       TEST_ASSERT_LESS_OR_EQUAL(1, entry->target);
       entry->target++;
-      p += offsets[0].rm_eo;
     }
   }
 
   completeNodeCount = nodeCount;
 
-  p = outputBuffer;
-  while (p < outputBuffer + 50000) {
-    ret = regexec(&nodeOrEdgeRegex, p, sizeof(offsets) / sizeof(offsets[0]),
-                  offsets, 0);
-    if (ret != 0) {
-      printf("Failed at %d\n>>>> %.30s\n", p - outputBuffer, p);
-      TEST_FAIL();
-    }
+  outputBufferPtr = outputBuffer;
+  while (outputBufferPtr < outputBuffer + 50000) {
+    matchRegex(&nodeOrEdgeRegex);
     if (offsets[5].rm_eo != -1) {
       break;
     }
-    if (offsets[1].rm_eo != -1) {
-      p += offsets[0].rm_eo;
-    } else if (offsets[3].rm_eo != -1) {
-      source = findNode(nodes, &nodeCount, p, offsets + 3);
-      target = findNode(nodes, &nodeCount, p, offsets + 4);
+    if (offsets[3].rm_eo != -1) {
+      source = findNode(nodes, &nodeCount, offsets + 3);
+      target = findNode(nodes, &nodeCount, offsets + 4);
       TEST_ASSERT_EQUAL(completeNodeCount, nodeCount);
-      p += offsets[0].rm_eo;
-      ret = regexec(&edgeDataRegex, p, sizeof(offsets) / sizeof(offsets[0]),
-                    offsets, 0);
-      if (ret != 0) {
-        printf("Failed at %d\n>>>> %.30s\n", p - outputBuffer, p);
-        TEST_FAIL();
-      }
-      copyFromBufferToString(edgeColor, p, offsets + 1);
+      matchRegex(&edgeDataRegex);
+      copyFromBufferToString(edgeColor, offsets + 1);
       TEST_ASSERT_EQUAL(0, edgeColor[1]);
-      // TODO: copy if not already equal.
-      if (source->line1[0] == 0 && strcmp(edgeColor, source->color1) == 0) {
-        copyFromBufferToString(source->line1, p, offsets + 2);
-      } else {
-        TEST_ASSERT(strcmp(edgeColor, source->color2) == 0);
-        TEST_ASSERT_EQUAL(0, source->line2[0]);
-        copyFromBufferToString(source->line2, p, offsets + 2);
-      }
-      if (target->line1[0] == 0 && strcmp(edgeColor, target->color1) == 0) {
-        copyFromBufferToString(target->line1, p, offsets + 2);
-      } else {
-        TEST_ASSERT(strcmp(edgeColor, target->color2) == 0);
-        TEST_ASSERT_EQUAL(0, target->line2[0]);
-        copyFromBufferToString(target->line2, p, offsets + 2);
-      }
-      p += offsets[0].rm_eo;
+      checkLineAndColorInNode(source, edgeColor, offsets + 2);
+      checkLineAndColorInNode(target, edgeColor, offsets + 2);
     }
   }
 
@@ -285,8 +285,6 @@ static void checkGraphML()
     // printf("node %d: %s\n", i, nodes[i].id);
     entry = &nodes[i];
     TEST_ASSERT_EQUAL(1, entry->node);
-    TEST_ASSERT_EQUAL_MESSAGE(entry->color1[0], entry->line1[0], entry->id);
-    TEST_ASSERT_EQUAL_MESSAGE(entry->color2[0], entry->line2[0], entry->id);
     if (entry->corner) {
       TEST_ASSERT_EQUAL(1, entry->target);
       TEST_ASSERT_EQUAL(1, entry->source);
@@ -296,10 +294,7 @@ static void checkGraphML()
     }
   }
 
-  regfree(&graphRegex);
-  regfree(&nodeOrEdgeRegex);
-  regfree(&nodeDataRegex);
-  regfree(&edgeDataRegex);
+  freeRegexes();
 }
 
 static void testVariationCount()
@@ -307,12 +302,14 @@ static void testVariationCount()
   TEST_ASSERT_EQUAL(128, searchCountVariations(NULL));
 }
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 static int ContinuationCount = 0;
 static int countContinuation(COLOR ignored, EDGE (*corners)[3])
 {
   ContinuationCount++;
   return 0;
 }
+#pragma GCC diagnostic warning "-Wunused-parameter"
 
 static void testColorContinuations(COLOR color, int expectedCount)
 {
