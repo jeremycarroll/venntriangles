@@ -176,6 +176,7 @@ static int numberOfLevels(int expectedVariations)
 static void possibleCorners(EDGE *possibilities, COLOR color, EDGE from,
                             EDGE to);
 static EDGE PossibileCorners[NCOLORS][3][NFACES];
+
 void computePossibleCorners(void)
 {
   for (int current = 0; current < NCOLORS; current++) {
@@ -231,12 +232,11 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
   POINT currentPoint;
   int ix;
   int low, high;
-  graphmlAddCorner(fp, (*corners)[0], color, 0);
-  graphmlAddCorner(fp, (*corners)[1], color, 1);
-  graphmlAddCorner(fp, (*corners)[2], color, 2);
+  int cornerIds[3] = {-1, -1, -1};
+  int cornerIx = 0;
   edge = edgeOnCentralFace(color);
   getPath(path, edge, edgeFollowBackwards(edge));
-  int line = 1;
+  int line = 0;
   for (ix = 0; path[ix] != NULL; ix++) {
     current = path[ix];
     switch (edgeIsCorner(current->reversed, corners, &low, &high)) {
@@ -246,19 +246,32 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
       case 1:
       case 2:
       case 4:
-        addEdgeToCorner(fp, current, low, line);
+        cornerIds[cornerIx] = line == 0 ? 2 : line == 1 ? 0 : 1;
+        addEdgeToCorner(fp, current, cornerIds[cornerIx], line);
         line = (line + 1) % 3;
-        addEdgeFromCorner(fp, low, current, line);
+        addEdgeFromCorner(fp, cornerIds[cornerIx], current, line);
+        cornerIx++;
         break;
       case 3:
       case 5:
       case 6:
-        addEdgeToCorner(fp, current, low, line);
-        line = (line + 1) % 3;
-        addEdgeBetweenCorners(fp, color, low, high);
-        addEdgeFromCorner(fp, high, current, low);
+        assert(cornerIx < 2);
+        assert(line < 2);
+        cornerIds[cornerIx + 1] = line;
+        cornerIds[cornerIx] = line == 0 ? 2 : 1;
+        addEdgeToCorner(fp, current, cornerIds[cornerIx], line);
+        addEdgeBetweenCorners(fp, color, cornerIds[cornerIx],
+                              cornerIds[cornerIx + 1]);
+        addEdgeFromCorner(fp, high, current, cornerIds[cornerIx + 1]);
+        cornerIx += 2;
+        line = (line + 2) % 3;
         break;
       case 7:
+        assert(cornerIx == 0);
+        assert(line == 0);
+        cornerIds[cornerIx++] = 0;
+        cornerIds[cornerIx++] = 1;
+        cornerIds[cornerIx++] = 2;
         addEdgeToCorner(fp, current, 0, 1);
         addEdgeBetweenCorners(fp, color, 0, 1);
         addEdgeBetweenCorners(fp, color, 1, 2);
@@ -270,6 +283,11 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
       graphmlAddPoint(fp, currentPoint);
     }
   }
+  assert(cornerIx == 3);
+  assert(line == 0);
+  graphmlAddCorner(fp, (*corners)[0], color, cornerIds[0]);
+  graphmlAddCorner(fp, (*corners)[1], color, cornerIds[1]);
+  graphmlAddCorner(fp, (*corners)[2], color, cornerIds[2]);
 }
 
 static char *subFilename(void)
@@ -328,7 +346,7 @@ static void possibleCorners(EDGE *possibilities, COLOR color, EDGE from,
 {
   if (from == NULL) {
     EDGE edge = edgeOnCentralFace(color);
-    getPath(possibilities, edge, edgeFollowBackwards(edge));
+    getPath(possibilities, edge->reversed, edgeFollowBackwards(edge->reversed));
   } else {
     getPath(possibilities, from->reversed, to);
   }

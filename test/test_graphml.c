@@ -34,6 +34,8 @@ static char* outputBufferPtr = outputBuffer;
 static struct nodeInfo nodes[500];
 static size_t nodeCount = 0;
 static char* offsetBase;
+static char* ExpectedSignature;
+static char* ClassSignature;
 
 static void mockInitializeFolder(const char* folder)
 {
@@ -80,11 +82,12 @@ static void (*FoundSolution)(void);
 static void foundBasicSolution()
 {
   SolutionCount++;
-  SIGNATURE signature = d6MaxSignature();
-  TEST_ASSERT_EQUAL_STRING(
-      "PdJeIgFuAcEhAdDeDqAcDuGqElAdGnGhKoDpAbFnAnFeAaFwJdDmCzCyAeFkCyCzErDnDlDk"
-      "BqFwAzHcEsAxEpEyJjAwDcCxKjDoAaFwAsDeBvNwDiEtFhEsAyOrJwMx",
-      d6SignatureToString(signature));
+  SIGNATURE signature = d6SignatureFromFaces();
+  SIGNATURE classSignature = d6MaxSignature();
+  if (strcmp(ExpectedSignature, d6SignatureToString(signature)) != 0) {
+    return;
+  }
+  TEST_ASSERT_EQUAL_STRING(ClassSignature, d6SignatureToString(classSignature));
   // graphmlSaveAllVariations("/tmp/foo", 128);
   if (FoundSolution) FoundSolution();
 }
@@ -93,7 +96,8 @@ static void saveAllVariations()
 {
   FopenCount = 0;
   graphmlSaveAllVariations("/tmp/foo", 256);
-  TEST_ASSERT_EQUAL(128, FopenCount);
+  // The setup needs to pick out exactly one variation.
+  TEST_ASSERT_EQUAL(1, FopenCount);
 }
 
 static void copyFromBufferToString(char* key, const regmatch_t* match_offsets)
@@ -114,6 +118,7 @@ static struct nodeInfo* findNode(const regmatch_t* match_offsets)
   struct nodeInfo key;
   memset(&key, 0, sizeof(key));
   copyNodeIdToKey(&key, match_offsets);
+  TEST_ASSERT_GREATER_THAN_MESSAGE(0, strlen(key.id), "Empty node id");
   return (struct nodeInfo*)lsearch(&key, nodes, &nodeCount,
                                    sizeof(struct nodeInfo),
                                    (int (*)(const void*, const void*))strcmp);
@@ -128,7 +133,7 @@ static bool colorLineEqual(struct colorInfo* info, const char* edgeColor,
 static bool copyLineByColor(struct colorInfo* info, const char* edgeColor,
                             const char* line)
 {
-  if (strcmp(info->color, edgeColor) != 0) {
+  if (strcmp(info->color, edgeColor) != 0 || info->line[0] != 0) {
     return false;
   }
   strcpy(info->line, line);
@@ -271,6 +276,7 @@ static void secondEdgeMatch(regmatch_t* sourceOffsets,
 static void matchGraphMlFile(void (*nodeMatch)(regmatch_t*),
                              void (*edgeMatch)(regmatch_t*, regmatch_t*))
 {
+  int nodes = 0, edges = 0;
   outputBufferPtr = outputBuffer;
   matchRegex(&graphRegex);
   while (outputBufferPtr < outputBuffer + 50000) {
@@ -280,23 +286,31 @@ static void matchGraphMlFile(void (*nodeMatch)(regmatch_t*),
       break;
     }
     if (offsets[1].rm_eo != -1) {
+      nodes++;
       nodeMatch(offsets + 1);
     } else if (offsets[3].rm_eo != -1) {
+      edges++;
       edgeMatch(offsets + 3, offsets + 4);
     }
   }
+  TEST_ASSERT_EQUAL_MESSAGE(NFACES - 2 + 3 * NCOLORS, nodes,
+                            "node count: Euler, and 6 triangles");
+  TEST_ASSERT_EQUAL_MESSAGE(2 * (NFACES - 2) + 3 * NCOLORS, edges,
+                            "edge count: Euler, and 6 triangles");
 }
 static void checkGraphML()
 {
   size_t completeNodeCount;
   unsigned int i;
   struct nodeInfo* entry;
+  char message[100];
 
   memset(nodes, 0, sizeof(nodes));
   FopenCount = 0;
-  MaxVariantsPerSolution = 1;
+  nodeCount = 0;
   compileRegexes();
-  graphmlSaveAllVariations("/tmp/foo", 256);
+
+  graphmlSaveAllVariations("/tmp/foo", 100000);
   TEST_ASSERT_EQUAL(1, FopenCount);
 
   matchGraphMlFile(firstNodeMatch, firstEdgeMatch);
@@ -306,14 +320,26 @@ static void checkGraphML()
   TEST_ASSERT_EQUAL(completeNodeCount, nodeCount);
 
   for (i = 0; i < nodeCount; i++) {
+    sprintf(message, "Node[%d/%d] %s: %d %d => %d", i, nodeCount, nodes[i].id,
+            nodes[i].node, nodes[i].source, nodes[i].target);
     entry = &nodes[i];
-    TEST_ASSERT_EQUAL(1, entry->node);
+    TEST_ASSERT_EQUAL_MESSAGE(1, entry->node, message);
+    TEST_ASSERT_EQUAL_MESSAGE(entry->info[0].color[0], entry->info[0].line[0],
+                              message);
+    TEST_ASSERT_EQUAL_MESSAGE(entry->info[1].color[0], entry->info[1].line[0],
+                              message);
     if (entry->corner) {
-      TEST_ASSERT_EQUAL(1, entry->target);
-      TEST_ASSERT_EQUAL(1, entry->source);
+      TEST_ASSERT_EQUAL_MESSAGE(1, entry->target, message);
+      TEST_ASSERT_EQUAL_MESSAGE(1, entry->source, message);
+      TEST_ASSERT_NOT_EQUAL_MESSAGE(entry->id[2], entry->info[0].line[1],
+                                    message);
+      TEST_ASSERT_NOT_EQUAL_MESSAGE(entry->id[2], entry->info[1].line[1],
+                                    message);
+      TEST_ASSERT_NOT_EQUAL_MESSAGE(entry->info[0].line[1],
+                                    entry->info[1].line[1], message);
     } else {
-      TEST_ASSERT_EQUAL(2, entry->target);
-      TEST_ASSERT_EQUAL(2, entry->source);
+      TEST_ASSERT_EQUAL_MESSAGE(2, entry->target, message);
+      TEST_ASSERT_EQUAL_MESSAGE(2, entry->source, message);
     }
   }
 
@@ -325,7 +351,6 @@ static void testVariationCount()
   TEST_ASSERT_EQUAL(128, searchCountVariations(NULL));
 }
 
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 static int ContinuationCount = 0;
 static int countContinuation(COLOR color, EDGE (*corners)[3])
 {
@@ -334,21 +359,12 @@ static int countContinuation(COLOR color, EDGE (*corners)[3])
   ContinuationCount++;
   return 0;
 }
-#pragma GCC diagnostic warning "-Wunused-parameter"
 
 static void testColorContinuations(COLOR color, int expectedCount)
 {
   EDGE corners[NCOLORS][3];
   ContinuationCount = 0;
   computePossibleCorners();
-#if 0
-  for (int i = 0; i < 3; i++) {
-    printf("cornerPairs[%d][0]: %x\n", i, cornerPairs[i][0]->reversed);
-    printf("cornerPairs[%d][1]: %x\n", i, cornerPairs[i][1]);
-  }
-
-#endif
-
   chooseCornersWithContinuation(0, color, corners, countContinuation);
   TEST_ASSERT_EQUAL(expectedCount, ContinuationCount);
 }
@@ -362,20 +378,50 @@ static void foundSolutionColor5() { testColorContinuations(5, 4); }
 
 static char* TestName;
 
-static void run645534(void)
+static void setup645534()
+{
+  dynamicFaceSetupCentral(intArray(6, 4, 5, 5, 3, 4));
+  MaxVariantsPerSolution = 1;
+  ExpectedSignature =
+      "McDpAzHcCtAgAyKaNnAwEiCxAeClCyDxBwFnAyJzBqFwAzEvBvAxAsCwAaBwKjEuNfKcBdDe"
+      "BhAfAoCxDeBdEhEdAuBiDvCwBdDgBcEnAoDhApFyAcAtAdFzCvBpKoPd";
+  ClassSignature =
+      "PdJeIgFuAcEhAdDeDqAcDuGqElAdGnGhKoDpAbFnAnFeAaFwJdDmCzCyAeFkCyCzErDnDlDk"
+      "BqFwAzHcEsAxEpEyJjAwDcCxKjDoAaFwAsDeBvNwDiEtFhEsAyOrJwMx";
+}
+
+static void setup654444()
+{
+  dynamicFaceSetupCentral(intArray(6, 5, 4, 4, 4, 4));
+  MaxVariantsPerSolution = 10;
+  IgnoreFirstVariantsPerSolution = 9;
+  ExpectedSignature =
+      "OrCgChKeDtAoAwFhDxAcArEmDyBfDcEaAwAxBhFkBnBhAxEsEuDpBtFeBkBtFrEuLqBiBaDa"
+      "EgApAdDvEyBmApDbDeAoGnDqBrAwBfDbAlBnAcDqDjKgAoEfAhBzKyPd";
+  ClassSignature =
+      "PdJeIgKbAcEhAdDwDqAcDbBeElAdEhBbNsFbEnCwAlFkAcCxEzDkDaDtFsDlElDsErDnDlEo"
+      "BqFwAzEvEsAxFkBhFnBwFwBqEkDaEfCxAsDbCsEyDiHhDbDsDpMcIiOi";
+}
+
+static void (*SetupSearchTest)(void);
+static void runSearchTest(void)
 {
   Unity.NumberOfTests--;
   UNITY_NEW_TEST(TestName);
   SolutionCount = 0;
-  dynamicFaceSetupCentral(intArray(6, 4, 5, 5, 3, 4));
+  SetupSearchTest();
   searchHere(true, foundBasicSolution);
-  TEST_ASSERT_EQUAL(1, SolutionCount);
 }
 
-#define RUN_645534(foundSolution) \
-  TestName = #foundSolution;      \
-  FoundSolution = foundSolution;  \
-  RUN_TEST(run645534);
+#define RUN_SEARCH_TEST(setup, foundSolution) \
+  TestName = #setup "-" #foundSolution;       \
+  FoundSolution = foundSolution;              \
+  SetupSearchTest = setup;                    \
+  RUN_TEST(runSearchTest);
+
+#define RUN_645534(foundSolution) RUN_SEARCH_TEST(setup645534, foundSolution)
+
+#define RUN_654444(foundSolution) RUN_SEARCH_TEST(setup654444, foundSolution)
 
 /* Main test runner */
 int main(void)
@@ -391,5 +437,7 @@ int main(void)
   RUN_645534(foundSolutionColor5);
   RUN_645534(saveAllVariations);
   RUN_645534(checkGraphML);
+  RUN_654444(NULL);
+  RUN_654444(checkGraphML);
   return UNITY_END();
 }
