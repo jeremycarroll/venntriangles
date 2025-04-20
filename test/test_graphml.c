@@ -145,6 +145,7 @@ static void checkLineAndColorInNode(struct nodeInfo* node,
                                     const regmatch_t* match_offsets)
 {
   char line[8];
+  char message[100];
   copyFromBufferToString(line, match_offsets);
   if (colorLineEqual(&node->info[0], edgeColor, line)) {
     return;
@@ -155,7 +156,11 @@ static void checkLineAndColorInNode(struct nodeInfo* node,
   if (copyLineByColor(&node->info[0], edgeColor, line)) {
     return;
   }
-  TEST_ASSERT(copyLineByColor(&node->info[1], edgeColor, line));
+  sprintf(message, "node: %s, %s^%s, %s^%s, %s^%s", node->id,
+          node->info[0].color, node->info[0].line, node->info[1].color,
+          node->info[1].line, edgeColor, line);
+  TEST_ASSERT_MESSAGE(copyLineByColor(&node->info[1], edgeColor, line),
+                      message);
 }
 
 static void compileRegex(regex_t* regex, const char* pattern)
@@ -298,7 +303,8 @@ static void matchGraphMlFile(void (*nodeMatch)(regmatch_t*),
   TEST_ASSERT_EQUAL_MESSAGE(2 * (NFACES - 2) + 3 * NCOLORS, edges,
                             "edge count: Euler, and 6 triangles");
 }
-static void checkGraphML()
+
+static void checkGraphML(void)
 {
   size_t completeNodeCount;
   unsigned int i;
@@ -344,6 +350,22 @@ static void checkGraphML()
   }
 
   freeRegexes();
+}
+
+static void variant6612(void)
+{
+  regex_t internalEdgeRegex;
+  compileRegex(&internalEdgeRegex,
+               "<edge source=\"[a-f]_[0-2]\" target=\"[a-f]_[0-2]\">");
+  MaxVariantsPerSolution = 6612;
+  IgnoreFirstVariantsPerSolution = 6611;
+  checkGraphML();
+  outputBufferPtr = outputBuffer;
+  matchRegex(&internalEdgeRegex);
+  matchRegex(&internalEdgeRegex);
+  matchRegex(&internalEdgeRegex);
+  TEST_ASSERT_EQUAL(REG_NOMATCH,
+                    regexec(&internalEdgeRegex, outputBufferPtr, 0, NULL, 0));
 }
 
 static void testVariationCount()
@@ -439,5 +461,6 @@ int main(void)
   RUN_645534(checkGraphML);
   RUN_654444(NULL);
   RUN_654444(checkGraphML);
+  RUN_654444(variant6612);
   return UNITY_END();
 }

@@ -258,13 +258,14 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
         assert(cornerIx < 2);
         assert(line < 2);
         cornerIds[cornerIx + 1] = line;
-        cornerIds[cornerIx] = line == 0 ? 2 : 1;
+        cornerIds[cornerIx] = line == 0 ? 2 : 0;
         addEdgeToCorner(fp, current, cornerIds[cornerIx], line);
+        line = (line + 1) % 3;
         addEdgeBetweenCorners(fp, color, cornerIds[cornerIx],
                               cornerIds[cornerIx + 1]);
-        addEdgeFromCorner(fp, high, current, cornerIds[cornerIx + 1]);
+        line = (line + 1) % 3;
+        addEdgeFromCorner(fp, cornerIds[cornerIx + 1], current, line);
         cornerIx += 2;
-        line = (line + 2) % 3;
         break;
       case 7:
         assert(cornerIx == 0);
