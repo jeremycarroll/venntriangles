@@ -228,6 +228,14 @@ char* colorSetToStr(COLORSET colors)
   return usingBuffer(buffer);
 }
 
+char* colorSetToBareString(COLORSET colors)
+{
+  char* colorsStr = colorSetToStr(colors);
+  colorsStr++;                           // delete first '|'
+  colorsStr[strlen(colorsStr) - 1] = 0;  // delete last '|'
+  return colorsStr;
+}
+
 char* cycleToStr(CYCLE cycle)
 {
   char* buffer = getBuffer();

@@ -53,6 +53,7 @@ extern struct facialCycle Cycles[NCYCLES];
 extern CYCLE_ID cycleIdFromColors(char *colors);
 extern int colorToChar(COLOR c);
 extern char *colorSetToStr(COLORSET colors);
+extern char *colorSetToBareString(COLORSET colors);
 extern char *cycleToStr(CYCLE cycle);
 extern void removeFromCycleSetWithTrail(uint32_t cycleId, CYCLESET cycleSet);
 extern void initializeCycleSets(void);

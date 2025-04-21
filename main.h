@@ -5,8 +5,19 @@
 
 #include "face.h"
 
+extern int CentralFaceDegrees[NCOLORS];
+
+// Global configuration constants
+extern int MaxVariantsPerSolution;
+extern int GlobalMaxSolutions;
+extern int PerFaceDegreeMaxSolutions;
+extern int GlobalSkipSolutions;
+extern int PerFaceDegreeSkipSolutions;
+extern int IgnoreFirstVariantsPerSolution;
+extern int GlobalSolutionsFound;  // Counter for solutions found
+
 // Declare functions used in main.c
-extern const char* faceDegreeSignature(void);
+extern char* faceDegreeSignature(void);
 extern int dynamicMain0(int argc, char* argv[]);
 extern void solutionWrite(const char* prefix);
 extern void searchFull(void (*foundSolution)(void));

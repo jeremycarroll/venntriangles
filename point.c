@@ -96,11 +96,19 @@ POINT initializePointIncomingEdge(COLORSET colors, EDGE incomingEdge,
   return point;
 }
 
+char* pointToColorSetString(POINT up)
+{
+  COLORSET colors = up->incomingEdges[0]->colors | (1ll << up->primary) |
+                    (1ll << up->secondary);
+  return colorSetToBareString(colors);
+}
+
 char* pointToStr(POINT up)
 {
   char* buffer = getBuffer();
-  char* colors = colorSetToStr(up->colors);
-  sprintf(buffer, "%s(%c,%c)", colors, 'a' + up->primary, 'a' + up->secondary);
+  char* colorsStr = pointToColorSetString(up);
+  sprintf(buffer, "%s_%c_%c", colorsStr, 'a' + up->primary,
+          'a' + up->secondary);
   return usingBuffer(buffer);
 }
 

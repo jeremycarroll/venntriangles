@@ -1,9 +1,11 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "search.h"
+#include "vsearch.h"
 
 #include "d6.h"
 #include "face.h"
+#include "graphml.h"
+#include "main.h"
 #include "memory.h"
 #include "statistics.h"
 #include "trail.h"
@@ -14,9 +16,9 @@
 #include <time.h>
 
 /* Output-related variables */
-static int SolutionNumber = 0;
+static int PerFaceDegreeSolutionNumber = 0;
 static char LastPrefix[128] = "";
-static int SolutionCount = 0;
+static int VariationCount = 0;
 static int position = 0;
 static clock_t TotalWastedTime = 0;
 static clock_t TotalUsefulTime = 0;
@@ -156,7 +158,8 @@ void searchHere(bool smallestFirst, void (*foundSolution)(void))
         if (face == NULL) {
           freeAll();
           if (faceFinalCorrectnessChecks() == NULL) {
-            SolutionCount++;
+            GlobalSolutionsFound++;
+            PerFaceDegreeSolutionNumber++;
             foundSolution();
           }
           position -= 1;
@@ -199,7 +202,7 @@ void searchFull(void (*foundSolution)(void))
   initializeSequenceOrder();
   initialize();
   StartPoint = Trail;
-  SolutionCount = 0;
+  GlobalSolutionsFound = 0;
   canonicalCallback(fullSearchCallback, (void*)foundSolution);
 }
 
@@ -236,47 +239,73 @@ void solutionPrint(FILE* fp)
   }
 }
 
+int searchCountVariations(char* variationMultiplication)
+{
+  EDGE corners[3][2];
+  int numberOfVariations = 1;
+  int pLength;
+  if (variationMultiplication != NULL) {
+    variationMultiplication[0] = '\0';
+  }
+  for (COLOR a = 0; a < NCOLORS; a++) {
+    edgeFindCorners(a, corners);
+    for (int i = 0; i < 3; i++) {
+      if (corners[i][0] == NULL) {
+        EDGE edge = edgeOnCentralFace(a);
+        pLength = edgePathLength(edge, edgeFollowBackwards(edge), NULL);
+#if DEBUG
+        printf("edge: %c %x -> %x %d\n", 'A' + a, edge,
+               edgeFollowBackwards(edge), pLength);
+#endif
+      } else {
+        pLength = edgePathLength(corners[i][0]->reversed, corners[i][1], NULL);
+#if DEBUG
+        printf("edge: %c %x -> %x %d\n", 'A' + a, corners[i][0]->reversed,
+               corners[i][1], pLength);
+#endif
+      }
+      numberOfVariations *= pLength;
+      if (variationMultiplication != NULL && pLength > 1) {
+        variationMultiplication +=
+            sprintf(variationMultiplication, "*%d", pLength);
+      }
+    }
+  }
+  return numberOfVariations;
+}
+
 void solutionWrite(const char* prefix)
 {
   EDGE corners[3][2];
   char filename[1024];
-  int numberOfVariations = 1;
+  char variationMultiplication[128];
+  int numberOfVariations;
   int pLength;
   FILE* fp;
   if (strcmp(prefix, LastPrefix) != 0) {
     strcpy(LastPrefix, prefix);
-    SolutionNumber = 1;
   }
-  snprintf(filename, sizeof(filename), "%s-%2.2d.txt", prefix,
-           SolutionNumber++);
-  fp = fopen(filename, "w");
-  if (fp == NULL) {
-    perror(filename);
-    exit(EXIT_FAILURE);
-  }
-  solutionPrint(fp);
-  for (COLOR a = 0; a < NCOLORS; a++) {
-    edgeFindCorners(a, corners);
-    for (int i = 0; i < 3; i++) {
-      fprintf(fp, "{%c:%d} ", colorToChar(a), i);
-      if (corners[i][0] == NULL) {
-        EDGE edge = edgeOnCentralFace(a);
-        pLength = edgePathLength(edge, edgeFollowBackwards(edge));
-        fprintf(fp, "NULL/%d ", pLength);
-      } else {
-        pLength = edgePathLength(corners[i][0]->reversed, corners[i][1]);
-        fprintf(fp, "(%s => %s/%d) ", edgeToStr(corners[i][0]),
-                edgeToStr(corners[i][1]), pLength);
-      }
-      numberOfVariations *= pLength;
-      fprintf(fp, "\n");
+  if (PerFaceDegreeSolutionNumber > PerFaceDegreeSkipSolutions &&
+      PerFaceDegreeSolutionNumber <= PerFaceDegreeMaxSolutions) {
+    snprintf(filename, sizeof(filename), "%s-%2.2d.txt", prefix,
+             PerFaceDegreeSolutionNumber);
+    fp = fopen(filename, "w");
+    if (fp == NULL) {
+      perror(filename);
+      exit(EXIT_FAILURE);
     }
+    solutionPrint(fp);
+    filename[strlen(filename) - 4] = '\0';
+    numberOfVariations = searchCountVariations(variationMultiplication);
+    fprintf(fp, "\nSolution signature %s\nClass signature %s\n",
+            d6SignatureToString(d6SignatureFromFaces()),
+            d6SignatureToString(d6MaxSignature()));
+    fprintf(fp, "Number of variations: %d = 1%s\n", numberOfVariations,
+            variationMultiplication);
+    fclose(fp);
+    VariationCount += numberOfVariations;
+    graphmlSaveAllVariations(filename, numberOfVariations);
   }
-  fprintf(fp, "\n\nVariations = %d\n", numberOfVariations);
-  fprintf(fp, "\nSolution signature %s\nClass signature %s\n",
-          d6SignatureToString(d6SignatureFromFaces()),
-          d6SignatureToString(d6MaxSignature()));
-  fclose(fp);
 }
 
 /* File scoped static functions */
@@ -301,14 +330,19 @@ static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
 {
   clock_t now = clock();
   clock_t used;
-  int initialSolutionCount = SolutionCount;
+  int initialSolutionsFound = GlobalSolutionsFound;
+  int initialVariationCount = VariationCount;
   int i;
   void (*foundSolution)(void) = foundSolutionVoidPtr;
+  if (GlobalSolutionsFound >= GlobalMaxSolutions) {
+    return;
+  }
+  PerFaceDegreeSolutionNumber = 0;
   trailBacktrackTo(StartPoint);  // Start with backtracking
   dynamicFaceSetupCentral(args);
   searchHere(true, foundSolution);
   used = clock() - now;
-  if (SolutionCount != initialSolutionCount) {
+  if (GlobalSolutionsFound != initialSolutionsFound) {
     TotalUsefulTime += used;
     UsefulSearchCount += 1;
 
@@ -321,11 +355,12 @@ static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
     for (i = 0; i < NCOLORS; i++) {
       printf("%llu ", args[i]);
     }
-    printf(" gives %d new solutions\n", SolutionCount - initialSolutionCount);
+    printf(" gives %d/%d new solutions\n",
+           GlobalSolutionsFound - initialSolutionsFound,
+           VariationCount - initialVariationCount);
     statisticPrintOneLine(position, true);
   } else {
     WastedSearchCount += 1;
-
     TotalWastedTime += used;
   }
 }

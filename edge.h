@@ -49,7 +49,18 @@ extern EDGE edgeFollowBackwards(EDGE edge);
 extern EDGE edgeFollowForwards(EDGE edge);
 extern FAILURE edgeCurveChecks(EDGE edge, int depth);
 extern void edgeFindCorners(COLOR a, EDGE result[3][2]);
-extern int edgePathLength(EDGE from, EDGE to);
+/**
+ * @brief Find the path length between two edges.
+ *
+ * Normally, call this twice, first with pathReturn NULL, then with
+ * pathReturn set to a large enough array to store the path.
+ *
+ * @param from The starting edge.
+ * @param to The ending edge.
+ * @param pathReturn An array to store the path, can be NULL.
+ * @return int The number of edges in the path.
+ */
+extern int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn);
 extern char* edgeToStr(EDGE edge);
 
 extern EDGE edgeOnCentralFace(COLOR a);
