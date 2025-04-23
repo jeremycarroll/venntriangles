@@ -39,46 +39,22 @@ typedef struct signature {
 extern void initializeSequenceOrder(void);
 extern SYMMETRY_TYPE symmetryTypeFaces(void);
 
-/* The faceDegrees is an array of NCOLORS integers between 3 and NCOLORS being
-   used as the face degrees for the NCOLORS faces around the central face. */
-extern SYMMETRY_TYPE symmetryType6(FACE_DEGREE *faceDegrees);
-
 /* The faceDegrees is an array of NCOLORS integers between 3 and NCOLORS to be
    used as the face degrees for the NCOLORS faces around the central face. */
 typedef void (*UseFaceDegrees)(void *data, FACE_DEGREE *faceDegrees);
 extern void canonicalCallback(UseFaceDegrees callback, void *data);
 extern char *faceDegreeSignature(void);
 
-extern PERMUTATION d6Compose(PERMUTATION a, PERMUTATION b);
-
-extern PERMUTATION d6Inverse(PERMUTATION permutation);
-
-extern PERMUTATION d6Identity(void);
-
-extern bool d6PermutationEqual(PERMUTATION a, PERMUTATION b);
-
-extern PERMUTATION d6Closure(int *sizeReturn, int numberOfGenerators,
-                             PERMUTATION generator1, ...);
-
-extern PERMUTATION d6Permutation(int a1, ...);
-
-extern PERMUTATION d6InvertingPermutation(void);
-
-extern PERMUTATION d6CycleAsPermutation(CYCLE cycle);
-extern char *d6Permutation2str(PERMUTATION permutation);
 extern SIGNATURE d6MaxSignature(void);
-extern SIGNATURE d6SignatureRecentered(SIGNATURE sequence, COLORSET center);
-extern SIGNATURE d6SignaturePermuted(SIGNATURE sequence,
-                                     PERMUTATION permutation);
 extern SIGNATURE d6SignatureFromFaces(void);
-extern int d6SignatureCompare(SIGNATURE a, SIGNATURE b);
-extern SIGNATURE d6SignatureReflected(SIGNATURE sequence);
+extern int group[2 * NCOLORS][NCOLORS];
 extern char *d6SignatureToString(SIGNATURE signature);
-extern char *d6SignatureToLongString(SIGNATURE signature);
+
+// For testing.
+extern PERMUTATION d6Automorphism(CYCLE_ID cycleId);
 extern CYCLE_ID cycleIdPermute(CYCLE_ID originalCycleId,
                                PERMUTATION permutation);
-extern char *permutationToString(PERMUTATION permutation);
-extern int group[2 * NCOLORS][NCOLORS];
-extern PERMUTATION d6Automorphism(CYCLE_ID cycleId);
+extern char *d6SignatureToLongString(SIGNATURE signature);
+extern SYMMETRY_TYPE symmetryType6(FACE_DEGREE *faceDegrees);
 
 #endif  // D6_H

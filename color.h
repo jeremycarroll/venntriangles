@@ -45,9 +45,9 @@ extern CYCLE cycleSetFirst(CYCLESET cycleSet);
 extern CYCLE cycleSetNext(CYCLESET cycleSet, CYCLE cycle);
 extern uint32_t cycleSetSize(CYCLESET cycleSet);
 extern CYCLE_ID getCycleId(uint32_t *cycle, uint32_t length);
-extern bool cycleContainsAthenB(CYCLE cycle, uint32_t i, uint32_t j);
-extern bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t i, uint32_t j,
-                                     uint32_t k);
+extern bool cycleContainsAthenB(CYCLE cycle, uint32_t a, uint32_t b);
+extern bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t a, uint32_t b,
+                                     uint32_t c);
 extern uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color);
 extern struct facialCycle Cycles[NCYCLES];
 extern CYCLE_ID cycleIdFromColors(char *colors);
@@ -55,7 +55,7 @@ extern int colorToChar(COLOR c);
 extern char *colorSetToStr(COLORSET colors);
 extern char *colorSetToBareString(COLORSET colors);
 extern char *cycleToStr(CYCLE cycle);
-extern void removeFromCycleSetWithTrail(uint32_t cycleId, CYCLESET cycleSet);
+extern void removeFromCycleSetWithTrail(CYCLESET cycleSet, uint32_t cycleId);
 extern void initializeCycleSets(void);
 extern void resetCycles(void);
 extern void initializeCycleSetUniversal(CYCLESET cycleSet);

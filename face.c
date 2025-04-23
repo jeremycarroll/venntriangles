@@ -32,7 +32,7 @@ bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length)
   }
   for (cycleId = 0, cycle = Cycles; cycleId < NCYCLES; cycleId++, cycle++) {
     if (cycle->length != length) {
-      removeFromCycleSetWithTrail(cycleId, face->possibleCycles);
+      removeFromCycleSetWithTrail(face->possibleCycles, cycleId);
     }
   }
   recomputeCountOfChoices(face);

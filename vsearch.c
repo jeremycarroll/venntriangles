@@ -276,11 +276,9 @@ int searchCountVariations(char* variationMultiplication)
 
 void solutionWrite(const char* prefix)
 {
-  EDGE corners[3][2];
   char filename[1024];
   char variationMultiplication[128];
   int numberOfVariations;
-  int pLength;
   FILE* fp;
   if (strcmp(prefix, LastPrefix) != 0) {
     strcpy(LastPrefix, prefix);

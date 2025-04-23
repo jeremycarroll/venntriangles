@@ -189,7 +189,7 @@ uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color)
   assert(NULL == "Unreachable");
 }
 
-void removeFromCycleSetWithTrail(uint32_t cycleId, CYCLESET cycleSet)
+void removeFromCycleSetWithTrail(CYCLESET cycleSet, uint32_t cycleId)
 {
   assert(cycleId < NCYCLES);
   trailSetInt(

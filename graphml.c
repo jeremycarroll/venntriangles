@@ -27,7 +27,7 @@ static void chooseCornersThenSavePartialVariations(int cornerIndex,
                                                    COLOR current,
                                                    EDGE (*corners)[3]);
 static int savePartialVariations(COLOR current, EDGE (*corners)[3]);
-char *graphmlPointId(POINT point);
+static char *graphmlPointId(POINT point);
 char *graphmlCurveId(COLOR color);
 
 struct graphmlFileIO graphmlFileOps = {fopen, initializeFolder};
@@ -152,7 +152,7 @@ static void addEdgeFromCorner(FILE *fp, int corner, EDGE edge, int line)
 }
 
 /* Generate unique IDs for graph elements */
-char *graphmlPointId(POINT point)
+static char *graphmlPointId(POINT point)
 {
   char *buffer = getBuffer();
   sprintf(buffer, "p_%s", pointToStr(point));
@@ -361,12 +361,12 @@ void chooseCornersWithContinuation(int cornerIndex, COLOR current,
                                                        EDGE (*corners)[3]))
 {
   EDGE *possibilities = PossibileCorners[current][cornerIndex];
-  int i, total;
+  int i;
 
   if (VariationNumber > MaxVariantsPerSolution) {
     return;
   }
-  for (int i = 0; i < 3; i++) {
+  for (i = 0; i < 3; i++) {
 #if DEBUG
     printf("%d cornerPairs[%d][0]: %x\n", cornerIndex, i,
            cornerPairs[i][0]->reversed);
@@ -380,15 +380,15 @@ void chooseCornersWithContinuation(int cornerIndex, COLOR current,
   }
   for (i = 0; possibilities[i] != NULL; i++);
 #if DEBUG
+  int total;
   printf("!! cornerIndex: %d, current: %d, possibilities: %d\n", cornerIndex,
          current, i);
 #endif
-  total = i;
   for (i = 0; possibilities[i] != NULL; i++) {
     corners[current][cornerIndex] = possibilities[i];
 #if DEBUG
-    printf("cornerIndex: %d, current: %d, possibilities[i]: %s %d/%d\n",
-           cornerIndex, current, edgeToStr(possibilities[i]), i, total);
+    printf("cornerIndex: %d, current: %d, possibilities[i]: %s %dn",
+           cornerIndex, current, edgeToStr(possibilities[i]), i);
 #endif
     chooseCornersWithContinuation(cornerIndex + 1, current, corners,
                                   continuation);
@@ -410,8 +410,6 @@ static int savePartialVariations(COLOR current, EDGE (*corners)[3])
     saveVariation(corners);
     return 1;
   }
-
-  EDGE cornerPairs[3][2];
   chooseCornersThenSavePartialVariations(0, current, corners);
   return 0;
 }

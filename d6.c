@@ -41,7 +41,6 @@ int group[2 * NCOLORS][NCOLORS] = {
 
 /* Declaration of file scoped static functions */
 static int compareFaceDegree(const void *a, const void *b);
-static int comparePermutation(const void *a, const void *b);
 static SYMMETRY_TYPE d6SymmetryType64(FACE_DEGREE_SEQUENCE sizes);
 static SYMMETRY_TYPE d6SymmetryTypeN(int n, FACE_DEGREE_SEQUENCE args);
 static FACE_DEGREE_SEQUENCE d6FaceDegreesInSequenceOrder(void);
@@ -58,6 +57,11 @@ static SYMMETRY_TYPE d6IsMaxInSequenceOrder(
     ...);
 static SIGNATURE maxSpunSignature(SIGNATURE onCurrentFace);
 static int compareCycleIdSequence(const void *a, const void *b);
+static SIGNATURE d6SignatureRecentered(SIGNATURE sequence, COLORSET center);
+static SIGNATURE d6SignaturePermuted(SIGNATURE sequence,
+                                     PERMUTATION permutation);
+static int d6SignatureCompare(SIGNATURE a, SIGNATURE b);
+static SIGNATURE d6SignatureReflected(SIGNATURE sequence);
 
 /* Externally linked functions - Initialize */
 void initializeSequenceOrder(void)
@@ -99,24 +103,6 @@ void initializeSequenceOrder(void)
 }
 
 /* Externally linked functions - Dynamic */
-PERMUTATION d6Compose(PERMUTATION a, PERMUTATION b)
-{
-  PERMUTATION result = NEW(PERMUTATION);
-  for (int i = 0; i < NCOLORS; i++) {
-    (*result)[i] = (*a)[(*b)[i]];
-  }
-  return result;
-}
-
-PERMUTATION d6Inverse(PERMUTATION permutation)
-{
-  PERMUTATION result = NEW(PERMUTATION);
-  for (int i = 0; i < NCOLORS; i++) {
-    (*result)[(*permutation)[i]] = i;
-  }
-  return result;
-}
-
 PERMUTATION d6Automorphism(CYCLE_ID cycleId)
 {
   CYCLE cycle = Cycles + cycleId;
@@ -125,80 +111,6 @@ PERMUTATION d6Automorphism(CYCLE_ID cycleId)
   for (int i = 0; i < NCOLORS; i++) {
     (*result)[cycle->curves[i]] = i;
   }
-  return result;
-}
-
-PERMUTATION d6Identity(void) { return &group[0]; }
-
-PERMUTATION d6InvertingPermutation(void)
-{
-  PERMUTATION result = NEW(PERMUTATION);
-  for (int i = 0; i < NCOLORS; i++) {
-    (*result)[i] = Faces[0].cycle->curves[i];
-  }
-  return d6Inverse(result);
-}
-
-PERMUTATION d6CycleAsPermutation(CYCLE cycle)
-{
-  uint32_t i;
-  PERMUTATION result = NEW(PERMUTATION);
-  for (i = 0; i < cycle->length; i++) {
-    (*result)[i] = i;
-  }
-  for (i = 0; i < cycle->length; i++) {
-    (*result)[cycle->curves[i]] = cycle->curves[(i + 1) % cycle->length];
-  }
-  return result;
-}
-
-PERMUTATION d6Closure(int *sizeReturn, int numberOfGenerators,
-                      PERMUTATION generator1, ...)
-{
-  int size = 0;
-  PERMUTATION result = NEW_ARRAY(PERMUTATION, FACTORIAL6);
-  va_list args;
-  bool progress = true;
-  int i, j, k;
-  PERMUTATION generated;
-  memcpy(result[size++], generator1, sizeof(((PERMUTATION)NULL)[0]));
-  va_start(args, generator1);
-  for (i = 0; i < numberOfGenerators - 1; i++) {
-    memcpy(result[size++], va_arg(args, PERMUTATION),
-           sizeof(((PERMUTATION)NULL)[0]));
-  }
-  va_end(args);
-  while (progress) {
-    progress = false;
-    for (i = 0; i < size; i++) {
-      for (j = 0; j < size; j++) {
-        generated = d6Compose(&result[i], &result[j]);
-        for (k = 0; k < size; k++) {
-          if (d6PermutationEqual(generated, &result[k])) {
-            goto nextJ;
-          }
-        }
-        progress = true;
-        memcpy(&result[size++], generated, sizeof(((PERMUTATION)NULL)[0]));
-      nextJ:;
-      }
-    }
-  }
-  *sizeReturn = size;
-  qsort(result, size, sizeof(((PERMUTATION)NULL)[0]), comparePermutation);
-  return result;
-}
-
-PERMUTATION d6Permutation(int a1, ...)
-{
-  PERMUTATION result = NEW(PERMUTATION);
-  va_list args;
-  (*result)[0] = a1;
-  va_start(args, a1);
-  for (int i = 1; i < NCOLORS; i++) {
-    (*result)[i] = va_arg(args, int);
-  }
-  va_end(args);
   return result;
 }
 
@@ -245,7 +157,7 @@ char *faceDegreeSignature(void)
   for (int i = 0; i < NCOLORS; i++) {
     Result[i] = '0' + faceDegrees->faceDegrees[i];
   }
-  Result[NCOLORS] = '\0';
+  Result[NCOLORS] = 0;
   return Result;
 }
 
@@ -253,47 +165,6 @@ void canonicalCallback(UseFaceDegrees callback, void *data)
 {
   FACE_DEGREE args[NCOLORS];
   canoncialCallbackImpl(0, 0, args, callback, data);
-}
-
-char *d6Permutation2str(PERMUTATION permutation)
-{
-  char *buffer = getBuffer();
-  char *p = buffer;
-  p += sprintf(p, "(");
-  for (int i = 0; i < NCOLORS; i++) {
-    p += sprintf(p, "%d ", (*permutation)[i]);
-  }
-  p += sprintf(p, ")\n");
-  return usingBuffer(buffer);
-}
-
-bool d6PermutationEqual(PERMUTATION a, PERMUTATION b)
-{
-  return memcmp(a, b, sizeof(((PERMUTATION)NULL)[0])) == 0;
-}
-
-char *permutationToString(PERMUTATION permutation)
-{
-  char *buffer = getBuffer();
-  char *p = buffer;
-  uint64_t done = 0l;
-  int doing;
-  *p++ = '[';
-  for (int i = 0; i < NCOLORS; i++) {
-    if (!(done & (1l << i))) {
-      *p++ = '(';
-      doing = i;
-      do {
-        done |= 1l << doing;
-        *p++ = '0' + doing;
-        doing = (*permutation)[doing];
-      } while (doing != i);
-      *p++ = ')';
-    }
-  }
-  *p++ = ']';
-  *p = '\0';
-  return usingBuffer(buffer);
 }
 
 SIGNATURE d6MaxSignature(void)
@@ -397,11 +268,6 @@ char *d6SignatureToLongString(SIGNATURE signature)
 static int compareFaceDegree(const void *a, const void *b)
 {
   return -memcmp(a, b, sizeof(FACE_DEGREE) * NFACES);
-}
-
-static int comparePermutation(const void *a, const void *b)
-{
-  return memcmp(a, b, sizeof(((PERMUTATION)NULL)[0]));
 }
 
 static COLOR colorPermute(COLOR color, PERMUTATION permutation)
