@@ -278,10 +278,10 @@ static void addCycle(int length, COLOR* colors)
 }
 
 static void initializeCyclesWithLengthArrayAndMaxValue(uint32_t length,
-                                                       int position,
+                                                       uint32_t position,
                                                        COLOR* colors)
 {
-  int nextColor, i;
+  uint32_t nextColor, i;
   COLOR swap;
   if (position == length) {
     for (i = 1; i < length; i++) {
@@ -310,7 +310,7 @@ static void initializeCyclesWithLengthArrayAndMaxValue(uint32_t length,
 static void initializeCyclesWithLengthAndMaxValue(uint32_t length, COLOR color)
 {
   int c1;
-  int colors[NCOLORS + 1];
+  COLOR colors[NCOLORS + 1];
   for (c1 = color - 1; c1 >= 0; c1--) {
     colors[0] = c1;
     colors[1] = color;
