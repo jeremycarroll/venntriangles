@@ -46,7 +46,6 @@ struct edge {
 extern uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
 
 extern EDGE edgeFollowBackwards(EDGE edge);
-extern EDGE edgeFollowForwards(EDGE edge);
 extern FAILURE edgeCurveChecks(EDGE edge, int depth);
 extern void edgeFindCorners(COLOR a, EDGE result[3][2]);
 /**

@@ -47,7 +47,6 @@ extern char *faceDegreeSignature(void);
 
 extern SIGNATURE d6MaxSignature(void);
 extern SIGNATURE d6SignatureFromFaces(void);
-extern int group[2 * NCOLORS][NCOLORS];
 extern char *d6SignatureToString(SIGNATURE signature);
 
 // For testing.

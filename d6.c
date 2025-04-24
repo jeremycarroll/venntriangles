@@ -15,7 +15,7 @@
 
 static COLORSET SequenceOrder[NFACES];
 static COLORSET InverseSequenceOrder[NFACES];
-int group[2 * NCOLORS][NCOLORS] = {
+static int group[2 * NCOLORS][NCOLORS] = {
 #if NCOLORS == 6
     {0, 1, 2, 3, 4, 5},
     {1, 2, 3, 4, 5, 0},

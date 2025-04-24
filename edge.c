@@ -25,6 +25,7 @@ and for outputting solutions.
 static uint_trail curveLength(EDGE edge);
 static FAILURE checkForDisconnectedCurve(EDGE edge, int depth);
 static EDGE findStartOfCurve(EDGE edge);
+static EDGE edgeFollowForwards(EDGE edge);
 
 /* Externally linked functions */
 EDGE edgeFollowForwards(EDGE edge)
