@@ -69,7 +69,7 @@ void resetStatistics(void)
   }
 }
 
-double statisticCalculateSearchSpace(void)
+static double statisticCalculateSearchSpace(void)
 {
   double result = 0.0;
   for (uint32_t i = 0; i < NFACES; i++) {
@@ -80,7 +80,7 @@ double statisticCalculateSearchSpace(void)
   return result;
 }
 
-int statisticCountChosen(void)
+static int statisticCountChosen(void)
 {
   int result = 0;
   for (uint32_t i = 0; i < NFACES; i++) {
