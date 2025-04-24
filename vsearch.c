@@ -57,7 +57,8 @@ FAILURE dynamicFaceChoice(FACE face, int depth)
         dynamicEdgeCornerCheck(&face->edges[cycle->curves[i]], depth));
   }
   for (i = 0; i < cycle->length; i++) {
-    CHECK_FAILURE(facePropogateChoice(face, &face->edges[cycle->curves[i]], depth));
+    CHECK_FAILURE(
+        facePropogateChoice(face, &face->edges[cycle->curves[i]], depth));
   }
   for (i = 0; i < NCOLORS; i++) {
     if (COLORSET_HAS_MEMBER(i, cycle->colors)) {
@@ -88,9 +89,9 @@ FAILURE dynamicFaceChoice(FACE face, int depth)
           continue;
         }
       }
-      CHECK_FAILURE(
-          faceRestrictAndPropogateCycles(face->adjacentFaces[i]->adjacentFaces[j],
-                                     CycleSetOmittingColorPair[i][j], depth));
+      CHECK_FAILURE(faceRestrictAndPropogateCycles(
+          face->adjacentFaces[i]->adjacentFaces[j],
+          CycleSetOmittingColorPair[i][j], depth));
     }
   }
 

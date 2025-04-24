@@ -44,7 +44,7 @@ extern char *faceToString(FACE face);
 extern void initializeFacesAndEdges(void);
 extern void resetFaces(void);
 extern FAILURE faceRestrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
-                                          int depth);
+                                              int depth);
 extern FAILURE facePropogateChoice(FACE face, EDGE edge, int depth);
 
 // exposed for testing

@@ -116,7 +116,8 @@ void dynamicFaceSetupCentral(FACE_DEGREE* faceDegrees)
   dynamicFaceBacktrackableChoice(centralFace);
 }
 
-FAILURE faceRestrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet, int depth)
+FAILURE faceRestrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
+                                       int depth)
 {
   /* check for conflict or no-op. */
   if (face->cycleSetSize == 1 || face->cycle != NULL) {
@@ -169,8 +170,8 @@ bool dynamicColorRemoveFromSearch(COLOR color)
     if (f->cycle == NULL) {
       /* Discard failure, we will report a different one. */
       if (f->edges[color].to == NULL &&
-          faceRestrictAndPropogateCycles(f, CycleSetOmittingOneColor[color], 0) !=
-              NULL) {
+          faceRestrictAndPropogateCycles(f, CycleSetOmittingOneColor[color],
+                                         0) != NULL) {
         return false;
       }
     }
