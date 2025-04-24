@@ -1,7 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "d6.h"
 #include "face.h"
+#include "s6.h"
 #include "test_helpers.h"
 #include "utils.h"
 
@@ -11,7 +11,7 @@
 #include <unity.h>
 
 /* Test setup and teardown */
-void setUp(void) { initializeSequenceOrder(); }
+void setUp(void) { initializeS6(); }
 
 void tearDown(void)
 {
@@ -27,14 +27,14 @@ static void countSolutions() { count6++; }
 /* Test functions */
 static void testCanonical6()
 {
-  TEST_ASSERT_EQUAL(NON_CANONICAL, symmetryType6(intArray(5, 5, 4, 4, 4, 5)));
-  TEST_ASSERT_EQUAL(CANONICAL, symmetryType6(intArray(6, 5, 5, 4, 4, 3)));
-  TEST_ASSERT_EQUAL(EQUIVOCAL, symmetryType6(intArray(5, 5, 5, 4, 4, 4)));
+  TEST_ASSERT_EQUAL(NON_CANONICAL, s6SymmetryType6(intArray(5, 5, 4, 4, 4, 5)));
+  TEST_ASSERT_EQUAL(CANONICAL, s6SymmetryType6(intArray(6, 5, 5, 4, 4, 3)));
+  TEST_ASSERT_EQUAL(EQUIVOCAL, s6SymmetryType6(intArray(5, 5, 5, 4, 4, 4)));
 }
 
 static void testCallback()
 {
-  canonicalCallback(countSolutions, NULL);
+  s6FaceDegreeCanonicalCallback(countSolutions, NULL);
 
   TEST_ASSERT_EQUAL(56, count6);
 }

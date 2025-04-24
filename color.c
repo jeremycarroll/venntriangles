@@ -189,7 +189,7 @@ uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color)
   assert(NULL == "Unreachable");
 }
 
-void removeFromCycleSetWithTrail(uint32_t cycleId, CYCLESET cycleSet)
+void cycleSetRemoveCycleWithTrail(CYCLESET cycleSet, uint32_t cycleId)
 {
   assert(cycleId < NCYCLES);
   trailSetInt(
@@ -212,7 +212,7 @@ void resetCycles()
 /* Externally linked functions - color... */
 int colorToChar(COLOR c) { return 'a' + c; }
 
-char* colorSetToStr(COLORSET colors)
+char* colorSetToString(COLORSET colors)
 {
   uint32_t i;
   char* buffer = getBuffer();
@@ -230,7 +230,7 @@ char* colorSetToStr(COLORSET colors)
 
 char* colorSetToBareString(COLORSET colors)
 {
-  char* colorsStr = colorSetToStr(colors);
+  char* colorsStr = colorSetToString(colors);
   colorsStr++;                           // delete first '|'
   colorsStr[strlen(colorsStr) - 1] = 0;  // delete last '|'
   return colorsStr;
@@ -278,10 +278,10 @@ static void addCycle(int length, COLOR* colors)
 }
 
 static void initializeCyclesWithLengthArrayAndMaxValue(uint32_t length,
-                                                       int position,
+                                                       uint32_t position,
                                                        COLOR* colors)
 {
-  int nextColor, i;
+  uint32_t nextColor, i;
   COLOR swap;
   if (position == length) {
     for (i = 1; i < length; i++) {
@@ -310,7 +310,7 @@ static void initializeCyclesWithLengthArrayAndMaxValue(uint32_t length,
 static void initializeCyclesWithLengthAndMaxValue(uint32_t length, COLOR color)
 {
   int c1;
-  int colors[NCOLORS + 1];
+  COLOR colors[NCOLORS + 1];
   for (c1 = color - 1; c1 >= 0; c1--) {
     colors[0] = c1;
     colors[1] = color;

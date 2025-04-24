@@ -1,7 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "d6.h"
 #include "face.h"
+#include "s6.h"
 #include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"
@@ -16,7 +16,7 @@ void setUp(void)
 {
   initialize();
   initializeStatisticLogging("/dev/stdout", 200, 10);
-  initializeSequenceOrder();
+  initializeS6();
 }
 
 void tearDown(void)

@@ -71,14 +71,14 @@ int main(void)
 char *usingBuffer(char *buffer) { return NULL; }
 void statisticPrintFull(void) { /* stub for testing. */ }
 
-void initializeSequenceOrder() { /* stub for testing. */ }
+void initializeS6() { /* stub for testing. */ }
 
 void initializeStatisticLogging(char *filename, int frequency, int seconds)
 { /* stub for testing. */ }
 
 void searchFull(void (*foundSolution)(void)) { /* stub for testing. */ }
 
-char *faceDegreeSignature(void) { return "stub"; }
+char *s6FaceDegreeSignature(void) { return "stub"; }
 
 void solutionWrite(const char *buffer) { /* stub for testing. */ }
 

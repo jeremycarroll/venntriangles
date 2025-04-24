@@ -28,8 +28,8 @@ void resetPoints()
   NextUPointId = 0;
 }
 
-POINT getOrInitializePoint(COLORSET colorsOfFace, COLOR primary,
-                           COLOR secondary)
+static POINT getOrInitializePoint(COLORSET colorsOfFace, COLOR primary,
+                                  COLOR secondary)
 {
   COLORSET outsideColor = colorsOfFace & ~(1u << primary) & ~(1u << secondary);
   if (AllUPointPointers[outsideColor][primary][secondary] == NULL) {
@@ -103,7 +103,7 @@ char* pointToColorSetString(POINT up)
   return colorSetToBareString(colors);
 }
 
-char* pointToStr(POINT up)
+char* pointToString(POINT up)
 {
   char* buffer = getBuffer();
   char* colorsStr = pointToColorSetString(up);

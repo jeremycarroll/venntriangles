@@ -52,10 +52,8 @@ extern void initializePoints(void);
 extern void resetPoints(void);
 extern POINT initializePointIncomingEdge(COLORSET colorsOfFace,
                                          EDGE incomingEdge, COLOR othercolor);
-extern char* pointToStr(POINT up);
+extern char* pointToString(POINT up);
 extern char* pointToColorSetString(POINT up);
-extern POINT getOrInitializePoint(COLORSET colorsOfFace, COLOR primary,
-                                  COLOR secondary);
 extern struct Point PointAllUPoints[NPOINTS];
 extern FAILURE dynamicEdgeCornerCheck(EDGE start, int depth);
 

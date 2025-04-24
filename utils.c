@@ -3,11 +3,11 @@
 #include "utils.h"
 
 #include "color.h"
-#include "d6.h"
 #include "edge.h"
 #include "face.h"
 #include "memory.h"
 #include "point.h"
+#include "s6.h"
 #include "statistics.h"
 #include "trail.h"
 #include <sys/stat.h>
@@ -37,7 +37,7 @@ void initialize()
   initializePoints();
   initializeTrail();
   initializeMemory();
-  initializeSequenceOrder();
+  initializeS6();
 }
 
 void initializeFolder(const char *folder)

@@ -2,11 +2,11 @@
 
 #include "vsearch.h"
 
-#include "d6.h"
 #include "face.h"
 #include "graphml.h"
 #include "main.h"
 #include "memory.h"
+#include "s6.h"
 #include "statistics.h"
 #include "trail.h"
 #include "utils.h"
@@ -24,6 +24,7 @@ static clock_t TotalWastedTime = 0;
 static clock_t TotalUsefulTime = 0;
 static int WastedSearchCount = 0;
 static int UsefulSearchCount = 0;
+uint64_t CycleGuessCounter = 0;
 static TRAIL StartPoint;
 
 /* Declaration of file scoped static functions */
@@ -56,13 +57,13 @@ FAILURE dynamicFaceChoice(FACE face, int depth)
         dynamicEdgeCornerCheck(&face->edges[cycle->curves[i]], depth));
   }
   for (i = 0; i < cycle->length; i++) {
-    CHECK_FAILURE(propogateChoice(face, &face->edges[cycle->curves[i]], depth));
+    CHECK_FAILURE(facePropogateChoice(face, &face->edges[cycle->curves[i]], depth));
   }
   for (i = 0; i < NCOLORS; i++) {
     if (COLORSET_HAS_MEMBER(i, cycle->colors)) {
       continue;
     }
-    CHECK_FAILURE(restrictAndPropogateCycles(
+    CHECK_FAILURE(faceRestrictAndPropogateCycles(
         face->adjacentFaces[i], CycleSetOmittingOneColor[i], depth));
   }
 
@@ -88,7 +89,7 @@ FAILURE dynamicFaceChoice(FACE face, int depth)
         }
       }
       CHECK_FAILURE(
-          restrictAndPropogateCycles(face->adjacentFaces[i]->adjacentFaces[j],
+          faceRestrictAndPropogateCycles(face->adjacentFaces[i]->adjacentFaces[j],
                                      CycleSetOmittingColorPair[i][j], depth));
     }
   }
@@ -127,7 +128,7 @@ FAILURE dynamicFaceBacktrackableChoice(FACE face)
   return NULL;
 }
 
-FACE chooseNextFaceForSearch(bool smallestFirst)
+FACE searchChooseNextFace(bool smallestFirst)
 {
   FACE face = NULL;
   int sign = smallestFirst ? 1 : -1;
@@ -154,7 +155,7 @@ void searchHere(bool smallestFirst, void (*foundSolution)(void))
     statisticPrintOneLine(position, false);
     switch (state) {
       case NEXT_FACE:
-        face = chooseNextFaceForSearch(smallestFirst);
+        face = searchChooseNextFace(smallestFirst);
         if (face == NULL) {
           freeAll();
           if (faceFinalCorrectnessChecks() == NULL) {
@@ -199,14 +200,15 @@ void searchHere(bool smallestFirst, void (*foundSolution)(void))
 
 void searchFull(void (*foundSolution)(void))
 {
-  initializeSequenceOrder();
+  initializeS6();
   initialize();
+  statisticIncludeInteger(&CycleGuessCounter, "?", "guesses");
   StartPoint = Trail;
   GlobalSolutionsFound = 0;
-  canonicalCallback(fullSearchCallback, (void*)foundSolution);
+  s6FaceDegreeCanonicalCallback(fullSearchCallback, (void*)foundSolution);
 }
 
-void solutionPrint(FILE* fp)
+static void solutionPrint(FILE* fp)
 {
   COLORSET colors = 0;
   if (fp == NULL) {
@@ -220,12 +222,12 @@ void solutionPrint(FILE* fp)
       FACE next = face->next;
       COLORSET colorBeingDropped = face->colors & ~next->colors;
       COLORSET colorBeingAdded = next->colors & ~face->colors;
-      sprintf(buffer, "%s [%c,%c] ", faceToStr(face),
+      sprintf(buffer, "%s [%c,%c] ", faceToString(face),
               colorToChar(ffs(colorBeingDropped) - 1),
               colorToChar(ffs(colorBeingAdded) - 1));
       if (strchr(buffer, '@')) {
         fprintf(stderr, "buffer: %s\n", buffer);
-        fprintf(stderr, "faceToStr: %s\n", faceToStr(face));
+        fprintf(stderr, "faceToString: %s\n", faceToString(face));
         exit(EXIT_FAILURE);
       }
       fputs(buffer, fp);
@@ -276,11 +278,9 @@ int searchCountVariations(char* variationMultiplication)
 
 void solutionWrite(const char* prefix)
 {
-  EDGE corners[3][2];
   char filename[1024];
   char variationMultiplication[128];
   int numberOfVariations;
-  int pLength;
   FILE* fp;
   if (strcmp(prefix, LastPrefix) != 0) {
     strcpy(LastPrefix, prefix);
@@ -298,8 +298,8 @@ void solutionWrite(const char* prefix)
     filename[strlen(filename) - 4] = '\0';
     numberOfVariations = searchCountVariations(variationMultiplication);
     fprintf(fp, "\nSolution signature %s\nClass signature %s\n",
-            d6SignatureToString(d6SignatureFromFaces()),
-            d6SignatureToString(d6MaxSignature()));
+            d6SignatureToString(s6SignatureFromFaces()),
+            d6SignatureToString(s6MaxSignature()));
     fprintf(fp, "Number of variations: %d = 1%s\n", numberOfVariations,
             variationMultiplication);
     fclose(fp);

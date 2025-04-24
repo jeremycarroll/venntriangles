@@ -8,13 +8,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-extern FACE chooseNextFaceForSearch(bool smallestFirst);
 extern void searchHere(bool smallestFirst, void (*foundSolution)(void));
 extern void searchFull(void (*foundSolution)(void));
-extern void dynamicSolutionEnumerate(FILE *(*fp)(char *signature, int soln,
-                                                 int subsoln));
 
-extern void solutionPrint(FILE *fp);
+// visible for testing
+extern uint64_t CycleGuessCounter;
+extern FACE searchChooseNextFace(bool smallestFirst);
 extern void solutionWrite(const char *prefix);
 extern int searchCountVariations(char *variationMultiplication);
+
 #endif  // SEARCH_H

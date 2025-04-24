@@ -2,16 +2,15 @@
 
 #include "face.h"
 
-#include "d6.h"
+#include "s6.h"
 #include "statistics.h"
 #include "utils.h"
 
 /* Global variables - globally scoped */
 struct face Faces[NFACES];
-uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
-uint64_t CycleGuessCounter = 0;
-uint64_t CycleForcedCounter = 0;
-uint64_t CycleSetReducedCounter = 0;
+static uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
+static uint64_t CycleForcedCounter = 0;
+static uint64_t CycleSetReducedCounter = 0;
 
 /* Declaration of file scoped static functions */
 static void recomputeCountOfChoices(FACE face);
@@ -32,7 +31,7 @@ bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length)
   }
   for (cycleId = 0, cycle = Cycles; cycleId < NCYCLES; cycleId++, cycle++) {
     if (cycle->length != length) {
-      removeFromCycleSetWithTrail(cycleId, face->possibleCycles);
+      cycleSetRemoveCycleWithTrail(face->possibleCycles, cycleId);
     }
   }
   recomputeCountOfChoices(face);
@@ -45,7 +44,6 @@ void initializeFacesAndEdges(void)
   FACE face, adjacent;
   EDGE edge;
 
-  statisticIncludeInteger(&CycleGuessCounter, "?", "guesses");
   statisticIncludeInteger(&CycleForcedCounter, "+", "forced");
   statisticIncludeInteger(&CycleSetReducedCounter, "-", "reduced");
   initializeLengthOfCycleOfFaces();
@@ -75,7 +73,7 @@ FAILURE faceFinalCorrectnessChecks(void)
   COLORSET colors = 1;
   FACE face;
 #if NCOLORS == 6
-  switch (symmetryTypeFaces()) {
+  switch (s6FacesSymmetryType()) {
     case NON_CANONICAL:
       return failureNonCanonical();
     case EQUIVOCAL:
@@ -118,7 +116,7 @@ void dynamicFaceSetupCentral(FACE_DEGREE* faceDegrees)
   dynamicFaceBacktrackableChoice(centralFace);
 }
 
-FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet, int depth)
+FAILURE faceRestrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet, int depth)
 {
   /* check for conflict or no-op. */
   if (face->cycleSetSize == 1 || face->cycle != NULL) {
@@ -143,7 +141,7 @@ FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet, int depth)
   return NULL;
 }
 
-FAILURE propogateChoice(FACE face, EDGE edge, int depth)
+FAILURE facePropogateChoice(FACE face, EDGE edge, int depth)
 {
   FAILURE failure;
   POINT point = edge->to->point;
@@ -156,9 +154,9 @@ FAILURE propogateChoice(FACE face, EDGE edge, int depth)
   uint32_t index = cycleIndexOfColor(face->cycle, aColor);
   assert(abFace == face->adjacentFaces[bColor]->adjacentFaces[aColor]);
   assert(abFace != face);
-  CHECK_FAILURE(restrictAndPropogateCycles(
+  CHECK_FAILURE(faceRestrictAndPropogateCycles(
       abFace, face->cycle->sameDirection[index], depth));
-  CHECK_FAILURE(restrictAndPropogateCycles(
+  CHECK_FAILURE(faceRestrictAndPropogateCycles(
       aFace, face->cycle->oppositeDirection[index], depth));
   return NULL;
 }
@@ -171,7 +169,7 @@ bool dynamicColorRemoveFromSearch(COLOR color)
     if (f->cycle == NULL) {
       /* Discard failure, we will report a different one. */
       if (f->edges[color].to == NULL &&
-          restrictAndPropogateCycles(f, CycleSetOmittingOneColor[color], 0) !=
+          faceRestrictAndPropogateCycles(f, CycleSetOmittingOneColor[color], 0) !=
               NULL) {
         return false;
       }
@@ -180,10 +178,10 @@ bool dynamicColorRemoveFromSearch(COLOR color)
   return true;
 }
 
-char* faceToStr(FACE face)
+char* faceToString(FACE face)
 {
   char* buffer = getBuffer();
-  char* colorBuf = colorSetToStr(face->colors);
+  char* colorBuf = colorSetToString(face->colors);
   char* cycleBuf = cycleToStr(face->cycle);
 
   if (face->cycleSetSize > 1) {
@@ -194,7 +192,7 @@ char* faceToStr(FACE face)
   return usingBuffer(buffer);
 }
 
-void facePrint(FACE face) { printf("%s\n", faceToStr(face)); }
+static void facePrint(FACE face) { printf("%s\n", faceToString(face)); }
 
 void facePrintSelected(void)
 {

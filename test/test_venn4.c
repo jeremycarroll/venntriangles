@@ -1,7 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "d6.h"
 #include "face.h"
+#include "s6.h"
 #include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"
@@ -65,34 +65,6 @@ static void testSearch4433()
   TEST_ASSERT_EQUAL(1, SolutionCount);
 }
 
-static void testPermutations()
-{
-  PERMUTATION identity = d6Permutation(0, 1, 2, 3);
-  TEST_ASSERT_TRUE(d6PermutationEqual(identity, d6Identity()));
-  TEST_ASSERT_TRUE(d6PermutationEqual(identity, d6Compose(identity, identity)));
-}
-
-static void testS4()
-{
-  int size;
-  PERMUTATION identity = d6Permutation(0, 1, 2, 3);
-  PERMUTATION s4a, s4b;
-  d6Closure(&size, 1, identity);
-  TEST_ASSERT_EQUAL(1, size);
-  TEST_ASSERT_TRUE(d6PermutationEqual(identity, d6Identity()));
-  s4a =
-      d6Closure(&size, 2, d6Permutation(1, 0, 2, 3), d6Permutation(1, 2, 3, 0));
-  TEST_ASSERT_EQUAL(24, size);
-  s4b = d6Closure(&size, 3, d6Permutation(1, 0, 2, 3),
-                  d6Permutation(2, 1, 0, 3), d6Permutation(3, 1, 2, 0));
-  TEST_ASSERT_EQUAL(24, size);
-  TEST_ASSERT_EQUAL(0, memcmp(s4a, s4b, 24 * sizeof(((PERMUTATION)NULL)[0])));
-  for (int i = 0; i < size; i++) {
-    TEST_ASSERT_TRUE(
-        d6PermutationEqual(identity, d6Compose(&s4a[i], d6Inverse(&s4a[i]))));
-  }
-}
-
 /* Main test runner */
 int main(void)
 {
@@ -101,7 +73,5 @@ int main(void)
   RUN_TEST(testSearch4343);
   RUN_TEST(testSearchAbcd);
   RUN_TEST(testSearch4433);
-  RUN_TEST(testS4);
-  RUN_TEST(testPermutations);
   return UNITY_END();
 }

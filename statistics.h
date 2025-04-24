@@ -21,12 +21,11 @@ typedef struct {
 extern void statisticIncludeInteger(uint64_t* counter, char* shortName,
                                     char* name);
 extern void statisticIncludeFailure(FAILURE failure);
-extern void resetStatistics(void);
-extern double statisticCalculateSearchSpace(void);
-extern int statisticCountChosen(void);
 extern void statisticPrintOneLine(int position, bool force);
 extern void statisticPrintFull(void);
 extern void initializeStatisticLogging(char* filename, int frequency,
                                        int seconds);
 
+// exposed for testing
+extern void resetStatistics(void);
 #endif  // STATISTICS_H
