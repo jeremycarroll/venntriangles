@@ -39,7 +39,6 @@ extern bool dynamicColorRemoveFromSearch(COLOR color);
 
 extern COLORSET ColorCompleted;
 
-extern uint64_t CycleGuessCounter;
 extern char *faceToStr(FACE face);
 
 extern void initializeFacesAndEdges(void);

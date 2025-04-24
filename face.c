@@ -9,7 +9,6 @@
 /* Global variables - globally scoped */
 struct face Faces[NFACES];
 static uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
-uint64_t CycleGuessCounter = 0;
 static uint64_t CycleForcedCounter = 0;
 static uint64_t CycleSetReducedCounter = 0;
 
@@ -45,7 +44,6 @@ void initializeFacesAndEdges(void)
   FACE face, adjacent;
   EDGE edge;
 
-  statisticIncludeInteger(&CycleGuessCounter, "?", "guesses");
   statisticIncludeInteger(&CycleForcedCounter, "+", "forced");
   statisticIncludeInteger(&CycleSetReducedCounter, "-", "reduced");
   initializeLengthOfCycleOfFaces();

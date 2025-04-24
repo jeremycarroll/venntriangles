@@ -313,6 +313,7 @@ void tearDown(void)
   resetTrail();
   resetStatistics();
   resetPoints();
+  CycleGuessCounter = 0;
 }
 
 /* Helper functions */

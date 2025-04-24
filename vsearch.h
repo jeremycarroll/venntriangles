@@ -17,4 +17,7 @@ extern void dynamicSolutionEnumerate(FILE *(*fp)(char *signature, int soln,
 extern void solutionPrint(FILE *fp);
 extern void solutionWrite(const char *prefix);
 extern int searchCountVariations(char *variationMultiplication);
+
+// visible for testing
+extern uint64_t CycleGuessCounter;
 #endif  // SEARCH_H

@@ -24,6 +24,7 @@ static clock_t TotalWastedTime = 0;
 static clock_t TotalUsefulTime = 0;
 static int WastedSearchCount = 0;
 static int UsefulSearchCount = 0;
+uint64_t CycleGuessCounter = 0;
 static TRAIL StartPoint;
 
 /* Declaration of file scoped static functions */
@@ -201,6 +202,7 @@ void searchFull(void (*foundSolution)(void))
 {
   initializeS6();
   initialize();
+  statisticIncludeInteger(&CycleGuessCounter, "?", "guesses");
   StartPoint = Trail;
   GlobalSolutionsFound = 0;
   s6FaceDegreeCanonicalCallback(fullSearchCallback, (void*)foundSolution);
