@@ -12,4 +12,7 @@ extern void initializeFolder(const char *folder);
 extern void resetGlobals(void);
 extern void resetInitialize(void);
 
+extern void disaster(const char* message);
+extern char* Argv0;
+
 #endif  // UTILS_H

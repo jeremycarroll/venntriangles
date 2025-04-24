@@ -11,6 +11,7 @@
 /* External declarations */
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 extern int dynamicMain0(int argc, char *argv[]);
+static bool DisasterCalled = false;
 
 /* Test setup and teardown */
 void setUp(void)
@@ -31,6 +32,7 @@ static int run(int argc, char *argv[])
   buffer[0] = 0;
   FILE *stream = fmemopen(buffer, sizeof(buffer), "w");
   int status;
+  DisasterCalled = false;
   optind = 1;
   oldStdout = stderr;
   stderr = stream;
@@ -38,7 +40,7 @@ static int run(int argc, char *argv[])
   fflush(stream);
   // Reset stdout
   stderr = oldStdout;
-  return status;
+  return DisasterCalled ? 1 : status;
 }
 
 /* Test functions */
@@ -84,3 +86,4 @@ void solutionWrite(const char *buffer) { /* stub for testing. */ }
 
 char *getBuffer() { return NULL; }
 void initializeFolder(const char *folder) {}
+void disaster(const char *message) { DisasterCalled = true; }
