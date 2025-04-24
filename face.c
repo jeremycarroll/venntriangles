@@ -8,10 +8,10 @@
 
 /* Global variables - globally scoped */
 struct face Faces[NFACES];
-uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
+static uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
 uint64_t CycleGuessCounter = 0;
-uint64_t CycleForcedCounter = 0;
-uint64_t CycleSetReducedCounter = 0;
+static uint64_t CycleForcedCounter = 0;
+static uint64_t CycleSetReducedCounter = 0;
 
 /* Declaration of file scoped static functions */
 static void recomputeCountOfChoices(FACE face);
@@ -194,7 +194,7 @@ char* faceToStr(FACE face)
   return usingBuffer(buffer);
 }
 
-void facePrint(FACE face) { printf("%s\n", faceToStr(face)); }
+static void facePrint(FACE face) { printf("%s\n", faceToStr(face)); }
 
 void facePrintSelected(void)
 {

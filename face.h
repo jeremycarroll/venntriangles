@@ -25,11 +25,7 @@ struct face {
   STATIC FACE nextByCycleId[NCYCLES];
 };
 
-extern uint64_t CycleForcedCounter;
-extern uint64_t CycleSetReducedCounter;
-
 extern STATIC struct face Faces[NFACES];
-extern uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
 
 /* These next two functions are actually defined in search.c */
 extern FAILURE dynamicFaceBacktrackableChoice(FACE face);
@@ -46,15 +42,16 @@ extern COLORSET ColorCompleted;
 extern uint64_t CycleGuessCounter;
 extern char *faceToStr(FACE face);
 
-extern FACE faceFromColors(char *colors);
-extern FACE dynamicFaceAddSpecific(char *colors, char *cycle);
-extern void facePrintSelected(void);
-extern void facePrint(FACE face);
-extern bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length);
 extern void initializeFacesAndEdges(void);
 extern void resetFaces(void);
 extern FAILURE restrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
                                           int depth);
 extern FAILURE propogateChoice(FACE face, EDGE edge, int depth);
+
+// exposed for testing
+extern void facePrintSelected(void);
+extern bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length);
+extern FACE faceFromColors(char *colors);
+extern FACE dynamicFaceAddSpecific(char *colors, char *cycle);
 
 #endif  // FACE_H
