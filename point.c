@@ -103,7 +103,7 @@ char* pointToColorSetString(POINT up)
   return colorSetToBareString(colors);
 }
 
-char* pointToStr(POINT up)
+char* pointToString(POINT up)
 {
   char* buffer = getBuffer();
   char* colorsStr = pointToColorSetString(up);

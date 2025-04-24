@@ -155,7 +155,7 @@ static void addEdgeFromCorner(FILE *fp, int corner, EDGE edge, int line)
 static char *graphmlPointId(POINT point)
 {
   char *buffer = getBuffer();
-  sprintf(buffer, "p_%s", pointToStr(point));
+  sprintf(buffer, "p_%s", pointToString(point));
   return usingBuffer(buffer);
 }
 

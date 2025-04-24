@@ -427,7 +427,7 @@ static void testInOrder(bool smallestFirst)
   char colors[7];
   int i;
   COLOR color;
-  while ((face = chooseNextFaceForSearch(smallestFirst))) {
+  while ((face = searchChooseNextFace(smallestFirst))) {
     for (color = 0, i = 0; color < NCOLORS; color++) {
       if (COLORSET_HAS_MEMBER(color, face->colors)) {
         colors[i++] = 'a' + color;

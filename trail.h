@@ -25,7 +25,9 @@ extern void trailSetInt(uint_trail *ptr, uint_trail value);
 extern bool trailBacktrackTo(TRAIL backtrackPoint);
 extern void trailMaybeSetInt(uint_trail *ptr, uint_trail value);
 
-extern void resetTrail(void);
 extern void initializeTrail(void);
+
+// exposed for testing
+extern void resetTrail(void);
 
 #endif  // TRAIL_H

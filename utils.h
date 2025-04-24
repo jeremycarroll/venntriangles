@@ -5,9 +5,11 @@
 
 #include "core.h"
 
-extern  void resetGlobals(void);
-extern  void resetInitialize(void);
 extern void initialize(void);
 extern void initializeFolder(const char *folder);
+
+// exposed for testing
+extern void resetGlobals(void);
+extern void resetInitialize(void);
 
 #endif  // UTILS_H

@@ -57,13 +57,13 @@ FAILURE dynamicFaceChoice(FACE face, int depth)
         dynamicEdgeCornerCheck(&face->edges[cycle->curves[i]], depth));
   }
   for (i = 0; i < cycle->length; i++) {
-    CHECK_FAILURE(propogateChoice(face, &face->edges[cycle->curves[i]], depth));
+    CHECK_FAILURE(facePropogateChoice(face, &face->edges[cycle->curves[i]], depth));
   }
   for (i = 0; i < NCOLORS; i++) {
     if (COLORSET_HAS_MEMBER(i, cycle->colors)) {
       continue;
     }
-    CHECK_FAILURE(restrictAndPropogateCycles(
+    CHECK_FAILURE(faceRestrictAndPropogateCycles(
         face->adjacentFaces[i], CycleSetOmittingOneColor[i], depth));
   }
 
@@ -89,7 +89,7 @@ FAILURE dynamicFaceChoice(FACE face, int depth)
         }
       }
       CHECK_FAILURE(
-          restrictAndPropogateCycles(face->adjacentFaces[i]->adjacentFaces[j],
+          faceRestrictAndPropogateCycles(face->adjacentFaces[i]->adjacentFaces[j],
                                      CycleSetOmittingColorPair[i][j], depth));
     }
   }
@@ -128,7 +128,7 @@ FAILURE dynamicFaceBacktrackableChoice(FACE face)
   return NULL;
 }
 
-FACE chooseNextFaceForSearch(bool smallestFirst)
+FACE searchChooseNextFace(bool smallestFirst)
 {
   FACE face = NULL;
   int sign = smallestFirst ? 1 : -1;
@@ -155,7 +155,7 @@ void searchHere(bool smallestFirst, void (*foundSolution)(void))
     statisticPrintOneLine(position, false);
     switch (state) {
       case NEXT_FACE:
-        face = chooseNextFaceForSearch(smallestFirst);
+        face = searchChooseNextFace(smallestFirst);
         if (face == NULL) {
           freeAll();
           if (faceFinalCorrectnessChecks() == NULL) {
@@ -208,7 +208,7 @@ void searchFull(void (*foundSolution)(void))
   s6FaceDegreeCanonicalCallback(fullSearchCallback, (void*)foundSolution);
 }
 
-void solutionPrint(FILE* fp)
+static void solutionPrint(FILE* fp)
 {
   COLORSET colors = 0;
   if (fp == NULL) {
@@ -222,12 +222,12 @@ void solutionPrint(FILE* fp)
       FACE next = face->next;
       COLORSET colorBeingDropped = face->colors & ~next->colors;
       COLORSET colorBeingAdded = next->colors & ~face->colors;
-      sprintf(buffer, "%s [%c,%c] ", faceToStr(face),
+      sprintf(buffer, "%s [%c,%c] ", faceToString(face),
               colorToChar(ffs(colorBeingDropped) - 1),
               colorToChar(ffs(colorBeingAdded) - 1));
       if (strchr(buffer, '@')) {
         fprintf(stderr, "buffer: %s\n", buffer);
-        fprintf(stderr, "faceToStr: %s\n", faceToStr(face));
+        fprintf(stderr, "faceToString: %s\n", faceToString(face));
         exit(EXIT_FAILURE);
       }
       fputs(buffer, fp);
