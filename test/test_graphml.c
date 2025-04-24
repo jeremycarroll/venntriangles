@@ -281,7 +281,7 @@ static void secondEdgeMatch(regmatch_t* sourceOffsets,
 static void matchGraphMlFile(void (*nodeMatch)(regmatch_t*),
                              void (*edgeMatch)(regmatch_t*, regmatch_t*))
 {
-  int nodes = 0, edges = 0;
+  int nodeCounter = 0, edgeCounter = 0;
   outputBufferPtr = outputBuffer;
   matchRegex(&graphRegex);
   while (outputBufferPtr < outputBuffer + 50000) {
@@ -291,16 +291,16 @@ static void matchGraphMlFile(void (*nodeMatch)(regmatch_t*),
       break;
     }
     if (offsets[1].rm_eo != -1) {
-      nodes++;
+      nodeCounter++;
       nodeMatch(offsets + 1);
     } else if (offsets[3].rm_eo != -1) {
-      edges++;
+      edgeCounter++;
       edgeMatch(offsets + 3, offsets + 4);
     }
   }
-  TEST_ASSERT_EQUAL_MESSAGE(NFACES - 2 + 3 * NCOLORS, nodes,
+  TEST_ASSERT_EQUAL_MESSAGE(NFACES - 2 + 3 * NCOLORS, nodeCounter,
                             "node count: Euler, and 6 triangles");
-  TEST_ASSERT_EQUAL_MESSAGE(2 * (NFACES - 2) + 3 * NCOLORS, edges,
+  TEST_ASSERT_EQUAL_MESSAGE(2 * (NFACES - 2) + 3 * NCOLORS, edgeCounter,
                             "edge count: Euler, and 6 triangles");
 }
 
@@ -326,7 +326,7 @@ static void checkGraphML(void)
   TEST_ASSERT_EQUAL(completeNodeCount, nodeCount);
 
   for (i = 0; i < nodeCount; i++) {
-    sprintf(message, "Node[%d/%d] %s: %d %d => %d", i, nodeCount, nodes[i].id,
+    sprintf(message, "Node[%d/%lu] %s: %d %d => %d", i, nodeCount, nodes[i].id,
             nodes[i].node, nodes[i].source, nodes[i].target);
     entry = &nodes[i];
     TEST_ASSERT_EQUAL_MESSAGE(1, entry->node, message);
