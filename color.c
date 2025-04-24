@@ -189,7 +189,7 @@ uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color)
   assert(NULL == "Unreachable");
 }
 
-void removeFromCycleSetWithTrail(CYCLESET cycleSet, uint32_t cycleId)
+void cycleSetRemoveCycleWithTrail(CYCLESET cycleSet, uint32_t cycleId)
 {
   assert(cycleId < NCYCLES);
   trailSetInt(
@@ -212,7 +212,7 @@ void resetCycles()
 /* Externally linked functions - color... */
 int colorToChar(COLOR c) { return 'a' + c; }
 
-char* colorSetToStr(COLORSET colors)
+char* colorSetToString(COLORSET colors)
 {
   uint32_t i;
   char* buffer = getBuffer();
@@ -230,7 +230,7 @@ char* colorSetToStr(COLORSET colors)
 
 char* colorSetToBareString(COLORSET colors)
 {
-  char* colorsStr = colorSetToStr(colors);
+  char* colorsStr = colorSetToString(colors);
   colorsStr++;                           // delete first '|'
   colorsStr[strlen(colorsStr) - 1] = 0;  // delete last '|'
   return colorsStr;

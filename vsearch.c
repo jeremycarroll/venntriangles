@@ -2,11 +2,11 @@
 
 #include "vsearch.h"
 
-#include "d6.h"
 #include "face.h"
 #include "graphml.h"
 #include "main.h"
 #include "memory.h"
+#include "s6.h"
 #include "statistics.h"
 #include "trail.h"
 #include "utils.h"
@@ -199,11 +199,11 @@ void searchHere(bool smallestFirst, void (*foundSolution)(void))
 
 void searchFull(void (*foundSolution)(void))
 {
-  initializeSequenceOrder();
+  initializeS6();
   initialize();
   StartPoint = Trail;
   GlobalSolutionsFound = 0;
-  canonicalCallback(fullSearchCallback, (void*)foundSolution);
+  s6FaceDegreeCanonicalCallback(fullSearchCallback, (void*)foundSolution);
 }
 
 void solutionPrint(FILE* fp)
@@ -296,8 +296,8 @@ void solutionWrite(const char* prefix)
     filename[strlen(filename) - 4] = '\0';
     numberOfVariations = searchCountVariations(variationMultiplication);
     fprintf(fp, "\nSolution signature %s\nClass signature %s\n",
-            d6SignatureToString(d6SignatureFromFaces()),
-            d6SignatureToString(d6MaxSignature()));
+            d6SignatureToString(s6SignatureFromFaces()),
+            d6SignatureToString(s6MaxSignature()));
     fprintf(fp, "Number of variations: %d = 1%s\n", numberOfVariations,
             variationMultiplication);
     fclose(fp);

@@ -55,7 +55,7 @@ int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn)
     from = edgeFollowForwards(from);
 #if 0
     if (strcmp(graphmlPointId(from->to->point), "p_|ab|_a_b") == 0) {
-      printf("from %s %s\n", edgeToStr(from), colorSetToStr(from->colors));
+      printf("from %s %s\n", edgeToString(from), colorSetToString(from->colors));
     }
 #endif
     assert(from != to->reversed);
@@ -93,7 +93,7 @@ void resetEdges()
   memset(EdgeCurvesComplete, 0, sizeof(EdgeCurvesComplete));
 }
 
-char* edgeToStr(EDGE edge)
+char* edgeToString(EDGE edge)
 {
   char* buffer = getBuffer();
   if (edge == NULL) {

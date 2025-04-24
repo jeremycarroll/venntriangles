@@ -1,7 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "d6.h"
 #include "face.h"
+#include "s6.h"
 #include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"
@@ -40,7 +40,7 @@ static int MatchABCDE = 0;
 static void countSolutions()
 {
   SolutionCount++;
-  switch (symmetryTypeFaces()) {
+  switch (s6FacesSymmetryType()) {
     case EQUIVOCAL:
       EquivocalCount++;
       break;
@@ -56,10 +56,10 @@ static void countSolutions()
 /* Callback functions */
 static void invertSolution()
 {
-  CYCLE_ID cycleId = cycleIdPermute(Faces[0].cycle - Cycles,
-                                    d6Automorphism(Faces[0].cycle - Cycles));
-  SIGNATURE signature = d6SignatureFromFaces();
-  SIGNATURE maxSignature = d6MaxSignature();
+  CYCLE_ID cycleId = s6PermuteCycleId(Faces[0].cycle - Cycles,
+                                      s6Automorphism(Faces[0].cycle - Cycles));
+  SIGNATURE signature = s6SignatureFromFaces();
+  SIGNATURE maxSignature = s6MaxSignature();
   TEST_ASSERT_EQUAL(NCYCLES - 1, cycleId);
   TEST_ASSERT_EQUAL_STRING(
       "CoCnBdBeAfAlAoBbAdAqAcArAiAhCvBjCjBgBcApAeAfApAoAcBfAdBaAnAiByCv",
@@ -101,7 +101,7 @@ static void invertSolution()
       "(abdc) "   // ACDE
       "(abdec) "  // BCDE
       "(acedb)",  // ABCDE
-      d6SignatureToLongString(maxSignature));
+      s6SignatureToLongString(maxSignature));
 }
 
 /* Callback functions */
@@ -109,7 +109,7 @@ static void foundSolution()
 {
   SolutionCount++;
 
-  SIGNATURE signature = d6MaxSignature();
+  SIGNATURE signature = s6MaxSignature();
   if (strcmp(
           d6SignatureToString(signature),
           "CvCgByBuBaBcBfAqAoAcApBeApAdAoBbAuBiAvAuArBdAqArBhAfBnBhChAmCqCh") ==

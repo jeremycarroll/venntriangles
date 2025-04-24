@@ -1,6 +1,6 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "d6.h"
+#include "s6.h"
 
 #include "face.h"
 #include "main.h"
@@ -64,7 +64,7 @@ static int d6SignatureCompare(SIGNATURE a, SIGNATURE b);
 static SIGNATURE d6SignatureReflected(SIGNATURE sequence);
 
 /* Externally linked functions - Initialize */
-void initializeSequenceOrder(void)
+void initializeS6(void)
 {
   uint64_t ix = 0, i;
   uint64_t done = 0;
@@ -103,7 +103,7 @@ void initializeSequenceOrder(void)
 }
 
 /* Externally linked functions - Dynamic */
-PERMUTATION d6Automorphism(CYCLE_ID cycleId)
+PERMUTATION s6Automorphism(CYCLE_ID cycleId)
 {
   CYCLE cycle = Cycles + cycleId;
   PERMUTATION result = NEW(PERMUTATION);
@@ -118,7 +118,7 @@ PERMUTATION d6Automorphism(CYCLE_ID cycleId)
 // No reset functions in this file
 
 /* Externally linked functions - Other */
-CYCLE_ID cycleIdPermute(CYCLE_ID originalCycleId, PERMUTATION permutation)
+CYCLE_ID s6PermuteCycleId(CYCLE_ID originalCycleId, PERMUTATION permutation)
 {
   COLOR permuted[NCOLORS * 2];
   CYCLE cycle = &Cycles[originalCycleId];
@@ -138,19 +138,19 @@ CYCLE_ID cycleIdPermute(CYCLE_ID originalCycleId, PERMUTATION permutation)
   return getCycleId(permuted + minIndex, cycle->length);
 }
 
-SYMMETRY_TYPE symmetryType6(FACE_DEGREE *args)
+SYMMETRY_TYPE s6SymmetryType6(FACE_DEGREE *args)
 {
   struct faceDegreeSequence argsAsSequence = {
       {args[0], args[1], args[2], args[3], args[4], args[5]}};
   return d6SymmetryTypeN(6, &argsAsSequence);
 }
 
-SYMMETRY_TYPE symmetryTypeFaces(void)
+SYMMETRY_TYPE s6FacesSymmetryType(void)
 {
   return d6SymmetryType64(d6FaceDegreesInSequenceOrder());
 }
 
-char *faceDegreeSignature(void)
+char *s6FaceDegreeSignature(void)
 {
   static char Result[NCOLORS + 1];
   FACE_DEGREE_SEQUENCE faceDegrees = d6FaceDegreesInSequenceOrder();
@@ -161,16 +161,16 @@ char *faceDegreeSignature(void)
   return Result;
 }
 
-void canonicalCallback(UseFaceDegrees callback, void *data)
+void s6FaceDegreeCanonicalCallback(UseFaceDegrees callback, void *data)
 {
   FACE_DEGREE args[NCOLORS];
   canoncialCallbackImpl(0, 0, args, callback, data);
 }
 
-SIGNATURE d6MaxSignature(void)
+SIGNATURE s6MaxSignature(void)
 {
   int resultsIndex = 0;
-  SIGNATURE fromFaces = d6SignatureFromFaces();
+  SIGNATURE fromFaces = s6SignatureFromFaces();
   COLORSET center = 0;
   SIGNATURE recentered;
   SIGNATURE results[NFACES * 2];
@@ -203,7 +203,7 @@ SIGNATURE d6SignaturePermuted(SIGNATURE sequence, PERMUTATION permutation)
   SIGNATURE result = NEW(SIGNATURE);
   for (COLORSET i = 0; i < NFACES; i++) {
     result->classSignature.faceCycleId[colorSetPermute(i, permutation)] =
-        cycleIdPermute(sequence->classSignature.faceCycleId[i], permutation);
+        s6PermuteCycleId(sequence->classSignature.faceCycleId[i], permutation);
   }
   result->offset = colorSetPermute(sequence->offset, permutation);
   result->reflected = sequence->reflected;
@@ -227,7 +227,7 @@ int d6SignatureCompare(SIGNATURE a, SIGNATURE b)
   return bcmp(a, b, sizeof(((CYCLE_ID_SEQUENCE)NULL)[0]));
 }
 
-SIGNATURE d6SignatureFromFaces(void)
+SIGNATURE s6SignatureFromFaces(void)
 {
   SIGNATURE result = NEW(SIGNATURE);
   for (int i = 0; i < NFACES; i++) {
@@ -250,12 +250,12 @@ char *d6SignatureToString(SIGNATURE signature)
   return usingBuffer(result);
 }
 
-char *d6SignatureToLongString(SIGNATURE signature)
+char *s6SignatureToLongString(SIGNATURE signature)
 {
   char *result = tempMalloc(1024);
   char *p = result;
   p += sprintf(p, "%c%s:", signature->reflected ? '!' : ' ',
-               colorSetToStr(signature->offset));
+               colorSetToString(signature->offset));
   for (int i = 0; i < NFACES; i++) {
     p += sprintf(p, " %s",
                  cycleToStr(Cycles + signature->classSignature.faceCycleId[i]));
@@ -315,7 +315,7 @@ static SIGNATURE maxSpunSignature(SIGNATURE onCurrentFace)
   PERMUTATION abcNCycle = &group[1];
   SIGNATURE best = onCurrentFace;
   PERMUTATION permutation =
-      d6Automorphism(onCurrentFace->classSignature.faceCycleId[0]);
+      s6Automorphism(onCurrentFace->classSignature.faceCycleId[0]);
   SIGNATURE permuted = d6SignaturePermuted(onCurrentFace, permutation);
   for (counter = 0; counter < NFACES; counter++) {
     assert(permuted->classSignature.faceCycleId[0] == NCYCLES - 1);
@@ -391,7 +391,7 @@ static void canoncialCallbackImpl(int depth, int sum, FACE_DEGREE *args,
       return;
     }
     freeAll();
-    switch (symmetryType6(args)) {
+    switch (s6SymmetryType6(args)) {
       case NON_CANONICAL:
         return;
       case EQUIVOCAL:

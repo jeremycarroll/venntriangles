@@ -2,7 +2,7 @@
 
 #include "face.h"
 
-#include "d6.h"
+#include "s6.h"
 #include "statistics.h"
 #include "utils.h"
 
@@ -32,7 +32,7 @@ bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length)
   }
   for (cycleId = 0, cycle = Cycles; cycleId < NCYCLES; cycleId++, cycle++) {
     if (cycle->length != length) {
-      removeFromCycleSetWithTrail(face->possibleCycles, cycleId);
+      cycleSetRemoveCycleWithTrail(face->possibleCycles, cycleId);
     }
   }
   recomputeCountOfChoices(face);
@@ -75,7 +75,7 @@ FAILURE faceFinalCorrectnessChecks(void)
   COLORSET colors = 1;
   FACE face;
 #if NCOLORS == 6
-  switch (symmetryTypeFaces()) {
+  switch (s6FacesSymmetryType()) {
     case NON_CANONICAL:
       return failureNonCanonical();
     case EQUIVOCAL:
@@ -183,7 +183,7 @@ bool dynamicColorRemoveFromSearch(COLOR color)
 char* faceToStr(FACE face)
 {
   char* buffer = getBuffer();
-  char* colorBuf = colorSetToStr(face->colors);
+  char* colorBuf = colorSetToString(face->colors);
   char* cycleBuf = cycleToStr(face->cycle);
 
   if (face->cycleSetSize > 1) {

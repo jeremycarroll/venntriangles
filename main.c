@@ -144,7 +144,7 @@ static void saveResult(void)
   }
 
   char *buffer = getBuffer();
-  sprintf(buffer, "%s/%s", TargetFolder, faceDegreeSignature());
+  sprintf(buffer, "%s/%s", TargetFolder, s6FaceDegreeSignature());
   solutionWrite(usingBuffer(buffer));
 }
 

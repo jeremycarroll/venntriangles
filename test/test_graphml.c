@@ -1,9 +1,9 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "d6.h"
 #include "face.h"
 #include "graphml.h"
 #include "main.h"
+#include "s6.h"
 #include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"
@@ -82,8 +82,8 @@ static void (*FoundSolution)(void);
 static void foundBasicSolution()
 {
   SolutionCount++;
-  SIGNATURE signature = d6SignatureFromFaces();
-  SIGNATURE classSignature = d6MaxSignature();
+  SIGNATURE signature = s6SignatureFromFaces();
+  SIGNATURE classSignature = s6MaxSignature();
   if (strcmp(ExpectedSignature, d6SignatureToString(signature)) != 0) {
     return;
   }
@@ -386,8 +386,8 @@ static void testColorContinuations(COLOR color, int expectedCount)
 {
   EDGE corners[NCOLORS][3];
   ContinuationCount = 0;
-  computePossibleCorners();
-  chooseCornersWithContinuation(0, color, corners, countContinuation);
+  graphmlPossibleCorners();
+  graphmlChooseCornersWithContinuation(0, color, corners, countContinuation);
   TEST_ASSERT_EQUAL(expectedCount, ContinuationCount);
 }
 

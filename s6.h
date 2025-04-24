@@ -1,7 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#ifndef D6_H
-#define D6_H
+#ifndef S6_H
+#define S6_H
 
 #include "color.h"
 
@@ -36,24 +36,24 @@ typedef struct signature {
   bool reflected;
 } *SIGNATURE;
 
-extern void initializeSequenceOrder(void);
-extern SYMMETRY_TYPE symmetryTypeFaces(void);
+extern void initializeS6(void);
+extern SYMMETRY_TYPE s6FacesSymmetryType(void);
 
 /* The faceDegrees is an array of NCOLORS integers between 3 and NCOLORS to be
    used as the face degrees for the NCOLORS faces around the central face. */
 typedef void (*UseFaceDegrees)(void *data, FACE_DEGREE *faceDegrees);
-extern void canonicalCallback(UseFaceDegrees callback, void *data);
-extern char *faceDegreeSignature(void);
+extern void s6FaceDegreeCanonicalCallback(UseFaceDegrees callback, void *data);
+extern char *s6FaceDegreeSignature(void);
 
-extern SIGNATURE d6MaxSignature(void);
-extern SIGNATURE d6SignatureFromFaces(void);
+extern SIGNATURE s6MaxSignature(void);
+extern SIGNATURE s6SignatureFromFaces(void);
 extern char *d6SignatureToString(SIGNATURE signature);
 
 // For testing.
-extern PERMUTATION d6Automorphism(CYCLE_ID cycleId);
-extern CYCLE_ID cycleIdPermute(CYCLE_ID originalCycleId,
-                               PERMUTATION permutation);
-extern char *d6SignatureToLongString(SIGNATURE signature);
-extern SYMMETRY_TYPE symmetryType6(FACE_DEGREE *faceDegrees);
+extern PERMUTATION s6Automorphism(CYCLE_ID cycleId);
+extern CYCLE_ID s6PermuteCycleId(CYCLE_ID originalCycleId,
+                                 PERMUTATION permutation);
+extern char *s6SignatureToLongString(SIGNATURE signature);
+extern SYMMETRY_TYPE s6SymmetryType6(FACE_DEGREE *faceDegrees);
 
-#endif  // D6_H
+#endif  // S6_H

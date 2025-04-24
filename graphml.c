@@ -177,7 +177,7 @@ static void possibleCorners(EDGE *possibilities, COLOR color, EDGE from,
                             EDGE to);
 static EDGE PossibileCorners[NCOLORS][3][NFACES];
 
-void computePossibleCorners(void)
+void graphmlPossibleCorners(void)
 {
   for (int current = 0; current < NCOLORS; current++) {
     EDGE cornerPairs[3][2];
@@ -201,7 +201,7 @@ void graphmlSaveAllVariations(const char *prefix, int expectedVariations)
   ExpectedVariations = expectedVariations;
   Levels = numberOfLevels(expectedVariations);
   graphmlFileOps.initializeFolder(prefix);
-  computePossibleCorners();
+  graphmlPossibleCorners();
   savePartialVariations(0, corners);
 }
 
@@ -355,10 +355,9 @@ static void possibleCorners(EDGE *possibilities, COLOR color, EDGE from,
 
 static int savePartialVariations(COLOR current, EDGE (*corners)[3]);
 
-void chooseCornersWithContinuation(int cornerIndex, COLOR current,
-                                   EDGE (*corners)[3],
-                                   int (*continuation)(COLOR,
-                                                       EDGE (*corners)[3]))
+void graphmlChooseCornersWithContinuation(
+    int cornerIndex, COLOR current, EDGE (*corners)[3],
+    int (*continuation)(COLOR, EDGE (*corners)[3]))
 {
   EDGE *possibilities = PossibileCorners[current][cornerIndex];
   int i;
@@ -388,10 +387,10 @@ void chooseCornersWithContinuation(int cornerIndex, COLOR current,
     corners[current][cornerIndex] = possibilities[i];
 #if DEBUG
     printf("cornerIndex: %d, current: %d, possibilities[i]: %s %dn",
-           cornerIndex, current, edgeToStr(possibilities[i]), i);
+           cornerIndex, current, edgeToString(possibilities[i]), i);
 #endif
-    chooseCornersWithContinuation(cornerIndex + 1, current, corners,
-                                  continuation);
+    graphmlChooseCornersWithContinuation(cornerIndex + 1, current, corners,
+                                         continuation);
   }
 }
 
@@ -399,8 +398,8 @@ static void chooseCornersThenSavePartialVariations(int cornerIndex,
                                                    COLOR current,
                                                    EDGE (*corners)[3])
 {
-  chooseCornersWithContinuation(cornerIndex, current, corners,
-                                savePartialVariations);
+  graphmlChooseCornersWithContinuation(cornerIndex, current, corners,
+                                       savePartialVariations);
 }
 
 /* Save partial variations of the solution */
