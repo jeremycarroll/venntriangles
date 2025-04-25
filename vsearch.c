@@ -19,13 +19,27 @@
 static int PerFaceDegreeSolutionNumber = 0;
 static char LastPrefix[128] = "";
 static int VariationCount = 0;
-static int position = 0;
 static clock_t TotalWastedTime = 0;
 static clock_t TotalUsefulTime = 0;
 static int WastedSearchCount = 0;
 static int UsefulSearchCount = 0;
 uint64_t CycleGuessCounter = 0;
 static TRAIL StartPoint;
+
+/* State machine states for the search process */
+typedef enum {
+  NEXT_FACE, /* Choose next face to process */
+  NEXT_CYCLE /* Choose next cycle for current face */
+} SearchState;
+
+/* Structure to hold the search state */
+typedef struct {
+  FACE currentFace;
+  FACE chosenFaces[NFACES];
+  CYCLE chosenCycles[NFACES];
+  int position;
+  SearchState state;
+} SearchContext;
 
 /* Declaration of file scoped static functions */
 static void setFaceCycleSetToSingleton(FACE face, uint64_t cycleId);
@@ -36,7 +50,6 @@ static FAILURE checkEdgeCurvesAndCorners(FACE face, CYCLE cycle, int depth);
 static FAILURE propagateFaceChoices(FACE face, CYCLE cycle, int depth);
 static FAILURE propagateRestrictionsToNonAdjacentFaces(FACE face, CYCLE cycle,
                                                        int depth);
-static FAILURE checkColorRestrictions(FACE face, CYCLE cycle, int depth);
 static FAILURE restrictCyclesForNonAdjacentColors(FACE face, CYCLE cycle,
                                                   int depth);
 
@@ -120,56 +133,78 @@ FACE searchChooseNextFace(bool smallestFirst)
   return face;
 }
 
+/* Process the NEXT_FACE state: choose next face to process or complete solution
+ */
+static bool processNextFaceState(SearchContext* context, bool smallestFirst,
+                                 void (*foundSolution)(void))
+{
+  context->currentFace = searchChooseNextFace(smallestFirst);
+
+  if (context->currentFace == NULL) {
+    /* No more faces to process - check if we found a solution */
+    freeAll();
+    if (faceFinalCorrectnessChecks() == NULL) {
+      GlobalSolutionsFound++;
+      PerFaceDegreeSolutionNumber++;
+      foundSolution();
+    }
+    context->position--;
+    context->state = NEXT_CYCLE;
+    return true;
+  }
+
+  /* Prepare the new face for processing */
+  context->currentFace->backtrack = Trail;
+  context->chosenFaces[context->position] = context->currentFace;
+  context->chosenCycles[context->position] = NULL;
+  context->state = NEXT_CYCLE;
+  return true;
+}
+
+/* Process the NEXT_CYCLE state: choose next cycle for current face */
+static bool processNextCycleState(SearchContext* context)
+{
+  context->currentFace = context->chosenFaces[context->position];
+  trailBacktrackTo(context->currentFace->backtrack);
+
+  CYCLE nextCycle = chooseCycle(context->currentFace,
+                                context->chosenCycles[context->position]);
+  if (nextCycle == NULL) {
+    /* No more cycles to try for this face - backtrack */
+    context->position--;
+    context->state = NEXT_CYCLE;
+    return true;
+  }
+
+  /* Try the next cycle */
+  context->chosenCycles[context->position] = nextCycle;
+  TRAIL_SET_POINTER(&context->currentFace->cycle, nextCycle);
+  assert(context->currentFace->cycle == nextCycle);
+
+  if (dynamicFaceBacktrackableChoice(context->currentFace) == NULL) {
+    /* Cycle choice was successful - move to next face */
+    context->position++;
+    context->state = NEXT_FACE;
+  }
+  /* If cycle choice failed, stay in NEXT_CYCLE state to try next cycle */
+  return true;
+}
+
 void searchHere(bool smallestFirst, void (*foundSolution)(void))
 {
-  FACE face;
-  FACE chosenFaces[NFACES];
-  CYCLE chosenCycles[NFACES];
-  CYCLE cycle;
-  enum { NEXT_FACE, NEXT_CYCLE } state = NEXT_FACE;
-  position = 0;
-  while (position >= 0) {
-    statisticPrintOneLine(position, false);
-    switch (state) {
+  SearchContext context = {
+      .currentFace = NULL, .position = 0, .state = NEXT_FACE};
+
+  /* Main search loop - continues until we backtrack past the start */
+  while (context.position >= 0) {
+    statisticPrintOneLine(context.position, false);
+
+    switch (context.state) {
       case NEXT_FACE:
-        face = searchChooseNextFace(smallestFirst);
-        if (face == NULL) {
-          freeAll();
-          if (faceFinalCorrectnessChecks() == NULL) {
-            GlobalSolutionsFound++;
-            PerFaceDegreeSolutionNumber++;
-            foundSolution();
-          }
-          position -= 1;
-          state = NEXT_CYCLE;
-        } else {
-          face->backtrack = Trail;
-          chosenFaces[position] = face;
-          chosenCycles[position] = NULL;
-          state = NEXT_CYCLE;
-        }
+        processNextFaceState(&context, smallestFirst, foundSolution);
         break;
       case NEXT_CYCLE:
-        face = chosenFaces[position];
-        trailBacktrackTo(face->backtrack);
-        cycle = chooseCycle(face, chosenCycles[position]);
-        if (cycle == NULL) {
-          position -= 1;
-          state = NEXT_CYCLE;
-        } else {
-          chosenCycles[position] = cycle;
-          /* suspect - because face->backtrack gets reset. */
-          TRAIL_SET_POINTER(&face->cycle, cycle);
-          assert(face->cycle == cycle);
-          if (dynamicFaceBacktrackableChoice(face) == NULL) {
-            position += 1;
-            state = NEXT_FACE;
-          } else {
-            /*
-            same position, next cycle.
-            */
-          }
-        }
+        processNextCycleState(&context);
         break;
     }
   }
@@ -354,22 +389,6 @@ static FAILURE propagateRestrictionsToNonAdjacentFaces(FACE face, CYCLE cycle,
   return NULL;
 }
 
-static FAILURE checkColorRestrictions(FACE face, CYCLE cycle, int depth)
-{
-  uint32_t i;
-  FAILURE failure;
-
-  for (i = 0; i < NCOLORS; i++) {
-    if (COLORSET_HAS_MEMBER(i, cycle->colors)) {
-      continue;
-    }
-    CHECK_FAILURE(faceRestrictAndPropogateCycles(
-        face->adjacentFaces[i], CycleSetOmittingOneColor[i], depth));
-  }
-
-  return NULL;
-}
-
 static FAILURE restrictCyclesForNonAdjacentColors(FACE face, CYCLE cycle,
                                                   int depth)
 {
@@ -425,7 +444,7 @@ static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
     printf(" gives %d/%d new solutions\n",
            GlobalSolutionsFound - initialSolutionsFound,
            VariationCount - initialVariationCount);
-    statisticPrintOneLine(position, true);
+    statisticPrintOneLine(0, true);
   } else {
     WastedSearchCount += 1;
     TotalWastedTime += used;
