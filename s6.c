@@ -8,6 +8,11 @@
 
 #include <stdarg.h>
 /* Global variables - file scoped */
+/* Lemma: In a simple Venn diagram of convex curves, the faces inside k curves
+ * have total face degree being 2 * nCk + nC(k-1), where nCk is the binomial
+ * coefficient "n choose k". For n = 6 and k = 5, this equals 2 * 6 + 15 = 27.
+ * This lemma is part of an ongoing proof about the structure of Venn diagrams.
+ */
 #define TOTAL_5FACE_DEGREE 27
 
 #define TOTAL_SEQUENCE_STORAGE 100
@@ -15,7 +20,7 @@
 
 static COLORSET SequenceOrder[NFACES];
 static COLORSET InverseSequenceOrder[NFACES];
-static int group[2 * NCOLORS][NCOLORS] = {
+static int dihedralGroup[2 * NCOLORS][NCOLORS] = {
 #if NCOLORS == 6
     {0, 1, 2, 3, 4, 5},
     {1, 2, 3, 4, 5, 0},
@@ -63,17 +68,19 @@ static SIGNATURE d6SignaturePermuted(SIGNATURE sequence,
 static int d6SignatureCompare(SIGNATURE a, SIGNATURE b);
 static SIGNATURE d6SignatureReflected(SIGNATURE sequence);
 
+#define ADD_TO_SEQUENCE_ORDER(colors)               \
+  do {                                              \
+    SequenceOrder[ix++] = (NFACES - 1) & ~(colors); \
+    done |= 1llu << (colors);                       \
+  } while (0)
+
+static void verifyS6Initialization(uint64_t done, uint64_t ix);
 /* Externally linked functions - Initialize */
 void initializeS6(void)
 {
   uint64_t ix = 0, i;
   uint64_t done = 0;
 
-#define ADD_TO_SEQUENCE_ORDER(colors)               \
-  do {                                              \
-    SequenceOrder[ix++] = (NFACES - 1) & ~(colors); \
-    done |= 1llu << (colors);                       \
-  } while (0)
   for (i = 0; i < NCOLORS; i++) {
     ADD_TO_SEQUENCE_ORDER(1llu << i);
   }
@@ -87,15 +94,21 @@ void initializeS6(void)
     }
     ADD_TO_SEQUENCE_ORDER(i);
   }
+  for (i = 0; i < NFACES; i++) {
+    InverseSequenceOrder[SequenceOrder[i]] = i;
+  }
+  verifyS6Initialization(done, ix);
+}
+
+static void verifyS6Initialization(uint64_t done, uint64_t ix)
+{
+  uint64_t i;
 #if NCOLORS == 6
   assert(done == ~0llu);
 #else
   assert(done == (1llu << (uint64_t)NFACES) - 1l);
 #endif
   assert(ix == NFACES);
-  for (i = 0; i < NFACES; i++) {
-    InverseSequenceOrder[SequenceOrder[i]] = i;
-  }
   for (i = 0; i < NFACES; i++) {
     assert(InverseSequenceOrder[SequenceOrder[i]] == i);
     assert(SequenceOrder[InverseSequenceOrder[i]] == i);
@@ -312,7 +325,7 @@ static SYMMETRY_TYPE d6IsMaxInSequenceOrder(
 static SIGNATURE maxSpunSignature(SIGNATURE onCurrentFace)
 {
   int counter;
-  PERMUTATION abcNCycle = &group[1];
+  PERMUTATION abcNCycle = &dihedralGroup[1];
   SIGNATURE best = onCurrentFace;
   PERMUTATION permutation =
       s6Automorphism(onCurrentFace->classSignature.faceCycleId[0]);
@@ -344,7 +357,7 @@ static FACE_DEGREE_SEQUENCE sortPermutationsOfSequence(
       for (int k = 0; k < NFACES; k++) {
         sequences[i * 2 * NCOLORS + j].faceDegrees[k] =
             next->faceDegrees[InverseSequenceOrder[colorSetPermute(
-                SequenceOrder[k], &group[j])]];
+                SequenceOrder[k], &dihedralGroup[j])]];
       }
     }
     if (count - i > 1) {
@@ -380,30 +393,43 @@ static FACE_DEGREE_SEQUENCE d6FaceDegreesInSequenceOrder()
   return faceDegrees;
 }
 
+/* Generate all interesting sequences of face degrees that:
+ * 1. Sum to TOTAL_5FACE_DEGREE (27) - due to the lemma about total face degree
+ * 2. Are either CANONICAL or EQUIVOCAL in symmetry type
+ *
+ * The function recursively builds sequences of face degrees, checking at each
+ * step:
+ * - If the partial sum exceeds TOTAL_5FACE_DEGREE, backtrack
+ * - If we've reached depth NCOLORS, check if the sum equals TOTAL_5FACE_DEGREE
+ *   and if the symmetry type is interesting (CANONICAL or EQUIVOCAL)
+ * - Otherwise, try all possible face degrees >= 3 for the current position
+ */
 static void canoncialCallbackImpl(int depth, int sum, FACE_DEGREE *args,
                                   UseFaceDegrees callback, void *data)
 {
   if (sum > TOTAL_5FACE_DEGREE) {
-    return;
+    return;  // Early return if we've exceeded the target sum
   }
+
   if (depth == NCOLORS) {
     if (sum != TOTAL_5FACE_DEGREE) {
-      return;
+      return;  // Only interested in sequences that sum exactly to 27
     }
-    freeAll();
-    switch (s6SymmetryType6(args)) {
-      case NON_CANONICAL:
-        return;
-      case EQUIVOCAL:
-      case CANONICAL:
-        callback(data, args);
-        return;
+
+    freeAll();  // Reset any state before checking symmetry
+    if (s6SymmetryType6(args) == NON_CANONICAL) {
+      return;  // Skip non-canonical sequences as they're covered by symmetry
     }
+
+    callback(data, args);  // Found an interesting sequence - call the callback
+    return;
   }
+
+  // Try all possible face degrees >= 3 for the current position
   for (int i = NCOLORS; i >= 3; i--) {
     args[depth] = i;
     if (CentralFaceDegrees[depth] > 0 && i != CentralFaceDegrees[depth]) {
-      continue;
+      continue;  // Skip if there's a specific degree required for this position
     }
     canoncialCallbackImpl(depth + 1, sum + i, args, callback, data);
   }
