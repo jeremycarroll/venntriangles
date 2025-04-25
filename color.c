@@ -29,25 +29,27 @@ static void initializeSameDirection(void);
 static void initializeOppositeDirection(void);
 static void initializeOmittingCycleSets(void);
 
-/* Externally linked functions - initialize... */
-void initializeCycleSets(void)
+/* Helper functions for memoization */
+static void memoizeCyclePairs(void)
 {
-  initializeCycles();
-  uint32_t i, j, k, cycleId;
+  uint32_t i, j, cycleId;
   for (i = 0; i < NCOLORS; i++) {
     for (j = 0; j < NCOLORS; j++) {
-      if (i == j) {
-        continue;
-      }
       for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
         if (cycleContainsAthenB(&Cycles[cycleId], i, j)) {
           cycleSetAdd(cycleId, CycleSetPairs[i][j]);
         }
       }
+    }
+  }
+}
+
+static void memoizeCycleTriples(void)
+{
+  uint32_t i, j, k, cycleId;
+  for (i = 0; i < NCOLORS; i++) {
+    for (j = 0; j < NCOLORS; j++) {
       for (k = 0; k < NCOLORS; k++) {
-        if (i == k || j == k) {
-          continue;
-        }
         for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
           if (cycleContainsAthenBthenC(&Cycles[cycleId], i, j, k)) {
             cycleSetAdd(cycleId, CycleSetTriples[i][j][k]);
@@ -56,6 +58,14 @@ void initializeCycleSets(void)
       }
     }
   }
+}
+
+/* Externally linked functions - initialize... */
+void initializeCycleSets(void)
+{
+  initializeCycles();
+  memoizeCyclePairs();
+  memoizeCycleTriples();
   initializeSameDirection();
   initializeOppositeDirection();
   initializeOmittingCycleSets();
@@ -135,17 +145,19 @@ bool cycleContainsAthenB(CYCLE cycle, uint32_t i, uint32_t j)
 
 bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k)
 {
-  uint64_t ix;
-  for (ix = 2; ix < cycle->length; ix++) {
-    if (cycle->curves[ix - 2] == i && cycle->curves[ix - 1] == j &&
-        cycle->curves[ix] == k) {
+  // Create an extended array that includes the first two elements at the end
+  COLOR extended[cycle->length + 2];
+  memcpy(extended, cycle->curves, cycle->length * sizeof(COLOR));
+  extended[cycle->length] = cycle->curves[0];
+  extended[cycle->length + 1] = cycle->curves[1];
+
+  // Look for the sequence in the extended array
+  for (uint64_t ix = 0; ix < cycle->length; ix++) {
+    if (extended[ix] == i && extended[ix + 1] == j && extended[ix + 2] == k) {
       return true;
     }
   }
-  return (cycle->curves[ix - 1] == i && cycle->curves[0] == j &&
-          cycle->curves[1] == k) ||
-         (cycle->curves[ix - 2] == i && cycle->curves[ix - 1] == j &&
-          cycle->curves[0] == k);
+  return false;
 }
 
 CYCLE_ID getCycleId(COLOR* cycle, uint32_t length)
@@ -376,9 +388,9 @@ static void initializeOppositeDirection(void)
   assert(NextSetOfCycleSets == 2 * NCYCLE_ENTRIES);
 }
 
-static void initializeOmittingCycleSets()
+static void initializeOmittingOneColor(void)
 {
-  uint32_t i, j, cycleId;
+  uint32_t i, cycleId;
   for (i = 0; i < NCOLORS; i++) {
     for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
       if (!COLORSET_HAS_MEMBER(i, Cycles[cycleId].colors)) {
@@ -386,15 +398,24 @@ static void initializeOmittingCycleSets()
       }
     }
   }
+}
+
+static void initializeOmittingColorPairs(void)
+{
+  uint32_t i, j, cycleId;
   for (i = 0; i < NCOLORS; i++) {
     for (j = i + 1; j < NCOLORS; j++) {
       for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-        if (!(COLORSET_HAS_MEMBER(i, Cycles[cycleId].colors) &&
-              COLORSET_HAS_MEMBER(j, Cycles[cycleId].colors) &&
-              cycleContainsAthenB(&Cycles[cycleId], i, j))) {
+        if (!cycleContainsAthenB(&Cycles[cycleId], i, j)) {
           cycleSetAdd(cycleId, CycleSetOmittingColorPair[i][j]);
         }
       }
     }
   }
+}
+
+static void initializeOmittingCycleSets(void)
+{
+  initializeOmittingOneColor();
+  initializeOmittingColorPairs();
 }
