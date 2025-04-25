@@ -31,42 +31,30 @@ static TRAIL StartPoint;
 static void setFaceCycleSetToSingleton(FACE face, uint64_t cycleId);
 static CYCLE chooseCycle(FACE face, CYCLE cycle);
 static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args);
+static FAILURE checkFacePoints(FACE face, CYCLE cycle, int depth);
+static FAILURE checkEdgeCurvesAndCorners(FACE face, CYCLE cycle, int depth);
+static FAILURE propagateFaceChoices(FACE face, CYCLE cycle, int depth);
+static FAILURE propagateRestrictionsToNonAdjacentFaces(FACE face, CYCLE cycle,
+                                                       int depth);
+static FAILURE checkColorRestrictions(FACE face, CYCLE cycle, int depth);
+static FAILURE restrictCyclesForNonAdjacentColors(FACE face, CYCLE cycle,
+                                                  int depth);
 
 /* Externally linked functions */
 FAILURE dynamicFaceChoice(FACE face, int depth)
 {
-  uint32_t i, j;
   CYCLE cycle = face->cycle;
   uint64_t cycleId = cycle - Cycles;
   FAILURE failure;
   /* equality in the following assertion is achieved in the Venn 3 case, where a
   single choice in any face determines all the faces. */
-  /* TODO: what order should these checks be done in. There are a lot of them.
-   */
-  assert(depth <= NFACES);
-  for (i = 0; i < cycle->length - 1; i++) {
-    CHECK_FAILURE(dynamicFaceIncludePoint(face, cycle->curves[i],
-                                          cycle->curves[i + 1], depth));
-  }
-  CHECK_FAILURE(
-      dynamicFaceIncludePoint(face, cycle->curves[i], cycle->curves[0], depth));
 
-  for (i = 0; i < cycle->length; i++) {
-    CHECK_FAILURE(edgeCurveChecks(&face->edges[cycle->curves[i]], depth));
-    CHECK_FAILURE(
-        dynamicEdgeCornerCheck(&face->edges[cycle->curves[i]], depth));
-  }
-  for (i = 0; i < cycle->length; i++) {
-    CHECK_FAILURE(
-        facePropogateChoice(face, &face->edges[cycle->curves[i]], depth));
-  }
-  for (i = 0; i < NCOLORS; i++) {
-    if (COLORSET_HAS_MEMBER(i, cycle->colors)) {
-      continue;
-    }
-    CHECK_FAILURE(faceRestrictAndPropogateCycles(
-        face->adjacentFaces[i], CycleSetOmittingOneColor[i], depth));
-  }
+  assert(depth <= NFACES);
+
+  CHECK_FAILURE(checkFacePoints(face, cycle, depth));
+  CHECK_FAILURE(checkEdgeCurvesAndCorners(face, cycle, depth));
+  CHECK_FAILURE(propagateFaceChoices(face, cycle, depth));
+  CHECK_FAILURE(propagateRestrictionsToNonAdjacentFaces(face, cycle, depth));
 
   if (face->colors == 0 || face->colors == (NFACES - 1)) {
     TRAIL_SET_POINTER(&face->next, face);
@@ -81,19 +69,7 @@ FAILURE dynamicFaceChoice(FACE face, int depth)
     assert(face->previous != Faces);
   }
 
-  for (i = 0; i < NCOLORS; i++) {
-    for (j = i + 1; j < NCOLORS; j++) {
-      if (COLORSET_HAS_MEMBER(i, cycle->colors) &&
-          COLORSET_HAS_MEMBER(j, cycle->colors)) {
-        if (cycleContainsAthenB(face->cycle, i, j)) {
-          continue;
-        }
-      }
-      CHECK_FAILURE(faceRestrictAndPropogateCycles(
-          face->adjacentFaces[i]->adjacentFaces[j],
-          CycleSetOmittingColorPair[i][j], depth));
-    }
-  }
+  CHECK_FAILURE(restrictCyclesForNonAdjacentColors(face, cycle, depth));
 
   return NULL;
 }
@@ -317,6 +293,104 @@ static void setFaceCycleSetToSingleton(FACE face, uint64_t cycleId)
 static CYCLE chooseCycle(FACE face, CYCLE cycle)
 {
   return cycleSetNext(face->possibleCycles, cycle);
+}
+
+static FAILURE checkFacePoints(FACE face, CYCLE cycle, int depth)
+{
+  uint32_t i;
+  FAILURE failure;
+
+  for (i = 0; i < cycle->length - 1; i++) {
+    CHECK_FAILURE(dynamicFaceIncludePoint(face, cycle->curves[i],
+                                          cycle->curves[i + 1], depth));
+  }
+  CHECK_FAILURE(
+      dynamicFaceIncludePoint(face, cycle->curves[i], cycle->curves[0], depth));
+
+  return NULL;
+}
+
+static FAILURE checkEdgeCurvesAndCorners(FACE face, CYCLE cycle, int depth)
+{
+  uint32_t i;
+  FAILURE failure;
+
+  for (i = 0; i < cycle->length; i++) {
+    CHECK_FAILURE(edgeCurveChecks(&face->edges[cycle->curves[i]], depth));
+    CHECK_FAILURE(
+        dynamicEdgeCornerCheck(&face->edges[cycle->curves[i]], depth));
+  }
+
+  return NULL;
+}
+
+static FAILURE propagateFaceChoices(FACE face, CYCLE cycle, int depth)
+{
+  uint32_t i;
+  FAILURE failure;
+
+  for (i = 0; i < cycle->length; i++) {
+    CHECK_FAILURE(
+        facePropogateChoice(face, &face->edges[cycle->curves[i]], depth));
+  }
+
+  return NULL;
+}
+
+static FAILURE propagateRestrictionsToNonAdjacentFaces(FACE face, CYCLE cycle,
+                                                       int depth)
+{
+  uint32_t i;
+  FAILURE failure;
+
+  for (i = 0; i < NCOLORS; i++) {
+    if (COLORSET_HAS_MEMBER(i, cycle->colors)) {
+      continue;
+    }
+    CHECK_FAILURE(faceRestrictAndPropogateCycles(
+        face->adjacentFaces[i], CycleSetOmittingOneColor[i], depth));
+  }
+
+  return NULL;
+}
+
+static FAILURE checkColorRestrictions(FACE face, CYCLE cycle, int depth)
+{
+  uint32_t i;
+  FAILURE failure;
+
+  for (i = 0; i < NCOLORS; i++) {
+    if (COLORSET_HAS_MEMBER(i, cycle->colors)) {
+      continue;
+    }
+    CHECK_FAILURE(faceRestrictAndPropogateCycles(
+        face->adjacentFaces[i], CycleSetOmittingOneColor[i], depth));
+  }
+
+  return NULL;
+}
+
+static FAILURE restrictCyclesForNonAdjacentColors(FACE face, CYCLE cycle,
+                                                  int depth)
+{
+  uint32_t i, j;
+  FAILURE failure;
+
+  for (i = 0; i < NCOLORS; i++) {
+    for (j = i + 1; j < NCOLORS; j++) {
+      if (COLORSET_HAS_MEMBER(i, cycle->colors) &&
+          COLORSET_HAS_MEMBER(j, cycle->colors)) {
+        if (cycleContainsAthenB(face->cycle, i, j)) {
+          continue;
+        }
+      }
+      CHECK_FAILURE(faceRestrictAndPropogateCycles(
+          face->adjacentFaces[i]->adjacentFaces[j],
+          CycleSetOmittingColorPair[i][j], depth));
+    }
+  }
+
+  return NULL;
 }
 
 static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
