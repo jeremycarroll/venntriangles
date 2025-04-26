@@ -44,40 +44,53 @@ static POINT getOrInitializePoint(COLORSET colorsOfFace, COLOR primary,
   return AllUPointPointers[outsideColor][primary][secondary];
 }
 
+/* Validation function for development-time checks of point initialization */
+static void validatePointInitialization(POINT point, EDGE incomingEdge,
+                                        COLOR primary, COLOR secondary, int ix)
+{
+  assert(point->incomingEdges[ix] == NULL);
+  assert(incomingEdge->color == (ix < 2 ? primary : secondary));
+  assert(point->colors == ((1u << primary) | (1u << secondary)));
+}
+
 /*
-   The curve colored A crosses from inside the curve colored B to outside it.
-   The curve colored B crosses from outside the curve colored A to inside it.
-*/
+ * Determines which slot (0-3) an incoming edge should use at an intersection
+ * point. The slot depends on:
+ * - Whether the edge is primary (enters from inside its own curve)
+ * - Whether the other color's curve contains this face
+ * Returns:
+ * - 0: Primary edge, other color contains face
+ * - 1: Secondary edge, other color excludes face
+ * - 2: Secondary edge, other color contains face
+ * - 3: Primary edge, other color excludes face
+ */
+static uint32_t getIncomingEdgeSlot(EDGE incomingEdge, COLOR othercolor,
+                                    COLORSET faceColors)
+{
+  if (IS_PRIMARY_EDGE(incomingEdge)) {
+    return COLORSET_HAS_MEMBER(othercolor, faceColors) ? 0 : 3;
+  } else {
+    return COLORSET_HAS_MEMBER(othercolor, faceColors) ? 2 : 1;
+  }
+}
+
 POINT initializePointIncomingEdge(COLORSET colors, EDGE incomingEdge,
                                   COLOR othercolor)
 {
   POINT point;
   COLOR primary, secondary;
-  uint32_t ix;
 
-  if (IS_PRIMARY_EDGE(incomingEdge)) {
-    if (COLORSET_HAS_MEMBER(othercolor, colors)) {
-      ix = 0;
-    } else {
-      ix = 3;
-    }
-  } else {
-    if (COLORSET_HAS_MEMBER(othercolor, colors)) {
-      ix = 2;
-    } else {
-      ix = 1;
-    }
-  }
+  uint32_t incomingEdgeSlot =
+      getIncomingEdgeSlot(incomingEdge, othercolor, colors);
 
-  assert(othercolor != incomingEdge->color);
-  switch (ix) {
-    case 0:
-    case 1:
+  switch (incomingEdgeSlot) {
+    case 0: /* Primary edge, other color contains face */
+    case 1: /* Secondary edge, other color excludes face */
       primary = incomingEdge->color;
       secondary = othercolor;
       break;
-    case 2:
-    case 3:
+    case 2: /* Secondary edge, other color contains face */
+    case 3: /* Primary edge, other color excludes face */
       primary = othercolor;
       secondary = incomingEdge->color;
       break;
@@ -86,13 +99,11 @@ POINT initializePointIncomingEdge(COLORSET colors, EDGE incomingEdge,
   }
 
   point = getOrInitializePoint(incomingEdge->colors, primary, secondary);
-  assert(point->incomingEdges[ix] == NULL);
-  assert(point->colors == 0 ||
-         point->colors == ((1u << primary) | (1u << secondary)));
-  assert(incomingEdge->color == (ix < 2 ? primary : secondary));
-  point->incomingEdges[ix] = incomingEdge;
+  validatePointInitialization(point, incomingEdge, primary, secondary,
+                              incomingEdgeSlot);
 
-  assert(point->colors == ((1u << primary) | (1u << secondary)));
+  point->incomingEdges[incomingEdgeSlot] = incomingEdge;
+
   return point;
 }
 
@@ -213,6 +224,47 @@ void edgeFindCorners(COLOR a, EDGE result[3][2])
 }
 
 /* File scoped static functions */
+
+/*
+ * Detects if a corner exists at the current edge based on the state of
+ * outside and passed curves.
+ * Returns true if a corner is found, false otherwise.
+ */
+static bool detectCornerAndUpdateCrossingSets(COLORSET other, COLORSET* outside,
+                                              COLORSET* passed)
+{
+  if (other & *outside) {
+    // We're crossing back inside some curves
+    *outside &= ~other;
+
+    if (other & *passed) {
+      *passed = 0;
+      return true;
+    }
+  } else {
+    // We're crossing to the outside of these curves
+    *passed |= other;
+    *outside |= other;
+  }
+
+  return false;
+}
+
+/*
+ * Checks for corners in a curve by tracking when curves cross from inside to
+ * outside and vice versa. A corner is detected when:
+ * 1. We cross a curve that was previously in the 'outside' set
+ * 2. That curve was also recently crossed (in the 'passed' set)
+ *
+ * Parameters:
+ * - start: The starting edge of the curve
+ * - depth: Current recursion depth for error reporting
+ * - cornersReturn: Array to store found corners
+ *
+ * Returns:
+ * - NULL if successful
+ * - failureTooManyCorners if more than MAX_CORNERS are found
+ */
 static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn)
 {
   EDGE current = start;
@@ -227,19 +279,12 @@ static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn)
          (start->colors & notMyColor) == ((NFACES - 1) & notMyColor));
   do {
     CURVELINK p = current->to;
-    COLORSET other = p->point->colors & notMyColor;
-    if (other & outside) {
-      outside = outside & ~other;
-      if (other & passed) {
-        if (counter >= MAX_CORNERS) {
-          return failureTooManyCorners(depth);
-        }
-        cornersReturn[counter++] = current;
-        passed = 0;
+    if (detectCornerAndUpdateCrossingSets(p->point->colors & notMyColor,
+                                          &outside, &passed)) {
+      if (counter >= MAX_CORNERS) {
+        return failureTooManyCorners(depth);
       }
-    } else {
-      passed |= other;
-      outside |= other;
+      cornersReturn[counter++] = current;
     }
     current = p->next;
   } while (current->to != NULL && current != start);
