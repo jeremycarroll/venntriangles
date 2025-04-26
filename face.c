@@ -2,6 +2,7 @@
 
 #include "face.h"
 
+#include "failure.h"
 #include "s6.h"
 #include "statistics.h"
 #include "utils.h"
@@ -19,6 +20,13 @@ static void applyMonotonicity(void);
 static void initializeLengthOfCycleOfFaces(void);
 static void restrictCycles(FACE face, CYCLESET cycleSet);
 static FAILURE checkLengthOfCycleOfFaces(FACE face);
+static void countEdge(EDGE edge);
+static void setupColors(POINT point, COLOR colors[2]);
+static FAILURE processIncomingEdge(EDGE edge, COLOR colors[2],
+                                   int incomingEdgeSlot, int depth);
+static void validateIncomingEdges(POINT point);
+static FAILURE handleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
+                                  int depth);
 
 /* Externally linked functions */
 bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length)
@@ -256,51 +264,27 @@ void initializePoints(void)
 FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
                                 int depth)
 {
-  FAILURE crossingLimit;
+  FAILURE failure;
   POINT point;
   EDGE edge;
   COLOR colors[2];
-  uint_trail* edgeCountPtr;
 
-  if (face->edges[aColor].to != NULL) {
-    assert(face->edges[aColor].to != &face->edges[aColor].possiblyTo[aColor]);
-    if (face->edges[aColor].to != &face->edges[aColor].possiblyTo[bColor]) {
-      return failurePointConflict(depth);
-    }
-    assert(face->edges[aColor].to == &face->edges[aColor].possiblyTo[bColor]);
-    return NULL;
+  failure = handleExistingEdge(face, aColor, bColor, depth);
+  if (failure != NULL || face->edges[aColor].to != NULL) {
+    return failure;
   }
+
   point = face->edges[aColor].possiblyTo[bColor].point;
-  crossingLimit =
-      edgeCheckCrossingLimit(point->primary, point->secondary, depth);
-  if (crossingLimit != NULL) {
-    return crossingLimit;
-  }
-  colors[0] = point->primary;
-  colors[1] = point->secondary;
-  for (int i = 0; i < 4; i++) {
-    edge = point->incomingEdges[i];
-    assert(edge->color == colors[(i & 2) >> 1]);
-    assert(edge->color != colors[1 - ((i & 2) >> 1)]);
-    if (edge->to != NULL) {
-      if (edge->to != &edge->possiblyTo[colors[(i & 2) >> 1]]) {
-        return failurePointConflict(depth);
-      }
-      assert(edge->to == &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
-    } else {
-      TRAIL_SET_POINTER(&edge->to,
-                        &edge->possiblyTo[colors[1 - ((i & 2) >> 1)]]);
-    }
+  CHECK_FAILURE(
+      edgeCheckCrossingLimit(point->primary, point->secondary, depth));
+  setupColors(point, colors);
 
-    assert(edge->to != &edge->possiblyTo[edge->color]);
-    // Count edge
-    edgeCountPtr =
-        &EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color];
-    trailSetInt(edgeCountPtr, (*edgeCountPtr) + 1);
+  for (int incomingEdgeSlot = 0; incomingEdgeSlot < 4; incomingEdgeSlot++) {
+    edge = point->incomingEdges[incomingEdgeSlot];
+    CHECK_FAILURE(processIncomingEdge(edge, colors, incomingEdgeSlot, depth));
+    countEdge(edge);
   }
-  for (int i = 0; i < 4; i++) {
-    assert(point->incomingEdges[i]->to != NULL);
-  }
+  validateIncomingEdges(point);
   return NULL;
 }
 
@@ -344,8 +328,8 @@ static void applyMonotonicity(void)
   (!ONE_IN_ONE_OUT_CORE(a, b, colors) ? 0                          \
    : ((1 << (a)) & colors)            ? (nextFaceXor = currentXor) \
                                       : (previousFaceXor = currentXor))
-  /* The inner face is NFACES-1, with all the colors; the outer face is 0, with
-   * no colors.
+  /* The inner face is NFACES-1, with all the colors; the outer face is 0,
+   * with no colors.
    */
   for (colors = 1, face = Faces + 1; colors < NFACES - 1; colors++, face++) {
     for (cycleId = 0, cycle = Cycles; cycleId < NCYCLES; cycleId++, cycle++) {
@@ -428,4 +412,83 @@ static FAILURE checkLengthOfCycleOfFaces(FACE face)
     }
   } while (f != NULL);
   assert(0);
+}
+
+/*
+ * Counts an edge in the global edge count tracking.
+ */
+static void countEdge(EDGE edge)
+{
+  uint_trail* edgeCountPtr =
+      &EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color];
+  trailSetInt(edgeCountPtr, (*edgeCountPtr) + 1);
+}
+
+/*
+ * Sets up the color array for a point, with primary and secondary colors.
+ */
+static void setupColors(POINT point, COLOR colors[2])
+{
+  colors[0] = point->primary;
+  colors[1] = point->secondary;
+}
+
+/*
+ * Processes a single incoming edge, setting up its destination and counting
+ * it. Returns failurePointConflict if the edge points to an invalid
+ * destination.
+ */
+static FAILURE processIncomingEdge(EDGE edge, COLOR colors[2],
+                                   int incomingEdgeSlot, int depth)
+{
+  assert(edge->color == colors[(incomingEdgeSlot & 2) >> 1]);
+  assert(edge->color != colors[1 - ((incomingEdgeSlot & 2) >> 1)]);
+  if (edge->to != NULL) {
+    if (edge->to != &edge->possiblyTo[colors[(incomingEdgeSlot & 2) >> 1]]) {
+      return failurePointConflict(depth);
+    }
+    assert(edge->to ==
+           &edge->possiblyTo[colors[1 - ((incomingEdgeSlot & 2) >> 1)]]);
+  } else {
+    TRAIL_SET_POINTER(
+        &edge->to,
+        &edge->possiblyTo[colors[1 - ((incomingEdgeSlot & 2) >> 1)]]);
+  }
+
+  assert(edge->to != &edge->possiblyTo[edge->color]);
+  return NULL;
+}
+
+/*
+ * Validates that all incoming edges of a point have been properly set up.
+ * Uses assertions since this checks for invariants that should never be
+ * violated.
+ */
+static void validateIncomingEdges(POINT point)
+{
+  for (int incomingEdgeSlot = 0; incomingEdgeSlot < 4; incomingEdgeSlot++) {
+    assert(point->incomingEdges[incomingEdgeSlot]->to != NULL);
+  }
+}
+
+/*
+ * If an edge already exists, verifies it points to the expected destination.
+ * Returns:
+ * - failurePointConflict if the edge exists but points to the wrong
+ * destination
+ * - NULL if the edge exists and points to the correct destination
+ * - NULL if the edge doesn't exist (allowing further processing)
+ */
+static FAILURE handleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
+                                  int depth)
+{
+  if (face->edges[aColor].to != NULL) {
+    assert(face->edges[aColor].to != &face->edges[aColor].possiblyTo[aColor]);
+    if (face->edges[aColor].to != &face->edges[aColor].possiblyTo[bColor]) {
+      return failurePointConflict(depth);
+    }
+    assert(face->edges[aColor].to == &face->edges[aColor].possiblyTo[bColor]);
+    return NULL;
+  }
+  return NULL;
 }
