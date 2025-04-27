@@ -205,23 +205,16 @@ void graphmlSaveAllVariations(const char *prefix, int expectedVariations)
   savePartialVariations(0, corners);
 }
 
-static int edgeIsCorner(EDGE edge, EDGE (*corners)[3], int *low, int *high)
+/* Count the number of times an edge appears in the corners array, and return the count. */
+static int edgeIsCorner(EDGE edge, EDGE (*corners)[3])
 {
-  int result = 0;
-  int ix;
-  *low = -1;
-  *high = -1;
-  for (ix = 0; ix < 3; ix++) {
+  int count = 0;
+  for (int ix = 0; ix < 3; ix++) {
     if ((*corners)[ix] == edge) {
-      result |= 1 << ix;
-      if (*low != -1) {
-        *high = ix;
-      } else {
-        *low = ix;
-      }
+      count++;
     }
   }
-  return result;
+  return count;
 }
 
 /* Process a single corner in the triangle path */
@@ -296,7 +289,6 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
   EDGE path[NFACES];
   EDGE current;
   int ix;
-  int low, high;
   int cornerIds[3] = {-1, -1, -1};
   int cornerIx = 0;
 
@@ -307,28 +299,21 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
   int line = 0;
   for (ix = 0; path[ix] != NULL; ix++) {
     current = path[ix];
-    int cornerMask = edgeIsCorner(current->reversed, corners, &low, &high);
+    int cornerCount = edgeIsCorner(current->reversed, corners);
 
-    switch (cornerMask) {
+    switch (cornerCount) {
       case 0:  // No corners - just a regular edge
         processRegularEdge(fp, current, line);
         break;
-
-      case 1:  // Single corner cases
-      case 2:
-      case 4:
+      case 1:  // Single corner
         processSingleCorner(fp, current, line, cornerIds, &cornerIx);
         line = (line + 1) % 3;
         break;
-
-      case 3:  // Two adjacent corners
-      case 5:
-      case 6:
+      case 2:  // Two adjacent corners
         processAdjacentCorners(fp, current, color, line, cornerIds, &cornerIx);
         line = (line + 2) % 3;
         break;
-
-      case 7:  // All three corners at once
+      case 3:  // All three corners at once
         processAllCorners(fp, current, color, cornerIds, &cornerIx);
         break;
     }
