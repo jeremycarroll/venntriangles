@@ -27,6 +27,8 @@ static FAILURE processIncomingEdge(EDGE edge, COLOR colors[2],
 static void validateIncomingEdges(POINT point);
 static FAILURE handleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
                                   int depth);
+static bool areCurvesAdjacent(COLOR curve1, COLOR curve2);
+static COLORSET getCurveColors(COLOR curve);
 
 /* Externally linked functions */
 bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length)
@@ -314,49 +316,139 @@ static void initializePossiblyTo(void)
   }
 }
 
+/*
+ * Checks if a cycle is valid for a face's colors.
+ * A cycle is valid if it has at least one curve containing the face and at
+ * least one curve not containing the face. This ensures proper transitions
+ * between regions of different colors in the vertex adjacency cycle.
+ */
+static bool isCycleValidForFace(CYCLE cycle, COLORSET faceColors)
+{
+  return (cycle->colors & faceColors) != 0 &&
+         (cycle->colors & ~faceColors) != 0;
+}
+
+/*
+ * Checks if two curves form a valid edge transition in the vertex adjacency
+ * cycle. A valid transition occurs when:
+ * - The curves share a vertex (are adjacent)
+ * - One curve is an inner edge and the other is an outer edge
+ * - The transition preserves the monotonicity of the FISC
+ */
+static bool isEdgeTransition(COLOR curve1, COLOR curve2, COLORSET faceColors,
+                             COLORSET* previousFaceColors,
+                             COLORSET* nextFaceColors)
+{
+  uint64_t currentXor = (1ll << curve1) | (1ll << curve2);
+  if (__builtin_popcountll(currentXor & faceColors) != 1) {
+    return false;
+  }
+
+  if ((1 << curve1) & faceColors) {
+    assert(*nextFaceColors == 0);
+    *nextFaceColors = faceColors ^ currentXor;
+  } else {
+    assert(*previousFaceColors == 0);
+    *previousFaceColors = faceColors ^ currentXor;
+  }
+  return true;
+}
+
+/*
+ * Counrs valid edge transitions in a cycle for a given face,
+ * and returns true if there are exactly two.
+ * In a monotone FISC, each face must have exactly two transitions:
+ * - One from inner edges to outer edges
+ * - One from outer edges to inner edges
+ * This ensures the k-faces form a single cycle by vertex adjacency.
+ */
+static bool exactlyTwoEdgeTransitions(CYCLE cycle, COLORSET faceColors,
+                                      COLORSET* previousFaceColors,
+                                      COLORSET* nextFaceColors)
+{
+  uint32_t count = 0;
+  COLORSET dummy = 0;
+
+  // Check transition from last to first curve
+  if (isEdgeTransition(cycle->curves[cycle->length - 1], cycle->curves[0],
+                       faceColors, previousFaceColors, nextFaceColors)) {
+    count++;
+  }
+
+  // Check transitions between consecutive curves
+  for (uint32_t i = 1; i < cycle->length; i++) {
+    if (isEdgeTransition(cycle->curves[i - 1], cycle->curves[i], faceColors,
+                         previousFaceColors, nextFaceColors)) {
+      count++;
+      switch (count) {
+        case 2:
+          // Both *previousFaceColors and *nextFaceColors have been set,
+          // Change them to preserve invariants expected by further calls to
+          // isEdgeTransition.
+          previousFaceColors = &dummy;
+          nextFaceColors = &dummy;
+          break;
+        case 3:
+          return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+/*
+ * Triangles are convex, Venn diagrams are FISCs, so we use the theorem
+ * that a FISC of convex curves is monotone.
+ * We call an edge of a k-face an outer edge, if it is with a (k-1)-face,
+ * and an inner edge if it is with a (k-1)-face.
+ *
+ * The innermost face then has N outer edges, and the outermost face has N inner
+ * edges. The other faces have 1 or more inner edges and 1 or more outer edges,
+ * and at least 3 edges. All the inner edges are together and so are the outer
+ * edges, so as we go round the facial cycle there are two transitions, one from
+ * inner edge to outer edge, the other from outer edge to inner edge.
+ *
+ * For each face (except inner and outer):
+ * 1. Filters cycles to ensure proper edge transitions
+ * 2. Verifies each face has exactly two transitions:
+ *    - One from inner edges to outer edges
+ *    - One from outer edges to inner edges
+ * 3. Sets up the vertex adjacency relationships between k-faces
+ *
+ * This ensures that the k-faces form a single cycle by vertex adjacency,
+ * with the innermost face having only outer edges and the outermost face
+ * having only inner edges.
+ */
 static void applyMonotonicity(void)
 {
-  uint32_t colors, cycleId;
-  FACE face;
-  CYCLE cycle;
-  uint32_t chainingCount, i;
-  uint64_t currentXor, previousFaceXor, nextFaceXor;
-#define ONE_IN_ONE_OUT_CORE(a, b, colors)                              \
-  (__builtin_popcountll((currentXor = ((1ll << (a)) | (1ll << (b)))) & \
-                        colors) == 1)
-#define ONE_IN_ONE_OUT(a, b, colors)                               \
-  (!ONE_IN_ONE_OUT_CORE(a, b, colors) ? 0                          \
-   : ((1 << (a)) & colors)            ? (nextFaceXor = currentXor) \
-                                      : (previousFaceXor = currentXor))
-  /* The inner face is NFACES-1, with all the colors; the outer face is 0,
-   * with no colors.
-   */
-  for (colors = 1, face = Faces + 1; colors < NFACES - 1; colors++, face++) {
-    for (cycleId = 0, cycle = Cycles; cycleId < NCYCLES; cycleId++, cycle++) {
-      if ((cycle->colors & colors) == 0 || (cycle->colors & ~colors) == 0) {
+  // The inner face is NFACES-1, with all the colors; the outer face is 0, with
+  // no colors.
+  for (COLORSET faceColors = 1; faceColors < NFACES - 1; faceColors++) {
+    FACE face = Faces + faceColors;
+    for (uint32_t cycleId = 0; cycleId < NCYCLES; cycleId++) {
+      CYCLE cycle = Cycles + cycleId;
+      if (!isCycleValidForFace(cycle, faceColors)) {
         cycleSetRemove(cycleId, face->possibleCycles);
+        continue;
       }
-      previousFaceXor = nextFaceXor = 0;
-      chainingCount = ONE_IN_ONE_OUT(cycle->curves[cycle->length - 1],
-                                     cycle->curves[0], colors)
-                          ? 1
-                          : 0;
-      for (i = 1; i < cycle->length; i++) {
-        if (ONE_IN_ONE_OUT(cycle->curves[i - 1], cycle->curves[i], colors)) {
-          chainingCount++;
-        }
-      }
-      if (chainingCount != 2) {
+
+      COLORSET previousFaceColors = 0, nextFaceColors = 0;
+      bool twoTransitions = exactlyTwoEdgeTransitions(
+          cycle, faceColors, &previousFaceColors, &nextFaceColors);
+
+      if (!twoTransitions) {
         cycleSetRemove(cycleId, face->possibleCycles);
       } else {
-        assert(previousFaceXor);
-        assert(nextFaceXor);
-        face->nextByCycleId[cycleId] = Faces + (colors ^ nextFaceXor);
-        face->previousByCycleId[cycleId] = Faces + (colors ^ previousFaceXor);
+        assert(previousFaceColors);
+        assert(nextFaceColors);
+        face->nextByCycleId[cycleId] = Faces + nextFaceColors;
+        face->previousByCycleId[cycleId] = Faces + previousFaceColors;
       }
     }
     recomputeCountOfChoices(face);
   }
+
   dynamicFaceSetCycleLength(0, NCOLORS);
   dynamicFaceSetCycleLength(~0, NCOLORS);
 }
@@ -491,4 +583,29 @@ static FAILURE handleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
     return NULL;
   }
   return NULL;
+}
+
+// static bool areCurvesAdjacent(COLOR curve1, COLOR curve2)
+// {
+//   // Two curves are adjacent if they share a vertex
+//   // In our case, curves are colors, and they share a vertex if they are
+//   // consecutive in the color sequence or if one is the first and the other
+//   is
+//   // the last
+//   int diff = abs((int)curve1 - (int)curve2);
+//   return diff == 1 || diff == NCOLORS - 1;
+// }
+
+static COLORSET getCurveColors(COLOR curve)
+{
+  // A curve's colors are the colors of the faces it bounds
+  // For a color c, it bounds faces that either include c or don't include c
+  // So we return all faces that contain this color
+  COLORSET colors = 0;
+  for (uint32_t faceColors = 0; faceColors < NFACES; faceColors++) {
+    if (COLORSET_HAS_MEMBER(curve, faceColors)) {
+      colors |= faceColors;
+    }
+  }
+  return colors;
 }
