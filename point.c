@@ -18,7 +18,8 @@ static int NextUPointId = 0;
 static struct Point* AllUPointPointers[NFACES][NCOLORS][NCOLORS];
 
 /* Declaration of file scoped static functions */
-static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn);
+static FAILURE findCornersByTraversal(EDGE start, int depth,
+                                      EDGE* cornersReturn);
 
 /* Externally linked functions */
 void resetPoints()
@@ -44,40 +45,53 @@ static POINT getOrInitializePoint(COLORSET colorsOfFace, COLOR primary,
   return AllUPointPointers[outsideColor][primary][secondary];
 }
 
+/* Validation function for development-time checks of point initialization */
+static void validatePointInitialization(POINT point, EDGE incomingEdge,
+                                        COLOR primary, COLOR secondary, int ix)
+{
+  assert(point->incomingEdges[ix] == NULL);
+  assert(incomingEdge->color == (ix < 2 ? primary : secondary));
+  assert(point->colors == ((1u << primary) | (1u << secondary)));
+}
+
 /*
-   The curve colored A crosses from inside the curve colored B to outside it.
-   The curve colored B crosses from outside the curve colored A to inside it.
-*/
+ * Determines which slot (0-3) an incoming edge should use at an intersection
+ * point. The slot depends on:
+ * - Whether the edge is primary (enters from inside its own curve)
+ * - Whether the other color's curve contains this face
+ * Returns:
+ * - 0: Primary edge, other color contains face
+ * - 1: Secondary edge, other color excludes face
+ * - 2: Secondary edge, other color contains face
+ * - 3: Primary edge, other color excludes face
+ */
+static uint32_t getIncomingEdgeSlot(EDGE incomingEdge, COLOR othercolor,
+                                    COLORSET faceColors)
+{
+  if (IS_PRIMARY_EDGE(incomingEdge)) {
+    return COLORSET_HAS_MEMBER(othercolor, faceColors) ? 0 : 3;
+  } else {
+    return COLORSET_HAS_MEMBER(othercolor, faceColors) ? 2 : 1;
+  }
+}
+
 POINT initializePointIncomingEdge(COLORSET colors, EDGE incomingEdge,
                                   COLOR othercolor)
 {
   POINT point;
   COLOR primary, secondary;
-  uint32_t ix;
 
-  if (IS_PRIMARY_EDGE(incomingEdge)) {
-    if (COLORSET_HAS_MEMBER(othercolor, colors)) {
-      ix = 0;
-    } else {
-      ix = 3;
-    }
-  } else {
-    if (COLORSET_HAS_MEMBER(othercolor, colors)) {
-      ix = 2;
-    } else {
-      ix = 1;
-    }
-  }
+  uint32_t incomingEdgeSlot =
+      getIncomingEdgeSlot(incomingEdge, othercolor, colors);
 
-  assert(othercolor != incomingEdge->color);
-  switch (ix) {
-    case 0:
-    case 1:
+  switch (incomingEdgeSlot) {
+    case 0: /* Primary edge, other color contains face */
+    case 1: /* Secondary edge, other color excludes face */
       primary = incomingEdge->color;
       secondary = othercolor;
       break;
-    case 2:
-    case 3:
+    case 2: /* Secondary edge, other color contains face */
+    case 3: /* Primary edge, other color excludes face */
       primary = othercolor;
       secondary = incomingEdge->color;
       break;
@@ -86,13 +100,11 @@ POINT initializePointIncomingEdge(COLORSET colors, EDGE incomingEdge,
   }
 
   point = getOrInitializePoint(incomingEdge->colors, primary, secondary);
-  assert(point->incomingEdges[ix] == NULL);
-  assert(point->colors == 0 ||
-         point->colors == ((1u << primary) | (1u << secondary)));
-  assert(incomingEdge->color == (ix < 2 ? primary : secondary));
-  point->incomingEdges[ix] = incomingEdge;
+  validatePointInitialization(point, incomingEdge, primary, secondary,
+                              incomingEdgeSlot);
 
-  assert(point->colors == ((1u << primary) | (1u << secondary)));
+  point->incomingEdges[incomingEdgeSlot] = incomingEdge;
+
   return point;
 }
 
@@ -171,7 +183,7 @@ FAILURE dynamicEdgeCornerCheck(EDGE start, int depth)
     // we have a complete curve.
     start = edgeOnCentralFace(start->color);
   }
-  return cornerCheckInternal(start, depth, ignore);
+  return findCornersByTraversal(start, depth, ignore);
 #endif
 }
 
@@ -183,16 +195,91 @@ EDGE edgeOnCentralFace(COLOR a)
   return uPoint->incomingEdges[0];
 }
 
-void edgeFindCorners(COLOR a, EDGE result[3][2])
+/* File scoped static functions */
+
+/*
+ * Detects if a corner exists at the current edge based on the state of
+ * outside and passed curves.
+ * Returns true if a corner is found, false otherwise.
+ */
+static bool detectCornerAndUpdateCrossingSets(COLORSET other, COLORSET* outside,
+                                              COLORSET* passed)
+{
+  if (other & *outside) {
+    // We're crossing back inside some curves
+    *outside &= ~other;
+
+    if (other & *passed) {
+      *passed = 0;
+      return true;
+    }
+  } else {
+    // We're crossing to the outside of these curves
+    *passed |= other;
+    *outside |= other;
+  }
+
+  return false;
+}
+
+/* Find corners by traversing the path and detecting curve crossings.
+ * Returns NULL on success, or a failure if too many corners are found.
+ */
+static FAILURE findCornersByTraversal(EDGE start, int depth,
+                                      EDGE* cornersReturn)
+{
+  EDGE current = start;
+  COLORSET
+  notMyColor = ~(1u << start->color),
+  /* the curves we have crossed outside of since the last corner. */
+      passed = 0,
+  /* the curves we are currently outside. */
+      outside = ~start->colors;
+  int counter = 0;
+  assert(start->reversed->to == NULL ||
+         (start->colors & notMyColor) == ((NFACES - 1) & notMyColor));
+  do {
+    CURVELINK p = current->to;
+    if (detectCornerAndUpdateCrossingSets(p->point->colors & notMyColor,
+                                          &outside, &passed)) {
+      if (counter >= MAX_CORNERS) {
+        return failureTooManyCorners(depth);
+      }
+      cornersReturn[counter++] = current;
+    }
+    current = p->next;
+  } while (current->to != NULL && current != start);
+  while (counter < MAX_CORNERS) {
+    cornersReturn[counter++] = NULL;
+  }
+  return NULL;
+}
+
+/* Find and align corners for a given color.
+ * For each color, we need to find corners by traversing both clockwise and
+ * counter-clockwise around the central face. We can align these two result
+ * sets, and find sub-paths along which a corner must lie. For each sub-path one
+ * end lies in one result set and the other end in the other.
+ *
+ * The alignment works as follows:
+ * - Clockwise corners are stored in result[][0]
+ * - Counter-clockwise corners are stored in result[][1]
+ * - They are aligned in reverse order (i-1-j) because:
+ *   - i is the count of clockwise corners
+ *   - We want the last counter-clockwise corner to pair with the first
+ * clockwise corner
+ *   - Hence the reverse indexing
+ */
+void edgeFindAndAlignCorners(COLOR a, EDGE result[3][2])
 {
   int i, j;
   EDGE clockWiseCorners[MAX_CORNERS];
   EDGE counterClockWiseCorners[MAX_CORNERS];
   FAILURE failure =
-      cornerCheckInternal(edgeOnCentralFace(a), 0, clockWiseCorners);
+      findCornersByTraversal(edgeOnCentralFace(a), 0, clockWiseCorners);
   assert(failure == NULL);
-  failure = cornerCheckInternal(edgeOnCentralFace(a)->reversed, 0,
-                                counterClockWiseCorners);
+  failure = findCornersByTraversal(edgeOnCentralFace(a)->reversed, 0,
+                                   counterClockWiseCorners);
   assert(failure == NULL);
   assert((clockWiseCorners[2] == NULL) == (counterClockWiseCorners[2] == NULL));
   assert((clockWiseCorners[1] != NULL));
@@ -210,41 +297,4 @@ void edgeFindCorners(COLOR a, EDGE result[3][2])
     assert(i - 1 - j < 3);
     result[i - 1 - j][1] = counterClockWiseCorners[j];
   }
-}
-
-/* File scoped static functions */
-static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn)
-{
-  EDGE current = start;
-  COLORSET
-  notMyColor = ~(1u << start->color),
-  /* the curves we have crossed outside of since the last corner. */
-      passed = 0,
-  /* the curves we are currently outside. */
-      outside = ~start->colors;
-  int counter = 0;
-  assert(start->reversed->to == NULL ||
-         (start->colors & notMyColor) == ((NFACES - 1) & notMyColor));
-  do {
-    CURVELINK p = current->to;
-    COLORSET other = p->point->colors & notMyColor;
-    if (other & outside) {
-      outside = outside & ~other;
-      if (other & passed) {
-        if (counter >= MAX_CORNERS) {
-          return failureTooManyCorners(depth);
-        }
-        cornersReturn[counter++] = current;
-        passed = 0;
-      }
-    } else {
-      passed |= other;
-      outside |= other;
-    }
-    current = p->next;
-  } while (current->to != NULL && current != start);
-  while (counter < MAX_CORNERS) {
-    cornersReturn[counter++] = NULL;
-  }
-  return NULL;
 }

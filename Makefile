@@ -53,7 +53,7 @@ bin/test_%: objst/test_%.o $(UNITY_DIR)/src/unity.c $(OBJ6) $(TEST_OBJ6)
 	touch .format
 
 tests: $(TEST_BIN)
-	for i in $^; do echo $$i; ./$$i | grep -v -e ':PASS$$' -e '^-*$$' ; done
+	for i in $^; do echo $$i; bash -c "./$$i 2>&1" | grep -v -e ':PASS$$' -e '^-*$$' -e '^$$' ; done
 
 clean:
 	rm -rf bin objs? .format

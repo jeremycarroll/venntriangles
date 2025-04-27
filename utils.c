@@ -58,3 +58,21 @@ void initializeFolder(const char *folder)
     }
   }
 }
+
+#define USAGE_ONE_LINE                                                   \
+  "Usage: %s -f outputFolder [-d centralFaceDegrees] [-m maxSolutions] " \
+  "[-n maxVariantsPerSolution] [-k skipFirstSolutions] [-j "             \
+  "skipFirstVariantsPerSolution]\n"
+
+#define USAGE_WITH_D_EXPLANATION                                              \
+  "When -d is specified, -m and -k apply to solutions with that face degree " \
+  "pattern.\n"                                                                \
+  "Otherwise, they apply globally across all face degree patterns.\n"
+
+void disaster(const char *message)
+{
+  fprintf(stderr, USAGE_ONE_LINE, Argv0);
+  fprintf(stderr, USAGE_WITH_D_EXPLANATION);
+  fprintf(stderr, "%s\n", message);
+  exit(EXIT_FAILURE);
+}
