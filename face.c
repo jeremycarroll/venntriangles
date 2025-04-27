@@ -27,8 +27,13 @@ static FAILURE processIncomingEdge(EDGE edge, COLOR colors[2],
 static void validateIncomingEdges(POINT point);
 static FAILURE handleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
                                   int depth);
-static bool areCurvesAdjacent(COLOR curve1, COLOR curve2);
-static COLORSET getCurveColors(COLOR curve);
+static bool isCycleValidForFace(CYCLE cycle, COLORSET faceColors);
+static bool isEdgeTransition(COLOR curve1, COLOR curve2, COLORSET faceColors,
+                             COLORSET* previousFaceColors,
+                             COLORSET* nextFaceColors);
+static bool exactlyTwoEdgeTransitions(CYCLE cycle, COLORSET faceColors,
+                                      COLORSET* previousFaceColors,
+                                      COLORSET* nextFaceColors);
 
 /* Externally linked functions */
 bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length)
@@ -583,29 +588,4 @@ static FAILURE handleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
     return NULL;
   }
   return NULL;
-}
-
-// static bool areCurvesAdjacent(COLOR curve1, COLOR curve2)
-// {
-//   // Two curves are adjacent if they share a vertex
-//   // In our case, curves are colors, and they share a vertex if they are
-//   // consecutive in the color sequence or if one is the first and the other
-//   is
-//   // the last
-//   int diff = abs((int)curve1 - (int)curve2);
-//   return diff == 1 || diff == NCOLORS - 1;
-// }
-
-static COLORSET getCurveColors(COLOR curve)
-{
-  // A curve's colors are the colors of the faces it bounds
-  // For a color c, it bounds faces that either include c or don't include c
-  // So we return all faces that contain this color
-  COLORSET colors = 0;
-  for (uint32_t faceColors = 0; faceColors < NFACES; faceColors++) {
-    if (COLORSET_HAS_MEMBER(curve, faceColors)) {
-      colors |= faceColors;
-    }
-  }
-  return colors;
 }
