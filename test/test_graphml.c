@@ -304,51 +304,82 @@ static void matchGraphMlFile(void (*nodeMatch)(regmatch_t*),
                             "edge count: Euler, and 6 triangles");
 }
 
-static void checkGraphML(void)
+static void initializeGraphMLTest(void)
 {
-  size_t completeNodeCount;
-  unsigned int i;
-  struct nodeInfo* entry;
-  char message[100];
-
   memset(nodes, 0, sizeof(nodes));
   FopenCount = 0;
   nodeCount = 0;
   compileRegexes();
+}
 
+static void verifyGraphMLFileOperations(void)
+{
   graphmlSaveAllVariations("/tmp/foo", 100000);
   TEST_ASSERT_EQUAL(1, FopenCount);
+}
+
+static void matchAndVerifyNodeCount(void)
+{
+  size_t completeNodeCount;
 
   matchGraphMlFile(firstNodeMatch, firstEdgeMatch);
-
   completeNodeCount = nodeCount;
   matchGraphMlFile(noop, secondEdgeMatch);
   TEST_ASSERT_EQUAL(completeNodeCount, nodeCount);
+}
+
+static void verifyNodeProperties(struct nodeInfo* entry, char* message)
+{
+  TEST_ASSERT_EQUAL_MESSAGE(1, entry->node, message);
+  TEST_ASSERT_EQUAL_MESSAGE(entry->info[0].color[0], entry->info[0].line[0],
+                            message);
+  TEST_ASSERT_EQUAL_MESSAGE(entry->info[1].color[0], entry->info[1].line[0],
+                            message);
+}
+
+static void verifyCornerNodeProperties(struct nodeInfo* entry, char* message)
+{
+  TEST_ASSERT_EQUAL_MESSAGE(1, entry->target, message);
+  TEST_ASSERT_EQUAL_MESSAGE(1, entry->source, message);
+  TEST_ASSERT_NOT_EQUAL_MESSAGE(entry->id[2], entry->info[0].line[1], message);
+  TEST_ASSERT_NOT_EQUAL_MESSAGE(entry->id[2], entry->info[1].line[1], message);
+  TEST_ASSERT_NOT_EQUAL_MESSAGE(entry->info[0].line[1], entry->info[1].line[1],
+                                message);
+}
+
+static void verifyNonCornerNodeProperties(struct nodeInfo* entry, char* message)
+{
+  TEST_ASSERT_EQUAL_MESSAGE(2, entry->target, message);
+  TEST_ASSERT_EQUAL_MESSAGE(2, entry->source, message);
+}
+
+static void verifyAllNodes(void)
+{
+  unsigned int i;
+  struct nodeInfo* entry;
+  char message[100];
 
   for (i = 0; i < nodeCount; i++) {
     sprintf(message, "Node[%d/%lu] %s: %d %d => %d", i, nodeCount, nodes[i].id,
             nodes[i].node, nodes[i].source, nodes[i].target);
     entry = &nodes[i];
-    TEST_ASSERT_EQUAL_MESSAGE(1, entry->node, message);
-    TEST_ASSERT_EQUAL_MESSAGE(entry->info[0].color[0], entry->info[0].line[0],
-                              message);
-    TEST_ASSERT_EQUAL_MESSAGE(entry->info[1].color[0], entry->info[1].line[0],
-                              message);
+
+    verifyNodeProperties(entry, message);
+
     if (entry->corner) {
-      TEST_ASSERT_EQUAL_MESSAGE(1, entry->target, message);
-      TEST_ASSERT_EQUAL_MESSAGE(1, entry->source, message);
-      TEST_ASSERT_NOT_EQUAL_MESSAGE(entry->id[2], entry->info[0].line[1],
-                                    message);
-      TEST_ASSERT_NOT_EQUAL_MESSAGE(entry->id[2], entry->info[1].line[1],
-                                    message);
-      TEST_ASSERT_NOT_EQUAL_MESSAGE(entry->info[0].line[1],
-                                    entry->info[1].line[1], message);
+      verifyCornerNodeProperties(entry, message);
     } else {
-      TEST_ASSERT_EQUAL_MESSAGE(2, entry->target, message);
-      TEST_ASSERT_EQUAL_MESSAGE(2, entry->source, message);
+      verifyNonCornerNodeProperties(entry, message);
     }
   }
+}
 
+static void checkGraphML(void)
+{
+  initializeGraphMLTest();
+  verifyGraphMLFileOperations();
+  matchAndVerifyNodeCount();
+  verifyAllNodes();
   freeRegexes();
 }
 
