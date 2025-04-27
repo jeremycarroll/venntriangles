@@ -250,6 +250,83 @@ static bool detectCornerAndUpdateCrossingSets(COLORSET other, COLORSET* outside,
   return false;
 }
 
+/* Find corners by traversing the path and detecting curve crossings.
+ * Returns NULL on success, or a failure if too many corners are found.
+ */
+static FAILURE findCornersByTraversal(EDGE start, int depth,
+                                      EDGE* cornersReturn)
+{
+  EDGE current = start;
+  COLORSET
+  notMyColor = ~(1u << start->color),
+  /* the curves we have crossed outside of since the last corner. */
+      passed = 0,
+  /* the curves we are currently outside. */
+      outside = ~start->colors;
+  int counter = 0;
+  assert(start->reversed->to == NULL ||
+         (start->colors & notMyColor) == ((NFACES - 1) & notMyColor));
+  do {
+    CURVELINK p = current->to;
+    if (detectCornerAndUpdateCrossingSets(p->point->colors & notMyColor,
+                                          &outside, &passed)) {
+      if (counter >= MAX_CORNERS) {
+        return failureTooManyCorners(depth);
+      }
+      cornersReturn[counter++] = current;
+    }
+    current = p->next;
+  } while (current->to != NULL && current != start);
+  while (counter < MAX_CORNERS) {
+    cornersReturn[counter++] = NULL;
+  }
+  return NULL;
+}
+
+/* Find and align corners for a given color.
+ * For each color, we need to find corners by traversing both clockwise and
+ * counter-clockwise around the central face. We can align these two result
+ * sets, and find sub-paths along which a corner must lie. For each sub-path one
+ * end lies in one result set and the other end in the other.
+ *
+ * The alignment works as follows:
+ * - Clockwise corners are stored in result[][0]
+ * - Counter-clockwise corners are stored in result[][1]
+ * - They are aligned in reverse order (i-1-j) because:
+ *   - i is the count of clockwise corners
+ *   - We want the last counter-clockwise corner to pair with the first
+ * clockwise corner
+ *   - Hence the reverse indexing
+ */
+void edgeFindAndAlignCorners(COLOR a, EDGE result[3][2])
+{
+  int i, j;
+  EDGE clockWiseCorners[MAX_CORNERS];
+  EDGE counterClockWiseCorners[MAX_CORNERS];
+  FAILURE failure =
+      findCornersByTraversal(edgeOnCentralFace(a), 0, clockWiseCorners);
+  assert(failure == NULL);
+  failure = findCornersByTraversal(edgeOnCentralFace(a)->reversed, 0,
+                                   counterClockWiseCorners);
+  assert(failure == NULL);
+  assert((clockWiseCorners[2] == NULL) == (counterClockWiseCorners[2] == NULL));
+  assert((clockWiseCorners[1] != NULL));
+  assert((counterClockWiseCorners[1] != NULL));
+  for (i = 0; i < 3 && clockWiseCorners[i]; i++) {
+    result[i][0] = clockWiseCorners[i];
+  }
+  if (i < 3) {
+    result[i][0] = NULL;
+    result[i][1] = NULL;
+  }
+
+  for (j = 0; j < 3 && counterClockWiseCorners[j]; j++) {
+    assert(i - 1 - j >= 0);
+    assert(i - 1 - j < 3);
+    result[i - 1 - j][1] = counterClockWiseCorners[j];
+  }
+}
+
 /*
  * Checks for corners in a curve by tracking when curves cross from inside to
  * outside and vice versa. A corner is detected when:
