@@ -205,7 +205,8 @@ void graphmlSaveAllVariations(const char *prefix, int expectedVariations)
   savePartialVariations(0, corners);
 }
 
-/* Count the number of times an edge appears in the corners array, and return the count. */
+/* Count the number of times an edge appears in the corners array, and return
+ * the count. */
 static int edgeIsCorner(EDGE edge, EDGE (*corners)[3])
 {
   int count = 0;
