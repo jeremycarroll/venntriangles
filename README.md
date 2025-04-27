@@ -1,6 +1,7 @@
 # venntriangles
 Search for Venn diagrams of six triangles
 
+## Install
 
 # Lemmas used in the code
 
