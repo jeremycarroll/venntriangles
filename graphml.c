@@ -181,7 +181,7 @@ void graphmlPossibleCorners(void)
 {
   for (int current = 0; current < NCOLORS; current++) {
     EDGE cornerPairs[3][2];
-    edgeFindCorners(current, cornerPairs);
+    edgeFindAndAlignCorners(current, cornerPairs);
     for (int cornerIndex = 0; cornerIndex < 3; cornerIndex++) {
       possibleCorners(PossibileCorners[current][cornerIndex], current,
                       cornerPairs[cornerIndex][0], cornerPairs[cornerIndex][1]);

@@ -56,5 +56,6 @@ extern char* pointToString(POINT up);
 extern char* pointToColorSetString(POINT up);
 extern struct Point PointAllUPoints[NPOINTS];
 extern FAILURE dynamicEdgeCornerCheck(EDGE start, int depth);
+extern void edgeFindAndAlignCorners(COLOR a, EDGE result[3][2]);
 
 #endif  // POINT_H

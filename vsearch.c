@@ -262,7 +262,7 @@ int searchCountVariations(char* variationMultiplication)
     variationMultiplication[0] = '\0';
   }
   for (COLOR a = 0; a < NCOLORS; a++) {
-    edgeFindCorners(a, corners);
+    edgeFindAndAlignCorners(a, corners);
     for (int i = 0; i < 3; i++) {
       if (corners[i][0] == NULL) {
         EDGE edge = edgeOnCentralFace(a);

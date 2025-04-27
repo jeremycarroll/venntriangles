@@ -18,7 +18,8 @@ static int NextUPointId = 0;
 static struct Point* AllUPointPointers[NFACES][NCOLORS][NCOLORS];
 
 /* Declaration of file scoped static functions */
-static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn);
+static FAILURE findCornersByTraversal(EDGE start, int depth,
+                                      EDGE* cornersReturn);
 
 /* Externally linked functions */
 void resetPoints()
@@ -182,7 +183,7 @@ FAILURE dynamicEdgeCornerCheck(EDGE start, int depth)
     // we have a complete curve.
     start = edgeOnCentralFace(start->color);
   }
-  return cornerCheckInternal(start, depth, ignore);
+  return findCornersByTraversal(start, depth, ignore);
 #endif
 }
 
@@ -192,35 +193,6 @@ EDGE edgeOnCentralFace(COLOR a)
   COLOR secondary = (a + 1) % NCOLORS;
   POINT uPoint = getOrInitializePoint(NFACES - 1, primary, secondary);
   return uPoint->incomingEdges[0];
-}
-
-void edgeFindCorners(COLOR a, EDGE result[3][2])
-{
-  int i, j;
-  EDGE clockWiseCorners[MAX_CORNERS];
-  EDGE counterClockWiseCorners[MAX_CORNERS];
-  FAILURE failure =
-      cornerCheckInternal(edgeOnCentralFace(a), 0, clockWiseCorners);
-  assert(failure == NULL);
-  failure = cornerCheckInternal(edgeOnCentralFace(a)->reversed, 0,
-                                counterClockWiseCorners);
-  assert(failure == NULL);
-  assert((clockWiseCorners[2] == NULL) == (counterClockWiseCorners[2] == NULL));
-  assert((clockWiseCorners[1] != NULL));
-  assert((counterClockWiseCorners[1] != NULL));
-  for (i = 0; i < 3 && clockWiseCorners[i]; i++) {
-    result[i][0] = clockWiseCorners[i];
-  }
-  if (i < 3) {
-    result[i][0] = NULL;
-    result[i][1] = NULL;
-  }
-
-  for (j = 0; j < 3 && counterClockWiseCorners[j]; j++) {
-    assert(i - 1 - j >= 0);
-    assert(i - 1 - j < 3);
-    result[i - 1 - j][1] = counterClockWiseCorners[j];
-  }
 }
 
 /* File scoped static functions */
@@ -325,48 +297,4 @@ void edgeFindAndAlignCorners(COLOR a, EDGE result[3][2])
     assert(i - 1 - j < 3);
     result[i - 1 - j][1] = counterClockWiseCorners[j];
   }
-}
-
-/*
- * Checks for corners in a curve by tracking when curves cross from inside to
- * outside and vice versa. A corner is detected when:
- * 1. We cross a curve that was previously in the 'outside' set
- * 2. That curve was also recently crossed (in the 'passed' set)
- *
- * Parameters:
- * - start: The starting edge of the curve
- * - depth: Current recursion depth for error reporting
- * - cornersReturn: Array to store found corners
- *
- * Returns:
- * - NULL if successful
- * - failureTooManyCorners if more than MAX_CORNERS are found
- */
-static FAILURE cornerCheckInternal(EDGE start, int depth, EDGE* cornersReturn)
-{
-  EDGE current = start;
-  COLORSET
-  notMyColor = ~(1u << start->color),
-  /* the curves we have crossed outside of since the last corner. */
-      passed = 0,
-  /* the curves we are currently outside. */
-      outside = ~start->colors;
-  int counter = 0;
-  assert(start->reversed->to == NULL ||
-         (start->colors & notMyColor) == ((NFACES - 1) & notMyColor));
-  do {
-    CURVELINK p = current->to;
-    if (detectCornerAndUpdateCrossingSets(p->point->colors & notMyColor,
-                                          &outside, &passed)) {
-      if (counter >= MAX_CORNERS) {
-        return failureTooManyCorners(depth);
-      }
-      cornersReturn[counter++] = current;
-    }
-    current = p->next;
-  } while (current->to != NULL && current != start);
-  while (counter < MAX_CORNERS) {
-    cornersReturn[counter++] = NULL;
-  }
-  return NULL;
 }
