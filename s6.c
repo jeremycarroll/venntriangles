@@ -403,6 +403,13 @@ static FACE_DEGREE_SEQUENCE d6FaceDegreesInSequenceOrder()
  * - If we've reached depth NCOLORS, check if the sum equals TOTAL_5FACE_DEGREE
  *   and if the symmetry type is interesting (CANONICAL or EQUIVOCAL)
  * - Otherwise, try all possible face degrees >= 3 for the current position
+ *
+ * The high cyclomatic complexity (CCN 8) is inherent to the problem:
+ * - Multiple necessary conditions (sum checks, symmetry checks, degree
+ * requirements)
+ * - Recursive generation of all possible sequences
+ * While the function could be split, this would make the algorithm's flow
+ * harder to follow and require sharing state between functions.
  */
 static void canoncialCallbackImpl(int depth, int sum, FACE_DEGREE *args,
                                   UseFaceDegrees callback, void *data)
