@@ -61,54 +61,7 @@ static Failure NonCanoncialFailure = {
     .count = {0},
 };
 
-FAILURE failureNoMatchingCycles(int depth)
-{
-  NoMatchFailure.count[depth]++;
-  return &NoMatchFailure;
-}
-
-FAILURE failureCrossingLimit(int depth)
-{
-  CrossingLimitFailure.count[depth]++;
-  return &CrossingLimitFailure;
-}
-
-FAILURE failurePointConflict(int depth)
-{
-  PointConflictFailure.count[depth]++;
-  return &PointConflictFailure;
-}
-
-FAILURE failureConflictingConstraints(int depth)
-{
-  ConflictingConstraintsFailure.count[depth]++;
-  return &ConflictingConstraintsFailure;
-}
-
-FAILURE failureDisconnectedCurve(int depth)
-{
-  DisconnectedCurveFailure.count[depth]++;
-  return &DisconnectedCurveFailure;
-}
-
-FAILURE failureTooManyCorners(int depth)
-{
-  TooManyCornersFailure.count[depth]++;
-  return &TooManyCornersFailure;
-}
-
-FAILURE failureDisconnectedFaces(int depth)
-{
-  DisconnectedFacesFailure.count[depth]++;
-  return &DisconnectedFacesFailure;
-}
-
-FAILURE failureNonCanonical(void)
-{
-  NonCanoncialFailure.count[0]++;
-  return &NonCanoncialFailure;
-}
-
+/* Externally linked functions - initialize... */
 void initializeFailures(void)
 {
   statisticIncludeFailure(&NoMatchFailure);
@@ -119,4 +72,53 @@ void initializeFailures(void)
   statisticIncludeFailure(&ConflictingConstraintsFailure);
   statisticIncludeFailure(&DisconnectedFacesFailure);
   statisticIncludeFailure(&NonCanoncialFailure);
+}
+
+/* Externally linked functions - failure... */
+FAILURE failureConflictingConstraints(int depth)
+{
+  ConflictingConstraintsFailure.count[depth]++;
+  return &ConflictingConstraintsFailure;
+}
+
+FAILURE failureCrossingLimit(int depth)
+{
+  CrossingLimitFailure.count[depth]++;
+  return &CrossingLimitFailure;
+}
+
+FAILURE failureDisconnectedCurve(int depth)
+{
+  DisconnectedCurveFailure.count[depth]++;
+  return &DisconnectedCurveFailure;
+}
+
+FAILURE failureDisconnectedFaces(int depth)
+{
+  DisconnectedFacesFailure.count[depth]++;
+  return &DisconnectedFacesFailure;
+}
+
+FAILURE failureNoMatchingCycles(int depth)
+{
+  NoMatchFailure.count[depth]++;
+  return &NoMatchFailure;
+}
+
+FAILURE failureNonCanonical(void)
+{
+  NonCanoncialFailure.count[0]++;
+  return &NonCanoncialFailure;
+}
+
+FAILURE failurePointConflict(int depth)
+{
+  PointConflictFailure.count[depth]++;
+  return &PointConflictFailure;
+}
+
+FAILURE failureTooManyCorners(int depth)
+{
+  TooManyCornersFailure.count[depth]++;
+  return &TooManyCornersFailure;
 }
