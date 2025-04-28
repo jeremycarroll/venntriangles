@@ -198,7 +198,7 @@ char* faceToString(FACE face)
 {
   char* buffer = getBuffer();
   char* colorBuf = colorSetToString(face->colors);
-  char* cycleBuf = cycleToStr(face->cycle);
+  char* cycleBuf = cycleToString(face->cycle);
 
   if (face->cycleSetSize > 1) {
     sprintf(buffer, "%s%s^%llu", colorBuf, cycleBuf, face->cycleSetSize);

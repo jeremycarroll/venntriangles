@@ -271,7 +271,7 @@ char *s6SignatureToLongString(SIGNATURE signature)
                colorSetToString(signature->offset));
   for (int i = 0; i < NFACES; i++) {
     p += sprintf(p, " %s",
-                 cycleToStr(Cycles + signature->classSignature.faceCycleId[i]));
+                 cycleToString(Cycles + signature->classSignature.faceCycleId[i]));
   }
   *p = '\0';
   return result;
