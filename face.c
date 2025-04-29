@@ -34,25 +34,9 @@ static bool isEdgeTransition(COLOR curve1, COLOR curve2, COLORSET faceColors,
 static bool exactlyTwoEdgeTransitions(CYCLE cycle, COLORSET faceColors,
                                       COLORSET* previousFaceColors,
                                       COLORSET* nextFaceColors);
+static void facePrint(FACE face);
 
-/* Externally linked functions */
-bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length)
-{
-  FACE face = Faces + (faceColors & (NFACES - 1));
-  CYCLE cycle;
-  uint32_t cycleId;
-  if (length == 0) {
-    return true;
-  }
-  for (cycleId = 0, cycle = Cycles; cycleId < NCYCLES; cycleId++, cycle++) {
-    if (cycle->length != length) {
-      cycleSetRemoveCycleWithTrail(face->possibleCycles, cycleId);
-    }
-  }
-  recomputeCountOfChoices(face);
-  return face->cycleSetSize != 0;
-}
-
+/* Externally linked functions - initialize... */
 void initializeFacesAndEdges(void)
 {
   uint32_t facecolors, color;
@@ -80,164 +64,6 @@ void initializeFacesAndEdges(void)
   }
   applyMonotonicity();
   initializePossiblyTo();
-}
-
-FAILURE faceFinalCorrectnessChecks(void)
-{
-  FAILURE failure;
-  COLORSET colors = 1;
-  FACE face;
-#if NCOLORS == 6
-  switch (s6FacesSymmetryType()) {
-    case NON_CANONICAL:
-      return failureNonCanonical();
-    case EQUIVOCAL:
-      /* Does not happen? But not deeply problematic if it does. */
-      assert(0); /* could fall through, but will get duplicate solutions. */
-      break;
-    case CANONICAL:
-      break;
-  }
-#endif
-  for (colors = 1; colors < (NFACES - 1); colors |= face->previous->colors) {
-    face = Faces + colors;
-    CHECK_FAILURE(checkLengthOfCycleOfFaces(face));
-  }
-  return NULL;
-}
-
-void dynamicFaceSetupCentral(FACE_DEGREE* faceDegrees)
-{
-  CYCLE cycle;
-  uint64_t i;
-  FACE centralFace = Faces + (NFACES - 1);
-  for (i = 0; i < NCOLORS; i++) {
-    dynamicFaceSetCycleLength(~(1 << i), faceDegrees[i]);
-  }
-  for (cycle = Cycles;; cycle++) {
-    if (cycle->length != NCOLORS) {
-      continue;
-    }
-    for (i = 1; i < NCOLORS; i++) {
-      if (cycle->curves[i] != i) {
-        goto NextCycle;
-      }
-    }
-    centralFace->cycle = cycle;
-    break;
-  NextCycle:
-    continue;
-  }
-  dynamicFaceBacktrackableChoice(centralFace);
-}
-
-FAILURE faceRestrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
-                                       int depth)
-{
-  /* check for conflict or no-op. */
-  if (face->cycleSetSize == 1 || face->cycle != NULL) {
-    if (!cycleSetMember(face->cycle - Cycles, onlyCycleSet)) {
-      return failureConflictingConstraints(depth);
-    }
-    return NULL;
-  }
-
-  /* Carefully update face->possibleCycles to be anded with cycleSet, on the
-     Trail. decreasing the count as we go. */
-  restrictCycles(face, onlyCycleSet);
-
-  if (face->cycleSetSize == 0) {
-    return failureNoMatchingCycles(depth);
-  }
-  if (face->cycleSetSize == 1) {
-    TRAIL_SET_POINTER(&face->cycle, cycleSetFirst(face->possibleCycles));
-    CycleForcedCounter++;
-    return dynamicFaceChoice(face, depth + 1);
-  }
-  return NULL;
-}
-
-FAILURE facePropogateChoice(FACE face, EDGE edge, int depth)
-{
-  FAILURE failure;
-  POINT point = edge->to->point;
-  COLOR aColor = edge->color;
-  COLOR bColor =
-      edge->color == point->primary ? point->secondary : point->primary;
-
-  FACE aFace = face->adjacentFaces[edge->color];
-  FACE abFace = aFace->adjacentFaces[bColor];
-  uint32_t index = cycleIndexOfColor(face->cycle, aColor);
-  assert(abFace == face->adjacentFaces[bColor]->adjacentFaces[aColor]);
-  assert(abFace != face);
-  CHECK_FAILURE(faceRestrictAndPropogateCycles(
-      abFace, face->cycle->sameDirection[index], depth));
-  CHECK_FAILURE(faceRestrictAndPropogateCycles(
-      aFace, face->cycle->oppositeDirection[index], depth));
-  return NULL;
-}
-
-bool dynamicColorRemoveFromSearch(COLOR color)
-{
-  FACE f;
-  uint32_t i;
-  for (i = 0, f = Faces; i < NFACES; i++, f++) {
-    if (f->cycle == NULL) {
-      /* Discard failure, we will report a different one. */
-      if (f->edges[color].to == NULL &&
-          faceRestrictAndPropogateCycles(f, CycleSetOmittingOneColor[color],
-                                         0) != NULL) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-char* faceToString(FACE face)
-{
-  char* buffer = getBuffer();
-  char* colorBuf = colorSetToString(face->colors);
-  char* cycleBuf = cycleToStr(face->cycle);
-
-  if (face->cycleSetSize > 1) {
-    sprintf(buffer, "%s%s^%llu", colorBuf, cycleBuf, face->cycleSetSize);
-  } else {
-    sprintf(buffer, "%s%s", colorBuf, cycleBuf);
-  }
-  return usingBuffer(buffer);
-}
-
-static void facePrint(FACE face) { printf("%s\n", faceToString(face)); }
-
-void facePrintSelected(void)
-{
-  uint32_t i;
-  FACE face;
-  for (i = 0, face = Faces; i < NFACES; i++, face++) {
-    if (face->cycle || face->cycleSetSize < 2) {
-      facePrint(face);
-    }
-  }
-}
-
-void resetFaces()
-{
-  memset(Faces, 0, sizeof(Faces));
-  memset(FaceSumOfFaceDegree, 0, sizeof(FaceSumOfFaceDegree));
-}
-
-FACE faceFromColors(char* colors)
-{
-  int faceId = 0;
-  while (true) {
-    if (*colors == 0) {
-      break;
-    }
-    faceId |= (1 << (*colors - 'a'));
-    colors++;
-  }
-  return Faces + faceId;
 }
 
 void initializePoints(void)
@@ -268,6 +94,49 @@ void initializePoints(void)
   }
 }
 
+/* Externally linked functions - dynamic... */
+bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length)
+{
+  FACE face = Faces + (faceColors & (NFACES - 1));
+  CYCLE cycle;
+  uint32_t cycleId;
+  if (length == 0) {
+    return true;
+  }
+  for (cycleId = 0, cycle = Cycles; cycleId < NCYCLES; cycleId++, cycle++) {
+    if (cycle->length != length) {
+      cycleSetRemoveCycleWithTrail(face->possibleCycles, cycleId);
+    }
+  }
+  recomputeCountOfChoices(face);
+  return face->cycleSetSize != 0;
+}
+
+void dynamicFaceSetupCentral(FACE_DEGREE* faceDegrees)
+{
+  CYCLE cycle;
+  uint64_t i;
+  FACE centralFace = Faces + (NFACES - 1);
+  for (i = 0; i < NCOLORS; i++) {
+    dynamicFaceSetCycleLength(~(1 << i), faceDegrees[i]);
+  }
+  for (cycle = Cycles;; cycle++) {
+    if (cycle->length != NCOLORS) {
+      continue;
+    }
+    for (i = 1; i < NCOLORS; i++) {
+      if (cycle->curves[i] != i) {
+        goto NextCycle;
+      }
+    }
+    centralFace->cycle = cycle;
+    break;
+  NextCycle:
+    continue;
+  }
+  dynamicFaceBacktrackableChoice(centralFace);
+}
+
 FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
                                 int depth)
 {
@@ -295,7 +164,142 @@ FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
   return NULL;
 }
 
+bool dynamicColorRemoveFromSearch(COLOR color)
+{
+  FACE f;
+  uint32_t i;
+  for (i = 0, f = Faces; i < NFACES; i++, f++) {
+    if (f->cycle == NULL) {
+      /* Discard failure, we will report a different one. */
+      if (f->edges[color].to == NULL &&
+          faceRestrictAndPropogateCycles(f, CycleSetOmittingOneColor[color],
+                                         0) != NULL) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+/* Externally linked functions - reset... */
+void resetFaces()
+{
+  memset(Faces, 0, sizeof(Faces));
+  memset(FaceSumOfFaceDegree, 0, sizeof(FaceSumOfFaceDegree));
+}
+
+/* Externally linked functions - face... */
+FAILURE faceFinalCorrectnessChecks(void)
+{
+  FAILURE failure;
+  COLORSET colors = 1;
+  FACE face;
+#if NCOLORS == 6
+  switch (s6FacesSymmetryType()) {
+    case NON_CANONICAL:
+      return failureNonCanonical();
+    case EQUIVOCAL:
+      /* Does not happen? But not deeply problematic if it does. */
+      assert(0); /* could fall through, but will get duplicate solutions. */
+      break;
+    case CANONICAL:
+      break;
+  }
+#endif
+  for (colors = 1; colors < (NFACES - 1); colors |= face->previous->colors) {
+    face = Faces + colors;
+    CHECK_FAILURE(checkLengthOfCycleOfFaces(face));
+  }
+  return NULL;
+}
+
+FACE faceFromColors(char* colors)
+{
+  int faceId = 0;
+  while (true) {
+    if (*colors == 0) {
+      break;
+    }
+    faceId |= (1 << (*colors - 'a'));
+    colors++;
+  }
+  return Faces + faceId;
+}
+
+void facePrintSelected(void)
+{
+  uint32_t i;
+  FACE face;
+  for (i = 0, face = Faces; i < NFACES; i++, face++) {
+    if (face->cycle || face->cycleSetSize < 2) {
+      facePrint(face);
+    }
+  }
+}
+
+FAILURE facePropogateChoice(FACE face, EDGE edge, int depth)
+{
+  FAILURE failure;
+  POINT point = edge->to->point;
+  COLOR aColor = edge->color;
+  COLOR bColor =
+      edge->color == point->primary ? point->secondary : point->primary;
+
+  FACE aFace = face->adjacentFaces[edge->color];
+  FACE abFace = aFace->adjacentFaces[bColor];
+  uint32_t index = cycleIndexOfColor(face->cycle, aColor);
+  assert(abFace == face->adjacentFaces[bColor]->adjacentFaces[aColor]);
+  assert(abFace != face);
+  CHECK_FAILURE(faceRestrictAndPropogateCycles(
+      abFace, face->cycle->sameDirection[index], depth));
+  CHECK_FAILURE(faceRestrictAndPropogateCycles(
+      aFace, face->cycle->oppositeDirection[index], depth));
+  return NULL;
+}
+
+FAILURE faceRestrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
+                                       int depth)
+{
+  /* check for conflict or no-op. */
+  if (face->cycleSetSize == 1 || face->cycle != NULL) {
+    if (!cycleSetMember(face->cycle - Cycles, onlyCycleSet)) {
+      return failureConflictingConstraints(depth);
+    }
+    return NULL;
+  }
+
+  /* Carefully update face->possibleCycles to be anded with cycleSet, on the
+     Trail. decreasing the count as we go. */
+  restrictCycles(face, onlyCycleSet);
+
+  if (face->cycleSetSize == 0) {
+    return failureNoMatchingCycles(depth);
+  }
+  if (face->cycleSetSize == 1) {
+    TRAIL_SET_POINTER(&face->cycle, cycleSetFirst(face->possibleCycles));
+    CycleForcedCounter++;
+    return dynamicFaceChoice(face, depth + 1);
+  }
+  return NULL;
+}
+
+char* faceToString(FACE face)
+{
+  char* buffer = getBuffer();
+  char* colorBuf = colorSetToString(face->colors);
+  char* cycleBuf = cycleToString(face->cycle);
+
+  if (face->cycleSetSize > 1) {
+    sprintf(buffer, "%s%s^%llu", colorBuf, cycleBuf, face->cycleSetSize);
+  } else {
+    sprintf(buffer, "%s%s", colorBuf, cycleBuf);
+  }
+  return usingBuffer(buffer);
+}
+
 /* File scoped static functions */
+static void facePrint(FACE face) { printf("%s\n", faceToString(face)); }
+
 static void recomputeCountOfChoices(FACE face)
 {
   trailSetInt(&face->cycleSetSize, cycleSetSize(face->possibleCycles));
@@ -321,25 +325,12 @@ static void initializePossiblyTo(void)
   }
 }
 
-/*
- * Checks if a cycle is valid for a face's colors.
- * A cycle is valid if it has at least one curve containing the face and at
- * least one curve not containing the face. This ensures proper transitions
- * between regions of different colors in the vertex adjacency cycle.
- */
 static bool isCycleValidForFace(CYCLE cycle, COLORSET faceColors)
 {
   return (cycle->colors & faceColors) != 0 &&
          (cycle->colors & ~faceColors) != 0;
 }
 
-/*
- * Checks if two curves form a valid edge transition in the vertex adjacency
- * cycle. A valid transition occurs when:
- * - The curves share a vertex (are adjacent)
- * - One curve is an inner edge and the other is an outer edge
- * - The transition preserves the monotonicity of the FISC
- */
 static bool isEdgeTransition(COLOR curve1, COLOR curve2, COLORSET faceColors,
                              COLORSET* previousFaceColors,
                              COLORSET* nextFaceColors)
@@ -359,14 +350,6 @@ static bool isEdgeTransition(COLOR curve1, COLOR curve2, COLORSET faceColors,
   return true;
 }
 
-/*
- * Counrs valid edge transitions in a cycle for a given face,
- * and returns true if there are exactly two.
- * In a monotone FISC, each face must have exactly two transitions:
- * - One from inner edges to outer edges
- * - One from outer edges to inner edges
- * This ensures the k-faces form a single cycle by vertex adjacency.
- */
 static bool exactlyTwoEdgeTransitions(CYCLE cycle, COLORSET faceColors,
                                       COLORSET* previousFaceColors,
                                       COLORSET* nextFaceColors)
@@ -402,29 +385,6 @@ static bool exactlyTwoEdgeTransitions(CYCLE cycle, COLORSET faceColors,
   return true;
 }
 
-/*
- * Triangles are convex, Venn diagrams are FISCs, so we use the theorem
- * that a FISC of convex curves is monotone.
- * We call an edge of a k-face an outer edge, if it is with a (k-1)-face,
- * and an inner edge if it is with a (k-1)-face.
- *
- * The innermost face then has N outer edges, and the outermost face has N inner
- * edges. The other faces have 1 or more inner edges and 1 or more outer edges,
- * and at least 3 edges. All the inner edges are together and so are the outer
- * edges, so as we go round the facial cycle there are two transitions, one from
- * inner edge to outer edge, the other from outer edge to inner edge.
- *
- * For each face (except inner and outer):
- * 1. Filters cycles to ensure proper edge transitions
- * 2. Verifies each face has exactly two transitions:
- *    - One from inner edges to outer edges
- *    - One from outer edges to inner edges
- * 3. Sets up the vertex adjacency relationships between k-faces
- *
- * This ensures that the k-faces form a single cycle by vertex adjacency,
- * with the innermost face having only outer edges and the outermost face
- * having only inner edges.
- */
 static void applyMonotonicity(void)
 {
   // The inner face is NFACES-1, with all the colors; the outer face is 0, with
@@ -511,9 +471,6 @@ static FAILURE checkLengthOfCycleOfFaces(FACE face)
   assert(0);
 }
 
-/*
- * Counts an edge in the global edge count tracking.
- */
 static void countEdge(EDGE edge)
 {
   uint_trail* edgeCountPtr =
@@ -521,20 +478,12 @@ static void countEdge(EDGE edge)
   trailSetInt(edgeCountPtr, (*edgeCountPtr) + 1);
 }
 
-/*
- * Sets up the color array for a point, with primary and secondary colors.
- */
 static void setupColors(POINT point, COLOR colors[2])
 {
   colors[0] = point->primary;
   colors[1] = point->secondary;
 }
 
-/*
- * Processes a single incoming edge, setting up its destination and counting
- * it. Returns failurePointConflict if the edge points to an invalid
- * destination.
- */
 static FAILURE processIncomingEdge(EDGE edge, COLOR colors[2],
                                    int incomingEdgeSlot, int depth)
 {
@@ -556,11 +505,6 @@ static FAILURE processIncomingEdge(EDGE edge, COLOR colors[2],
   return NULL;
 }
 
-/*
- * Validates that all incoming edges of a point have been properly set up.
- * Uses assertions since this checks for invariants that should never be
- * violated.
- */
 static void validateIncomingEdges(POINT point)
 {
   for (int incomingEdgeSlot = 0; incomingEdgeSlot < 4; incomingEdgeSlot++) {
@@ -568,14 +512,6 @@ static void validateIncomingEdges(POINT point)
   }
 }
 
-/*
- * If an edge already exists, verifies it points to the expected destination.
- * Returns:
- * - failurePointConflict if the edge exists but points to the wrong
- * destination
- * - NULL if the edge exists and points to the correct destination
- * - NULL if the edge doesn't exist (allowing further processing)
- */
 static FAILURE handleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
                                   int depth)
 {
