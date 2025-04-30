@@ -383,13 +383,20 @@ static void checkGraphML(void)
   freeRegexes();
 }
 
-static void variant6612(void)
+static void variant14188(void)
 {
   regex_t internalEdgeRegex;
   compileRegex(&internalEdgeRegex,
                "<edge source=\"[a-f]_[0-2]\" target=\"[a-f]_[0-2]\">");
-  MaxVariantsPerSolution = 6612;
-  IgnoreFirstVariantsPerSolution = 6611;
+  /* Run the program with -d 654444
+  then inspect this file to see this resullt.
+   654444-26/6c/037.xml
+   To convert the file name to variant number user bc
+   > ibase=16
+   > 37 * 100 + 6C
+   */
+  MaxVariantsPerSolution = 14188;
+  IgnoreFirstVariantsPerSolution = MaxVariantsPerSolution - 1;
   checkGraphML();
   outputBufferPtr = outputBuffer;
   matchRegex(&internalEdgeRegex);
@@ -448,6 +455,7 @@ static void setup654444()
   dynamicFaceSetupCentral(intArray(6, 5, 4, 4, 4, 4));
   MaxVariantsPerSolution = 10;
   IgnoreFirstVariantsPerSolution = 9;
+  // From 654444-26.txt (this may change)
   ExpectedSignature =
       "OrCgChKeDtAoAwFhDxAcArEmDyBfDcEaAwAxBhFkBnBhAxEsEuDpBtFeBkBtFrEuLqBiBaDa"
       "EgApAdDvEyBmApDbDeAoGnDqBrAwBfDbAlBnAcDqDjKgAoEfAhBzKyPd";
@@ -492,6 +500,6 @@ int main(void)
   RUN_645534(checkGraphML);
   RUN_654444(NULL);
   RUN_654444(checkGraphML);
-  RUN_654444(variant6612);
+  RUN_654444(variant14188);
   return UNITY_END();
 }
