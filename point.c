@@ -34,7 +34,6 @@ static POINT getOrInitializePoint(COLORSET colorsOfFace, COLOR primary,
 {
   COLORSET outsideColor = colorsOfFace & ~(1u << primary) & ~(1u << secondary);
   if (AllUPointPointers[outsideColor][primary][secondary] == NULL) {
-    PointAllUPoints[NextUPointId].id = NextUPointId;
     AllUPointPointers[outsideColor][primary][secondary] =
         &PointAllUPoints[NextUPointId];
     PointAllUPoints[NextUPointId].primary = primary;

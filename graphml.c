@@ -5,6 +5,7 @@
 #include "main.h"
 #include "memory.h"
 #include "point.h"
+#include "trail.h"
 #include "utils.h"
 
 #include <stdio.h>
@@ -193,7 +194,7 @@ void graphmlPossibleCorners(void)
  *
  * @param prefix The folder and prefix for files used in the solutions.
  */
-void graphmlSaveAllVariations(const char *prefix, int expectedVariations)
+int graphmlSaveAllVariations(const char *prefix, int expectedVariations)
 {
   EDGE corners[NCOLORS][3];
   CurrentPrefix = prefix;
@@ -203,6 +204,7 @@ void graphmlSaveAllVariations(const char *prefix, int expectedVariations)
   graphmlFileOps.initializeFolder(prefix);
   graphmlPossibleCorners();
   savePartialVariations(0, corners);
+  return VariationNumber - 1;
 }
 
 /* Count the number of times an edge appears in the corners array, and return
@@ -260,7 +262,7 @@ static void processAllCorners(FILE *fp, EDGE current, COLOR color,
   addEdgeFromCorner(fp, 2, current, 1);
 }
 
-/* Add a point to the graph if it's a primary point for the current color */
+/* Add a point to the graph, skip if it is the secondary to avoid duplicates. */
 static void addPointIfPrimary(FILE *fp, POINT point, COLOR color)
 {
   if (point->primary == color) {
@@ -331,6 +333,74 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
   addCornerNodes(fp, corners, color, cornerIds);
 }
 
+/* Save a single triangle (curve) to the GraphML file */
+static bool checkLinesNotCrossed(COLOR color, EDGE (*corners)[3])
+{
+  EDGE edge;
+  EDGE path[NFACES];
+  EDGE current;
+  int ix;
+  uint64_t linesCrossed = 0;
+  uint64_t initialLinesCrossed = 0;
+
+  // Get the path around the central face for this color
+  edge = edgeOnCentralFace(color);
+  getPath(path, edge, edgeFollowBackwards(edge));
+
+  int line = 0;
+  for (ix = 0; path[ix] != NULL; ix++) {
+    current = path[ix];
+    int cornerCount = edgeIsCorner(current->reversed, corners);
+
+    switch (cornerCount) {
+      case 0:  // No corners - just a regular edge
+        break;
+      case 1:  // Single corner
+        if (line == 0) {
+          initialLinesCrossed = linesCrossed;
+        }
+        line = (line + 1) % 3;
+        linesCrossed = 0;
+        break;
+      case 2:  // Two adjacent corners
+        if (line == 0) {
+          initialLinesCrossed = linesCrossed;
+        }
+        line = (line + 2) % 3;
+        linesCrossed = 0;
+        break;
+      case 3:  // All three corners at once
+        if (line == 0) {
+          initialLinesCrossed = linesCrossed;
+        }
+        linesCrossed = 0;
+        break;
+    }
+
+    POINT point = current->to->point;
+    if (point->lineId == 0) {
+      trailSetInt(&point->lineId, 1 + color * 3 + line);
+    } else {
+      uint64_t crossedLineAsBit = 1l << point->lineId;
+      if (linesCrossed & crossedLineAsBit) {
+        return false;
+      } else {
+        linesCrossed |= crossedLineAsBit;
+      }
+    }
+  }
+
+  if (linesCrossed & initialLinesCrossed) {
+    return false;
+  }
+
+  // Verify we processed all three corners
+  assert(line == 0);
+
+  // Add the corner nodes to the graph
+  return true;
+}
+
 static char *subFilename(void)
 {
   char *buffer = getBuffer();
@@ -353,7 +423,6 @@ static void saveVariation(EDGE (*corners)[3])
 {
   COLOR a;
   char *filename = subFilename();
-
   FILE *fp;
   assert(VariationNumber <= ExpectedVariations);
   VariationNumber++;
@@ -407,7 +476,11 @@ void graphmlChooseCornersWithContinuation(
   }
 
   if (cornerIndex == 3) {
-    continuation(current + 1, corners);
+    TRAIL trail = Trail;
+    if (checkLinesNotCrossed(current, corners + current)) {
+      continuation(current + 1, corners);
+    }
+    trailBacktrackTo(trail);
     return;
   }
   for (i = 0; possibilities[i] != NULL; i++) {
