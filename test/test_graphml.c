@@ -383,13 +383,17 @@ static void checkGraphML(void)
   freeRegexes();
 }
 
+/* This test exercises the code for dealing with two corners in the same face.
+The specific result picked out is 654444-26/6c/037.xml which includes three
+lots of such corner pairs.
+*/
 static void variant14188(void)
 {
   regex_t internalEdgeRegex;
   compileRegex(&internalEdgeRegex,
                "<edge source=\"[a-f]_[0-2]\" target=\"[a-f]_[0-2]\">");
   /* Run the program with -d 654444
-  then inspect this file to see this resullt.
+  then inspect the following file to see the graphml being tested.
    654444-26/6c/037.xml
    To convert the file name to variant number user bc
    > ibase=16
