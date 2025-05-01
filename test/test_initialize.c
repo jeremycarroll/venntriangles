@@ -97,10 +97,9 @@ static void testSizeOfCycleSet(void)
   TEST_ASSERT_EQUAL(1, cycleSetSize(cycleSet));
 }
 
-static void testCycleset(void)
+static void verifyCycleSetPairs(void)
 {
-  uint32_t i, j, k;
-  initialize();
+  uint32_t i, j;
   for (i = 0; i < NCOLORS; i++) {
     for (j = 0; j < NCOLORS; j++) {
       int size2 = cycleSetSize(CycleSetPairs[i][j]);
@@ -109,6 +108,15 @@ static void testCycleset(void)
       } else {
         TEST_ASSERT_EQUAL(64, size2);
       }
+    }
+  }
+}
+
+static void verifyCycleSetTriples(void)
+{
+  uint32_t i, j, k;
+  for (i = 0; i < NCOLORS; i++) {
+    for (j = 0; j < NCOLORS; j++) {
       for (k = 0; k < NCOLORS; k++) {
         int size3 = cycleSetSize(CycleSetTriples[i][j][k]);
         if (i == j || i == k || j == k) {
@@ -119,6 +127,13 @@ static void testCycleset(void)
       }
     }
   }
+}
+
+static void testCycleset(void)
+{
+  initialize();
+  verifyCycleSetPairs();
+  verifyCycleSetTriples();
 }
 
 static void testSameAndOppositeDirections(void)

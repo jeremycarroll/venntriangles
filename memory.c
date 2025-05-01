@@ -54,9 +54,9 @@ void freeAll(void)
 
 void initializeMemory()
 {
-  statisticIncludeInteger(&MaxBufferSize, "^", "MaxBuffer");
-  statisticIncludeInteger(&CurrentMemory, "m", "CurrentMemory");
-  statisticIncludeInteger(&MaxMemory, "M", "MaxMemory");
+  statisticIncludeInteger(&MaxBufferSize, "B", "MaxBuffer", true);
+  statisticIncludeInteger(&CurrentMemory, "C", "CurrentMemory", true);
+  statisticIncludeInteger(&MaxMemory, "M", "MaxMemory", true);
 }
 
 char *getBuffer() { return (char *)tempMalloc(BUFFER_SIZE); }

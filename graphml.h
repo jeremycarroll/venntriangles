@@ -4,11 +4,12 @@
 #define GRAPHML_H
 
 #include "edge.h"
+#include "point.h"
 
 #include <stdio.h>
 
-extern void graphmlSaveAllVariations(const char* prefix,
-                                     int expectedVariations);
+extern uint64_t GlobalVariantCount;
+extern int graphmlSaveAllVariations(const char* prefix, int expectedVariations);
 
 // Allow mocking of file operations.
 struct graphmlFileIO {

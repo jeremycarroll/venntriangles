@@ -5,34 +5,134 @@
 #include "main.h"
 #include "memory.h"
 #include "point.h"
+#include "trail.h"
+#include "triangles.h"
 #include "utils.h"
 
 #include <stdio.h>
 #include <string.h>
 #define DEBUG 0
 
+/* Global variables */
+uint64_t GlobalVariantCount = 0;
 /* GraphML namespace and schema definitions */
 static const char *GRAPHML_NS = "http://graphml.graphdrawing.org/xmlns";
 static const char *GRAPHML_SCHEMA =
     "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd";
 
-/* Forward declarations */
-static char *cornerId(COLOR color, int counter);
+/* Forward declarations of file scoped static functions */
+/* GraphML document structure functions */
+static void graphmlBegin(FILE *fp);
+static void graphmlEnd(FILE *fp);
+
+/* Node/vertex functions */
+static void graphmlAddPoint(FILE *fp, POINT point);
 static void graphmlAddCorner(FILE *fp, EDGE edge, COLOR color, int counter);
+static char *graphmlPointId(POINT point);
+static char *cornerId(COLOR color, int counter);
+static void addPointIfPrimary(FILE *fp, POINT point, COLOR color);
+static void addCornerNodes(FILE *fp, EDGE (*corners)[3], COLOR color,
+                           int *cornerIds);
+
+/* Edge functions */
 static void addEdge(FILE *fp, COLOR color, int line, char *source,
                     char *target);
+static void graphmlAddEdge(FILE *fp, EDGE edge, int line);
+static void addEdgeToCorner(FILE *fp, EDGE edge, int corner, int line);
+static void addEdgeBetweenCorners(FILE *fp, COLOR color, int low, int high);
+static void addEdgeFromCorner(FILE *fp, int corner, EDGE edge, int line);
+
+/* Triangle traversal callbacks */
+static void processRegularEdgeGraphML(void *data, EDGE current, int line);
+static void processSingleCornerGraphML(void *data, EDGE current, int line);
+static void processAdjacentCornersGraphML(void *data, EDGE current, int line);
+static void processAllCornersGraphML(void *data, EDGE current, int line);
+static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3]);
+
+/* Path and corner functions */
 static void getPath(EDGE *path, EDGE from, EDGE to);
+static void possibleCorners(EDGE *possibilities, COLOR color, EDGE from,
+                            EDGE to);
+
+/* Variation handling */
 static void saveVariation(EDGE (*corners)[3]);
+static int savePartialVariations(COLOR current, EDGE (*corners)[3]);
 static void chooseCornersThenSavePartialVariations(int cornerIndex,
                                                    COLOR current,
                                                    EDGE (*corners)[3]);
-static int savePartialVariations(COLOR current, EDGE (*corners)[3]);
-static char *graphmlPointId(POINT point);
-char *graphmlCurveId(COLOR color);
+static int numberOfLevels(int expectedVariations);
+static char *subFilename(void);
 
+/* Global variables */
+static const char *CurrentPrefix = NULL;
+static int VariationNumber = 1;
+static int ExpectedVariations = 0;
+static int Levels = 0;
+static EDGE PossibileCorners[NCOLORS][3][NFACES];
+
+/* Structure to hold data for GraphML output */
+typedef struct {
+  FILE *fp;
+  int cornerIds[3];
+  int cornerIx;
+  COLOR color;
+} GraphMLData;
+
+/* Externally linked functions */
 struct graphmlFileIO graphmlFileOps = {fopen, initializeFolder};
 
-/* Begin GraphML document */
+void graphmlPossibleCorners(void)
+{
+  for (int current = 0; current < NCOLORS; current++) {
+    EDGE cornerPairs[3][2];
+    edgeFindAndAlignCorners(current, cornerPairs);
+    for (int cornerIndex = 0; cornerIndex < 3; cornerIndex++) {
+      possibleCorners(PossibileCorners[current][cornerIndex], current,
+                      cornerPairs[cornerIndex][0], cornerPairs[cornerIndex][1]);
+    }
+  }
+}
+
+int graphmlSaveAllVariations(const char *prefix, int expectedVariations)
+{
+  EDGE corners[NCOLORS][3];
+  CurrentPrefix = prefix;
+  VariationNumber = 1;
+  ExpectedVariations = expectedVariations;
+  Levels = numberOfLevels(expectedVariations);
+  graphmlFileOps.initializeFolder(prefix);
+  graphmlPossibleCorners();
+  savePartialVariations(0, corners);
+  return VariationNumber - 1;
+}
+
+void graphmlChooseCornersWithContinuation(
+    int cornerIndex, COLOR current, EDGE (*corners)[3],
+    int (*continuation)(COLOR, EDGE (*corners)[3]))
+{
+  EDGE *possibilities = PossibileCorners[current][cornerIndex];
+  int i;
+
+  if (VariationNumber > MaxVariantsPerSolution) {
+    return;
+  }
+
+  if (cornerIndex == 3) {
+    TRAIL trail = Trail;
+    if (triangleLinesNotCrossed(current, corners + current)) {
+      continuation(current + 1, corners);
+    }
+    trailBacktrackTo(trail);
+    return;
+  }
+  for (i = 0; possibilities[i] != NULL; i++) {
+    corners[current][cornerIndex] = possibilities[i];
+    graphmlChooseCornersWithContinuation(cornerIndex + 1, current, corners,
+                                         continuation);
+  }
+}
+
+/* GraphML document structure functions */
 static void graphmlBegin(FILE *fp)
 {
   fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -62,14 +162,13 @@ static void graphmlBegin(FILE *fp)
   fprintf(fp, "  <graph id=\"venn_diagram\" edgedefault=\"undirected\">\n");
 }
 
-/* End GraphML document */
 static void graphmlEnd(FILE *fp)
 {
   fprintf(fp, "  </graph>\n");
   fprintf(fp, "</graphml>\n");
 }
 
-/* Add a point (vertex) to the graph */
+/* Node/vertex functions */
 static void graphmlAddPoint(FILE *fp, POINT point)
 {
   char *id = graphmlPointId(point);
@@ -82,17 +181,6 @@ static void graphmlAddPoint(FILE *fp, POINT point)
   fprintf(fp, "    </node>\n");
 }
 
-/* Return a string ID for a corner */
-static char *cornerId(COLOR color, int counter)
-{
-  char *buffer = getBuffer();
-  assert(counter < 3);
-  assert(color >= 0);
-  sprintf(buffer, "%c_%d", colorToChar(color), counter);
-  return usingBuffer(buffer);
-}
-
-/* Add a corner point to the graph */
 static void graphmlAddCorner(FILE *fp, EDGE edge, COLOR color, int counter)
 {
   COLORSET colors = edge->colors | (1ll << color);
@@ -105,7 +193,38 @@ static void graphmlAddCorner(FILE *fp, EDGE edge, COLOR color, int counter)
   fprintf(fp, "    </node>\n");
 }
 
-/* Add an edge between two points */
+static char *graphmlPointId(POINT point)
+{
+  char *buffer = getBuffer();
+  sprintf(buffer, "p_%s", pointToString(point));
+  return usingBuffer(buffer);
+}
+
+static char *cornerId(COLOR color, int counter)
+{
+  char *buffer = getBuffer();
+  assert(counter < 3);
+  assert(color >= 0);
+  sprintf(buffer, "%c_%d", colorToChar(color), counter);
+  return usingBuffer(buffer);
+}
+
+static void addPointIfPrimary(FILE *fp, POINT point, COLOR color)
+{
+  if (point->primary == color) {
+    graphmlAddPoint(fp, point);
+  }
+}
+
+static void addCornerNodes(FILE *fp, EDGE (*corners)[3], COLOR color,
+                           int *cornerIds)
+{
+  for (int i = 0; i < 3; i++) {
+    graphmlAddCorner(fp, (*corners)[i], color, cornerIds[i]);
+  }
+}
+
+/* Edge functions */
 static void addEdge(FILE *fp, COLOR color, int line, char *source, char *target)
 {
   fprintf(fp, "    <edge source=\"%s\" target=\"%s\">\n", source, target);
@@ -115,7 +234,6 @@ static void addEdge(FILE *fp, COLOR color, int line, char *source, char *target)
   fprintf(fp, "    </edge>\n");
 }
 
-/* Add an edge to the graph */
 static void graphmlAddEdge(FILE *fp, EDGE edge, int line)
 {
   /* Use the primary edge for consistent ID generation */
@@ -151,186 +269,79 @@ static void addEdgeFromCorner(FILE *fp, int corner, EDGE edge, int line)
   addEdge(fp, edge->color, line, source, target);
 }
 
-/* Generate unique IDs for graph elements */
-static char *graphmlPointId(POINT point)
+/* Triangle traversal callbacks */
+static void processRegularEdgeGraphML(void *data, EDGE current, int line)
 {
-  char *buffer = getBuffer();
-  sprintf(buffer, "p_%s", pointToString(point));
-  return usingBuffer(buffer);
+  GraphMLData *gml = (GraphMLData *)data;
+  graphmlAddEdge(gml->fp, current, line);
+  addPointIfPrimary(gml->fp, current->to->point, gml->color);
 }
 
-static int savePartialVariations(COLOR current, EDGE (*corners)[3]);
-static const char *CurrentPrefix = NULL;
-static int VariationNumber = 1;
-static int ExpectedVariations = 0;
-static int Levels = 0;
-static int numberOfLevels(int expectedVariations)
+static void processSingleCornerGraphML(void *data, EDGE current, int line)
 {
-  int result = 1;
-  while (expectedVariations >= 4096) {
-    result++;
-    expectedVariations /= 256;
-  }
-  return result;
-}
-static void possibleCorners(EDGE *possibilities, COLOR color, EDGE from,
-                            EDGE to);
-static EDGE PossibileCorners[NCOLORS][3][NFACES];
-
-void graphmlPossibleCorners(void)
-{
-  for (int current = 0; current < NCOLORS; current++) {
-    EDGE cornerPairs[3][2];
-    edgeFindCorners(current, cornerPairs);
-    for (int cornerIndex = 0; cornerIndex < 3; cornerIndex++) {
-      possibleCorners(PossibileCorners[current][cornerIndex], current,
-                      cornerPairs[cornerIndex][0], cornerPairs[cornerIndex][1]);
-    }
-  }
-}
-/**
- * @brief Find and save all variations of the solution to graphml files
- *
- * @param prefix The folder and prefix for files used in the solutions.
- */
-void graphmlSaveAllVariations(const char *prefix, int expectedVariations)
-{
-  EDGE corners[NCOLORS][3];
-  CurrentPrefix = prefix;
-  VariationNumber = 1;
-  ExpectedVariations = expectedVariations;
-  Levels = numberOfLevels(expectedVariations);
-  graphmlFileOps.initializeFolder(prefix);
-  graphmlPossibleCorners();
-  savePartialVariations(0, corners);
+  GraphMLData *gml = (GraphMLData *)data;
+  gml->cornerIds[gml->cornerIx] = line == 0 ? 2 : line == 1 ? 0 : 1;
+  addEdgeToCorner(gml->fp, current, gml->cornerIds[gml->cornerIx], line);
+  line = (line + 1) % 3;
+  addEdgeFromCorner(gml->fp, gml->cornerIds[gml->cornerIx], current, line);
+  gml->cornerIx++;
+  addPointIfPrimary(gml->fp, current->to->point, gml->color);
 }
 
-static int edgeIsCorner(EDGE edge, EDGE (*corners)[3], int *low, int *high)
+static void processAdjacentCornersGraphML(void *data, EDGE current, int line)
 {
-  int result = 0;
-  int ix;
-  *low = -1;
-  *high = -1;
-  for (ix = 0; ix < 3; ix++) {
-    if ((*corners)[ix] == edge) {
-      result |= 1 << ix;
-      if (*low != -1) {
-        *high = ix;
-      } else {
-        *low = ix;
-      }
-    }
-  }
-  return result;
+  GraphMLData *gml = (GraphMLData *)data;
+  assert(gml->cornerIx < 2);
+  assert(line < 2);
+  gml->cornerIds[gml->cornerIx + 1] = line;
+  gml->cornerIds[gml->cornerIx] = line == 0 ? 2 : 0;
+  addEdgeToCorner(gml->fp, current, gml->cornerIds[gml->cornerIx], line);
+  line = (line + 1) % 3;
+  addEdgeBetweenCorners(gml->fp, gml->color, gml->cornerIds[gml->cornerIx],
+                        gml->cornerIds[gml->cornerIx + 1]);
+  line = (line + 1) % 3;
+  addEdgeFromCorner(gml->fp, gml->cornerIds[gml->cornerIx + 1], current, line);
+  gml->cornerIx += 2;
+  addPointIfPrimary(gml->fp, current->to->point, gml->color);
+}
+
+static void processAllCornersGraphML(void *data, EDGE current, int line)
+{
+  GraphMLData *gml = (GraphMLData *)data;
+  (void)line; /* Unused parameter */
+  assert(gml->cornerIx == 0);
+  gml->cornerIds[gml->cornerIx++] = 0;
+  gml->cornerIds[gml->cornerIx++] = 1;
+  gml->cornerIds[gml->cornerIx++] = 2;
+  addEdgeToCorner(gml->fp, current, 0, 1);
+  addEdgeBetweenCorners(gml->fp, gml->color, 0, 1);
+  addEdgeBetweenCorners(gml->fp, gml->color, 1, 2);
+  addEdgeFromCorner(gml->fp, 2, current, 1);
+  addPointIfPrimary(gml->fp, current->to->point, gml->color);
 }
 
 static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
 {
-  EDGE edge;
-  EDGE path[NFACES];
-  EDGE current;
-  POINT currentPoint;
-  int ix;
-  int low, high;
-  int cornerIds[3] = {-1, -1, -1};
-  int cornerIx = 0;
-  edge = edgeOnCentralFace(color);
-  getPath(path, edge, edgeFollowBackwards(edge));
-  int line = 0;
-  for (ix = 0; path[ix] != NULL; ix++) {
-    current = path[ix];
-    switch (edgeIsCorner(current->reversed, corners, &low, &high)) {
-      case 0:
-        graphmlAddEdge(fp, current, line);
-        break;
-      case 1:
-      case 2:
-      case 4:
-        cornerIds[cornerIx] = line == 0 ? 2 : line == 1 ? 0 : 1;
-        addEdgeToCorner(fp, current, cornerIds[cornerIx], line);
-        line = (line + 1) % 3;
-        addEdgeFromCorner(fp, cornerIds[cornerIx], current, line);
-        cornerIx++;
-        break;
-      case 3:
-      case 5:
-      case 6:
-        assert(cornerIx < 2);
-        assert(line < 2);
-        cornerIds[cornerIx + 1] = line;
-        cornerIds[cornerIx] = line == 0 ? 2 : 0;
-        addEdgeToCorner(fp, current, cornerIds[cornerIx], line);
-        line = (line + 1) % 3;
-        addEdgeBetweenCorners(fp, color, cornerIds[cornerIx],
-                              cornerIds[cornerIx + 1]);
-        line = (line + 1) % 3;
-        addEdgeFromCorner(fp, cornerIds[cornerIx + 1], current, line);
-        cornerIx += 2;
-        break;
-      case 7:
-        assert(cornerIx == 0);
-        assert(line == 0);
-        cornerIds[cornerIx++] = 0;
-        cornerIds[cornerIx++] = 1;
-        cornerIds[cornerIx++] = 2;
-        addEdgeToCorner(fp, current, 0, 1);
-        addEdgeBetweenCorners(fp, color, 0, 1);
-        addEdgeBetweenCorners(fp, color, 1, 2);
-        addEdgeFromCorner(fp, 2, current, 1);
-        break;
-    }
-    currentPoint = current->to->point;
-    if (currentPoint->primary == color) {
-      graphmlAddPoint(fp, currentPoint);
-    }
-  }
-  assert(cornerIx == 3);
-  assert(line == 0);
-  graphmlAddCorner(fp, (*corners)[0], color, cornerIds[0]);
-  graphmlAddCorner(fp, (*corners)[1], color, cornerIds[1]);
-  graphmlAddCorner(fp, (*corners)[2], color, cornerIds[2]);
+  GraphMLData gml = {
+      .fp = fp, .cornerIds = {-1, -1, -1}, .cornerIx = 0, .color = color};
+
+  TriangleTraversalCallbacks callbacks = {
+      .processRegularEdge = processRegularEdgeGraphML,
+      .processSingleCorner = processSingleCornerGraphML,
+      .processAdjacentCorners = processAdjacentCornersGraphML,
+      .processAllCorners = processAllCornersGraphML,
+      .processPoint = NULL};
+
+  triangleTraverse(color, corners, &callbacks, &gml);
+
+  /* Verify we processed all three corners */
+  assert(gml.cornerIx == 3);
+
+  /* Add the corner nodes to the graph */
+  addCornerNodes(fp, corners, color, gml.cornerIds);
 }
 
-static char *subFilename(void)
-{
-  char *buffer = getBuffer();
-  int levels = Levels;
-  char *p = buffer;
-  int variationNumber = VariationNumber;
-  p = p + sprintf(p, "%s", CurrentPrefix);
-
-  while (levels > 1) {
-    p += sprintf(p, "/%2.2x", variationNumber % 256);
-    graphmlFileOps.initializeFolder(buffer);
-    variationNumber /= 256;
-    levels--;
-  }
-  p += sprintf(p, "/%3.3x.xml", variationNumber);
-  return usingBuffer(buffer);
-}
-
-static void saveVariation(EDGE (*corners)[3])
-{
-  COLOR a;
-  char *filename = subFilename();
-
-  FILE *fp;
-  assert(VariationNumber <= ExpectedVariations);
-  VariationNumber++;
-  if (VariationNumber - 1 <= IgnoreFirstVariantsPerSolution) {
-    return;
-  }
-  fp = graphmlFileOps.fopen(filename, "w");
-  graphmlBegin(fp);
-  for (a = 0; a < NCOLORS; a++, corners++) {
-    saveTriangle(fp, a, corners);
-  }
-  graphmlEnd(fp);
-  fclose(fp);
-  freeAll();
-}
-
-/* Get path between two edges */
+/* Path and corner functions */
 static void getPath(EDGE *path, EDGE from, EDGE to)
 {
   int length = edgePathLength(from, to, path);
@@ -353,45 +364,54 @@ static void possibleCorners(EDGE *possibilities, COLOR color, EDGE from,
   }
 }
 
-static int savePartialVariations(COLOR current, EDGE (*corners)[3]);
-
-void graphmlChooseCornersWithContinuation(
-    int cornerIndex, COLOR current, EDGE (*corners)[3],
-    int (*continuation)(COLOR, EDGE (*corners)[3]))
+/* Variation handling */
+static char *subFilename(void)
 {
-  EDGE *possibilities = PossibileCorners[current][cornerIndex];
-  int i;
+  char *buffer = getBuffer();
+  int levels = Levels;
+  char *p = buffer;
+  int variationNumber = VariationNumber;
+  p = p + sprintf(p, "%s", CurrentPrefix);
 
-  if (VariationNumber > MaxVariantsPerSolution) {
+  while (levels > 1) {
+    p += sprintf(p, "/%2.2x", variationNumber % 256);
+    graphmlFileOps.initializeFolder(buffer);
+    variationNumber /= 256;
+    levels--;
+  }
+  p += sprintf(p, "/%3.3x.xml", variationNumber);
+  return usingBuffer(buffer);
+}
+
+static void saveVariation(EDGE (*corners)[3])
+{
+  COLOR a;
+  char *filename = subFilename();
+  FILE *fp;
+  assert(VariationNumber <= ExpectedVariations);
+  VariationNumber++;
+  if (VariationNumber - 1 <= IgnoreFirstVariantsPerSolution) {
     return;
   }
-  for (i = 0; i < 3; i++) {
-#if DEBUG
-    printf("%d cornerPairs[%d][0]: %x\n", cornerIndex, i,
-           cornerPairs[i][0]->reversed);
-    printf("%d cornerPairs[%d][1]: %x\n", cornerIndex, i, cornerPairs[i][1]);
-#endif
+  GlobalVariantCount++;
+  fp = graphmlFileOps.fopen(filename, "w");
+  graphmlBegin(fp);
+  for (a = 0; a < NCOLORS; a++, corners++) {
+    saveTriangle(fp, a, corners);
   }
+  graphmlEnd(fp);
+  fclose(fp);
+  freeAll();
+}
 
-  if (cornerIndex == 3) {
-    continuation(current + 1, corners);
-    return;
+static int numberOfLevels(int expectedVariations)
+{
+  int result = 1;
+  while (expectedVariations >= 4096) {
+    result++;
+    expectedVariations /= 256;
   }
-  for (i = 0; possibilities[i] != NULL; i++);
-#if DEBUG
-  int total;
-  printf("!! cornerIndex: %d, current: %d, possibilities: %d\n", cornerIndex,
-         current, i);
-#endif
-  for (i = 0; possibilities[i] != NULL; i++) {
-    corners[current][cornerIndex] = possibilities[i];
-#if DEBUG
-    printf("cornerIndex: %d, current: %d, possibilities[i]: %s %dn",
-           cornerIndex, current, edgeToString(possibilities[i]), i);
-#endif
-    graphmlChooseCornersWithContinuation(cornerIndex + 1, current, corners,
-                                         continuation);
-  }
+  return result;
 }
 
 static void chooseCornersThenSavePartialVariations(int cornerIndex,
@@ -402,7 +422,6 @@ static void chooseCornersThenSavePartialVariations(int cornerIndex,
                                        savePartialVariations);
 }
 
-/* Save partial variations of the solution */
 static int savePartialVariations(COLOR current, EDGE (*corners)[3])
 {
   if (current >= NCOLORS) {

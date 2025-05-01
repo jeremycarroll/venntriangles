@@ -16,16 +16,6 @@
 #include <unistd.h>
 
 /* Externally linked functions */
-void resetGlobals()
-{
-  resetFaces();
-  resetEdges();
-  resetPoints();
-  freeAll();
-}
-
-void resetInitialize() { resetCycles(); }
-
 void initialize()
 {
   /* Not true on all architectures, but assumed in our Trail. */
@@ -57,4 +47,33 @@ void initializeFolder(const char *folder)
       exit(EXIT_FAILURE);
     }
   }
+}
+
+void resetGlobals()
+{
+  resetFaces();
+  resetEdges();
+  resetPoints();
+  freeAll();
+}
+
+void resetInitialize() { resetCycles(); }
+
+#define USAGE_ONE_LINE                                                   \
+  "Usage: %s -f outputFolder [-d centralFaceDegrees] [-m maxSolutions] " \
+  "[-n maxVariantsPerSolution] [-k skipFirstSolutions] [-j "             \
+  "skipFirstVariantsPerSolution] [-v]\n"
+
+#define USAGE_WITH_D_EXPLANATION                                              \
+  "When -d is specified, -m and -k apply to solutions with that face degree " \
+  "pattern.\n"                                                                \
+  "Otherwise, they apply globally across all face degree patterns.\n"         \
+  "Use -v to enable verbose output mode.\n"
+
+void disaster(const char *message)
+{
+  fprintf(stderr, USAGE_ONE_LINE, Argv0);
+  fprintf(stderr, USAGE_WITH_D_EXPLANATION);
+  fprintf(stderr, "%s\n", message);
+  exit(EXIT_FAILURE);
 }

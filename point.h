@@ -4,6 +4,7 @@
 #define POINT_H
 
 #include "edge.h"
+#include "trail.h"
 
 /* We create all possible points during initialization.
 
@@ -37,15 +38,17 @@ struct Point {
   */
   STATIC EDGE incomingEdges[4];
 
-  /* A value between 0 and NPOINTS */
-  STATIC uint32_t id;
-
   /* Colors can also be accessed from the edges as above.
    */
   STATIC COLOR primary, secondary;
 
   /* A set of the two colors. */
   STATIC COLORSET colors;
+
+  /* The first of the two lines at this point.
+     lines count from 1; 0 means not yet set.
+   */
+  uint_trail lineId;
 };
 
 extern void initializePoints(void);
@@ -56,5 +59,6 @@ extern char* pointToString(POINT up);
 extern char* pointToColorSetString(POINT up);
 extern struct Point PointAllUPoints[NPOINTS];
 extern FAILURE dynamicEdgeCornerCheck(EDGE start, int depth);
+extern void edgeFindAndAlignCorners(COLOR a, EDGE result[3][2]);
 
 #endif  // POINT_H

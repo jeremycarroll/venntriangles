@@ -12,16 +12,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define USAGE_ONE_LINE                                                   \
-  "Usage: %s -f outputFolder [-d centralFaceDegrees] [-m maxSolutions] " \
-  "[-n maxVariantsPerSolution] [-k skipFirstSolutions] [-j "             \
-  "skipFirstVariantsPerSolution]\n"
-
-#define USAGE_WITH_D_EXPLANATION                                              \
-  "When -d is specified, -m and -k apply to solutions with that face degree " \
-  "pattern.\n"                                                                \
-  "Otherwise, they apply globally across all face degree patterns.\n"
-
 static char *TargetFolder = NULL;
 int MaxVariantsPerSolution = INT_MAX;     // Maximum value means unlimited
 int GlobalMaxSolutions = INT_MAX;         // Global maximum solutions
@@ -30,11 +20,16 @@ int GlobalSkipSolutions = 0;              // Global solutions to skip
 int PerFaceDegreeSkipSolutions = 0;       // Per face degree solutions to skip
 int IgnoreFirstVariantsPerSolution = 0;  // Default to not ignoring any variants
 int CentralFaceDegrees[NCOLORS] = {0};   // Initialize all to 0
-int GlobalSolutionsFound = 0;            // Counter for solutions found
+uint64_t GlobalSolutionsFound = 0;       // Counter for solutions found
+bool VerboseMode = false;                // Controls verbose output mode
 
 /* Declaration of file scoped static functions */
 static void saveResult(void);
 static void initializeOutputFolder(void);
+static void setFaceDegrees(const char *faceDegrees);
+static int parsePostiveArgument(const char *arg, char flag, bool allowZero);
+
+char *Argv0;
 
 /* Externally linked functions */
 int dynamicMain0(int argc, char *argv[])
@@ -44,72 +39,44 @@ int dynamicMain0(int argc, char *argv[])
   bool hasFaceDegrees = false;
   int localMaxSolutions = INT_MAX;
   int localSkipSolutions = 0;
+  Argv0 = argv[0];
 
-  while ((opt = getopt(argc, argv, "f:d:m:n:k:j:")) != -1) {
+  while ((opt = getopt(argc, argv, "f:d:m:n:k:j:v")) != -1) {
     switch (opt) {
       case 'f':
         TargetFolder = optarg;
         break;
       case 'd':
         hasFaceDegrees = true;
-        if (strlen(optarg) != NCOLORS) {
-          fprintf(stderr,
-                  "Central face degrees string must be exactly %d digits\n",
-                  NCOLORS);
-          return EXIT_FAILURE;
-        }
-        for (int i = 0; i < NCOLORS; i++) {
-          char c = optarg[i];
-          if (c < '3' || c > '6') {
-            fprintf(
-                stderr,
-                "Each digit in central face degrees must be between 3 and 6\n");
-            return EXIT_FAILURE;
-          }
-          CentralFaceDegrees[i] = c - '0';
-        }
+        setFaceDegrees(optarg);
         break;
       case 'm':
-        localMaxSolutions = atoi(optarg);
-        if (localMaxSolutions <= 0) {
-          fprintf(stderr, "maxSolutions must be a positive integer\n");
-          return EXIT_FAILURE;
-        }
+        localMaxSolutions = parsePostiveArgument(optarg, 'm', false);
         break;
       case 'n':
-        MaxVariantsPerSolution = atoi(optarg);
-        if (MaxVariantsPerSolution <= 0) {
-          fprintf(stderr,
-                  "maxVariantsPerSolution must be a positive integer\n");
-          return EXIT_FAILURE;
-        }
+        MaxVariantsPerSolution = parsePostiveArgument(optarg, 'n', false);
         break;
       case 'k':
-        localSkipSolutions = atoi(optarg);
-        if (localSkipSolutions < 0) {
-          fprintf(stderr, "skipFirstSolutions must be non-negative\n");
-          return EXIT_FAILURE;
-        }
+        localSkipSolutions = parsePostiveArgument(optarg, 'k', true);
         break;
       case 'j':
-        IgnoreFirstVariantsPerSolution = atoi(optarg);
-        if (IgnoreFirstVariantsPerSolution < 0) {
-          fprintf(stderr,
-                  "skipFirstVariantsPerSolution must be non-negative\n");
-          return EXIT_FAILURE;
-        }
+        IgnoreFirstVariantsPerSolution =
+            parsePostiveArgument(optarg, 'j', true);
+        break;
+      case 'v':
+        VerboseMode = true;
         break;
       default:
-        fprintf(stderr, USAGE_ONE_LINE, argv[0]);
-        fprintf(stderr, USAGE_WITH_D_EXPLANATION);
-        return EXIT_FAILURE;
+        disaster("Invalid option");
     }
   }
 
-  if (optind != argc || TargetFolder == NULL) {
-    fprintf(stderr, USAGE_ONE_LINE, argv[0]);
-    fprintf(stderr, USAGE_WITH_D_EXPLANATION);
-    return EXIT_FAILURE;
+  if (optind != argc) {
+    disaster("Invalid option");
+  }
+
+  if (TargetFolder == NULL) {
+    disaster("Output folder not specified");
   }
 
   // Set the appropriate static variables based on whether -d was specified
@@ -128,24 +95,64 @@ int dynamicMain0(int argc, char *argv[])
   return 0;
 }
 
+static void setFaceDegrees(const char *faceDegrees)
+{
+  if (strlen(faceDegrees) != NCOLORS) {
+    fprintf(stderr, "Central face degrees string must be exactly %d digits\n",
+            NCOLORS);
+    exit(EXIT_FAILURE);
+  }
+  for (int i = 0; i < NCOLORS; i++) {
+    char c = faceDegrees[i];
+    if (c < '3' || c > '6') {
+      fprintf(stderr,
+              "Each digit in central face degrees must be between 3 and 6\n");
+      exit(EXIT_FAILURE);
+    }
+    CentralFaceDegrees[i] = c - '0';
+  }
+}
+
+static int parsePostiveArgument(const char *arg, char flag, bool allowZero)
+{
+  char *endptr;
+  char errorMessage[100];
+  sprintf(errorMessage, "-%c must be a %s integer.", flag,
+          allowZero ? "non-negative" : "positive");
+  int value = strtol(arg, &endptr, 10);
+  if (value <= 0) {
+    disaster(errorMessage);
+  }
+  if (endptr == arg) {
+    disaster(errorMessage);
+  }
+  if (value == 0 && !allowZero) {
+    disaster(errorMessage);
+  }
+  if (*endptr != '\0') {
+    disaster(errorMessage);
+  }
+  return value;
+}
+
 /* File scoped static functions */
 static void saveResult(void)
 {
   // GlobalSolutionsFound is incremented in vsearch.c
 
   // Check if we should skip this solution based on global limits
-  if (GlobalSolutionsFound <= GlobalSkipSolutions) {
+  if ((int64_t)GlobalSolutionsFound <= GlobalSkipSolutions) {
     return;
   }
 
   // Check if we've hit the global maximum limit
-  if (GlobalSolutionsFound > GlobalMaxSolutions) {
+  if ((int64_t)GlobalSolutionsFound > GlobalMaxSolutions) {
     return;
   }
 
   char *buffer = getBuffer();
   sprintf(buffer, "%s/%s", TargetFolder, s6FaceDegreeSignature());
-  solutionWrite(usingBuffer(buffer));
+  searchSolutionWrite(usingBuffer(buffer));
 }
 
 static void initializeOutputFolder() { initializeFolder(TargetFolder); }

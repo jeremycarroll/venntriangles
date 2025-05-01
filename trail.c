@@ -10,6 +10,13 @@ TRAIL Trail = TrailArray;
 static uint64_t MaxTrailSize = 0;
 
 /* Externally linked functions */
+void initializeTrail()
+{
+  statisticIncludeInteger(&MaxTrailSize, "$", "MaxTrail", true);
+}
+
+void resetTrail() { Trail = TrailArray; }
+
 void trailSetPointer(void** ptr, void* value)
 {
   Trail->ptr = ptr;
@@ -47,10 +54,3 @@ bool trailBacktrackTo(TRAIL backtrackPoint)
   }
   return result;
 }
-
-void initializeTrail()
-{
-  statisticIncludeInteger(&MaxTrailSize, "$", "MaxTrail");
-}
-
-void resetTrail() { Trail = TrailArray; }

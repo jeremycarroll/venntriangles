@@ -27,43 +27,24 @@ static FAILURE checkForDisconnectedCurve(EDGE edge, int depth);
 static EDGE findStartOfCurve(EDGE edge);
 static EDGE edgeFollowForwards(EDGE edge);
 
-/* Externally linked functions */
-EDGE edgeFollowForwards(EDGE edge)
+/* Externally linked functions - reset... */
+void resetEdges()
 {
-  if (edge->to == NULL) {
-    return NULL;
-  }
-  return edge->to->next;
+  memset(EdgeCountsByDirectionAndColor, 0,
+         sizeof(EdgeCountsByDirectionAndColor));
+  memset(EdgeCrossingCounts, 0, sizeof(EdgeCrossingCounts));
+  memset(EdgeCurvesComplete, 0, sizeof(EdgeCurvesComplete));
 }
 
-EDGE edgeFollowBackwards(EDGE edge)
+/* Externally linked functions - edge... */
+FAILURE edgeCheckCrossingLimit(COLOR a, COLOR b, int depth)
 {
-  EDGE reversedNext = edgeFollowForwards(edge->reversed);
-  return reversedNext == NULL ? NULL : reversedNext->reversed;
-}
-
-extern char* graphmlPointId(POINT point);
-int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn)
-{
-  EDGE dummyReturn[NFACES];
-  int i = 0;
-  if (pathReturn == NULL) {
-    pathReturn = dummyReturn;
+  uint_trail* crossing = &EdgeCrossingCounts[a][b];
+  if (*crossing + 1 > MAX_ONE_WAY_CURVE_CROSSINGS) {
+    return failureCrossingLimit(depth);
   }
-  pathReturn[i++] = from;
-  while (from != to) {
-    from = edgeFollowForwards(from);
-#if 0
-    if (strcmp(graphmlPointId(from->to->point), "p_|ab|_a_b") == 0) {
-      printf("from %s %s\n", edgeToString(from), colorSetToString(from->colors));
-    }
-#endif
-    assert(from != to->reversed);
-    assert(from != NULL);
-    assert(i < NFACES);
-    pathReturn[i++] = from;
-  }
-  return i;
+  trailSetInt(crossing, *crossing + 1);
+  return NULL;
 }
 
 FAILURE edgeCurveChecks(EDGE edge, int depth)
@@ -75,42 +56,20 @@ FAILURE edgeCurveChecks(EDGE edge, int depth)
   return checkForDisconnectedCurve(start, depth);
 }
 
-FAILURE edgeCheckCrossingLimit(COLOR a, COLOR b, int depth)
+EDGE edgeFollowBackwards(EDGE edge)
 {
-  uint_trail* crossing = &EdgeCrossingCounts[a][b];
-  if (*crossing + 1 > MAX_ONE_WAY_CURVE_CROSSINGS) {
-    return failureCrossingLimit(depth);
+  EDGE reversedNext = edgeFollowForwards(edge->reversed);
+  return reversedNext == NULL ? NULL : reversedNext->reversed;
+}
+
+EDGE edgeFollowForwards(EDGE edge)
+{
+  if (edge->to == NULL) {
+    return NULL;
   }
-  trailSetInt(crossing, *crossing + 1);
-  return NULL;
+  return edge->to->next;
 }
 
-void resetEdges()
-{
-  memset(EdgeCountsByDirectionAndColor, 0,
-         sizeof(EdgeCountsByDirectionAndColor));
-  memset(EdgeCrossingCounts, 0, sizeof(EdgeCrossingCounts));
-  memset(EdgeCurvesComplete, 0, sizeof(EdgeCurvesComplete));
-}
-
-char* edgeToString(EDGE edge)
-{
-  char* buffer = getBuffer();
-  if (edge == NULL) {
-    strcpy(buffer, "NULL");
-  } else {
-    sprintf(buffer, "%c%d", colorToChar(edge->color), edge->colors);
-  }
-  return usingBuffer(buffer);
-}
-
-/*
-Set up the next values for edge1 and edge2 that have the same color.
-All four edges meet at the same point.
-The edge3 and edge4 have the other color.
-The next value for both  edge1 and edge2  for the other color is set to
-the reverse of the other edge.
-*/
 void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
 {
   COLOR other = edge3->color;
@@ -131,6 +90,35 @@ void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
     assert(level1 == level4);
     assert(level2 == level3);
   }
+}
+
+int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn)
+{
+  EDGE dummyReturn[NFACES];
+  int i = 0;
+  if (pathReturn == NULL) {
+    pathReturn = dummyReturn;
+  }
+  pathReturn[i++] = from;
+  while (from != to) {
+    from = edgeFollowForwards(from);
+    assert(from != to->reversed);
+    assert(from != NULL);
+    assert(i < NFACES);
+    pathReturn[i++] = from;
+  }
+  return i;
+}
+
+char* edgeToString(EDGE edge)
+{
+  char* buffer = getBuffer();
+  if (edge == NULL) {
+    strcpy(buffer, "NULL");
+  } else {
+    sprintf(buffer, "%c%d", colorToChar(edge->color), edge->colors);
+  }
+  return usingBuffer(buffer);
 }
 
 /* File scoped static functions */
