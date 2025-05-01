@@ -17,7 +17,6 @@ void initializeTrail()
 
 void resetTrail() { Trail = TrailArray; }
 
-
 void trailSetPointer(void** ptr, void* value)
 {
   Trail->ptr = ptr;

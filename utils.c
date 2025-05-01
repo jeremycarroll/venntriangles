@@ -16,16 +16,6 @@
 #include <unistd.h>
 
 /* Externally linked functions */
-void resetGlobals()
-{
-  resetFaces();
-  resetEdges();
-  resetPoints();
-  freeAll();
-}
-
-void resetInitialize() { resetCycles(); }
-
 void initialize()
 {
   /* Not true on all architectures, but assumed in our Trail. */
@@ -58,6 +48,17 @@ void initializeFolder(const char *folder)
     }
   }
 }
+
+void resetGlobals()
+{
+  resetFaces();
+  resetEdges();
+  resetPoints();
+  freeAll();
+}
+
+void resetInitialize() { resetCycles(); }
+
 
 #define USAGE_ONE_LINE                                                   \
   "Usage: %s -f outputFolder [-d centralFaceDegrees] [-m maxSolutions] " \
