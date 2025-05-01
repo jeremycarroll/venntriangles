@@ -33,7 +33,6 @@ static char *graphmlPointId(POINT point);
 static void addPointIfPrimary(FILE *fp, POINT point, COLOR color);
 static void addCornerNodes(FILE *fp, EDGE (*corners)[3], COLOR color,
                            int *cornerIds);
-char *graphmlCurveId(COLOR color);
 
 struct graphmlFileIO graphmlFileOps = {fopen, initializeFolder};
 
@@ -62,9 +61,6 @@ static void graphmlBegin(FILE *fp)
           "attr.type=\"string\"/>\n");
   fprintf(fp,
           "  <key id=\"line\" for=\"edge\" attr.name=\"line\" "
-          "attr.type=\"string\"/>\n");
-  fprintf(fp,
-          "  <key id=\"curve\" for=\"edge\" attr.name=\"curve\" "
           "attr.type=\"string\"/>\n");
 
   fprintf(fp, "  <graph id=\"venn_diagram\" edgedefault=\"undirected\">\n");
@@ -120,7 +116,6 @@ static void addEdge(FILE *fp, COLOR color, int line, char *source, char *target)
   fprintf(fp, "      <data key=\"color\">%c</data>\n", colorToChar(color));
   fprintf(fp, "      <data key=\"line\">%c%d</data>\n", colorToChar(color),
           line);
-  fprintf(fp, "      <data key=\"curve\">%s</data>\n", graphmlCurveId(color));
   fprintf(fp, "    </edge>\n");
 }
 
@@ -405,14 +400,6 @@ static int savePartialVariations(COLOR current, EDGE (*corners)[3])
   }
   chooseCornersThenSavePartialVariations(0, current, corners);
   return 0;
-}
-
-/* Generate a unique curve ID for a color */
-char *graphmlCurveId(COLOR color)
-{
-  char *buffer = getBuffer();
-  sprintf(buffer, "curve_%c", colorToChar(color));
-  return usingBuffer(buffer);
 }
 
 /* Add a point to the graph, skip if it is the secondary to avoid duplicates. */
