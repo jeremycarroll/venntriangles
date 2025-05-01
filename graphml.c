@@ -117,7 +117,7 @@ void graphmlChooseCornersWithContinuation(
 
   if (cornerIndex == 3) {
     TRAIL trail = Trail;
-    if (checkLinesNotCrossed(current, corners + current)) {
+    if (triangleLinesNotCrossed(current, corners + current)) {
       continuation(current + 1, corners);
     }
     trailBacktrackTo(trail);

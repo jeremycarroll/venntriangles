@@ -29,7 +29,7 @@ static void checkAllCorners(void *data, EDGE current, int line);
 
 /* Other functions (in alphabetical order) */
 
-bool checkLinesNotCrossed(COLOR color, EDGE (*corners)[3])
+bool triangleLinesNotCrossed(COLOR color, EDGE (*corners)[3])
 {
   LineCrossingData lcd = {0, 0, false};
   TriangleTraversalCallbacks callbacks = {

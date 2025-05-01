@@ -280,7 +280,7 @@ int searchCountVariations(char* variationMultiplication)
   return numberOfVariations;
 }
 
-void solutionWrite(const char* prefix)
+void searchSolutionWrite(const char* prefix)
 {
   char filename[1024];
   char variationMultiplication[128];
