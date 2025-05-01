@@ -100,21 +100,6 @@ void initializeS6(void)
   verifyS6Initialization(done, ix);
 }
 
-static void verifyS6Initialization(uint64_t done, uint64_t ix)
-{
-  uint64_t i;
-#if NCOLORS == 6
-  assert(done == ~0llu);
-#else
-  assert(done == (1llu << (uint64_t)NFACES) - 1l);
-#endif
-  assert(ix == NFACES);
-  for (i = 0; i < NFACES; i++) {
-    assert(InverseSequenceOrder[SequenceOrder[i]] == i);
-    assert(SequenceOrder[InverseSequenceOrder[i]] == i);
-  }
-}
-
 /* Externally linked functions - Dynamic */
 PERMUTATION s6Automorphism(CYCLE_ID cycleId)
 {
@@ -279,6 +264,22 @@ char *s6SignatureToLongString(SIGNATURE signature)
 }
 
 /* File scoped static functions */
+
+static void verifyS6Initialization(uint64_t done, uint64_t ix)
+{
+  uint64_t i;
+#if NCOLORS == 6
+  assert(done == ~0llu);
+#else
+  assert(done == (1llu << (uint64_t)NFACES) - 1l);
+#endif
+  assert(ix == NFACES);
+  for (i = 0; i < NFACES; i++) {
+    assert(InverseSequenceOrder[SequenceOrder[i]] == i);
+    assert(SequenceOrder[InverseSequenceOrder[i]] == i);
+  }
+}
+
 static int compareFaceDegree(const void *a, const void *b)
 {
   return -memcmp(a, b, sizeof(FACE_DEGREE) * NFACES);
