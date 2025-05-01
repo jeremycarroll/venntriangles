@@ -17,8 +17,51 @@ static int CheckFrequency = 1;
 static int SecondsBetweenLogs = 10;
 static int CheckCountDown = 0;
 static FILE* LogFile = NULL;
+static double statisticCalculateSearchSpace(void);
+static int statisticCountChosen(void);
+static void formatElapsedTime(time_t elapsed, char* buffer, size_t bufferSize);
+static void formatFailureCounts(Failure* failure, int maxIndex, char* buffer);
+static void printFailureCountsOneLine(Failure* failure, int maxIndex);
+static void printFailureCountsFull(Failure* failure, int maxIndex);
+static void printFailureCounts(bool oneLine);
+static void printStatisticsCounters(bool oneLine);
+static void updateLoggingState(time_t now);
 
 /* Externally linked functions */
+
+void initializeStatisticLogging(char* filename, int frequency, int seconds)
+{
+  LogFile = filename == NULL                  ? stderr
+            : strcmp("/dev/stdout", filename) ? fopen(filename, "w")
+                                              : stdout;
+  CheckFrequency = frequency;
+  SecondsBetweenLogs = seconds;
+  StartTime = time(NULL);
+  LastLogTime = StartTime;
+  CheckCountDown = CheckFrequency;
+  initializeFailures();
+}
+
+void resetStatistics(void)
+{
+  for (int i = 0; i < MAX_STATISTICS; i++) {
+    if (Statistics[i].countPtr == NULL) {
+      break;
+    }
+    *Statistics[i].countPtr = 0;
+    Statistics[i].countPtr = NULL;
+  }
+  for (int i = 0; i < MAX_STATISTICS; i++) {
+    if (Failures[i] == NULL) {
+      break;
+    }
+    if (Failures[i]->count[0] == 0) {
+      break;
+    }
+    memset(Failures[i]->count, 0, sizeof(Failures[i]->count));
+  }
+}
+
 void statisticIncludeInteger(uint64_t* counter, char* shortName, char* name)
 {
   for (int i = 0; i < MAX_STATISTICS; i++) {
@@ -49,24 +92,55 @@ void statisticIncludeFailure(Failure* failure)
   assert(false);
 }
 
-void resetStatistics(void)
+void statisticPrintOneLine(int position, bool force)
 {
-  for (int i = 0; i < MAX_STATISTICS; i++) {
-    if (Statistics[i].countPtr == NULL) {
-      break;
+  if (--CheckCountDown <= 0 || force) {
+    time_t now = time(NULL);
+    double seconds = difftime(now, LastLogTime);
+    if (seconds >= SecondsBetweenLogs || force) {
+      char* timestr = asctime(localtime(&now));
+      time_t elapsed = now - StartTime;
+      timestr[19] = 0;
+
+      char elapsedStr[20];
+      formatElapsedTime(elapsed, elapsedStr, sizeof(elapsedStr));
+
+      fprintf(LogFile, "%s %s %d %.1f p %d ", timestr + 11, elapsedStr,
+              statisticCountChosen(), statisticCalculateSearchSpace(),
+              position);
+
+      printStatisticsCounters(true);
+      printFailureCounts(true);
+      fprintf(LogFile, "\n");
+
+      updateLoggingState(now);
     }
-    *Statistics[i].countPtr = 0;
-    Statistics[i].countPtr = NULL;
   }
-  for (int i = 0; i < MAX_STATISTICS; i++) {
-    if (Failures[i] == NULL) {
-      break;
-    }
-    if (Failures[i]->count[0] == 0) {
-      break;
-    }
-    memset(Failures[i]->count, 0, sizeof(Failures[i]->count));
-  }
+}
+
+void statisticPrintFull(void)
+{
+  time_t now = time(NULL);
+  char* timestr = asctime(localtime(&now));
+  time_t elapsed = now - StartTime;
+  double searchSpaceLogSize = statisticCalculateSearchSpace();
+
+  char elapsedStr[20];
+  formatElapsedTime(elapsed, elapsedStr, sizeof(elapsedStr));
+
+  fprintf(LogFile,
+          "%sRuntime: %s\nChosen faces: %d\nOpen Search Space Size: Log = %.2f "
+          "; i.e. %6.3g\n",
+          timestr, elapsedStr, statisticCountChosen(), searchSpaceLogSize,
+          exp(searchSpaceLogSize));
+
+  fprintf(LogFile, "%30s %30s\n", "Counter", "Value(s)");
+
+  printStatisticsCounters(false);
+  printFailureCounts(false);
+
+  fprintf(LogFile, "\n");
+  updateLoggingState(now);
 }
 
 static double statisticCalculateSearchSpace(void)
@@ -175,68 +249,4 @@ static void updateLoggingState(time_t now)
   LastLogTime = now;
   fflush(LogFile);
   CheckCountDown = CheckFrequency;
-}
-
-void statisticPrintOneLine(int position, bool force)
-{
-  if (--CheckCountDown <= 0 || force) {
-    time_t now = time(NULL);
-    double seconds = difftime(now, LastLogTime);
-    if (seconds >= SecondsBetweenLogs || force) {
-      char* timestr = asctime(localtime(&now));
-      time_t elapsed = now - StartTime;
-      timestr[19] = 0;
-
-      char elapsedStr[20];
-      formatElapsedTime(elapsed, elapsedStr, sizeof(elapsedStr));
-
-      fprintf(LogFile, "%s %s %d %.1f p %d ", timestr + 11, elapsedStr,
-              statisticCountChosen(), statisticCalculateSearchSpace(),
-              position);
-
-      printStatisticsCounters(true);
-      printFailureCounts(true);
-      fprintf(LogFile, "\n");
-
-      updateLoggingState(now);
-    }
-  }
-}
-
-void statisticPrintFull(void)
-{
-  time_t now = time(NULL);
-  char* timestr = asctime(localtime(&now));
-  time_t elapsed = now - StartTime;
-  double searchSpaceLogSize = statisticCalculateSearchSpace();
-
-  char elapsedStr[20];
-  formatElapsedTime(elapsed, elapsedStr, sizeof(elapsedStr));
-
-  fprintf(LogFile,
-          "%sRuntime: %s\nChosen faces: %d\nOpen Search Space Size: Log = %.2f "
-          "; i.e. %6.3g\n",
-          timestr, elapsedStr, statisticCountChosen(), searchSpaceLogSize,
-          exp(searchSpaceLogSize));
-
-  fprintf(LogFile, "%30s %30s\n", "Counter", "Value(s)");
-
-  printStatisticsCounters(false);
-  printFailureCounts(false);
-
-  fprintf(LogFile, "\n");
-  updateLoggingState(now);
-}
-
-void initializeStatisticLogging(char* filename, int frequency, int seconds)
-{
-  LogFile = filename == NULL                  ? stderr
-            : strcmp("/dev/stdout", filename) ? fopen(filename, "w")
-                                              : stdout;
-  CheckFrequency = frequency;
-  SecondsBetweenLogs = seconds;
-  StartTime = time(NULL);
-  LastLogTime = StartTime;
-  CheckCountDown = CheckFrequency;
-  initializeFailures();
 }

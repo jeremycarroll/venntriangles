@@ -19,7 +19,7 @@ extern int GlobalSolutionsFound;  // Counter for solutions found
 // Declare functions used in main.c
 extern char* s6FaceDegreeSignature(void);
 extern int dynamicMain0(int argc, char* argv[]);
-extern void solutionWrite(const char* prefix);
+extern void searchSolutionWrite(const char* prefix);
 extern void searchFull(void (*foundSolution)(void));
 extern void disaster(const char* message);
 extern char* Argv0;

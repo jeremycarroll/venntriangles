@@ -29,6 +29,6 @@ void triangleTraverse(COLOR color, EDGE (*corners)[3],
                       TriangleTraversalCallbacks *callbacks, void *data);
 
 /* Check if any lines cross in a triangle */
-bool checkLinesNotCrossed(COLOR color, EDGE (*corners)[3]);
+bool triangleLinesNotCrossed(COLOR color, EDGE (*corners)[3]);
 
 #endif /* TRIANGLES_H */
