@@ -7,8 +7,7 @@
 
 #include <stdio.h>
 
-extern void graphmlSaveAllVariations(const char* prefix,
-                                     int expectedVariations);
+extern int graphmlSaveAllVariations(const char* prefix, int expectedVariations);
 
 // Allow mocking of file operations.
 struct graphmlFileIO {

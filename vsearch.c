@@ -285,6 +285,7 @@ void solutionWrite(const char* prefix)
   char filename[1024];
   char variationMultiplication[128];
   int numberOfVariations;
+  int actualNumberOfVariations;
   FILE* fp;
   if (strcmp(prefix, LastPrefix) != 0) {
     strcpy(LastPrefix, prefix);
@@ -304,11 +305,13 @@ void solutionWrite(const char* prefix)
     fprintf(fp, "\nSolution signature %s\nClass signature %s\n",
             d6SignatureToString(s6SignatureFromFaces()),
             d6SignatureToString(s6MaxSignature()));
-    fprintf(fp, "Number of variations: %d = 1%s\n", numberOfVariations,
-            variationMultiplication);
-    fclose(fp);
+    fflush(fp);
     VariationCount += numberOfVariations;
-    graphmlSaveAllVariations(filename, numberOfVariations);
+    actualNumberOfVariations =
+        graphmlSaveAllVariations(filename, numberOfVariations);
+    fprintf(fp, "Number of variations: %d/%d = 1%s\n", actualNumberOfVariations,
+            numberOfVariations, variationMultiplication);
+    fclose(fp);
   }
 }
 
