@@ -43,8 +43,8 @@ void initializeFacesAndEdges(void)
   FACE face, adjacent;
   EDGE edge;
 
-  statisticIncludeInteger(&CycleForcedCounter, "+", "forced");
-  statisticIncludeInteger(&CycleSetReducedCounter, "-", "reduced");
+  statisticIncludeInteger(&CycleForcedCounter, "+", "forced", false);
+  statisticIncludeInteger(&CycleSetReducedCounter, "-", "reduced", true);
   initializeLengthOfCycleOfFaces();
   for (facecolors = 0, face = Faces; facecolors < NFACES;
        facecolors++, face++) {

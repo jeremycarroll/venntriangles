@@ -13,6 +13,8 @@
 #include <string.h>
 #define DEBUG 0
 
+/* Global variables */
+uint64_t GlobalVariantCount = 0;
 /* GraphML namespace and schema definitions */
 static const char *GRAPHML_NS = "http://graphml.graphdrawing.org/xmlns";
 static const char *GRAPHML_SCHEMA =
@@ -391,6 +393,7 @@ static void saveVariation(EDGE (*corners)[3])
   if (VariationNumber - 1 <= IgnoreFirstVariantsPerSolution) {
     return;
   }
+  GlobalVariantCount++;
   fp = graphmlFileOps.fopen(filename, "w");
   graphmlBegin(fp);
   for (a = 0; a < NCOLORS; a++, corners++) {
