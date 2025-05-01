@@ -214,7 +214,9 @@ void searchFull(void (*foundSolution)(void))
 {
   initializeS6();
   initialize();
-  statisticIncludeInteger(&CycleGuessCounter, "?", "guesses");
+  statisticIncludeInteger(&CycleGuessCounter, "?", "guesses", false);
+  statisticIncludeInteger(&GlobalVariantCount, "V", "variants", false);
+  statisticIncludeInteger(&GlobalSolutionsFound, "S", "solutions", false);
   StartPoint = Trail;
   GlobalSolutionsFound = 0;
   s6FaceDegreeCanonicalCallback(fullSearchCallback, (void*)foundSolution);
@@ -423,7 +425,7 @@ static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
   int initialVariationCount = VariationCount;
   int i;
   void (*foundSolution)(void) = foundSolutionVoidPtr;
-  if (GlobalSolutionsFound >= GlobalMaxSolutions) {
+  if ((int64_t)GlobalSolutionsFound >= GlobalMaxSolutions) {
     return;
   }
   PerFaceDegreeSolutionNumber = 0;
@@ -431,20 +433,22 @@ static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
   dynamicFaceSetupCentral(args);
   searchHere(true, foundSolution);
   used = clock() - now;
-  if (GlobalSolutionsFound != initialSolutionsFound) {
+  if ((int64_t)GlobalSolutionsFound != initialSolutionsFound) {
     TotalUsefulTime += used;
     UsefulSearchCount += 1;
 
 #define PRINT_TIME(clockValue, counter)                        \
   printf("[%1lu.%6.6lu (%d)] ", (clockValue) / CLOCKS_PER_SEC, \
          (clockValue) % CLOCKS_PER_SEC, counter)
-    PRINT_TIME(used, 0);
-    PRINT_TIME(TotalUsefulTime, UsefulSearchCount);
-    PRINT_TIME(TotalWastedTime, WastedSearchCount);
+    if (VerboseMode) {
+      PRINT_TIME(used, 0);
+      PRINT_TIME(TotalUsefulTime, UsefulSearchCount);
+      PRINT_TIME(TotalWastedTime, WastedSearchCount);
+    }
     for (i = 0; i < NCOLORS; i++) {
       printf("%llu ", args[i]);
     }
-    printf(" gives %d/%d new solutions\n",
+    printf(" gives %llu/%d new solutions\n",
            GlobalSolutionsFound - initialSolutionsFound,
            VariationCount - initialVariationCount);
     statisticPrintOneLine(0, true);

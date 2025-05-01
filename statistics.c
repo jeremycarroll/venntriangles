@@ -3,6 +3,7 @@
 #include "statistics.h"
 
 #include "face.h"
+#include "main.h"
 
 #include <assert.h>
 #include <math.h>
@@ -62,7 +63,8 @@ void resetStatistics(void)
   }
 }
 
-void statisticIncludeInteger(uint64_t* counter, char* shortName, char* name)
+void statisticIncludeInteger(uint64_t* counter, char* shortName, char* name,
+                             bool verboseOnly)
 {
   for (int i = 0; i < MAX_STATISTICS; i++) {
     if (Statistics[i].countPtr == counter) {
@@ -72,6 +74,7 @@ void statisticIncludeInteger(uint64_t* counter, char* shortName, char* name)
       Statistics[i].countPtr = counter;
       Statistics[i].shortName = shortName;
       Statistics[i].name = name;
+      Statistics[i].verboseOnly = verboseOnly;
       return;
     }
   }
@@ -105,9 +108,11 @@ void statisticPrintOneLine(int position, bool force)
       char elapsedStr[20];
       formatElapsedTime(elapsed, elapsedStr, sizeof(elapsedStr));
 
-      fprintf(LogFile, "%s %s %d %.1f p %d ", timestr + 11, elapsedStr,
-              statisticCountChosen(), statisticCalculateSearchSpace(),
-              position);
+      if (VerboseMode) {
+        fprintf(LogFile, "%s %s %d %.1f p %d ", timestr + 11, elapsedStr,
+                statisticCountChosen(), statisticCalculateSearchSpace(),
+                position);
+      }
 
       printStatisticsCounters(true);
       printFailureCounts(true);
@@ -128,11 +133,15 @@ void statisticPrintFull(void)
   char elapsedStr[20];
   formatElapsedTime(elapsed, elapsedStr, sizeof(elapsedStr));
 
-  fprintf(LogFile,
-          "%sRuntime: %s\nChosen faces: %d\nOpen Search Space Size: Log = %.2f "
-          "; i.e. %6.3g\n",
-          timestr, elapsedStr, statisticCountChosen(), searchSpaceLogSize,
-          exp(searchSpaceLogSize));
+  fprintf(LogFile, "%sRuntime: %s\n", timestr, elapsedStr);
+
+  if (VerboseMode) {
+    fprintf(LogFile,
+            "Chosen faces: %d\nOpen Search Space Size: Log = %.2f "
+            "; i.e. %6.3g\n",
+            statisticCountChosen(), searchSpaceLogSize,
+            exp(searchSpaceLogSize));
+  }
 
   fprintf(LogFile, "%30s %30s\n", "Counter", "Value(s)");
 
@@ -213,6 +222,9 @@ static int findMaxNonZeroIndex(Failure* failure)
 
 static void printFailureCounts(bool oneLine)
 {
+  if (!VerboseMode) {
+    return;  // Skip failures in non-verbose mode
+  }
   for (int i = 0; i < MAX_STATISTICS; i++) {
     if (Failures[i]->count[0] == 0) {
       break;
@@ -234,12 +246,14 @@ static void printStatisticsCounters(bool oneLine)
     if (Statistics[i].countPtr == NULL) {
       break;
     }
-    if (oneLine) {
-      fprintf(LogFile, "%s %llu ", Statistics[i].shortName,
-              *Statistics[i].countPtr);
-    } else {
-      fprintf(LogFile, "%30s %30llu\n", Statistics[i].name,
-              *Statistics[i].countPtr);
+    if (!Statistics[i].verboseOnly || VerboseMode) {
+      if (oneLine) {
+        fprintf(LogFile, "%s %llu ", Statistics[i].shortName,
+                *Statistics[i].countPtr);
+      } else {
+        fprintf(LogFile, "%30s %30llu\n", Statistics[i].name,
+                *Statistics[i].countPtr);
+      }
     }
   }
 }

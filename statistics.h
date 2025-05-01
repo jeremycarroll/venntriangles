@@ -16,10 +16,11 @@ typedef struct {
   uint64_t* countPtr;
   char* shortName;
   char* name;
+  bool verboseOnly;
 } Statistic;
 
 extern void statisticIncludeInteger(uint64_t* counter, char* shortName,
-                                    char* name);
+                                    char* name, bool verboseOnly);
 extern void statisticIncludeFailure(FAILURE failure);
 extern void statisticPrintOneLine(int position, bool force);
 extern void statisticPrintFull(void);

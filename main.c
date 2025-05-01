@@ -20,7 +20,8 @@ int GlobalSkipSolutions = 0;              // Global solutions to skip
 int PerFaceDegreeSkipSolutions = 0;       // Per face degree solutions to skip
 int IgnoreFirstVariantsPerSolution = 0;  // Default to not ignoring any variants
 int CentralFaceDegrees[NCOLORS] = {0};   // Initialize all to 0
-int GlobalSolutionsFound = 0;            // Counter for solutions found
+uint64_t GlobalSolutionsFound = 0;       // Counter for solutions found
+bool VerboseMode = false;                // Controls verbose output mode
 
 /* Declaration of file scoped static functions */
 static void saveResult(void);
@@ -40,7 +41,7 @@ int dynamicMain0(int argc, char *argv[])
   int localSkipSolutions = 0;
   Argv0 = argv[0];
 
-  while ((opt = getopt(argc, argv, "f:d:m:n:k:j:")) != -1) {
+  while ((opt = getopt(argc, argv, "f:d:m:n:k:j:v")) != -1) {
     switch (opt) {
       case 'f':
         TargetFolder = optarg;
@@ -61,6 +62,9 @@ int dynamicMain0(int argc, char *argv[])
       case 'j':
         IgnoreFirstVariantsPerSolution =
             parsePostiveArgument(optarg, 'j', true);
+        break;
+      case 'v':
+        VerboseMode = true;
         break;
       default:
         disaster("Invalid option");
@@ -137,12 +141,12 @@ static void saveResult(void)
   // GlobalSolutionsFound is incremented in vsearch.c
 
   // Check if we should skip this solution based on global limits
-  if (GlobalSolutionsFound <= GlobalSkipSolutions) {
+  if ((int64_t)GlobalSolutionsFound <= GlobalSkipSolutions) {
     return;
   }
 
   // Check if we've hit the global maximum limit
-  if (GlobalSolutionsFound > GlobalMaxSolutions) {
+  if ((int64_t)GlobalSolutionsFound > GlobalMaxSolutions) {
     return;
   }
 
