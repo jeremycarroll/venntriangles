@@ -37,9 +37,9 @@ static Failure TooManyCornersFailure = {
     .count = {0},
 };
 
-static Failure PointConflictFailure = {
+static Failure VertexConflictFailure = {
     .shortLabel = "P",
-    .label = "Point conflict",
+    .label = "Vertex conflict",
     .count = {0},
 };
 
@@ -68,7 +68,7 @@ void initializeFailures(void)
   statisticIncludeFailure(&CrossingLimitFailure);
   statisticIncludeFailure(&DisconnectedCurveFailure);
   statisticIncludeFailure(&TooManyCornersFailure);
-  statisticIncludeFailure(&PointConflictFailure);
+  statisticIncludeFailure(&VertexConflictFailure);
   statisticIncludeFailure(&ConflictingConstraintsFailure);
   statisticIncludeFailure(&DisconnectedFacesFailure);
   statisticIncludeFailure(&NonCanoncialFailure);
@@ -111,10 +111,10 @@ FAILURE failureNonCanonical(void)
   return &NonCanoncialFailure;
 }
 
-FAILURE failurePointConflict(int depth)
+FAILURE failureVertexConflict(int depth)
 {
-  PointConflictFailure.count[depth]++;
-  return &PointConflictFailure;
+  VertexConflictFailure.count[depth]++;
+  return &VertexConflictFailure;
 }
 
 FAILURE failureTooManyCorners(int depth)

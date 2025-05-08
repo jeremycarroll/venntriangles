@@ -4,10 +4,10 @@
 
 #include "main.h"
 #include "memory.h"
-#include "point.h"
 #include "trail.h"
 #include "triangles.h"
 #include "utils.h"
+#include "vertex.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -26,11 +26,11 @@ static void graphmlBegin(FILE *fp);
 static void graphmlEnd(FILE *fp);
 
 /* Node/vertex functions */
-static void graphmlAddPoint(FILE *fp, POINT point);
+static void graphmlAddVertex(FILE *fp, VERTEX vertex);
 static void graphmlAddCorner(FILE *fp, EDGE edge, COLOR color, int counter);
-static char *graphmlPointId(POINT point);
+static char *graphmlVertexId(VERTEX vertex);
 static char *cornerId(COLOR color, int counter);
-static void addPointIfPrimary(FILE *fp, POINT point, COLOR color);
+static void addVertexIfPrimary(FILE *fp, VERTEX vertex, COLOR color);
 static void addCornerNodes(FILE *fp, EDGE (*corners)[3], COLOR color,
                            int *cornerIds);
 
@@ -169,15 +169,15 @@ static void graphmlEnd(FILE *fp)
 }
 
 /* Node/vertex functions */
-static void graphmlAddPoint(FILE *fp, POINT point)
+static void graphmlAddVertex(FILE *fp, VERTEX vertex)
 {
-  char *id = graphmlPointId(point);
+  char *id = graphmlVertexId(vertex);
   fprintf(fp, "    <node id=\"%s\">\n", id);
   fprintf(fp, "      <data key=\"colors\">%s</data>\n",
-          pointToColorSetString(point));
-  fprintf(fp, "      <data key=\"primary\">%c</data>\n", 'a' + point->primary);
+          vertexToColorSetString(vertex));
+  fprintf(fp, "      <data key=\"primary\">%c</data>\n", 'a' + vertex->primary);
   fprintf(fp, "      <data key=\"secondary\">%c</data>\n",
-          'a' + point->secondary);
+          'a' + vertex->secondary);
   fprintf(fp, "    </node>\n");
 }
 
@@ -193,10 +193,10 @@ static void graphmlAddCorner(FILE *fp, EDGE edge, COLOR color, int counter)
   fprintf(fp, "    </node>\n");
 }
 
-static char *graphmlPointId(POINT point)
+static char *graphmlVertexId(VERTEX vertex)
 {
   char *buffer = getBuffer();
-  sprintf(buffer, "p_%s", pointToString(point));
+  sprintf(buffer, "p_%s", vertexToString(vertex));
   return usingBuffer(buffer);
 }
 
@@ -209,10 +209,10 @@ static char *cornerId(COLOR color, int counter)
   return usingBuffer(buffer);
 }
 
-static void addPointIfPrimary(FILE *fp, POINT point, COLOR color)
+static void addVertexIfPrimary(FILE *fp, VERTEX vertex, COLOR color)
 {
-  if (point->primary == color) {
-    graphmlAddPoint(fp, point);
+  if (vertex->primary == color) {
+    graphmlAddVertex(fp, vertex);
   }
 }
 
@@ -240,14 +240,14 @@ static void graphmlAddEdge(FILE *fp, EDGE edge, int line)
   if (!IS_PRIMARY_EDGE(edge)) {
     edge = edge->reversed;
   }
-  char *source = graphmlPointId(edge->reversed->to->point);
-  char *target = graphmlPointId(edge->to->point);
+  char *source = graphmlVertexId(edge->reversed->to->vertex);
+  char *target = graphmlVertexId(edge->to->vertex);
   addEdge(fp, edge->color, line, source, target);
 }
 
 static void addEdgeToCorner(FILE *fp, EDGE edge, int corner, int line)
 {
-  char *source = graphmlPointId(edge->reversed->to->point);
+  char *source = graphmlVertexId(edge->reversed->to->vertex);
   char *target = cornerId(edge->color, corner);
   assert(line != corner);
   addEdge(fp, edge->color, line, source, target);
@@ -264,7 +264,7 @@ static void addEdgeBetweenCorners(FILE *fp, COLOR color, int low, int high)
 static void addEdgeFromCorner(FILE *fp, int corner, EDGE edge, int line)
 {
   char *source = cornerId(edge->color, corner);
-  char *target = graphmlPointId(edge->to->point);
+  char *target = graphmlVertexId(edge->to->vertex);
   assert(line != corner);
   addEdge(fp, edge->color, line, source, target);
 }
@@ -274,7 +274,7 @@ static void processRegularEdgeGraphML(void *data, EDGE current, int line)
 {
   GraphMLData *gml = (GraphMLData *)data;
   graphmlAddEdge(gml->fp, current, line);
-  addPointIfPrimary(gml->fp, current->to->point, gml->color);
+  addVertexIfPrimary(gml->fp, current->to->vertex, gml->color);
 }
 
 static void processSingleCornerGraphML(void *data, EDGE current, int line)
@@ -285,7 +285,7 @@ static void processSingleCornerGraphML(void *data, EDGE current, int line)
   line = (line + 1) % 3;
   addEdgeFromCorner(gml->fp, gml->cornerIds[gml->cornerIx], current, line);
   gml->cornerIx++;
-  addPointIfPrimary(gml->fp, current->to->point, gml->color);
+  addVertexIfPrimary(gml->fp, current->to->vertex, gml->color);
 }
 
 static void processAdjacentCornersGraphML(void *data, EDGE current, int line)
@@ -302,7 +302,7 @@ static void processAdjacentCornersGraphML(void *data, EDGE current, int line)
   line = (line + 1) % 3;
   addEdgeFromCorner(gml->fp, gml->cornerIds[gml->cornerIx + 1], current, line);
   gml->cornerIx += 2;
-  addPointIfPrimary(gml->fp, current->to->point, gml->color);
+  addVertexIfPrimary(gml->fp, current->to->vertex, gml->color);
 }
 
 static void processAllCornersGraphML(void *data, EDGE current, int line)
@@ -317,7 +317,7 @@ static void processAllCornersGraphML(void *data, EDGE current, int line)
   addEdgeBetweenCorners(gml->fp, gml->color, 0, 1);
   addEdgeBetweenCorners(gml->fp, gml->color, 1, 2);
   addEdgeFromCorner(gml->fp, 2, current, 1);
-  addPointIfPrimary(gml->fp, current->to->point, gml->color);
+  addVertexIfPrimary(gml->fp, current->to->vertex, gml->color);
 }
 
 static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
@@ -330,7 +330,7 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
       .processSingleCorner = processSingleCornerGraphML,
       .processAdjacentCorners = processAdjacentCornersGraphML,
       .processAllCorners = processAllCornersGraphML,
-      .processPoint = NULL};
+      .processVertex = NULL};
 
   triangleTraverse(color, corners, &callbacks, &gml);
 

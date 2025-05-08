@@ -23,7 +23,7 @@ typedef struct {
 
 extern FAILURE failureNoMatchingCycles(int depth);
 extern FAILURE failureCrossingLimit(int depth);
-extern FAILURE failurePointConflict(int depth);
+extern FAILURE failureVertexConflict(int depth);
 extern FAILURE failureConflictingConstraints(int depth);
 extern FAILURE failureDisconnectedCurve(int depth);
 extern FAILURE failureTooManyCorners(int depth);

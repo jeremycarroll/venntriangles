@@ -81,7 +81,7 @@ void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
   assert(edge1->color == edge2->color);
   assert(edge1->possiblyTo[other].next == NULL);
   assert(edge2->possiblyTo[other].next == NULL);
-  assert(edge1->possiblyTo[other].point == edge2->possiblyTo[other].point);
+  assert(edge1->possiblyTo[other].vertex == edge2->possiblyTo[other].vertex);
   edge1->possiblyTo[other].next = edge2->reversed;
   edge2->possiblyTo[other].next = edge1->reversed;
   if (level1 == level3) {

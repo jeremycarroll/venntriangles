@@ -4,7 +4,7 @@
 #define GRAPHML_H
 
 #include "edge.h"
-#include "point.h"
+#include "vertex.h"
 
 #include <stdio.h>
 

@@ -3,8 +3,8 @@
 #ifndef FACE_H
 #define FACE_H
 
-#include "point.h"
 #include "trail.h"
+#include "vertex.h"
 
 typedef struct face *FACE;
 
@@ -12,7 +12,7 @@ struct face {
   // cycle must be null if cycleSetSize is not 1.
   DYNAMIC struct facialCycle *cycle;
   DYNAMIC TRAIL backtrack;
-  /* We point to previous and next with the same number of colors. */
+  /* We vertex to previous and next with the same number of colors. */
   DYNAMIC FACE previous;
   DYNAMIC FACE next;
   STATIC COLORSET colors;           // holds up to NFACES
@@ -33,8 +33,8 @@ extern FAILURE dynamicFaceChoice(FACE face, int depth);
 
 extern FAILURE faceFinalCorrectnessChecks(void);
 extern void dynamicFaceSetupCentral(FACE_DEGREE *faceDegrees);
-extern FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
-                                       int depth);
+extern FAILURE dynamicFaceIncludeVertex(FACE face, COLOR aColor, COLOR bColor,
+                                        int depth);
 extern bool dynamicColorRemoveFromSearch(COLOR color);
 
 extern COLORSET ColorCompleted;

@@ -31,7 +31,7 @@ void *tempMalloc(size_t size)
 
   // Set up the header
   header->next = chain;
-  header->data = (void *)(header + 1);  // Point to the data area
+  header->data = (void *)(header + 1);  // Vertex to the data area
 
   // Update chain
   chain = header;

@@ -3,9 +3,9 @@
 #include "triangles.h"
 
 #include "edge.h"
-#include "point.h"
 #include "trail.h"
 #include "utils.h"
+#include "vertex.h"
 
 #include <assert.h>
 #include <stdbool.h>
@@ -37,7 +37,7 @@ bool triangleLinesNotCrossed(COLOR color, EDGE (*corners)[3])
       .processSingleCorner = checkSingleCorner,
       .processAdjacentCorners = checkAdjacentCorners,
       .processAllCorners = checkAllCorners,
-      .processPoint = NULL};
+      .processVertex = NULL};
 
   triangleTraverse(color, corners, &callbacks, &lcd);
 
@@ -91,9 +91,9 @@ void triangleTraverse(COLOR color, EDGE (*corners)[3],
         break;
     }
 
-    /* Process the point if callback exists */
-    if (callbacks->processPoint) {
-      callbacks->processPoint(data, current->to->point, color);
+    /* Process the vertex if callback exists */
+    if (callbacks->processVertex) {
+      callbacks->processVertex(data, current->to->vertex, color);
     }
   }
 
@@ -131,12 +131,12 @@ static void getPath(EDGE *path, EDGE from, EDGE to)
 static void checkRegularEdge(void *data, EDGE current, int line)
 {
   LineCrossingData *lcd = (LineCrossingData *)data;
-  POINT point = current->to->point;
+  VERTEX vertex = current->to->vertex;
 
-  if (point->lineId == 0) {
-    trailSetInt(&point->lineId, 1 + current->color * 3 + line);
+  if (vertex->lineId == 0) {
+    trailSetInt(&vertex->lineId, 1 + current->color * 3 + line);
   } else {
-    uint64_t crossedLineAsBit = 1l << point->lineId;
+    uint64_t crossedLineAsBit = 1l << vertex->lineId;
     if (lcd->linesCrossed & crossedLineAsBit) {
       lcd->linesAreCrossed = true;
     } else {

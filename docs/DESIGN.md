@@ -39,8 +39,8 @@ We use the following naming conventions:
 | Link in Curve | edge.h | The pointy end of an edge, where it meets a vertex, forward reference to EDGE and POINT |
 | Edge | edge.c, edge.h | A directed, labelled side of a face, between two points, one of which is called out as the arrowhead |
 | Curve | edge.c, edge.h | a connected sequence of edges with the same label |
-| Point | point.c, point.h | A possible oriented point between 4 specific faces, forward reference to EDGE |
-| Triangle | point.c, point.h | a closed curve, satisfying various triangle rules in relationship to other triangles |
+| Vertex | vertex.c, vertex.h | A possible oriented vertex between 4 specific faces, forward reference to EDGE |
+| Triangle | vertex.c, vertex.h | a closed curve, satisfying various triangle rules in relationship to other triangles |
 | Face  | face.c, face.h  | A face of a Venn diagram |
 
 The geometric files are in the sequence above, with each header file including the previous header file,

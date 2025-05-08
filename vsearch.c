@@ -24,7 +24,7 @@ static clock_t TotalUsefulTime = 0;
 static int WastedSearchCount = 0;
 static int UsefulSearchCount = 0;
 uint64_t CycleGuessCounter = 0;
-static TRAIL StartPoint;
+static TRAIL StartVertex;
 
 /* State machine states for the search process */
 typedef enum {
@@ -217,7 +217,7 @@ void searchFull(void (*foundSolution)(void))
   statisticIncludeInteger(&CycleGuessCounter, "?", "guesses", false);
   statisticIncludeInteger(&GlobalVariantCount, "V", "variants", false);
   statisticIncludeInteger(&GlobalSolutionsFound, "S", "solutions", false);
-  StartPoint = Trail;
+  StartVertex = Trail;
   GlobalSolutionsFound = 0;
   s6FaceDegreeCanonicalCallback(fullSearchCallback, (void*)foundSolution);
 }
@@ -341,11 +341,11 @@ static FAILURE checkFacePoints(FACE face, CYCLE cycle, int depth)
   FAILURE failure;
 
   for (i = 0; i < cycle->length - 1; i++) {
-    CHECK_FAILURE(dynamicFaceIncludePoint(face, cycle->curves[i],
-                                          cycle->curves[i + 1], depth));
+    CHECK_FAILURE(dynamicFaceIncludeVertex(face, cycle->curves[i],
+                                           cycle->curves[i + 1], depth));
   }
-  CHECK_FAILURE(
-      dynamicFaceIncludePoint(face, cycle->curves[i], cycle->curves[0], depth));
+  CHECK_FAILURE(dynamicFaceIncludeVertex(face, cycle->curves[i],
+                                         cycle->curves[0], depth));
 
   return NULL;
 }
@@ -429,7 +429,7 @@ static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
     return;
   }
   PerFaceDegreeSolutionNumber = 0;
-  trailBacktrackTo(StartPoint);  // Start with backtracking
+  trailBacktrackTo(StartVertex);  // Start with backtracking
   dynamicFaceSetupCentral(args);
   searchHere(true, foundSolution);
   used = clock() - now;

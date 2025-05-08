@@ -1,6 +1,6 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "point.h"
+#include "vertex.h"
 
 #include "trail.h"
 #include "utils.h"
@@ -8,17 +8,18 @@
 #include <stddef.h>
 
 /* Global variables */
-struct Point PointAllUPoints[NPOINTS];
-static int NextUPointId = 0;
-static struct Point* AllUPointPointers[NFACES][NCOLORS][NCOLORS];
+struct Vertex VertexAllUVertices[NPOINTS];
+static int NextUVertexId = 0;
+static struct Vertex* AllUPointPointers[NFACES][NCOLORS][NCOLORS];
 
 /* Forward declarations of file scoped static functions */
 static FAILURE findCornersByTraversal(EDGE start, int depth,
                                       EDGE* cornersReturn);
-static POINT getOrInitializePoint(COLORSET colorsOfFace, COLOR primary,
-                                  COLOR secondary);
-static void validatePointInitialization(POINT point, EDGE incomingEdge,
-                                        COLOR primary, COLOR secondary, int ix);
+static VERTEX getOrInitializeVertex(COLORSET colorsOfFace, COLOR primary,
+                                    COLOR secondary);
+static void validateVertexInitialization(VERTEX vertex, EDGE incomingEdge,
+                                         COLOR primary, COLOR secondary,
+                                         int ix);
 static uint32_t getIncomingEdgeSlot(EDGE incomingEdge, COLOR othercolor,
                                     COLORSET faceColors);
 static bool detectCornerAndUpdateCrossingSets(COLORSET other, COLORSET* outside,
@@ -28,14 +29,14 @@ static bool detectCornerAndUpdateCrossingSets(COLORSET other, COLORSET* outside,
 void resetPoints()
 {
   memset(AllUPointPointers, 0, sizeof(AllUPointPointers));
-  memset(PointAllUPoints, 0, sizeof(PointAllUPoints));
-  NextUPointId = 0;
+  memset(VertexAllUVertices, 0, sizeof(VertexAllUVertices));
+  NextUVertexId = 0;
 }
 
-POINT initializePointIncomingEdge(COLORSET colors, EDGE incomingEdge,
-                                  COLOR othercolor)
+VERTEX initializeVertexIncomingEdge(COLORSET colors, EDGE incomingEdge,
+                                    COLOR othercolor)
 {
-  POINT point;
+  VERTEX vertex;
   COLOR primary, secondary;
 
   uint32_t incomingEdgeSlot =
@@ -56,26 +57,26 @@ POINT initializePointIncomingEdge(COLORSET colors, EDGE incomingEdge,
       assert(0);
   }
 
-  point = getOrInitializePoint(incomingEdge->colors, primary, secondary);
-  validatePointInitialization(point, incomingEdge, primary, secondary,
-                              incomingEdgeSlot);
+  vertex = getOrInitializeVertex(incomingEdge->colors, primary, secondary);
+  validateVertexInitialization(vertex, incomingEdge, primary, secondary,
+                               incomingEdgeSlot);
 
-  point->incomingEdges[incomingEdgeSlot] = incomingEdge;
+  vertex->incomingEdges[incomingEdgeSlot] = incomingEdge;
 
-  return point;
+  return vertex;
 }
 
-char* pointToColorSetString(POINT up)
+char* vertexToColorSetString(VERTEX up)
 {
   COLORSET colors = up->incomingEdges[0]->colors | (1ll << up->primary) |
                     (1ll << up->secondary);
   return colorSetToBareString(colors);
 }
 
-char* pointToString(POINT up)
+char* vertexToString(VERTEX up)
 {
   char* buffer = getBuffer();
-  char* colorsStr = pointToColorSetString(up);
+  char* colorsStr = vertexToColorSetString(up);
   sprintf(buffer, "%s_%c_%c", colorsStr, 'a' + up->primary,
           'a' + up->secondary);
   return usingBuffer(buffer);
@@ -105,8 +106,8 @@ EDGE edgeOnCentralFace(COLOR a)
 {
   COLOR primary = a;
   COLOR secondary = (a + 1) % NCOLORS;
-  POINT uPoint = getOrInitializePoint(NFACES - 1, primary, secondary);
-  return uPoint->incomingEdges[0];
+  VERTEX uVertex = getOrInitializeVertex(NFACES - 1, primary, secondary);
+  return uVertex->incomingEdges[0];
 }
 
 void edgeFindAndAlignCorners(COLOR a, EDGE result[3][2])
@@ -139,27 +140,27 @@ void edgeFindAndAlignCorners(COLOR a, EDGE result[3][2])
 }
 
 /* File scoped static functions */
-static POINT getOrInitializePoint(COLORSET colorsOfFace, COLOR primary,
-                                  COLOR secondary)
+static VERTEX getOrInitializeVertex(COLORSET colorsOfFace, COLOR primary,
+                                    COLOR secondary)
 {
   COLORSET outsideColor = colorsOfFace & ~(1u << primary) & ~(1u << secondary);
   if (AllUPointPointers[outsideColor][primary][secondary] == NULL) {
     AllUPointPointers[outsideColor][primary][secondary] =
-        &PointAllUPoints[NextUPointId];
-    PointAllUPoints[NextUPointId].primary = primary;
-    PointAllUPoints[NextUPointId].secondary = secondary;
-    PointAllUPoints[NextUPointId].colors = 1u << primary | 1u << secondary;
-    NextUPointId++;
+        &VertexAllUVertices[NextUVertexId];
+    VertexAllUVertices[NextUVertexId].primary = primary;
+    VertexAllUVertices[NextUVertexId].secondary = secondary;
+    VertexAllUVertices[NextUVertexId].colors = 1u << primary | 1u << secondary;
+    NextUVertexId++;
   }
   return AllUPointPointers[outsideColor][primary][secondary];
 }
 
-static void validatePointInitialization(POINT point, EDGE incomingEdge,
-                                        COLOR primary, COLOR secondary, int ix)
+static void validateVertexInitialization(VERTEX vertex, EDGE incomingEdge,
+                                         COLOR primary, COLOR secondary, int ix)
 {
-  assert(point->incomingEdges[ix] == NULL);
+  assert(vertex->incomingEdges[ix] == NULL);
   assert(incomingEdge->color == (ix < 2 ? primary : secondary));
-  assert(point->colors == ((1u << primary) | (1u << secondary)));
+  assert(vertex->colors == ((1u << primary) | (1u << secondary)));
 }
 
 static uint32_t getIncomingEdgeSlot(EDGE incomingEdge, COLOR othercolor,
@@ -206,7 +207,7 @@ static FAILURE findCornersByTraversal(EDGE start, int depth,
          (start->colors & notMyColor) == ((NFACES - 1) & notMyColor));
   do {
     CURVELINK p = current->to;
-    if (detectCornerAndUpdateCrossingSets(p->point->colors & notMyColor,
+    if (detectCornerAndUpdateCrossingSets(p->vertex->colors & notMyColor,
                                           &outside, &passed)) {
       if (counter >= MAX_CORNERS) {
         return failureTooManyCorners(depth);

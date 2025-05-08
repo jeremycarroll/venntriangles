@@ -4,7 +4,7 @@
 #define TRIANGLES_H
 
 #include "edge.h"
-#include "point.h"
+#include "vertex.h"
 
 /* Structure to hold callbacks for triangle traversal */
 typedef struct {
@@ -20,8 +20,8 @@ typedef struct {
   /* Callback for processing an edge with all three corners */
   void (*processAllCorners)(void *data, EDGE current, int line);
 
-  /* Optional callback for processing a point */
-  void (*processPoint)(void *data, POINT point, COLOR color);
+  /* Optional callback for processing a vertex */
+  void (*processVertex)(void *data, VERTEX vertex, COLOR color);
 } TriangleTraversalCallbacks;
 
 /* Traverse a triangle's perimeter, calling appropriate callbacks */
