@@ -1,9 +1,8 @@
-# venntriangles
-Search for Venn diagrams of six triangles
+# Venn Triangles
 
-## Install
+Search for Venn diagrams of six triangles.
 
-## Running the code
+## Overview
 
 A full run takes about 5s to do the search and 6m in total, most of which is writing the results.
 There are just under 60 GB of results. There are 233 different solutions, up to isomorphism of the Venn diagram; 
@@ -13,30 +12,27 @@ crossing, verifying that a) they can be embedded in an arrangement of pseudoline
 is stretchable into six triangles is not in scope. The least defined solution has over half a million variations;
 most have less than 3,000; although all have over 100 variations.
 
-# Lemmas used in the code
+## Installation
 
-## For a simple FISC of N Curves, there are 2 ^ N - 2 vertices, and 2 ^ (N + 1) - 4 edges.
+## Usage
 
-By Euler:
-```
-Euler:
-E = F + V - 2
+## Documentation
 
-F = 2 ^ N
+### Mathematical Foundations
+See [MATH.md](docs/MATH.md) for mathematical concepts, conjectures, and references.
 
-From simplicity, every edge has two vertices, and every vertix has four edges:
-E = 2 V
+### System Design
+See [DESIGN.md](docs/DESIGN.md) for implementation details and design decisions.
 
-2.V = 2 ^ N + V - 2
+### Results
+See [RESULTS.md](docs/RESULTS.md) for a summary of the solutions found.
 
-and the result follows.
-```
+### Test Cases
+See [TEST_IMAGES.md](docs/TEST_IMAGES.md) for visual documentation of test cases.
 
-# Miscellaneous Literature
+## References
+For a complete list of references, see [MATH.md](docs/MATH.md#references).
 
-## Venn Diagrams
-[Bultena, Bette, Branko Grünbaum, and Frank Ruskey. "Convex drawings of intersecting families of simple closed curves." CCCG. 1999.](https://www.cccg.ca/proceedings/1999/c14.pdf)
 
-## HPL Reports
-[Carroll, Jeremy J. "Drawing Venn triangles." HP LABORATORIES TECHNICAL REPORT HPL 73 (2000).](https://shiftleft.com/mirrors/www.hpl.hp.com/techreports/2000/HPL-2000-73.pdf)
+
 
