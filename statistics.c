@@ -63,7 +63,7 @@ void resetStatistics(void)
   }
 }
 
-void statisticIncludeInteger(uint64_t* counter, char* shortName, char* name,
+void statisticIncludeInteger(uint64* counter, char* shortName, char* name,
                              bool verboseOnly)
 {
   for (int i = 0; i < MAX_STATISTICS; i++) {

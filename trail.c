@@ -7,7 +7,7 @@
 /* Global variables (file scoped static) */
 struct trail TrailArray[TRAIL_SIZE];
 TRAIL Trail = TrailArray;
-static uint64_t MaxTrailSize = 0;
+static uint64 MaxTrailSize = 0;
 
 /* Externally linked functions */
 void initializeTrail()
@@ -42,7 +42,7 @@ void trailSetInt(uint_trail* ptr, uint_trail value)
 
 bool trailBacktrackTo(TRAIL backtrackPoint)
 {
-  uint64_t trailSize = Trail - TrailArray;
+  uint64 trailSize = Trail - TrailArray;
   if (trailSize > MaxTrailSize) {
     MaxTrailSize = trailSize;
   }

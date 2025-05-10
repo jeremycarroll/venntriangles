@@ -5,6 +5,7 @@
 
 #include "core.h"
 #include "failure.h"
+#include "memory.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -12,20 +13,22 @@
 
 #define MAX_STATISTICS 10
 
-typedef struct {
-  uint64_t* countPtr;
-  char* shortName;
-  char* name;
+struct statistic {
+  char *name;
+  char *shortName;
+  uint64 *countPtr;
   bool verboseOnly;
-} Statistic;
+};
 
-extern void statisticIncludeInteger(uint64_t* counter, char* shortName,
-                                    char* name, bool verboseOnly);
+typedef struct statistic Statistic;
+
+extern void initializeStatisticLogging(char *filename, int frequency,
+                                       int seconds);
+extern void statisticIncludeInteger(uint64 *counter, char *shortName,
+                                    char *name, bool verboseOnly);
 extern void statisticIncludeFailure(FAILURE failure);
 extern void statisticPrintOneLine(int position, bool force);
 extern void statisticPrintFull(void);
-extern void initializeStatisticLogging(char* filename, int frequency,
-                                       int seconds);
 
 // exposed for testing
 extern void resetStatistics(void);

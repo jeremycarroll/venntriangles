@@ -3,11 +3,13 @@
 #ifndef TRAIL_H
 #define TRAIL_H
 
+#include "core.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 
 typedef struct trail *TRAIL;
-typedef uint64_t uint_trail;
+typedef uint64 uint_trail;
 
 struct trail {
   void *ptr;

@@ -12,8 +12,8 @@
 
 /* Structure to hold data for line crossing check */
 typedef struct {
-  uint64_t linesCrossed;
-  uint64_t initialLinesCrossed;
+  uint64 linesCrossed;
+  uint64 initialLinesCrossed;
   bool linesAreCrossed;
 } LineCrossingData;
 
@@ -136,7 +136,7 @@ static void checkRegularEdge(void *data, EDGE current, int line)
   if (vertex->lineId == 0) {
     trailSetInt(&vertex->lineId, 1 + current->color * 3 + line);
   } else {
-    uint64_t crossedLineAsBit = 1l << vertex->lineId;
+    uint64 crossedLineAsBit = 1l << vertex->lineId;
     if (lcd->linesCrossed & crossedLineAsBit) {
       lcd->linesAreCrossed = true;
     } else {

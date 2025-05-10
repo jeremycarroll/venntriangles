@@ -23,7 +23,7 @@ static clock_t TotalWastedTime = 0;
 static clock_t TotalUsefulTime = 0;
 static int WastedSearchCount = 0;
 static int UsefulSearchCount = 0;
-uint64_t CycleGuessCounter = 0;
+uint64 CycleGuessCounter = 0;
 static TRAIL StartVertex;
 
 /* State machine states for the search process */
@@ -42,7 +42,7 @@ typedef struct {
 } SearchContext;
 
 /* Declaration of file scoped static functions */
-static void setFaceCycleSetToSingleton(FACE face, uint64_t cycleId);
+static void setFaceCycleSetToSingleton(FACE face, uint64 cycleId);
 static CYCLE chooseCycle(FACE face, CYCLE cycle);
 static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args);
 static FAILURE checkFacePoints(FACE face, CYCLE cycle, int depth);
@@ -57,7 +57,7 @@ static FAILURE restrictCyclesForNonAdjacentColors(FACE face, CYCLE cycle,
 FAILURE dynamicFaceChoice(FACE face, int depth)
 {
   CYCLE cycle = face->cycle;
-  uint64_t cycleId = cycle - Cycles;
+  uint64 cycleId = cycle - Cycles;
   FAILURE failure;
   /* equality in the following assertion is achieved in the Venn 3 case, where a
   single choice in any face determines all the faces. */
@@ -91,14 +91,13 @@ FAILURE dynamicFaceBacktrackableChoice(FACE face)
 {
   FAILURE failure;
   COLOR completedColor;
-  uint64_t cycleId;
+  uint64 cycleId;
   CycleGuessCounter++;
   ColorCompleted = 0;
   face->backtrack = Trail;
   assert(face->cycle != NULL);
   cycleId = face->cycle - Cycles;
   assert(cycleId < NCYCLES);
-  assert(cycleId >= 0);
   assert(cycleSetMember(cycleId, face->possibleCycles));
   setFaceCycleSetToSingleton(face, cycleId);
 
@@ -318,10 +317,10 @@ void searchSolutionWrite(const char* prefix)
 }
 
 /* File scoped static functions */
-static void setFaceCycleSetToSingleton(FACE face, uint64_t cycleId)
+static void setFaceCycleSetToSingleton(FACE face, uint64 cycleId)
 {
   CYCLESET_DECLARE cycleSet;
-  uint64_t i;
+  uint64 i;
   memset(cycleSet, 0, sizeof(cycleSet));
   cycleSetAdd(cycleId, cycleSet);
   for (i = 0; i < CYCLESET_LENGTH; i++) {

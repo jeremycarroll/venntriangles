@@ -50,7 +50,7 @@ FACE_DEGREE* intArray(int a, ...)
 bool dynamicCycleSetPrint(CYCLESET cycleSet)
 {
   uint32_t lastBit = (NCYCLES - 1) % BITS_PER_WORD;
-  uint64_t faulty, i, j;
+  uint64 faulty, i, j;
   if ((faulty = (cycleSet[CYCLESET_LENGTH - 1] & ~((1ul << lastBit) - 1ul)))) {
     printf("0x%016llx\n", faulty);
     return false;
@@ -61,7 +61,7 @@ bool dynamicCycleSetPrint(CYCLESET cycleSet)
       for (j = 0; j < 64; j++) {
         if (cycleSet[i] & (1ul << j)) {
           putchar(' ');
-          for (uint64_t k = 0; k < Cycles[i * BITS_PER_WORD + j].length; k++) {
+          for (uint64 k = 0; k < Cycles[i * BITS_PER_WORD + j].length; k++) {
             putchar('a' + Cycles[i * BITS_PER_WORD + j].curves[k]);
           }
           putchar(',');

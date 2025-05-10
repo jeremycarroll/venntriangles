@@ -12,7 +12,7 @@ extern void searchHere(bool smallestFirst, void (*foundSolution)(void));
 extern void searchFull(void (*foundSolution)(void));
 
 // visible for testing
-extern uint64_t CycleGuessCounter;
+extern uint64 CycleGuessCounter;
 extern FACE searchChooseNextFace(bool smallestFirst);
 extern void searchSolutionWrite(const char *prefix);
 extern int searchCountVariations(char *variationMultiplication);

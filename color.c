@@ -97,7 +97,7 @@ char* colorSetToBareString(COLORSET colors)
 /* Externally linked functions - cycle... */
 bool cycleContainsAthenB(CYCLE cycle, uint32_t i, uint32_t j)
 {
-  uint64_t ix;
+  uint64 ix;
   for (ix = 1; ix < cycle->length; ix++) {
     if (cycle->curves[ix - 1] == i && cycle->curves[ix] == j) {
       return true;
@@ -115,7 +115,7 @@ bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k)
   extended[cycle->length + 1] = cycle->curves[1];
 
   // Look for the sequence in the extended array
-  for (uint64_t ix = 0; ix < cycle->length; ix++) {
+  for (uint64 ix = 0; ix < cycle->length; ix++) {
     if (extended[ix] == i && extended[ix + 1] == j && extended[ix + 2] == k) {
       return true;
     }
@@ -172,10 +172,10 @@ CYCLE cycleSetFirst(CYCLESET cycleSet) { return cycleSetNext(cycleSet, NULL); }
 
 CYCLE cycleSetNext(CYCLESET cycleSet, CYCLE cycle)
 {
-  uint64_t i;
+  uint64 i;
   int64_t j;
-  uint64_t cycleId = cycle == NULL ? 0 : cycle - Cycles + 1;
-  uint64_t mask = ~((1ull << (cycleId % BITS_PER_WORD)) - 1);
+  uint64 cycleId = cycle == NULL ? 0 : cycle - Cycles + 1;
+  uint64 mask = ~((1ull << (cycleId % BITS_PER_WORD)) - 1);
   for (i = cycleId / BITS_PER_WORD; i < CYCLESET_LENGTH; i++) {
     if (mask & cycleSet[i]) {
       j = i * BITS_PER_WORD + __builtin_ctzll(mask & cycleSet[i]);

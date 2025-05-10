@@ -9,9 +9,9 @@
 
 /* Global variables - globally scoped */
 struct face Faces[NFACES];
-static uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
-static uint64_t CycleForcedCounter = 0;
-static uint64_t CycleSetReducedCounter = 0;
+static uint64 FaceSumOfFaceDegree[NCOLORS + 1];
+static uint64 CycleForcedCounter = 0;
+static uint64 CycleSetReducedCounter = 0;
 
 /* Declaration of file scoped static functions */
 static void recomputeCountOfChoices(FACE face);
@@ -115,7 +115,7 @@ bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length)
 void dynamicFaceSetupCentral(FACE_DEGREE* faceDegrees)
 {
   CYCLE cycle;
-  uint64_t i;
+  uint64 i;
   FACE centralFace = Faces + (NFACES - 1);
   for (i = 0; i < NCOLORS; i++) {
     dynamicFaceSetCycleLength(~(1 << i), faceDegrees[i]);
@@ -335,7 +335,7 @@ static bool isEdgeTransition(COLOR curve1, COLOR curve2, COLORSET faceColors,
                              COLORSET* previousFaceColors,
                              COLORSET* nextFaceColors)
 {
-  uint64_t currentXor = (1ll << curve1) | (1ll << curve2);
+  uint64 currentXor = (1ll << curve1) | (1ll << curve2);
   if (__builtin_popcountll(currentXor & faceColors) != 1) {
     return false;
   }

@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-extern uint64_t GlobalVariantCount;
+extern uint64 GlobalVariantCount;
 extern int graphmlSaveAllVariations(const char* prefix, int expectedVariations);
 
 // Allow mocking of file operations.

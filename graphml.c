@@ -14,7 +14,7 @@
 #define DEBUG 0
 
 /* Global variables */
-uint64_t GlobalVariantCount = 0;
+uint64 GlobalVariantCount = 0;
 /* GraphML namespace and schema definitions */
 static const char *GRAPHML_NS = "http://graphml.graphdrawing.org/xmlns";
 static const char *GRAPHML_SCHEMA =
@@ -204,7 +204,6 @@ static char *cornerId(COLOR color, int counter)
 {
   char *buffer = getBuffer();
   assert(counter < 3);
-  assert(color >= 0);
   sprintf(buffer, "%c_%d", colorToChar(color), counter);
   return usingBuffer(buffer);
 }

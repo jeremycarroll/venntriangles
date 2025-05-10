@@ -35,7 +35,7 @@ struct edge {
   */
   DYNAMIC CURVELINK to;
   /* A value between 0 and NCOLORS, being the cardinality of face. */
-  STATIC uint64_t level;
+  STATIC uint64 level;
   /* This vertex at the end of this edge may cross one of the other colors.
   We have all 5 pre-initialized in this array, with the color-th entry
   being all NULL.
@@ -43,7 +43,7 @@ struct edge {
   STATIC struct curveLink possiblyTo[NCOLORS];
 };
 
-extern uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
+extern uint64 EdgeCountsByDirectionAndColor[2][NCOLORS];
 
 extern EDGE edgeFollowBackwards(EDGE edge);
 extern FAILURE edgeCurveChecks(EDGE edge, int depth);

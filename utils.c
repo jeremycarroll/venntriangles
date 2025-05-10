@@ -19,7 +19,9 @@
 void initialize()
 {
   /* Not true on all architectures, but assumed in our Trail. */
-  assert((sizeof(uint64_t) == sizeof(void *)));
+  assert((sizeof(uint64) == sizeof(void *)));
+  /* Verify uint64 is 64 bits */
+  assert(sizeof(uint64) == 8);
 
   freeAll();
   initializeCycleSets();
