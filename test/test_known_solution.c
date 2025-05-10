@@ -360,14 +360,15 @@ static FACE addFaceFromTestData(char* colors)
 {
   FACE face;
   char* cycle;
-  findFace(colors, &face, &cycle, testData3,
-           sizeof(testData3) / sizeof(testData3[0])) ||
-      findFace(colors, &face, &cycle, testData4,
-               sizeof(testData4) / sizeof(testData4[0])) ||
-      findFace(colors, &face, &cycle, testData5,
-               sizeof(testData5) / sizeof(testData5[0])) ||
-      findFace(colors, &face, &cycle, testData6,
-               sizeof(testData6) / sizeof(testData6[0]));
+  bool firstOf = findFace(colors, &face, &cycle, testData3,
+                          sizeof(testData3) / sizeof(testData3[0])) ||
+                 findFace(colors, &face, &cycle, testData4,
+                          sizeof(testData4) / sizeof(testData4[0])) ||
+                 findFace(colors, &face, &cycle, testData5,
+                          sizeof(testData5) / sizeof(testData5[0])) ||
+                 findFace(colors, &face, &cycle, testData6,
+                          sizeof(testData6) / sizeof(testData6[0]));
+  TEST_ASSERT_TRUE(firstOf);
   return dynamicFaceAddSpecific(colors, cycle);
 }
 
