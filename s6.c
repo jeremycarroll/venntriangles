@@ -73,7 +73,7 @@ static int compareCycleIdSequence(const void *a, const void *b);
 static SIGNATURE d6SignatureRecentered(SIGNATURE sequence, COLORSET center);
 static SIGNATURE d6SignaturePermuted(SIGNATURE sequence,
                                      PERMUTATION permutation);
-static int d6SignatureCompare(SIGNATURE a, SIGNATURE b);
+static int d6SignatureCompare(const void *a, const void *b);
 static SIGNATURE d6SignatureReflected(SIGNATURE sequence);
 
 #define ADD_TO_SEQUENCE_ORDER(colors)               \
@@ -228,9 +228,9 @@ SIGNATURE d6SignatureReflected(SIGNATURE sequence)
   return result;
 }
 
-int d6SignatureCompare(SIGNATURE a, SIGNATURE b)
+int d6SignatureCompare(const void *a, const void *b)
 {
-  return bcmp(a, b, sizeof(((CYCLE_ID_SEQUENCE)NULL)[0]));
+  return memcmp(a, b, sizeof(((CYCLE_ID_SEQUENCE)NULL)[0]));
 }
 
 SIGNATURE s6SignatureFromFaces(void)
