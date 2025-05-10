@@ -157,9 +157,12 @@ static void checkLineAndColorInNode(struct nodeInfo* node,
   if (copyLineByColor(&node->info[0], edgeColor, line)) {
     return;
   }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-overflow"
   sprintf(message, "node: %s, %s^%s, %s^%s, %s^%s", node->id,
           node->info[0].color, node->info[0].line, node->info[1].color,
           node->info[1].line, edgeColor, line);
+#pragma GCC diagnostic pop
   TEST_ASSERT_MESSAGE(copyLineByColor(&node->info[1], edgeColor, line),
                       message);
 }
