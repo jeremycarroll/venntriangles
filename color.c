@@ -47,10 +47,12 @@ void initializeCycleSets(void)
 
 void initializeCycleSetUniversal(CYCLESET cycleSet)
 {
-  uint32_t i;
+  uint32_t i = 0;
+#if NCOLORS > 3
   for (i = 0; i < CYCLESET_LENGTH - 1; i++) {
     cycleSet[i] = ~0;
   }
+#endif
   cycleSet[i] = FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET;
 }
 
