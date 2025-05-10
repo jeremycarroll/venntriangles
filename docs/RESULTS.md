@@ -2,10 +2,16 @@
 
 This document summarizes the results of the Venn triangle enumeration.
 
+A full run takes about 5s to do the search and 6m in total, most of which is writing the results.
+There are just under 60 GB of results. 
+
 ## Overview
 
 - Total number of distinct solutions: 233
+  These are distinct up to to Venn Diagram Isomorphism
 - Total number of variations: 1,730,260 (54GB in GraphML)
+  These are distinct up to Polygon Venn Diagram Isomorphism (but are not all known to be stretchible, 
+  in fact some might not even be embeddable in a pseudoline arrangement).
 
 ## Details
 

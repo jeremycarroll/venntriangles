@@ -133,8 +133,5 @@ There is a small confusion since the definition of facial cycle signature assume
 
 # References
 
-## Venn Diagrams
 [Bultena, Bette, Branko Grünbaum, and Frank Ruskey. "Convex drawings of intersecting families of simple closed curves." CCCG. 1999.](https://www.cccg.ca/proceedings/1999/c14.pdf)
-
-## HPL Reports
 [Carroll, Jeremy J. "Drawing Venn triangles." HP LABORATORIES TECHNICAL REPORT HPL 73 (2000).](https://shiftleft.com/mirrors/www.hpl.hp.com/techreports/2000/HPL-2000-73.pdf)

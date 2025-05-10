@@ -1,20 +1,77 @@
 # Venn Triangles
 
 Search for Venn diagrams of six triangles.
+This is a new re-implementation of the method descibed in [Carroll, 2000](https://shiftleft.com/mirrors/www.hpl.hp.com/techreports/2000/HPL-2000-73.pdf); there are some improvements, giving about a 5,000,000 fold speed up on the earlier version (which is lost).
 
 ## Overview
 
-A full run takes about 5s to do the search and 6m in total, most of which is writing the results.
-There are just under 60 GB of results. There are 233 different solutions, up to isomorphism of the Venn diagram; 
-these are from 223 different isomorphism classes. There are 1,730,260 different variations of these solutions,
-which identify which face each of the 18 corners lie in. While these different variations do not have any two lines
-crossing, verifying that a) they can be embedded in an arrangement of pseudolines, and b) such an arrangement
-is stretchable into six triangles is not in scope. The least defined solution has over half a million variations;
-most have less than 3,000; although all have over 100 variations.
+This program searches the space of all monotone simple 6-Venn diagrams looking
+for ones that satisfy various necessary conditions for the diagram to be stretchible
+into a diagram drawn with six triangles.
+
+The output is as graphml files, each defining a planar graph, labelled to show
+18 pseudoline segments in six sets of three.
+It is known that many of these are stretchible. The problem of stretching the 
 
 ## Installation
 
+We require gcc and make. For development, we also 
+need [Unity](https://github.com/ThrowTheSwitch/Unity) test framework and clang-format.
+
+There is a hard dependency on 64-bit architectures, verified as:
+```
+    assert((sizeof(uint64_t) == sizeof(void *)))
+```
+
+We have tested on MacOS 15.4.1, Ubuntu, and Amazon Linux / RedHat.
+
+### Mac
+```
+# required - for gcc and make
+xcode-select --install
+# optional
+brew install clang-format 
+git clone git@github.com:ThrowTheSwitch/Unity.git
+# required
+git clone git@github.com:jeremycarroll/venntriangles.git
+cd venntriangles
+make
+```
+
+### Ubuntu
+```
+# required
+sudo apt-get update
+# for gcc and make
+sudo apt-get install build-essential
+# optional
+sudo apt-get install clang-format
+git clone git@github.com:ThrowTheSwitch/Unity.git
+# required
+git clone git@github.com:jeremycarroll/venntriangles.git
+cd venntriangles
+make
+```
+
+### Amazon Linux / RedHat
+```
+# required
+sudo yum update
+# for gcc and make
+sudo yum groupinstall "Development Tools"
+# optional
+sudo yum install clang-tools-extra
+git clone git@github.com:ThrowTheSwitch/Unity.git
+# required
+git clone git@github.com:jeremycarroll/venntriangles.git
+cd venntriangles
+make
+```
+
 ## Usage
+
+There is no need to run this program more than once: it takes about 5 minutes, and 60 GB of disk for all the results.
+
 
 ## Documentation
 
@@ -28,10 +85,10 @@ See [DESIGN.md](docs/DESIGN.md) for implementation details and design decisions.
 See [RESULTS.md](docs/RESULTS.md) for a summary of the solutions found.
 
 ### Test Cases
-See [TEST_IMAGES.md](docs/TEST_IMAGES.md) for visual documentation of test cases.
+See [TEST_IMAGES.md](docs/TEST_IMAGES.md) for visual documentation of a few test cases.
 
 ## References
-For a complete list of references, see [MATH.md](docs/MATH.md#references).
+See [MATH.md](docs/MATH.md#references).
 
 
 

@@ -23,7 +23,14 @@ TARGET	  = bin/venn
 
 .SECONDARY: 
 
+# If the user has installed Unity, then we use development mode - also needing clang-format.
+UNITY_PRESENT := $(shell test -d $(UNITY_DIR) && echo "yes" || echo "no")
+
+ifeq ($(UNITY_PRESENT),yes)
 all: .format $(TARGET) tests
+else
+all: $(TARGET)
+endif
 
 -include $(DEP)
 
