@@ -73,7 +73,8 @@
 
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 
-/* Define our own 64-bit unsigned integer type, to avoid platform dependent types. */
+/* Define our own 64-bit unsigned integer type, to avoid platform dependent
+ * types. */
 typedef unsigned long long uint64;
 
 typedef struct edge *EDGE;

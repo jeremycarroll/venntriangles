@@ -1,5 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
+#define _GNU_SOURCE
+
 #include "main.h"
 
 #include <getopt.h>
