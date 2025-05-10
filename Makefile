@@ -36,23 +36,23 @@ endif
 
 bin/test_venn3: objsv/test_venn3.o $(UNITY_DIR)/src/unity.c $(OBJ3)
 	@mkdir -p $(@D)
-	$(CC) $(TEST_CFLAGS) -o $@ $^
+	$(CC) $(TEST_CFLAGS) -o $@ $^ -lm
 
 bin/test_venn4: objsv/test_venn4.o $(UNITY_DIR)/src/unity.c $(OBJ4)
 	@mkdir -p $(@D)
-	$(CC) $(TEST_CFLAGS) -o $@ $^
+	$(CC) $(TEST_CFLAGS) -o $@ $^ -lm
 
 bin/test_venn5: objsv/test_venn5.o $(UNITY_DIR)/src/unity.c $(OBJ5)
 	@mkdir -p $(@D)
-	$(CC) $(TEST_CFLAGS) -o $@ $^
+	$(CC) $(TEST_CFLAGS) -o $@ $^ -lm
 
 bin/test_main: objst/test_main.o $(UNITY_DIR)/src/unity.c objs6/main.o
 	@mkdir -p $(@D)
-	$(CC) $(TEST_CFLAGS) -o $@ $^
+	$(CC) $(TEST_CFLAGS) -o $@ $^ -lm
 
 bin/test_%: objst/test_%.o $(UNITY_DIR)/src/unity.c $(OBJ6) $(TEST_OBJ6)
 	@mkdir -p $(@D)
-	$(CC) $(TEST_CFLAGS) -o $@ $^
+	$(CC) $(TEST_CFLAGS) -o $@ $^ -lm
 
 .format: $(SRC) $(HDR) $(TEST_SRC) $(XSRC) $(D6) $(TEST_HELPERS)
 	clang-format -i $?
@@ -67,7 +67,7 @@ clean:
 
 $(TARGET): $(OBJ6) $(XOBJ)
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ6) $(XOBJ)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ6) $(XOBJ) -lm
 
 objsv/test_venn%.o: test/test_venn%.c
 	@mkdir -p $(@D)
