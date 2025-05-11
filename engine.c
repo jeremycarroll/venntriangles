@@ -3,6 +3,12 @@
 #include "engine.h"
 
 #include "core.h"
+#include "memory.h"
+#include "trail.h"
+
+#include <assert.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 /* The engine implements a WAM-like execution model for our search process.
    Each phase of the search is implemented as a predicate that can:
@@ -14,6 +20,20 @@
    This provides a uniform structure for all phases of the search. */
 
 #define MAX_STACK_SIZE 1000
+
+/* Predefined predicate results */
+const struct predicateResult PredicateFail = {PREDICATE_FAIL, {0, NULL}};
+const struct predicateResult PredicateSuccessNextPredicate = {
+    PREDICATE_SUCCESS_NEXT_PREDICATE, {0, NULL}};
+const struct predicateResult PredicateSuccessSamePredicate = {
+    PREDICATE_SUCCESS_SAME_PREDICATE, {0, NULL}};
+
+/* Helper function to create a predicate result with choices */
+struct predicateResult predicateChoices(int numberOfChoices, void* choices)
+{
+  return (struct predicateResult){PREDICATE_CHOICES,
+                                  {numberOfChoices, choices}};
+}
 
 static void pushStackEntry(struct stackEntry* stack, PredicateResultCode code);
 
@@ -28,6 +48,7 @@ void engine(struct predicate* predicates, void (*callback)(void))
   stackTop->round = 0;
 
   while (true) {
+    freeAll();  // Malloced memory is for temporary use only.
     if (stackTop->predicate->try == NULL) {
       // We've reached the end of the predicates array successfully
       callback();

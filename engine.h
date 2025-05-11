@@ -9,7 +9,6 @@
    Each phase of the search is implemented as a predicate that can:
    - FAIL (backtrack)
    - SUCCESS (move to next predicate)
-
    - CHOICES (try alternatives)
 
    The engine maintains the state and controls the flow between predicates.
@@ -30,6 +29,14 @@ typedef struct predicateResult {
   PredicateResultCode code;
   struct choicePoint choicePoint;
 } PredicateResult;
+
+/* Predefined predicate results */
+extern const struct predicateResult PredicateFail;
+extern const struct predicateResult PredicateSuccessNextPredicate;
+extern const struct predicateResult PredicateSuccessSamePredicate;
+
+/* Helper function to create a predicate result with choices */
+struct predicateResult predicateChoices(int numberOfChoices, void* choices);
 
 /* A predicate has two methods:
    try:   First attempt to satisfy the predicate. Can return:

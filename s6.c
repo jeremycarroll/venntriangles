@@ -3,7 +3,11 @@
 #include "s6.h"
 
 #include "color.h"
+#include "core.h"
+#include "edge.h"
+#include "engine.h"
 #include "face.h"
+#include "graphml.h"
 #include "main.h"
 #include "memory.h"
 #include "statistics.h"
@@ -167,10 +171,71 @@ char *s6FaceDegreeSignature(void)
   return Result;
 }
 
-void s6FaceDegreeCanonicalCallback(UseFaceDegrees callback, void *data)
+/* Static variables for the engine-based callback */
+static void (*staticCallback)(void *, FACE_DEGREE *);
+static void *staticCallbackData;
+static FACE_DEGREE currentArgs[NCOLORS];
+
+static int sumFaceDegree(int round)
 {
-  FACE_DEGREE args[NCOLORS];
-  canoncialCallbackImpl(0, 0, args, callback, data);
+  int sum = 0;
+  for (int i = 0; i < round; i++) {
+    sum += currentArgs[i];
+  }
+  return sum;
+}
+
+/* Predicate for finding 5-face degree sequences */
+static struct predicateResult try5FaceDegree(int round)
+{
+  if (round == NCOLORS) {
+    if (sumFaceDegree(round) != TOTAL_5FACE_DEGREE) {
+      return PredicateFail;
+    }
+    if (s6SymmetryType6(currentArgs) == NON_CANONICAL) {
+      return PredicateFail;
+    }
+    return PredicateSuccessNextPredicate;
+  }
+  return predicateChoices(NCOLORS - 2, NULL);
+}
+
+static struct predicateResult retry5FaceDegree(int round, int choice)
+{
+  // Try each possible face degree >= 3 for the current position
+  int degree = NCOLORS - choice;  // Start with NCOLORS and go down to 3
+  if (degree < 3) {
+    return PredicateFail;
+  }
+
+  // Try this degree
+  currentArgs[round] = degree;
+
+  if (sumFaceDegree(round + 1) + 3 * (NCOLORS - round - 1) >
+      TOTAL_5FACE_DEGREE) {
+    return PredicateFail;  // Exceeded target sum
+  }
+
+  return PredicateSuccessSamePredicate;
+}
+
+/* Static callback for the engine */
+static void engineCallback(void)
+{
+  staticCallback(staticCallbackData, currentArgs);
+}
+
+/* The predicates array for 5-face degree sequence search */
+static struct predicate predicates[] = {
+    {try5FaceDegree, retry5FaceDegree}, {NULL, NULL}  // Terminator
+};
+
+void s6FaceDegreeCanonicalCallback(void (*callback)(void *, FACE_DEGREE *),
+                                   void *data)
+{
+  staticCallback = callback;
+  staticCallbackData = data;
+  engine(predicates, engineCallback);
 }
 
 SIGNATURE s6MaxSignature(void)
