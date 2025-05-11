@@ -61,8 +61,6 @@ static int compareFaceDegree(const void *a, const void *b);
 static SYMMETRY_TYPE d6SymmetryType64(FACE_DEGREE_SEQUENCE sizes);
 static SYMMETRY_TYPE d6SymmetryTypeN(int n, FACE_DEGREE_SEQUENCE args);
 static FACE_DEGREE_SEQUENCE d6FaceDegreesInSequenceOrder(void);
-static void canoncialCallbackImpl(int depth, int sum, FACE_DEGREE *args,
-                                  UseFaceDegrees callback, void *data);
 static FACE_DEGREE_SEQUENCE sortPermutationsOfSequence(
     const int count, const FACE_DEGREE_SEQUENCE first, va_list moreSequences);
 static COLOR colorPermute(COLOR color, PERMUTATION permutation);
@@ -466,53 +464,4 @@ static FACE_DEGREE_SEQUENCE d6FaceDegreesInSequenceOrder()
     faceDegrees->faceDegrees[i] = Faces[SequenceOrder[i]].cycle->length;
   }
   return faceDegrees;
-}
-
-/* Generate all interesting sequences of face degrees that:
- * 1. Sum to TOTAL_5FACE_DEGREE (27) - due to the lemma about total face degree
- * 2. Are either CANONICAL or EQUIVOCAL in symmetry type
- *
- * The function recursively builds sequences of face degrees, checking at each
- * step:
- * - If the partial sum exceeds TOTAL_5FACE_DEGREE, backtrack
- * - If we've reached depth NCOLORS, check if the sum equals TOTAL_5FACE_DEGREE
- *   and if the symmetry type is interesting (CANONICAL or EQUIVOCAL)
- * - Otherwise, try all possible face degrees >= 3 for the current position
- *
- * The high cyclomatic complexity (CCN 8) is inherent to the problem:
- * - Multiple necessary conditions (sum checks, symmetry checks, degree
- * requirements)
- * - Recursive generation of all possible sequences
- * While the function could be split, this would make the algorithm's flow
- * harder to follow and require sharing state between functions.
- */
-static void canoncialCallbackImpl(int depth, int sum, FACE_DEGREE *args,
-                                  UseFaceDegrees callback, void *data)
-{
-  if (sum > TOTAL_5FACE_DEGREE) {
-    return;  // Early return if we've exceeded the target sum
-  }
-
-  if (depth == NCOLORS) {
-    if (sum != TOTAL_5FACE_DEGREE) {
-      return;  // Only interested in sequences that sum exactly to 27
-    }
-
-    freeAll();  // Reset any state before checking symmetry
-    if (s6SymmetryType6(args) == NON_CANONICAL) {
-      return;  // Skip non-canonical sequences as they're covered by symmetry
-    }
-
-    callback(data, args);  // Found an interesting sequence - call the callback
-    return;
-  }
-
-  // Try all possible face degrees >= 3 for the current position
-  for (int i = NCOLORS; i >= 3; i--) {
-    args[depth] = i;
-    if (CentralFaceDegrees[depth] > 0 && i != CentralFaceDegrees[depth]) {
-      continue;  // Skip if there's a specific degree required for this position
-    }
-    canoncialCallbackImpl(depth + 1, sum + i, args, callback, data);
-  }
 }
