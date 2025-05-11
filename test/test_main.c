@@ -1,5 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
+#define _GNU_SOURCE
+
 #include "main.h"
 
 #include <getopt.h>
@@ -70,20 +72,41 @@ int main(void)
 /* Stub functions for testing */
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 
-char *usingBuffer(char *buffer) { return NULL; }
-void statisticPrintFull(void) { /* stub for testing. */ }
+char *usingBuffer(char *buffer)
+{
+  return NULL;
+}
+void statisticPrintFull(void)
+{ /* stub for testing. */
+}
 
-void initializeS6() { /* stub for testing. */ }
+void initializeS6()
+{ /* stub for testing. */
+}
 
 void initializeStatisticLogging(char *filename, int frequency, int seconds)
-{ /* stub for testing. */ }
+{ /* stub for testing. */
+}
 
-void searchFull(void (*foundSolution)(void)) { /* stub for testing. */ }
+void searchFull(void (*foundSolution)(void))
+{ /* stub for testing. */
+}
 
-char *s6FaceDegreeSignature(void) { return "stub"; }
+char *s6FaceDegreeSignature(void)
+{
+  return "stub";
+}
 
-void searchSolutionWrite(const char *buffer) { /* stub for testing. */ }
+void searchSolutionWrite(const char *buffer)
+{ /* stub for testing. */
+}
 
-char *getBuffer() { return NULL; }
+char *getBuffer()
+{
+  return NULL;
+}
 void initializeFolder(const char *folder) {}
-void disaster(const char *message) { DisasterCalled = true; }
+void disaster(const char *message)
+{
+  DisasterCalled = true;
+}

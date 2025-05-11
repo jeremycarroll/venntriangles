@@ -1,4 +1,4 @@
-/* Copyright (C) 2024 Jeremy J. Carroll. See LICENSE for details. */
+/* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #include "memory.h"
 
@@ -19,9 +19,9 @@ static AllocationHeader *chain = NULL;
 #define BUFFER_SIZE 256
 
 /* Global variables (file scoped static) */
-static uint64_t MaxBufferSize = 0;
-static uint64_t CurrentMemory = 0;
-static uint64_t MaxMemory = 0;
+static uint64 MaxBufferSize = 0;
+static uint64 CurrentMemory = 0;
+static uint64 MaxMemory = 0;
 
 void *tempMalloc(size_t size)
 {
@@ -31,7 +31,7 @@ void *tempMalloc(size_t size)
 
   // Set up the header
   header->next = chain;
-  header->data = (void *)(header + 1);  // Point to the data area
+  header->data = (void *)(header + 1);  // Vertex to the data area
 
   // Update chain
   chain = header;
@@ -59,11 +59,14 @@ void initializeMemory()
   statisticIncludeInteger(&MaxMemory, "M", "MaxMemory", true);
 }
 
-char *getBuffer() { return (char *)tempMalloc(BUFFER_SIZE); }
+char *getBuffer()
+{
+  return (char *)tempMalloc(BUFFER_SIZE);
+}
 
 char *usingBuffer(char *buffer)
 {
-  uint64_t length = strlen(buffer);
+  uint64 length = strlen(buffer);
   if (length > MaxBufferSize) {
     MaxBufferSize = length;
   }

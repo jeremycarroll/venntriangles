@@ -7,11 +7,11 @@ TEST_SRC	= test/test_graphml.c test/test_venn5.c test/test_venn4.c test/test_kno
 TEST_BIN	= $(TEST_SRC:test/%.c=bin/%)
 # Do not include entrypoint.c in the test builds, it contains the main function, which is also in the test files.
 SRC		    = main.c trail.c failure.c color.c edge.c \
-			  point.c statistics.c vsearch.c s6.c face.c utils.c memory.c graphml.c triangles.c
+			  vertex.c statistics.c vsearch.c s6.c face.c utils.c memory.c graphml.c triangles.c
 TEST_HELPERS = test/test_helpers.c
 XSRC		= entrypoint.c
 HDR			= color.h edge.h statistics.h core.h face.h main.h trail.h \
-			  s6.h failure.h point.h vsearch.h memory.h graphml.h triangles.h
+			  s6.h failure.h vertex.h vsearch.h memory.h graphml.h triangles.h
 OBJ3		= $(SRC:%.c=objs3/%.o) $(TEST_HELPERS:test/test_%.c=objs3/test_%.o)
 OBJ4		= $(SRC:%.c=objs4/%.o) $(TEST_HELPERS:test/test_%.c=objs4/test_%.o)
 OBJ5		= $(SRC:%.c=objs5/%.o) $(TEST_HELPERS:test/test_%.c=objs5/test_%.o)
@@ -23,33 +23,44 @@ TARGET	  = bin/venn
 
 .SECONDARY: 
 
+# If the user has installed Unity, then we use development mode - also needing clang-format.
+UNITY_PRESENT := $(shell test -d $(UNITY_DIR) && echo "yes" || echo "no")
+
+ifeq ($(UNITY_PRESENT),yes)
 all: .format $(TARGET) tests
+else
+all: $(TARGET)
+endif
 
 -include $(DEP)
 
 bin/test_venn3: objsv/test_venn3.o $(UNITY_DIR)/src/unity.c $(OBJ3)
 	@mkdir -p $(@D)
-	$(CC) $(TEST_CFLAGS) -o $@ $^
+	$(CC) $(TEST_CFLAGS) -o $@ $^ -lm
 
 bin/test_venn4: objsv/test_venn4.o $(UNITY_DIR)/src/unity.c $(OBJ4)
 	@mkdir -p $(@D)
-	$(CC) $(TEST_CFLAGS) -o $@ $^
+	$(CC) $(TEST_CFLAGS) -o $@ $^ -lm
 
 bin/test_venn5: objsv/test_venn5.o $(UNITY_DIR)/src/unity.c $(OBJ5)
 	@mkdir -p $(@D)
-	$(CC) $(TEST_CFLAGS) -o $@ $^
+	$(CC) $(TEST_CFLAGS) -o $@ $^ -lm
 
 bin/test_main: objst/test_main.o $(UNITY_DIR)/src/unity.c objs6/main.o
 	@mkdir -p $(@D)
-	$(CC) $(TEST_CFLAGS) -o $@ $^
+	$(CC) $(TEST_CFLAGS) -o $@ $^ -lm
 
 bin/test_%: objst/test_%.o $(UNITY_DIR)/src/unity.c $(OBJ6) $(TEST_OBJ6)
 	@mkdir -p $(@D)
-	$(CC) $(TEST_CFLAGS) -o $@ $^
+	$(CC) $(TEST_CFLAGS) -o $@ $^ -lm
 
 .format: $(SRC) $(HDR) $(TEST_SRC) $(XSRC) $(D6) $(TEST_HELPERS)
 	clang-format -i $?
-	for i in $?; do if ! [ $$(tail -c 1 $$i | od -An -t x1) == "0a" ]; then echo >> $$i ; fi; done
+	for f in $?; do \
+		if [ $$(tail -c 1 "$$f" | od -An -t x1) != "0a" ]; then \
+			echo >> "$$f"; \
+		fi; \
+	done
 	touch .format
 
 tests: $(TEST_BIN)
@@ -60,7 +71,7 @@ clean:
 
 $(TARGET): $(OBJ6) $(XOBJ)
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ6) $(XOBJ)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ6) $(XOBJ) -lm
 
 objsv/test_venn%.o: test/test_venn%.c
 	@mkdir -p $(@D)

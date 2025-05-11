@@ -24,13 +24,13 @@ void tearDown(void)
 }
 
 /* Helper functions */
-static void sanityPoint(POINT point)
+static void sanityVertex(VERTEX vertex)
 {
-  TEST_ASSERT_EQUAL(1u << point->primary | 1u << point->secondary,
-                    point->colors);
+  TEST_ASSERT_EQUAL(1u << vertex->primary | 1u << vertex->secondary,
+                    vertex->colors);
   for (int i = 0; i < 4; i++) {
     for (int j = i + 1; j < 4; j++) {
-      TEST_ASSERT_NOT_EQUAL(point->incomingEdges[i], point->incomingEdges[j]);
+      TEST_ASSERT_NOT_EQUAL(vertex->incomingEdges[i], vertex->incomingEdges[j]);
     }
   }
 }
@@ -96,14 +96,14 @@ static void testOuterAEdge()
   TEST_ASSERT_EQUAL(face->colors, edge->colors);
   TEST_ASSERT_NULL(edge->to);
   TEST_ASSERT_EQUAL(0, edge->color);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].point);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].vertex);
   TEST_ASSERT_NULL(edge->possiblyTo[0].next);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->primary);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->secondary);
-  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].vertex->primary);
+  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].vertex->secondary);
+  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].vertex, edge->possiblyTo[2].vertex);
   TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
   TEST_ASSERT_EQUAL(2, edge->possiblyTo[1].next->colors);
-  sanityPoint(edge->possiblyTo[1].point);
+  sanityVertex(edge->possiblyTo[1].vertex);
 }
 
 /*
@@ -117,14 +117,14 @@ static void testAFaceAEdge()
   TEST_ASSERT_EQUAL(face->colors, edge->colors);
   TEST_ASSERT_NULL(edge->to);
   TEST_ASSERT_EQUAL(0, edge->color);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].point);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].vertex);
   TEST_ASSERT_NULL(edge->possiblyTo[0].next);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->secondary);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->primary);
-  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].vertex->secondary);
+  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].vertex->primary);
+  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].vertex, edge->possiblyTo[2].vertex);
   TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
   TEST_ASSERT_EQUAL(3, edge->possiblyTo[1].next->colors);
-  sanityPoint(edge->possiblyTo[1].point);
+  sanityVertex(edge->possiblyTo[1].vertex);
 }
 
 /*
@@ -138,14 +138,14 @@ static void testAbFaceAEdge()
   TEST_ASSERT_EQUAL(face->colors, edge->colors);
   TEST_ASSERT_NULL(edge->to);
   TEST_ASSERT_EQUAL(0, edge->color);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].point);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].vertex);
   TEST_ASSERT_NULL(edge->possiblyTo[0].next);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->primary);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->secondary);
-  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].vertex->primary);
+  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].vertex->secondary);
+  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].vertex, edge->possiblyTo[2].vertex);
   TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
   TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].next->colors);
-  sanityPoint(edge->possiblyTo[1].point);
+  sanityVertex(edge->possiblyTo[1].vertex);
 }
 
 /*
@@ -159,14 +159,14 @@ static void testAbcFaceAEdge()
   TEST_ASSERT_EQUAL(face->colors, edge->colors);
   TEST_ASSERT_NULL(edge->to);
   TEST_ASSERT_EQUAL(0, edge->color);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].point);
+  TEST_ASSERT_NULL(edge->possiblyTo[0].vertex);
   TEST_ASSERT_NULL(edge->possiblyTo[0].next);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].point->primary);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].point->secondary);
-  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].point, edge->possiblyTo[2].point);
+  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].vertex->primary);
+  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].vertex->secondary);
+  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].vertex, edge->possiblyTo[2].vertex);
   TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
   TEST_ASSERT_EQUAL(5, edge->possiblyTo[1].next->colors);
-  sanityPoint(edge->possiblyTo[1].point);
+  sanityVertex(edge->possiblyTo[1].vertex);
 }
 
 static void testChoosingAndBacktracking()
@@ -191,7 +191,10 @@ static void testChoosingAndBacktracking()
 static int SolutionCount = 0;
 
 /* Callback functions */
-static void foundSolution() { SolutionCount++; }
+static void foundSolution()
+{
+  SolutionCount++;
+}
 
 /* Test functions */
 static void testSearch()

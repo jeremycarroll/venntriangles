@@ -7,14 +7,14 @@
 #include <stdlib.h>
 
 /* Global variables - globally scoped */
-uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
+uint64 EdgeCountsByDirectionAndColor[2][NCOLORS];
 COLORSET ColorCompleted;
 
 /* Global variables - file scoped */
 #define MAX_ONE_WAY_CURVE_CROSSINGS 3
 #define MAX_CORNERS 3
-static uint64_t EdgeCrossingCounts[NCOLORS][NCOLORS];
-static uint64_t EdgeCurvesComplete[NCOLORS];
+static uint64 EdgeCrossingCounts[NCOLORS][NCOLORS];
+static uint64 EdgeCurvesComplete[NCOLORS];
 
 /*
 This file is responsible for checking that a set of edges can make a triangle,
@@ -81,7 +81,7 @@ void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
   assert(edge1->color == edge2->color);
   assert(edge1->possiblyTo[other].next == NULL);
   assert(edge2->possiblyTo[other].next == NULL);
-  assert(edge1->possiblyTo[other].point == edge2->possiblyTo[other].point);
+  assert(edge1->possiblyTo[other].vertex == edge2->possiblyTo[other].vertex);
   edge1->possiblyTo[other].next = edge2->reversed;
   edge2->possiblyTo[other].next = edge1->reversed;
   if (level1 == level3) {

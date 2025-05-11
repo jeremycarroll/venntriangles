@@ -8,7 +8,7 @@
 
 typedef struct edge* EDGE;
 typedef struct curveLink* CURVELINK;
-typedef struct Point* POINT;
+typedef struct Vertex* VERTEX;
 
 struct curveLink {
   /* This CURVELINK is at the end of one edge only.
@@ -16,7 +16,7 @@ struct curveLink {
      it is: next->reversed->to->next->reversed
   */
   EDGE next;
-  POINT point;
+  VERTEX vertex;
 };
 
 struct edge {
@@ -35,15 +35,15 @@ struct edge {
   */
   DYNAMIC CURVELINK to;
   /* A value between 0 and NCOLORS, being the cardinality of face. */
-  STATIC uint64_t level;
-  /* This point at the end of this edge may cross one of the other colors.
+  STATIC uint64 level;
+  /* This vertex at the end of this edge may cross one of the other colors.
   We have all 5 pre-initialized in this array, with the color-th entry
   being all NULL.
    */
   STATIC struct curveLink possiblyTo[NCOLORS];
 };
 
-extern uint64_t EdgeCountsByDirectionAndColor[2][NCOLORS];
+extern uint64 EdgeCountsByDirectionAndColor[2][NCOLORS];
 
 extern EDGE edgeFollowBackwards(EDGE edge);
 extern FAILURE edgeCurveChecks(EDGE edge, int depth);

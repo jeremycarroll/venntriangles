@@ -11,7 +11,10 @@
 #include <unity.h>
 
 /* Test setup and teardown */
-void setUp(void) { initializeS6(); }
+void setUp(void)
+{
+  initializeS6();
+}
 
 void tearDown(void)
 {
@@ -22,7 +25,10 @@ void tearDown(void)
 static int count6;
 
 /* Callback functions */
-static void countSolutions() { count6++; }
+static void countSolutions()
+{
+  count6++;
+}
 
 /* Test functions */
 static void testCanonical6()

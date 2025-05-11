@@ -8,8 +8,8 @@
 typedef uint32_t COLOR;
 typedef uint32_t COLORSET;
 
-typedef uint64_t *CYCLESET;
-typedef uint64_t CYCLESET_DECLARE[CYCLESET_LENGTH];
+typedef uint64 *CYCLESET;
+typedef uint64 CYCLESET_DECLARE[CYCLESET_LENGTH];
 
 typedef struct facialCycle *CYCLE;
 

@@ -4,14 +4,17 @@
 #define FAILURE_H
 
 #include "core.h"
+#include "memory.h"
 
 #include <stdint.h>
 
-typedef struct {
-  uint64_t count[NFACES];
-  char* shortLabel;
-  char* label;
-} Failure, *FAILURE;
+struct failure {
+  char *label;
+  char *shortLabel;
+  uint64 count[NFACES];
+};
+
+typedef struct failure Failure, *FAILURE;
 
 /* Can only be used when there is an appropriate local varaible 'failure'
    in scope. */
@@ -23,7 +26,7 @@ typedef struct {
 
 extern FAILURE failureNoMatchingCycles(int depth);
 extern FAILURE failureCrossingLimit(int depth);
-extern FAILURE failurePointConflict(int depth);
+extern FAILURE failureVertexConflict(int depth);
 extern FAILURE failureConflictingConstraints(int depth);
 extern FAILURE failureDisconnectedCurve(int depth);
 extern FAILURE failureTooManyCorners(int depth);

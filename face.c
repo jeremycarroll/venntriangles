@@ -9,9 +9,9 @@
 
 /* Global variables - globally scoped */
 struct face Faces[NFACES];
-static uint64_t FaceSumOfFaceDegree[NCOLORS + 1];
-static uint64_t CycleForcedCounter = 0;
-static uint64_t CycleSetReducedCounter = 0;
+static uint64 FaceSumOfFaceDegree[NCOLORS + 1];
+static uint64 CycleForcedCounter = 0;
+static uint64 CycleSetReducedCounter = 0;
 
 /* Declaration of file scoped static functions */
 static void recomputeCountOfChoices(FACE face);
@@ -21,10 +21,10 @@ static void initializeLengthOfCycleOfFaces(void);
 static void restrictCycles(FACE face, CYCLESET cycleSet);
 static FAILURE checkLengthOfCycleOfFaces(FACE face);
 static void countEdge(EDGE edge);
-static void setupColors(POINT point, COLOR colors[2]);
+static void setupColors(VERTEX vertex, COLOR colors[2]);
 static FAILURE processIncomingEdge(EDGE edge, COLOR colors[2],
                                    int incomingEdgeSlot, int depth);
-static void validateIncomingEdges(POINT point);
+static void validateIncomingEdges(VERTEX vertex);
 static FAILURE handleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
                                   int depth);
 static bool isCycleValidForFace(CYCLE cycle, COLORSET faceColors);
@@ -70,7 +70,7 @@ void initializePoints(void)
 {
   uint32_t i, j, k;
   for (i = 0; i < NPOINTS; i++) {
-    POINT p = PointAllUPoints + i;
+    VERTEX p = VertexAllUVertices + i;
     edgeLink(p->incomingEdges[0], p->incomingEdges[1], p->incomingEdges[2],
              p->incomingEdges[3]);
     edgeLink(p->incomingEdges[2], p->incomingEdges[3], p->incomingEdges[0],
@@ -84,11 +84,11 @@ void initializePoints(void)
         if (k == j) {
           continue;
         }
-        assert(f->edges[j].possiblyTo[k].point != NULL);
+        assert(f->edges[j].possiblyTo[k].vertex != NULL);
         assert(f->edges[j].possiblyTo[k].next != NULL);
         assert(f->edges[j].possiblyTo[k].next->color == j);
-        assert(f->edges[j].possiblyTo[k].next->reversed->possiblyTo[k].point ==
-               f->edges[j].possiblyTo[k].point);
+        assert(f->edges[j].possiblyTo[k].next->reversed->possiblyTo[k].vertex ==
+               f->edges[j].possiblyTo[k].vertex);
       }
     }
   }
@@ -115,7 +115,7 @@ bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length)
 void dynamicFaceSetupCentral(FACE_DEGREE* faceDegrees)
 {
   CYCLE cycle;
-  uint64_t i;
+  uint64 i;
   FACE centralFace = Faces + (NFACES - 1);
   for (i = 0; i < NCOLORS; i++) {
     dynamicFaceSetCycleLength(~(1 << i), faceDegrees[i]);
@@ -137,11 +137,11 @@ void dynamicFaceSetupCentral(FACE_DEGREE* faceDegrees)
   dynamicFaceBacktrackableChoice(centralFace);
 }
 
-FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
-                                int depth)
+FAILURE dynamicFaceIncludeVertex(FACE face, COLOR aColor, COLOR bColor,
+                                 int depth)
 {
   FAILURE failure;
-  POINT point;
+  VERTEX vertex;
   EDGE edge;
   COLOR colors[2];
 
@@ -150,17 +150,17 @@ FAILURE dynamicFaceIncludePoint(FACE face, COLOR aColor, COLOR bColor,
     return failure;
   }
 
-  point = face->edges[aColor].possiblyTo[bColor].point;
+  vertex = face->edges[aColor].possiblyTo[bColor].vertex;
   CHECK_FAILURE(
-      edgeCheckCrossingLimit(point->primary, point->secondary, depth));
-  setupColors(point, colors);
+      edgeCheckCrossingLimit(vertex->primary, vertex->secondary, depth));
+  setupColors(vertex, colors);
 
   for (int incomingEdgeSlot = 0; incomingEdgeSlot < 4; incomingEdgeSlot++) {
-    edge = point->incomingEdges[incomingEdgeSlot];
+    edge = vertex->incomingEdges[incomingEdgeSlot];
     CHECK_FAILURE(processIncomingEdge(edge, colors, incomingEdgeSlot, depth));
     countEdge(edge);
   }
-  validateIncomingEdges(point);
+  validateIncomingEdges(vertex);
   return NULL;
 }
 
@@ -240,10 +240,10 @@ void facePrintSelected(void)
 FAILURE facePropogateChoice(FACE face, EDGE edge, int depth)
 {
   FAILURE failure;
-  POINT point = edge->to->point;
+  VERTEX vertex = edge->to->vertex;
   COLOR aColor = edge->color;
   COLOR bColor =
-      edge->color == point->primary ? point->secondary : point->primary;
+      edge->color == vertex->primary ? vertex->secondary : vertex->primary;
 
   FACE aFace = face->adjacentFaces[edge->color];
   FACE abFace = aFace->adjacentFaces[bColor];
@@ -298,7 +298,10 @@ char* faceToString(FACE face)
 }
 
 /* File scoped static functions */
-static void facePrint(FACE face) { printf("%s\n", faceToString(face)); }
+static void facePrint(FACE face)
+{
+  printf("%s\n", faceToString(face));
+}
 
 static void recomputeCountOfChoices(FACE face)
 {
@@ -318,8 +321,8 @@ static void initializePossiblyTo(void)
         if (othercolor == color) {
           continue;
         }
-        edge->possiblyTo[othercolor].point =
-            initializePointIncomingEdge(face->colors, edge, othercolor);
+        edge->possiblyTo[othercolor].vertex =
+            initializeVertexIncomingEdge(face->colors, edge, othercolor);
       }
     }
   }
@@ -335,7 +338,7 @@ static bool isEdgeTransition(COLOR curve1, COLOR curve2, COLORSET faceColors,
                              COLORSET* previousFaceColors,
                              COLORSET* nextFaceColors)
 {
-  uint64_t currentXor = (1ll << curve1) | (1ll << curve2);
+  uint64 currentXor = (1ll << curve1) | (1ll << curve2);
   if (__builtin_popcountll(currentXor & faceColors) != 1) {
     return false;
   }
@@ -478,10 +481,10 @@ static void countEdge(EDGE edge)
   trailSetInt(edgeCountPtr, (*edgeCountPtr) + 1);
 }
 
-static void setupColors(POINT point, COLOR colors[2])
+static void setupColors(VERTEX vertex, COLOR colors[2])
 {
-  colors[0] = point->primary;
-  colors[1] = point->secondary;
+  colors[0] = vertex->primary;
+  colors[1] = vertex->secondary;
 }
 
 static FAILURE processIncomingEdge(EDGE edge, COLOR colors[2],
@@ -491,7 +494,7 @@ static FAILURE processIncomingEdge(EDGE edge, COLOR colors[2],
   assert(edge->color != colors[1 - ((incomingEdgeSlot & 2) >> 1)]);
   if (edge->to != NULL) {
     if (edge->to != &edge->possiblyTo[colors[(incomingEdgeSlot & 2) >> 1]]) {
-      return failurePointConflict(depth);
+      return failureVertexConflict(depth);
     }
     assert(edge->to ==
            &edge->possiblyTo[colors[1 - ((incomingEdgeSlot & 2) >> 1)]]);
@@ -505,10 +508,10 @@ static FAILURE processIncomingEdge(EDGE edge, COLOR colors[2],
   return NULL;
 }
 
-static void validateIncomingEdges(POINT point)
+static void validateIncomingEdges(VERTEX vertex)
 {
   for (int incomingEdgeSlot = 0; incomingEdgeSlot < 4; incomingEdgeSlot++) {
-    assert(point->incomingEdges[incomingEdgeSlot]->to != NULL);
+    assert(vertex->incomingEdges[incomingEdgeSlot]->to != NULL);
   }
 }
 
@@ -518,7 +521,7 @@ static FAILURE handleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
   if (face->edges[aColor].to != NULL) {
     assert(face->edges[aColor].to != &face->edges[aColor].possiblyTo[aColor]);
     if (face->edges[aColor].to != &face->edges[aColor].possiblyTo[bColor]) {
-      return failurePointConflict(depth);
+      return failureVertexConflict(depth);
     }
     assert(face->edges[aColor].to == &face->edges[aColor].possiblyTo[bColor]);
     return NULL;

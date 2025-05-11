@@ -1,5 +1,6 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
+#define _GNU_SOURCE
 #include "face.h"
 #include "graphml.h"
 #include "main.h"
@@ -156,9 +157,12 @@ static void checkLineAndColorInNode(struct nodeInfo* node,
   if (copyLineByColor(&node->info[0], edgeColor, line)) {
     return;
   }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-overflow"
   sprintf(message, "node: %s, %s^%s, %s^%s, %s^%s", node->id,
           node->info[0].color, node->info[0].line, node->info[1].color,
           node->info[1].line, edgeColor, line);
+#pragma GCC diagnostic pop
   TEST_ASSERT_MESSAGE(copyLineByColor(&node->info[1], edgeColor, line),
                       message);
 }
@@ -433,12 +437,30 @@ static void testColorContinuations(COLOR color, int expectedCount)
   TEST_ASSERT_EQUAL(expectedCount, ContinuationCount);
 }
 
-static void foundSolutionColor0() { testColorContinuations(0, 8); }
-static void foundSolutionColor1() { testColorContinuations(1, 1); }
-static void foundSolutionColor2() { testColorContinuations(2, 2); }
-static void foundSolutionColor3() { testColorContinuations(3, 1); }
-static void foundSolutionColor4() { testColorContinuations(4, 2); }
-static void foundSolutionColor5() { testColorContinuations(5, 4); }
+static void foundSolutionColor0()
+{
+  testColorContinuations(0, 8);
+}
+static void foundSolutionColor1()
+{
+  testColorContinuations(1, 1);
+}
+static void foundSolutionColor2()
+{
+  testColorContinuations(2, 2);
+}
+static void foundSolutionColor3()
+{
+  testColorContinuations(3, 1);
+}
+static void foundSolutionColor4()
+{
+  testColorContinuations(4, 2);
+}
+static void foundSolutionColor5()
+{
+  testColorContinuations(5, 4);
+}
 
 static char* TestName;
 

@@ -2,4 +2,7 @@
 
 #include "main.h"
 
-int main(int argc, char *argv[]) { return dynamicMain0(argc, argv); }
+int main(int argc, char *argv[])
+{
+  return dynamicMain0(argc, argv);
+}

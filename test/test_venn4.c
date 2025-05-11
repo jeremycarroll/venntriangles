@@ -31,7 +31,10 @@ void tearDown(void)
 static int SolutionCount = 0;
 
 /* Callback functions */
-static void foundSolution() { SolutionCount++; }
+static void foundSolution()
+{
+  SolutionCount++;
+}
 
 /* Test functions */
 static void testSearch()

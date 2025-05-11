@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 #include <time.h>
 
 /* Output-related variables */
@@ -23,8 +24,8 @@ static clock_t TotalWastedTime = 0;
 static clock_t TotalUsefulTime = 0;
 static int WastedSearchCount = 0;
 static int UsefulSearchCount = 0;
-uint64_t CycleGuessCounter = 0;
-static TRAIL StartPoint;
+uint64 CycleGuessCounter = 0;
+static TRAIL StartVertex;
 
 /* State machine states for the search process */
 typedef enum {
@@ -42,7 +43,7 @@ typedef struct {
 } SearchContext;
 
 /* Declaration of file scoped static functions */
-static void setFaceCycleSetToSingleton(FACE face, uint64_t cycleId);
+static void setFaceCycleSetToSingleton(FACE face, uint64 cycleId);
 static CYCLE chooseCycle(FACE face, CYCLE cycle);
 static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args);
 static FAILURE checkFacePoints(FACE face, CYCLE cycle, int depth);
@@ -50,14 +51,15 @@ static FAILURE checkEdgeCurvesAndCorners(FACE face, CYCLE cycle, int depth);
 static FAILURE propagateFaceChoices(FACE face, CYCLE cycle, int depth);
 static FAILURE propagateRestrictionsToNonAdjacentFaces(FACE face, CYCLE cycle,
                                                        int depth);
-static FAILURE restrictCyclesForNonAdjacentColors(FACE face, CYCLE cycle,
-                                                  int depth);
+static FAILURE propagateRestrictionsToNonVertexAdjacentFaces(FACE face,
+                                                             CYCLE cycle,
+                                                             int depth);
 
 /* Externally linked functions */
 FAILURE dynamicFaceChoice(FACE face, int depth)
 {
   CYCLE cycle = face->cycle;
-  uint64_t cycleId = cycle - Cycles;
+  uint64 cycleId = cycle - Cycles;
   FAILURE failure;
   /* equality in the following assertion is achieved in the Venn 3 case, where a
   single choice in any face determines all the faces. */
@@ -82,7 +84,8 @@ FAILURE dynamicFaceChoice(FACE face, int depth)
     assert(face->previous != Faces);
   }
 
-  CHECK_FAILURE(restrictCyclesForNonAdjacentColors(face, cycle, depth));
+  CHECK_FAILURE(
+      propagateRestrictionsToNonVertexAdjacentFaces(face, cycle, depth));
 
   return NULL;
 }
@@ -91,14 +94,13 @@ FAILURE dynamicFaceBacktrackableChoice(FACE face)
 {
   FAILURE failure;
   COLOR completedColor;
-  uint64_t cycleId;
+  uint64 cycleId;
   CycleGuessCounter++;
   ColorCompleted = 0;
   face->backtrack = Trail;
   assert(face->cycle != NULL);
   cycleId = face->cycle - Cycles;
   assert(cycleId < NCYCLES);
-  assert(cycleId >= 0);
   assert(cycleSetMember(cycleId, face->possibleCycles));
   setFaceCycleSetToSingleton(face, cycleId);
 
@@ -217,7 +219,7 @@ void searchFull(void (*foundSolution)(void))
   statisticIncludeInteger(&CycleGuessCounter, "?", "guesses", false);
   statisticIncludeInteger(&GlobalVariantCount, "V", "variants", false);
   statisticIncludeInteger(&GlobalSolutionsFound, "S", "solutions", false);
-  StartPoint = Trail;
+  StartVertex = Trail;
   GlobalSolutionsFound = 0;
   s6FaceDegreeCanonicalCallback(fullSearchCallback, (void*)foundSolution);
 }
@@ -318,10 +320,10 @@ void searchSolutionWrite(const char* prefix)
 }
 
 /* File scoped static functions */
-static void setFaceCycleSetToSingleton(FACE face, uint64_t cycleId)
+static void setFaceCycleSetToSingleton(FACE face, uint64 cycleId)
 {
   CYCLESET_DECLARE cycleSet;
-  uint64_t i;
+  uint64 i;
   memset(cycleSet, 0, sizeof(cycleSet));
   cycleSetAdd(cycleId, cycleSet);
   for (i = 0; i < CYCLESET_LENGTH; i++) {
@@ -341,11 +343,11 @@ static FAILURE checkFacePoints(FACE face, CYCLE cycle, int depth)
   FAILURE failure;
 
   for (i = 0; i < cycle->length - 1; i++) {
-    CHECK_FAILURE(dynamicFaceIncludePoint(face, cycle->curves[i],
-                                          cycle->curves[i + 1], depth));
+    CHECK_FAILURE(dynamicFaceIncludeVertex(face, cycle->curves[i],
+                                           cycle->curves[i + 1], depth));
   }
-  CHECK_FAILURE(
-      dynamicFaceIncludePoint(face, cycle->curves[i], cycle->curves[0], depth));
+  CHECK_FAILURE(dynamicFaceIncludeVertex(face, cycle->curves[i],
+                                         cycle->curves[0], depth));
 
   return NULL;
 }
@@ -394,8 +396,9 @@ static FAILURE propagateRestrictionsToNonAdjacentFaces(FACE face, CYCLE cycle,
   return NULL;
 }
 
-static FAILURE restrictCyclesForNonAdjacentColors(FACE face, CYCLE cycle,
-                                                  int depth)
+static FAILURE propagateRestrictionsToNonVertexAdjacentFaces(FACE face,
+                                                             CYCLE cycle,
+                                                             int depth)
 {
   uint32_t i, j;
   FAILURE failure;
@@ -429,7 +432,7 @@ static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
     return;
   }
   PerFaceDegreeSolutionNumber = 0;
-  trailBacktrackTo(StartPoint);  // Start with backtracking
+  trailBacktrackTo(StartVertex);  // Start with backtracking
   dynamicFaceSetupCentral(args);
   searchHere(true, foundSolution);
   used = clock() - now;

@@ -37,15 +37,16 @@ static void testInitialize(void)
 static void testLastCycles(void)
 {
   initialize();
-  TEST_ASSERT_EQUAL(0, bcmp(Cycles[NCYCLES3 - 1].curves, (uint32_t[]){0, 1, 2},
-                            3 * sizeof(uint32_t)));
-  TEST_ASSERT_EQUAL(0, bcmp(Cycles[NCYCLES4 - 1].curves,
-                            (uint32_t[]){0, 1, 2, 3}, 4 * sizeof(uint32_t)));
-  TEST_ASSERT_EQUAL(0, bcmp(Cycles[NCYCLES5 - 1].curves,
-                            (uint32_t[]){0, 1, 2, 3, 4}, 5 * sizeof(uint32_t)));
+  TEST_ASSERT_EQUAL(0, memcmp(Cycles[NCYCLES3 - 1].curves,
+                              (uint32_t[]){0, 1, 2}, 3 * sizeof(uint32_t)));
+  TEST_ASSERT_EQUAL(0, memcmp(Cycles[NCYCLES4 - 1].curves,
+                              (uint32_t[]){0, 1, 2, 3}, 4 * sizeof(uint32_t)));
   TEST_ASSERT_EQUAL(
-      0, bcmp(Cycles[NCYCLES - 1].curves, (uint32_t[]){0, 1, 2, 3, 4, 5},
-              6 * sizeof(uint32_t)));
+      0, memcmp(Cycles[NCYCLES5 - 1].curves, (uint32_t[]){0, 1, 2, 3, 4},
+                5 * sizeof(uint32_t)));
+  TEST_ASSERT_EQUAL(
+      0, memcmp(Cycles[NCYCLES - 1].curves, (uint32_t[]){0, 1, 2, 3, 4, 5},
+                6 * sizeof(uint32_t)));
 }
 
 static void testContains2(void)

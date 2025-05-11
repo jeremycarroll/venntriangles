@@ -2,11 +2,19 @@
 
 #include "s6.h"
 
+#include "color.h"
 #include "face.h"
 #include "main.h"
 #include "memory.h"
+#include "statistics.h"
+#include "trail.h"
+#include "utils.h"
 
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 /* Global variables - file scoped */
 /* Lemma: In a simple Venn diagram of convex curves, the faces inside k curves
  * have total face degree being 2 * nCk + nC(k-1), where nCk is the binomial
@@ -65,7 +73,7 @@ static int compareCycleIdSequence(const void *a, const void *b);
 static SIGNATURE d6SignatureRecentered(SIGNATURE sequence, COLORSET center);
 static SIGNATURE d6SignaturePermuted(SIGNATURE sequence,
                                      PERMUTATION permutation);
-static int d6SignatureCompare(SIGNATURE a, SIGNATURE b);
+static int d6SignatureCompare(const void *a, const void *b);
 static SIGNATURE d6SignatureReflected(SIGNATURE sequence);
 
 #define ADD_TO_SEQUENCE_ORDER(colors)               \
@@ -74,12 +82,12 @@ static SIGNATURE d6SignatureReflected(SIGNATURE sequence);
     done |= 1llu << (colors);                       \
   } while (0)
 
-static void verifyS6Initialization(uint64_t done, uint64_t ix);
+static void verifyS6Initialization(uint64 done, uint64 ix);
 /* Externally linked functions - Initialize */
 void initializeS6(void)
 {
-  uint64_t ix = 0, i;
-  uint64_t done = 0;
+  uint64 ix = 0, i;
+  uint64 done = 0;
 
   for (i = 0; i < NCOLORS; i++) {
     ADD_TO_SEQUENCE_ORDER(1llu << i);
@@ -220,9 +228,9 @@ SIGNATURE d6SignatureReflected(SIGNATURE sequence)
   return result;
 }
 
-int d6SignatureCompare(SIGNATURE a, SIGNATURE b)
+int d6SignatureCompare(const void *a, const void *b)
 {
-  return bcmp(a, b, sizeof(((CYCLE_ID_SEQUENCE)NULL)[0]));
+  return memcmp(a, b, sizeof(((CYCLE_ID_SEQUENCE)NULL)[0]));
 }
 
 SIGNATURE s6SignatureFromFaces(void)
@@ -265,13 +273,13 @@ char *s6SignatureToLongString(SIGNATURE signature)
 
 /* File scoped static functions */
 
-static void verifyS6Initialization(uint64_t done, uint64_t ix)
+static void verifyS6Initialization(uint64 done, uint64 ix)
 {
-  uint64_t i;
+  uint64 i;
 #if NCOLORS == 6
   assert(done == ~0llu);
 #else
-  assert(done == (1llu << (uint64_t)NFACES) - 1l);
+  assert(done == (1llu << (uint64)NFACES) - 1l);
 #endif
   assert(ix == NFACES);
   for (i = 0; i < NFACES; i++) {

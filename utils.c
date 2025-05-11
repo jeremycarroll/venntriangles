@@ -6,10 +6,10 @@
 #include "edge.h"
 #include "face.h"
 #include "memory.h"
-#include "point.h"
 #include "s6.h"
 #include "statistics.h"
 #include "trail.h"
+#include "vertex.h"
 #include <sys/stat.h>
 
 #include <stdlib.h>
@@ -19,7 +19,9 @@
 void initialize()
 {
   /* Not true on all architectures, but assumed in our Trail. */
-  assert((sizeof(uint64_t) == sizeof(void *)));
+  assert((sizeof(uint64) == sizeof(void *)));
+  /* Verify uint64 is 64 bits */
+  assert(sizeof(uint64) == 8);
 
   freeAll();
   initializeCycleSets();
@@ -57,7 +59,10 @@ void resetGlobals()
   freeAll();
 }
 
-void resetInitialize() { resetCycles(); }
+void resetInitialize()
+{
+  resetCycles();
+}
 
 #define USAGE_ONE_LINE                                                   \
   "Usage: %s -f outputFolder [-d centralFaceDegrees] [-m maxSolutions] " \

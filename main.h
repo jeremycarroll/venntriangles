@@ -17,7 +17,7 @@ extern int IgnoreFirstVariantsPerSolution;
 extern bool VerboseMode;
 
 // statistic
-extern uint64_t GlobalSolutionsFound;
+extern uint64 GlobalSolutionsFound;
 
 // Declare functions used in main.c
 extern char* s6FaceDegreeSignature(void);

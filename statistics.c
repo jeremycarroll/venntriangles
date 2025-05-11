@@ -63,7 +63,7 @@ void resetStatistics(void)
   }
 }
 
-void statisticIncludeInteger(uint64_t* counter, char* shortName, char* name,
+void statisticIncludeInteger(uint64* counter, char* shortName, char* name,
                              bool verboseOnly)
 {
   for (int i = 0; i < MAX_STATISTICS; i++) {
@@ -176,8 +176,8 @@ static int statisticCountChosen(void)
 
 static void formatElapsedTime(time_t elapsed, char* buffer, size_t bufferSize)
 {
-  snprintf(buffer, bufferSize, "%ld:%02.2ld:%02.2ld", elapsed / 3600,
-           (elapsed / 60) % 60, elapsed % 60);
+  snprintf(buffer, bufferSize, "%ld:%02ld:%02ld", elapsed / 3600,
+           (elapsed % 3600) / 60, elapsed % 60);
 }
 
 static void formatFailureCounts(Failure* failure, int maxIndex, char* buffer)
