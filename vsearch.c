@@ -51,8 +51,9 @@ static FAILURE checkEdgeCurvesAndCorners(FACE face, CYCLE cycle, int depth);
 static FAILURE propagateFaceChoices(FACE face, CYCLE cycle, int depth);
 static FAILURE propagateRestrictionsToNonAdjacentFaces(FACE face, CYCLE cycle,
                                                        int depth);
-static FAILURE restrictCyclesForNonAdjacentColors(FACE face, CYCLE cycle,
-                                                  int depth);
+static FAILURE propagateRestrictionsToNonVertexAdjacentFaces(FACE face,
+                                                             CYCLE cycle,
+                                                             int depth);
 
 /* Externally linked functions */
 FAILURE dynamicFaceChoice(FACE face, int depth)
@@ -83,7 +84,8 @@ FAILURE dynamicFaceChoice(FACE face, int depth)
     assert(face->previous != Faces);
   }
 
-  CHECK_FAILURE(restrictCyclesForNonAdjacentColors(face, cycle, depth));
+  CHECK_FAILURE(
+      propagateRestrictionsToNonVertexAdjacentFaces(face, cycle, depth));
 
   return NULL;
 }
@@ -394,8 +396,9 @@ static FAILURE propagateRestrictionsToNonAdjacentFaces(FACE face, CYCLE cycle,
   return NULL;
 }
 
-static FAILURE restrictCyclesForNonAdjacentColors(FACE face, CYCLE cycle,
-                                                  int depth)
+static FAILURE propagateRestrictionsToNonVertexAdjacentFaces(FACE face,
+                                                             CYCLE cycle,
+                                                             int depth)
 {
   uint32_t i, j;
   FAILURE failure;
