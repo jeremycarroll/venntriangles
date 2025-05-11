@@ -1,0 +1,106 @@
+/* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
+
+#include "engine.h"
+
+#include "core.h"
+
+/* The engine implements a WAM-like execution model for our search process.
+   Each phase of the search is implemented as a predicate that can:
+   - FAIL (backtrack)
+   - SUCCESS (move to next predicate)
+   - CHOICES (try alternatives)
+
+   The engine maintains the state and controls the flow between predicates.
+   This provides a uniform structure for all phases of the search. */
+
+#define MAX_STACK_SIZE 1000
+
+static void pushStackEntry(struct stackEntry* stack, PredicateResultCode code);
+
+void engine(struct predicate* predicates, void (*callback)(void))
+{
+  struct stackEntry stack[MAX_STACK_SIZE + 1], *stackTop = stack;
+
+  // Initialize first stack entry
+  stackTop->inChoiceMode = false;
+  stackTop->predicate = predicates;
+  stackTop->currentChoice = 0;
+  stackTop->round = 0;
+
+  while (true) {
+    if (stackTop->predicate->try == NULL) {
+      // We've reached the end of the predicates array successfully
+      callback();
+    backtrack:
+      // Backtrack to previous choice point
+      do {
+        if (stackTop == stack) {
+          return;  // All done
+        }
+        stackTop--;
+      } while (!stackTop->inChoiceMode);
+      trailBacktrackTo(stackTop->trail);
+      continue;
+    }
+
+    PredicateResult result;
+
+    if (!stackTop->inChoiceMode) {
+      // Try the current predicate
+      result = stackTop->predicate->try(stackTop->round);
+
+      switch (result.code) {
+        case PREDICATE_FAIL:
+          goto backtrack;
+
+        case PREDICATE_SUCCESS_NEXT_PREDICATE:
+        case PREDICATE_SUCCESS_SAME_PREDICATE:
+          pushStackEntry(++stackTop, result.code);
+          assert(stackTop < stack + MAX_STACK_SIZE);
+          break;
+
+        case PREDICATE_CHOICES:
+          // Start trying choices
+          stackTop->inChoiceMode = true;
+          stackTop->currentChoice = 0;
+          stackTop->choicePoint = result.choicePoint;
+          stackTop->trail = Trail;
+          break;
+      }
+    } else {
+      // Try next choice
+      if (stackTop->currentChoice >= stackTop->choicePoint.numberOfChoices) {
+        goto backtrack;
+      }
+      result = stackTop->predicate->retry(stackTop->round,
+                                          stackTop->currentChoice++);
+
+      switch (result.code) {
+        case PREDICATE_FAIL:
+          trailBacktrackTo(stackTop->trail);
+          break;
+
+        case PREDICATE_SUCCESS_NEXT_PREDICATE:
+        case PREDICATE_SUCCESS_SAME_PREDICATE:
+          pushStackEntry(++stackTop, result.code);
+          assert(stackTop < stack + MAX_STACK_SIZE);
+          break;
+        case PREDICATE_CHOICES:
+          assert(false);
+          break;
+      }
+    }
+  }
+}
+
+static void pushStackEntry(struct stackEntry* stack, PredicateResultCode code)
+{
+  stack->inChoiceMode = false;
+  stack->predicate = code == PREDICATE_SUCCESS_NEXT_PREDICATE
+                         ? stack[-1].predicate + 1
+                         : stack[-1].predicate;
+  stack->round =
+      code == PREDICATE_SUCCESS_NEXT_PREDICATE ? 0 : stack[-1].round + 1;
+  stack->currentChoice = 0;
+  stack->trail = Trail;
+}
