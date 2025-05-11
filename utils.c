@@ -59,7 +59,10 @@ void resetGlobals()
   freeAll();
 }
 
-void resetInitialize() { resetCycles(); }
+void resetInitialize()
+{
+  resetCycles();
+}
 
 #define USAGE_ONE_LINE                                                   \
   "Usage: %s -f outputFolder [-d centralFaceDegrees] [-m maxSolutions] " \

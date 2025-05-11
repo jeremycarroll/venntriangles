@@ -155,4 +155,7 @@ static void saveResult(void)
   searchSolutionWrite(usingBuffer(buffer));
 }
 
-static void initializeOutputFolder() { initializeFolder(TargetFolder); }
+static void initializeOutputFolder()
+{
+  initializeFolder(TargetFolder);
+}

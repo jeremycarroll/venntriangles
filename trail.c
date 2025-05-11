@@ -15,7 +15,10 @@ void initializeTrail()
   statisticIncludeInteger(&MaxTrailSize, "$", "MaxTrail", true);
 }
 
-void resetTrail() { Trail = TrailArray; }
+void resetTrail()
+{
+  Trail = TrailArray;
+}
 
 void trailSetPointer(void** ptr, void* value)
 {

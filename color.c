@@ -70,7 +70,10 @@ void resetCycles()
 }
 
 /* Externally linked functions - color... */
-int colorToChar(COLOR c) { return 'a' + c; }
+int colorToChar(COLOR c)
+{
+  return 'a' + c;
+}
 
 char* colorSetToString(COLORSET colors)
 {
@@ -170,7 +173,10 @@ void cycleSetRemove(CYCLE_ID cycleId, CYCLESET cycleSet)
   cycleSet[cycleId / BITS_PER_WORD] &= ~(1ul << (cycleId % BITS_PER_WORD));
 }
 
-CYCLE cycleSetFirst(CYCLESET cycleSet) { return cycleSetNext(cycleSet, NULL); }
+CYCLE cycleSetFirst(CYCLESET cycleSet)
+{
+  return cycleSetNext(cycleSet, NULL);
+}
 
 CYCLE cycleSetNext(CYCLESET cycleSet, CYCLE cycle)
 {

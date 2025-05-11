@@ -59,7 +59,10 @@ void initializeMemory()
   statisticIncludeInteger(&MaxMemory, "M", "MaxMemory", true);
 }
 
-char *getBuffer() { return (char *)tempMalloc(BUFFER_SIZE); }
+char *getBuffer()
+{
+  return (char *)tempMalloc(BUFFER_SIZE);
+}
 
 char *usingBuffer(char *buffer)
 {

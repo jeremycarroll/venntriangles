@@ -437,12 +437,30 @@ static void testColorContinuations(COLOR color, int expectedCount)
   TEST_ASSERT_EQUAL(expectedCount, ContinuationCount);
 }
 
-static void foundSolutionColor0() { testColorContinuations(0, 8); }
-static void foundSolutionColor1() { testColorContinuations(1, 1); }
-static void foundSolutionColor2() { testColorContinuations(2, 2); }
-static void foundSolutionColor3() { testColorContinuations(3, 1); }
-static void foundSolutionColor4() { testColorContinuations(4, 2); }
-static void foundSolutionColor5() { testColorContinuations(5, 4); }
+static void foundSolutionColor0()
+{
+  testColorContinuations(0, 8);
+}
+static void foundSolutionColor1()
+{
+  testColorContinuations(1, 1);
+}
+static void foundSolutionColor2()
+{
+  testColorContinuations(2, 2);
+}
+static void foundSolutionColor3()
+{
+  testColorContinuations(3, 1);
+}
+static void foundSolutionColor4()
+{
+  testColorContinuations(4, 2);
+}
+static void foundSolutionColor5()
+{
+  testColorContinuations(5, 4);
+}
 
 static char* TestName;
 

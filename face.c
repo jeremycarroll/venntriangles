@@ -298,7 +298,10 @@ char* faceToString(FACE face)
 }
 
 /* File scoped static functions */
-static void facePrint(FACE face) { printf("%s\n", faceToString(face)); }
+static void facePrint(FACE face)
+{
+  printf("%s\n", faceToString(face));
+}
 
 static void recomputeCountOfChoices(FACE face)
 {

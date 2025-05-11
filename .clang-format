@@ -1,6 +1,7 @@
 BasedOnStyle:  Google
 
 BreakBeforeBraces: Linux
+AllowShortFunctionsOnASingleLine: Inline
 
 IncludeCategories:
   - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
