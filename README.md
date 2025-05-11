@@ -72,6 +72,30 @@ make
 
 There is no need to run this program more than once: it takes about 5 minutes, and 60 GB of disk for all the results.
 
+A complete run, taking maybe between 5 and 10 minutes, is:
+```
+bin/venn -f ../results
+```
+which creates a new folder `../results` and populates with many files.
+
+To find just the Venn diagram solutions without the variants use:
+```
+bin/venn -f ../results -n 1 -j 1
+```
+
+To find only solutions and variants with specific 
+5-face degree sequence, use:
+```
+bin/venn -f ../results -d 664443
+```
+
+Each solution has an output file (ending .txt) in the results folder. 
+Each variation of that solution, i.e. the placement of the corners of the triangles,
+has an xml file nested within the corresponding subfolder. The xml file is in GraphML
+format, and needs further processing ... in particular it hopefully contains an 
+arrangement of 18 pseudoline segments which needs to be stretched to give a Venn diagram
+of six triangles.
+
 
 ## Documentation
 
