@@ -2,12 +2,8 @@
 
 #include "s6.h"
 
-#include "color.h"
-#include "core.h"
-#include "edge.h"
 #include "engine.h"
 #include "face.h"
-#include "graphml.h"
 #include "main.h"
 #include "memory.h"
 #include "statistics.h"
