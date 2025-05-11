@@ -56,7 +56,7 @@ bin/test_%: objst/test_%.o $(UNITY_DIR)/src/unity.c $(OBJ6) $(TEST_OBJ6)
 
 .format: $(SRC) $(HDR) $(TEST_SRC) $(XSRC) $(D6) $(TEST_HELPERS)
 	clang-format -i $?
-	for i in $?; do if ! [ $$(tail -c 1 $$i | od -An -t x1) == "0a" ]; then echo >> $$i ; fi; done
+	for i in $?; do if [ "$$(tail -c 1 $$i | od -An -t x1)" != "0a" ]; then echo >> $$i; fi; done
 	touch .format
 
 tests: $(TEST_BIN)
