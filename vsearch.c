@@ -2,6 +2,7 @@
 
 #include "vsearch.h"
 
+#include "engine.h"
 #include "face.h"
 #include "graphml.h"
 #include "main.h"
@@ -25,7 +26,7 @@ static clock_t TotalUsefulTime = 0;
 static int WastedSearchCount = 0;
 static int UsefulSearchCount = 0;
 uint64 CycleGuessCounter = 0;
-static TRAIL StartVertex;
+static TRAIL StartPoint;
 
 /* State machine states for the search process */
 typedef enum {
@@ -135,83 +136,6 @@ FACE searchChooseNextFace(bool smallestFirst)
   return face;
 }
 
-/* Process the NEXT_FACE state: choose next face to process or complete solution
- */
-static bool processNextFaceState(SearchContext* context, bool smallestFirst,
-                                 void (*foundSolution)(void))
-{
-  context->currentFace = searchChooseNextFace(smallestFirst);
-
-  if (context->currentFace == NULL) {
-    /* No more faces to process - check if we found a solution */
-    freeAll();
-    if (faceFinalCorrectnessChecks() == NULL) {
-      GlobalSolutionsFound++;
-      PerFaceDegreeSolutionNumber++;
-      foundSolution();
-    }
-    context->position--;
-    context->state = NEXT_CYCLE;
-    return true;
-  }
-
-  /* Prepare the new face for processing */
-  context->currentFace->backtrack = Trail;
-  context->chosenFaces[context->position] = context->currentFace;
-  context->chosenCycles[context->position] = NULL;
-  context->state = NEXT_CYCLE;
-  return true;
-}
-
-/* Process the NEXT_CYCLE state: choose next cycle for current face */
-static bool processNextCycleState(SearchContext* context)
-{
-  context->currentFace = context->chosenFaces[context->position];
-  trailBacktrackTo(context->currentFace->backtrack);
-
-  CYCLE nextCycle = chooseCycle(context->currentFace,
-                                context->chosenCycles[context->position]);
-  if (nextCycle == NULL) {
-    /* No more cycles to try for this face - backtrack */
-    context->position--;
-    context->state = NEXT_CYCLE;
-    return true;
-  }
-
-  /* Try the next cycle */
-  context->chosenCycles[context->position] = nextCycle;
-  TRAIL_SET_POINTER(&context->currentFace->cycle, nextCycle);
-  assert(context->currentFace->cycle == nextCycle);
-
-  if (dynamicFaceBacktrackableChoice(context->currentFace) == NULL) {
-    /* Cycle choice was successful - move to next face */
-    context->position++;
-    context->state = NEXT_FACE;
-  }
-  /* If cycle choice failed, stay in NEXT_CYCLE state to try next cycle */
-  return true;
-}
-
-void searchHere(bool smallestFirst, void (*foundSolution)(void))
-{
-  SearchContext context = {
-      .currentFace = NULL, .position = 0, .state = NEXT_FACE};
-
-  /* Main search loop - continues until we backtrack past the start */
-  while (context.position >= 0) {
-    statisticPrintOneLine(context.position, false);
-
-    switch (context.state) {
-      case NEXT_FACE:
-        processNextFaceState(&context, smallestFirst, foundSolution);
-        break;
-      case NEXT_CYCLE:
-        processNextCycleState(&context);
-        break;
-    }
-  }
-}
-
 void searchFull(void (*foundSolution)(void))
 {
   initializeS6();
@@ -219,7 +143,7 @@ void searchFull(void (*foundSolution)(void))
   statisticIncludeInteger(&CycleGuessCounter, "?", "guesses", false);
   statisticIncludeInteger(&GlobalVariantCount, "V", "variants", false);
   statisticIncludeInteger(&GlobalSolutionsFound, "S", "solutions", false);
-  StartVertex = Trail;
+  StartPoint = Trail;
   GlobalSolutionsFound = 0;
   s6FaceDegreeCanonicalCallback(fullSearchCallback, (void*)foundSolution);
 }
@@ -432,7 +356,6 @@ static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
     return;
   }
   PerFaceDegreeSolutionNumber = 0;
-  trailBacktrackTo(StartVertex);  // Start with backtracking
   dynamicFaceSetupCentral(args);
   searchHere(true, foundSolution);
   used = clock() - now;
@@ -459,4 +382,48 @@ static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
     WastedSearchCount += 1;
     TotalWastedTime += used;
   }
+}
+
+static FACE facesInOrderOfChoice[NFACES];
+static bool smallestFirst =
+    true; /* New predicate functions for engine-based search */
+static struct predicateResult tryFace(int round)
+{
+  facesInOrderOfChoice[round] = searchChooseNextFace(smallestFirst);
+  if (facesInOrderOfChoice[round] == NULL) {
+    if (faceFinalCorrectnessChecks() == NULL) {
+      GlobalSolutionsFound++;
+      PerFaceDegreeSolutionNumber++;
+      return PredicateSuccessNextPredicate;
+    } else {
+      return PredicateFail;
+    }
+  }
+  return predicateChoices(facesInOrderOfChoice[round]->cycleSetSize + 1, NULL);
+}
+
+static struct predicateResult retryFace(int round, int choice)
+{
+  (void)choice;
+  FACE face = facesInOrderOfChoice[round];
+  // Not on trail, otherwise it would get unset before the next retry.
+  face->cycle = chooseCycle(face, face->cycle);
+  if (face->cycle == NULL) {
+    return PredicateFail;
+  }
+  if (dynamicFaceBacktrackableChoice(face) == NULL) {
+    return PredicateSuccessSamePredicate;
+  }
+  return PredicateFail;
+}
+
+static struct predicate predicates[] = {
+    {tryFace, retryFace}, {NULL, NULL}  // Terminator
+};
+
+void searchHere(bool smallestFirstX, void (*foundSolution)(void))
+{
+  smallestFirst = smallestFirstX;
+
+  engine(predicates, foundSolution);
 }

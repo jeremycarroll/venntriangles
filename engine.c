@@ -3,12 +3,9 @@
 #include "engine.h"
 
 #include "core.h"
-#include "memory.h"
+#include "face.h"
+#include "statistics.h"
 #include "trail.h"
-
-#include <assert.h>
-#include <stdbool.h>
-#include <stdlib.h>
 
 /* The engine implements a WAM-like execution model for our search process.
    Each phase of the search is implemented as a predicate that can:
@@ -46,8 +43,10 @@ void engine(struct predicate* predicates, void (*callback)(void))
   stackTop->predicate = predicates;
   stackTop->currentChoice = 0;
   stackTop->round = 0;
+  stackTop->trail = Trail;
 
   while (true) {
+    statisticPrintOneLine(stackTop - stack, false);
     freeAll();  // Malloced memory is for temporary use only.
     if (stackTop->predicate->try == NULL) {
       // We've reached the end of the predicates array successfully
@@ -60,12 +59,12 @@ void engine(struct predicate* predicates, void (*callback)(void))
         }
         stackTop--;
       } while (!stackTop->inChoiceMode);
-      trailBacktrackTo(stackTop->trail);
       continue;
     }
 
     PredicateResult result;
 
+    trailBacktrackTo(stackTop->trail);
     if (!stackTop->inChoiceMode) {
       // Try the current predicate
       result = stackTop->predicate->try(stackTop->round);

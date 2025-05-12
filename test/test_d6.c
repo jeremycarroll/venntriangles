@@ -2,6 +2,7 @@
 
 #include "face.h"
 #include "s6.h"
+#include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"
 
@@ -14,6 +15,7 @@
 void setUp(void)
 {
   initializeS6();
+  initializeStatisticLogging("/dev/stdout", 20, 5);
 }
 
 void tearDown(void)
