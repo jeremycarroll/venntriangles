@@ -429,40 +429,6 @@ static int countContinuation(COLOR color, EDGE (*corners)[3])
   return 0;
 }
 
-static void testColorContinuations(COLOR color, int expectedCount)
-{
-  EDGE corners[NCOLORS][3];
-  ContinuationCount = 0;
-  graphmlPossibleCorners();
-  graphmlChooseCornersWithContinuation(0, color, corners, countContinuation);
-  TEST_ASSERT_EQUAL(expectedCount, ContinuationCount);
-}
-
-static void foundSolutionColor0()
-{
-  testColorContinuations(0, 8);
-}
-static void foundSolutionColor1()
-{
-  testColorContinuations(1, 1);
-}
-static void foundSolutionColor2()
-{
-  testColorContinuations(2, 2);
-}
-static void foundSolutionColor3()
-{
-  testColorContinuations(3, 1);
-}
-static void foundSolutionColor4()
-{
-  testColorContinuations(4, 2);
-}
-static void foundSolutionColor5()
-{
-  testColorContinuations(5, 4);
-}
-
 static char* TestName;
 
 static void setup645534()
@@ -517,12 +483,6 @@ int main(void)
   UNITY_BEGIN();
   RUN_645534(NULL);
   RUN_645534(testVariationCount);
-  RUN_645534(foundSolutionColor0);
-  RUN_645534(foundSolutionColor1);
-  RUN_645534(foundSolutionColor2);
-  RUN_645534(foundSolutionColor3);
-  RUN_645534(foundSolutionColor4);
-  RUN_645534(foundSolutionColor5);
   RUN_645534(saveAllVariations);
   RUN_645534(checkGraphML);
   RUN_654444(NULL);

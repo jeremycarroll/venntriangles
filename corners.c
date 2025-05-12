@@ -16,9 +16,6 @@
 /* Global variables for corner handling */
 static EDGE SelectedCorners[NCOLORS][3];
 extern EDGE PossibileCorners[NCOLORS][3][NFACES];
-static int currentColor;
-static int currentCorner;
-static int currentVariation;
 extern int VariationNumber;
 extern int MaxVariantsPerSolution;
 
