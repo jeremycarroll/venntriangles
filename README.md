@@ -113,7 +113,3 @@ See [TEST_IMAGES.md](docs/TEST_IMAGES.md) for visual documentation of a few test
 
 ## References
 See [MATH.md](docs/MATH.md#references).
-
-
-
-

@@ -14,7 +14,7 @@
 #define DEBUG 0
 
 /* Global variables */
-uint64 GlobalVariantCount = 0;
+uint64_t GlobalVariantCount = 0;
 /* GraphML namespace and schema definitions */
 static const char *GRAPHML_NS = "http://graphml.graphdrawing.org/xmlns";
 static const char *GRAPHML_SCHEMA =
@@ -68,7 +68,7 @@ static const char *CurrentPrefix = NULL;
 static int VariationNumber = 1;
 static int ExpectedVariations = 0;
 static int Levels = 0;
-static EDGE PossibileCorners[NCOLORS][3][NFACES];
+EDGE PossibileCorners[NCOLORS][3][NFACES];
 
 /* Structure to hold data for GraphML output */
 typedef struct {
@@ -204,6 +204,7 @@ static char *cornerId(COLOR color, int counter)
 {
   char *buffer = getBuffer();
   assert(counter < 3);
+  assert(color >= 0);
   sprintf(buffer, "%c_%d", colorToChar(color), counter);
   return usingBuffer(buffer);
 }
@@ -417,6 +418,9 @@ static void chooseCornersThenSavePartialVariations(int cornerIndex,
                                                    COLOR current,
                                                    EDGE (*corners)[3])
 {
+  if (cornerIndex == 0) {
+    printf("chooseCornersThenSavePartialVariations: %d\n", current);
+  }
   graphmlChooseCornersWithContinuation(cornerIndex, current, corners,
                                        savePartialVariations);
 }
