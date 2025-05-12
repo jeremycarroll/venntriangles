@@ -2,6 +2,7 @@
 
 #include "graphml.h"
 
+#include "corners.h"
 #include "main.h"
 #include "memory.h"
 #include "trail.h"
@@ -65,7 +66,7 @@ static char *subFilename(void);
 
 /* Global variables */
 static const char *CurrentPrefix = NULL;
-static int VariationNumber = 1;
+int VariationNumber = 1;
 static int ExpectedVariations = 0;
 static int Levels = 0;
 EDGE PossibileCorners[NCOLORS][3][NFACES];
@@ -102,7 +103,7 @@ int graphmlSaveAllVariations(const char *prefix, int expectedVariations)
   Levels = numberOfLevels(expectedVariations);
   graphmlFileOps.initializeFolder(prefix);
   graphmlPossibleCorners();
-  savePartialVariations(0, corners);
+  chooseCorners(saveVariation);
   return VariationNumber - 1;
 }
 

@@ -19,8 +19,11 @@ extern EDGE PossibileCorners[NCOLORS][3][NFACES];
 static int currentColor;
 static int currentCorner;
 static int currentVariation;
+extern int VariationNumber;
+extern int MaxVariantsPerSolution;
 
-static int edgeArrayLength(EDGE *edges) {
+static int edgeArrayLength(EDGE *edges)
+{
   int count = 0;
   while (edges[count] != NULL) {
     count++;
@@ -33,22 +36,29 @@ static struct predicateResult tryCorners(int round)
   int cornerIndex = round % 3;
   int colorIndex = round / 3;
 
+  if (VariationNumber > MaxVariantsPerSolution) {
+    return PredicateFail;
+  }
+
   if (cornerIndex == 0 && colorIndex > 0) {
-    if (!triangleLinesNotCrossed(colorIndex-1, SelectedCorners + colorIndex-1)) {
+    if (!triangleLinesNotCrossed(colorIndex - 1,
+                                 SelectedCorners + colorIndex - 1)) {
       return PredicateFail;
     }
   }
   if (colorIndex >= NCOLORS) {
     return PredicateSuccessNextPredicate;
   }
-  return predicateChoices(edgeArrayLength(PossibileCorners[colorIndex][cornerIndex]), NULL);
+  return predicateChoices(
+      edgeArrayLength(PossibileCorners[colorIndex][cornerIndex]), NULL);
 }
 
 static struct predicateResult retryCorners(int round, int choice)
 {
   int cornerIndex = round % 3;
   int colorIndex = round / 3;
-  SelectedCorners[colorIndex][cornerIndex] = PossibileCorners[colorIndex][cornerIndex][choice];
+  SelectedCorners[colorIndex][cornerIndex] =
+      PossibileCorners[colorIndex][cornerIndex][choice];
   return PredicateSuccessSamePredicate;
 }
 
@@ -58,12 +68,13 @@ static struct predicate predicates[] = {
 };
 static void (*RealContinuation)(EDGE (*corners)[3]);
 
-static void shimContinuation(void) {
+static void shimContinuation(void)
+{
   RealContinuation(SelectedCorners);
 }
 
-void processCorners(void (*continuation)(EDGE (*corners)[3]))
+void chooseCorners(void (*continuation)(EDGE (*corners)[3]))
 {
   RealContinuation = continuation;
   engine(predicates, shimContinuation);
-} 
+}

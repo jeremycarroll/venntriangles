@@ -2,8 +2,8 @@
 
 #ifndef CORNERS_H
 #define CORNERS_H
+#include "edge.h"
 
-/* Process all corner variations using the engine */
-void processCorners(void);
+void chooseCorners(void (*continuation)(EDGE (*corners)[3]));
 
-#endif /* CORNERS_H */ 
+#endif /* CORNERS_H */

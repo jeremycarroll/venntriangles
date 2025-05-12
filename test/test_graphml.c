@@ -64,6 +64,7 @@ void setUp(void)
   initializeStatisticLogging("/dev/null", 1000, 1000);  // Reduce logging output
   graphmlFileOps.initializeFolder = mockInitializeFolder;
   graphmlFileOps.fopen = mockFopen;
+  FopenCount = 0;
 }
 
 void tearDown(void)
@@ -514,18 +515,18 @@ static void runSearchTest(void)
 int main(void)
 {
   UNITY_BEGIN();
-  // RUN_645534(NULL);
-  // RUN_645534(testVariationCount);
-  // RUN_645534(foundSolutionColor0);
-  // RUN_645534(foundSolutionColor1);
-  // RUN_645534(foundSolutionColor2);
-  // RUN_645534(foundSolutionColor3);
-  // RUN_645534(foundSolutionColor4);
-  // RUN_645534(foundSolutionColor5);
-  // RUN_645534(saveAllVariations);
-  // RUN_645534(checkGraphML);
-  // RUN_654444(NULL);
-  // RUN_654444(checkGraphML);
+  RUN_645534(NULL);
+  RUN_645534(testVariationCount);
+  RUN_645534(foundSolutionColor0);
+  RUN_645534(foundSolutionColor1);
+  RUN_645534(foundSolutionColor2);
+  RUN_645534(foundSolutionColor3);
+  RUN_645534(foundSolutionColor4);
+  RUN_645534(foundSolutionColor5);
+  RUN_645534(saveAllVariations);
+  RUN_645534(checkGraphML);
+  RUN_654444(NULL);
+  RUN_654444(checkGraphML);
   RUN_654444(variant14188);
   return UNITY_END();
 }
