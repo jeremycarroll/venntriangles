@@ -18,9 +18,9 @@
 #include <time.h>
 
 /* Output-related variables */
-static int PerFaceDegreeSolutionNumber = 0;
+int PerFaceDegreeSolutionNumber = 0;
+int VariationCount = 0;
 static char LastPrefix[128] = "";
-static int VariationCount = 0;
 static clock_t TotalWastedTime = 0;
 static clock_t TotalUsefulTime = 0;
 static int WastedSearchCount = 0;

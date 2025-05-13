@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static char *TargetFolder = NULL;
+char *TargetFolder = NULL;
 int MaxVariantsPerSolution = INT_MAX;     // Maximum value means unlimited
 int GlobalMaxSolutions = INT_MAX;         // Global maximum solutions
 int PerFaceDegreeMaxSolutions = INT_MAX;  // Per face degree maximum solutions
