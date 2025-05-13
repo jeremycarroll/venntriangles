@@ -19,7 +19,7 @@ extern EDGE PossibileCorners[NCOLORS][3][NFACES];
 extern int VariationNumber;
 extern int MaxVariantsPerSolution;
 
-static int edgeArrayLength(EDGE *edges)
+static int edgeArrayLength(EDGE* edges)
 {
   int count = 0;
   while (edges[count] != NULL) {
@@ -60,8 +60,9 @@ static struct predicateResult retryCorners(int round, int choice)
 }
 
 /* The predicates array for corner handling */
-static struct predicate predicates[] = {
-    {tryCorners, retryCorners}, {NULL, NULL}  // Terminator
+static struct predicate cornersPredicate = {tryCorners, retryCorners};
+static struct predicate* predicates[] = {
+    &cornersPredicate, NULL  // Terminator
 };
 static void (*RealContinuation)(EDGE (*corners)[3]);
 

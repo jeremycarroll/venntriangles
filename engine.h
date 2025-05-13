@@ -64,13 +64,14 @@ struct stackEntry {
   int currentChoice;
   int round;
   TRAIL trail;
-  PREDICATE predicate;
+  // predicate is always *predicates
+  PREDICATE predicate, *predicates;
   struct choicePoint choicePoint;
 };
 
 /* Runs each predicate in turn. The predicates argument is a null-terminated
    array of predicates. The callback is called each time all predicates succeed.
  */
-extern void engine(struct predicate* predicates, void (*callback)(void));
+extern void engine(struct predicate** predicates, void (*callback)(void));
 
 #endif /* ENGINE_H */

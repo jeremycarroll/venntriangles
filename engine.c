@@ -34,21 +34,21 @@ struct predicateResult predicateChoices(int numberOfChoices, void* choices)
 
 static void pushStackEntry(struct stackEntry* stack, PredicateResultCode code);
 
-void engine(struct predicate* predicates, void (*callback)(void))
+void engine(struct predicate** predicates, void (*callback)(void))
 {
   struct stackEntry stack[MAX_STACK_SIZE + 1], *stackTop = stack;
 
   // Initialize first stack entry
   stackTop->inChoiceMode = false;
-  stackTop->predicate = predicates;
+  stackTop->predicate = *predicates;
+  stackTop->predicates = predicates;
   stackTop->currentChoice = 0;
   stackTop->round = 0;
   stackTop->trail = Trail;
 
   while (true) {
-    statisticPrintOneLine(stackTop - stack, false);
     freeAll();  // Malloced memory is for temporary use only.
-    if (stackTop->predicate->try == NULL) {
+    if (stackTop->predicate == NULL) {
       // We've reached the end of the predicates array successfully
       callback();
     backtrack:
@@ -116,9 +116,11 @@ void engine(struct predicate* predicates, void (*callback)(void))
 static void pushStackEntry(struct stackEntry* stack, PredicateResultCode code)
 {
   stack->inChoiceMode = false;
-  stack->predicate = code == PREDICATE_SUCCESS_NEXT_PREDICATE
-                         ? stack[-1].predicate + 1
-                         : stack[-1].predicate;
+  stack->predicates = stack[-1].predicates;
+  stack->predicates = code == PREDICATE_SUCCESS_NEXT_PREDICATE
+                          ? stack[-1].predicates + 1
+                          : stack[-1].predicates;
+  stack->predicate = *stack->predicates;
   stack->round =
       code == PREDICATE_SUCCESS_NEXT_PREDICATE ? 0 : stack[-1].round + 1;
   stack->currentChoice = 0;

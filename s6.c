@@ -220,8 +220,9 @@ static void engineCallback(void)
 }
 
 /* The predicates array for 5-face degree sequence search */
-static struct predicate predicates[] = {
-    {try5FaceDegree, retry5FaceDegree}, {NULL, NULL}  // Terminator
+struct predicate faceDegreePredicate = {try5FaceDegree, retry5FaceDegree};
+struct predicate *predicates[] = {
+    &faceDegreePredicate, NULL  // Terminator
 };
 
 void s6FaceDegreeCanonicalCallback(void (*callback)(void *, FACE_DEGREE *),

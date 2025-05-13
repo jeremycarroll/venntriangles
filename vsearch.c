@@ -417,8 +417,10 @@ static struct predicateResult retryFace(int round, int choice)
   return PredicateFail;
 }
 
-static struct predicate predicates[] = {
-    {tryFace, retryFace}, {NULL, NULL}  // Terminator
+/* The predicates array for corner handling */
+static struct predicate facePredicate = {tryFace, retryFace};
+static struct predicate* predicates[] = {
+    &facePredicate, NULL  // Terminator
 };
 
 void searchHere(bool smallestFirstX, void (*foundSolution)(void))
