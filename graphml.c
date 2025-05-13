@@ -50,11 +50,6 @@ static void processAdjacentCornersGraphML(void *data, EDGE current, int line);
 static void processAllCornersGraphML(void *data, EDGE current, int line);
 static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3]);
 
-/* Path and corner functions */
-static void getPath(EDGE *path, EDGE from, EDGE to);
-static void possibleCorners(EDGE *possibilities, COLOR color, EDGE from,
-                            EDGE to);
-
 /* Variation handling */
 static int numberOfLevels(int expectedVariations);
 static char *subFilename(void);
@@ -77,18 +72,6 @@ typedef struct {
 /* Externally linked functions */
 struct graphmlFileIO graphmlFileOps = {fopen, initializeFolder};
 
-void graphmlPossibleCorners(void)
-{
-  for (int current = 0; current < NCOLORS; current++) {
-    EDGE cornerPairs[3][2];
-    edgeFindAndAlignCorners(current, cornerPairs);
-    for (int cornerIndex = 0; cornerIndex < 3; cornerIndex++) {
-      possibleCorners(PossibileCorners[current][cornerIndex], current,
-                      cornerPairs[cornerIndex][0], cornerPairs[cornerIndex][1]);
-    }
-  }
-}
-
 int graphmlSaveAllVariations(const char *prefix, int expectedVariations)
 {
   CurrentPrefix = prefix;
@@ -96,7 +79,6 @@ int graphmlSaveAllVariations(const char *prefix, int expectedVariations)
   ExpectedVariations = expectedVariations;
   Levels = numberOfLevels(expectedVariations);
   graphmlFileOps.initializeFolder(prefix);
-  graphmlPossibleCorners();
   chooseCorners();
   return VariationNumber - 1;
 }
@@ -308,29 +290,6 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
 
   /* Add the corner nodes to the graph */
   addCornerNodes(fp, corners, color, gml.cornerIds);
-}
-
-/* Path and corner functions */
-static void getPath(EDGE *path, EDGE from, EDGE to)
-{
-  int length = edgePathLength(from, to, path);
-#if DEBUG
-  printf("getPath: %c %x -> %x %d\n", 'A' + from->color, from, to, length);
-#endif
-  assert(length > 0);
-  assert(length == 1 || path[0] != path[length - 1]);
-  path[length] = NULL;
-}
-
-static void possibleCorners(EDGE *possibilities, COLOR color, EDGE from,
-                            EDGE to)
-{
-  if (from == NULL) {
-    EDGE edge = edgeOnCentralFace(color);
-    getPath(possibilities, edge->reversed, edgeFollowBackwards(edge->reversed));
-  } else {
-    getPath(possibilities, from->reversed, to);
-  }
 }
 
 /* Variation handling */

@@ -18,8 +18,8 @@ static EDGE SelectedCorners[NCOLORS][3];
 extern EDGE PossibileCorners[NCOLORS][3][NFACES];
 extern int VariationNumber;
 extern int MaxVariantsPerSolution;
-static char* filename;
-static int numberOfVariations;
+static void possibleCorners(EDGE* possibilities, COLOR color, EDGE from,
+                            EDGE to);
 
 static int edgeArrayLength(EDGE* edges)
 {
@@ -32,6 +32,7 @@ static int edgeArrayLength(EDGE* edges)
 
 static struct predicateResult tryCorners(int round)
 {
+  EDGE cornerPairs[3][2];
   int cornerIndex = round % 3;
   int colorIndex = round / 3;
 
@@ -48,6 +49,9 @@ static struct predicateResult tryCorners(int round)
   if (colorIndex >= NCOLORS) {
     return PredicateSuccessNextPredicate;
   }
+  edgeFindAndAlignCorners(colorIndex, cornerPairs);
+  possibleCorners(PossibileCorners[colorIndex][cornerIndex], colorIndex,
+                  cornerPairs[cornerIndex][0], cornerPairs[cornerIndex][1]);
   return predicateChoices(
       edgeArrayLength(PossibileCorners[colorIndex][cornerIndex]), NULL);
 }
@@ -78,4 +82,27 @@ void chooseCorners(void)
   //   filename = "variation.graphml";  // Or get this from somewhere else?
   //   numberOfVariations = searchCountVariations(NULL);
   engine(predicates, NULL);
+}
+
+/* Path and corner functions */
+static void getPath(EDGE* path, EDGE from, EDGE to)
+{
+  int length = edgePathLength(from, to, path);
+#if DEBUG
+  printf("getPath: %c %x -> %x %d\n", 'A' + from->color, from, to, length);
+#endif
+  assert(length > 0);
+  assert(length == 1 || path[0] != path[length - 1]);
+  path[length] = NULL;
+}
+
+static void possibleCorners(EDGE* possibilities, COLOR color, EDGE from,
+                            EDGE to)
+{
+  if (from == NULL) {
+    EDGE edge = edgeOnCentralFace(color);
+    getPath(possibilities, edge->reversed, edgeFollowBackwards(edge->reversed));
+  } else {
+    getPath(possibilities, from->reversed, to);
+  }
 }
