@@ -126,3 +126,13 @@ static void pushStackEntry(struct stackEntry* stack, PredicateResultCode code)
   stack->currentChoice = 0;
   stack->trail = Trail;
 }
+
+/* Predicate that always fails - useful for terminating search paths */
+static struct predicateResult tryFail(int round)
+{
+  (void)round;  // Unused parameter
+  return PredicateFail;
+}
+
+/* The fail predicate - always fails */
+struct predicate failPredicate = {tryFail, NULL};

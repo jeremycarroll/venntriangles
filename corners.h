@@ -4,6 +4,7 @@
 #define CORNERS_H
 #include "edge.h"
 
-void chooseCorners(void (*continuation)(EDGE (*corners)[3]));
+/* Choose corners for all colors */
+void chooseCorners(void);
 
 #endif /* CORNERS_H */

@@ -38,6 +38,9 @@ extern const struct predicateResult PredicateSuccessSamePredicate;
 /* Helper function to create a predicate result with choices */
 struct predicateResult predicateChoices(int numberOfChoices, void* choices);
 
+/* The fail predicate - always fails */
+extern struct predicate failPredicate;
+
 /* A predicate has two methods:
    try:   First attempt to satisfy the predicate. Can return:
           - FAIL: Backtrack to previous predicate

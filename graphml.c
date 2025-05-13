@@ -56,7 +56,6 @@ static void possibleCorners(EDGE *possibilities, COLOR color, EDGE from,
                             EDGE to);
 
 /* Variation handling */
-static void saveVariation(EDGE (*corners)[3]);
 static int numberOfLevels(int expectedVariations);
 static char *subFilename(void);
 
@@ -98,7 +97,7 @@ int graphmlSaveAllVariations(const char *prefix, int expectedVariations)
   Levels = numberOfLevels(expectedVariations);
   graphmlFileOps.initializeFolder(prefix);
   graphmlPossibleCorners();
-  chooseCorners(saveVariation);
+  chooseCorners();
   return VariationNumber - 1;
 }
 
@@ -353,7 +352,7 @@ static char *subFilename(void)
   return usingBuffer(buffer);
 }
 
-static void saveVariation(EDGE (*corners)[3])
+void saveVariation(EDGE (*corners)[3])
 {
   COLOR a;
   char *filename = subFilename();

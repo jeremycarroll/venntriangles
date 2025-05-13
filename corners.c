@@ -18,6 +18,8 @@ static EDGE SelectedCorners[NCOLORS][3];
 extern EDGE PossibileCorners[NCOLORS][3][NFACES];
 extern int VariationNumber;
 extern int MaxVariantsPerSolution;
+static char* filename;
+static int numberOfVariations;
 
 static int edgeArrayLength(EDGE* edges)
 {
@@ -59,20 +61,21 @@ static struct predicateResult retryCorners(int round, int choice)
   return PredicateSuccessSamePredicate;
 }
 
+static struct predicateResult trySaveVariation(int round)
+{
+  (void)round;  // Unused parameter
+  saveVariation(SelectedCorners);
+  return PredicateSuccessNextPredicate;
+}
 /* The predicates array for corner handling */
 static struct predicate cornersPredicate = {tryCorners, retryCorners};
+static struct predicate saveVariationPredicate = {trySaveVariation, NULL};
 static struct predicate* predicates[] = {
-    &cornersPredicate, NULL  // Terminator
-};
-static void (*RealContinuation)(EDGE (*corners)[3]);
+    &cornersPredicate, &saveVariationPredicate, &failPredicate};
 
-static void shimContinuation(void)
+void chooseCorners(void)
 {
-  RealContinuation(SelectedCorners);
-}
-
-void chooseCorners(void (*continuation)(EDGE (*corners)[3]))
-{
-  RealContinuation = continuation;
-  engine(predicates, shimContinuation);
+  //   filename = "variation.graphml";  // Or get this from somewhere else?
+  //   numberOfVariations = searchCountVariations(NULL);
+  engine(predicates, NULL);
 }

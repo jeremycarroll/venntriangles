@@ -17,6 +17,7 @@ struct graphmlFileIO {
   void (*initializeFolder)(const char* folder);
 };
 extern struct graphmlFileIO graphmlFileOps;
+extern void saveVariation(EDGE (*corners)[3]);
 
 // Internal function exposed for testing.
 void graphmlPossibleCorners(void);
