@@ -105,6 +105,13 @@ void writeSolution(void)
 { /* stub for testing. */
 }
 
+struct predicate *nonDeterministicProgram[] = {/* stub for testing. */};
+
+void engine(struct predicate *predicates[], void (*callback)(void))
+{
+  /* stub for testing. */
+}
+
 char *getBuffer()
 {
   return NULL;
