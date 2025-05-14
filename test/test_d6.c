@@ -5,6 +5,8 @@
 #include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"
+#include "engine.h"
+#include "predicates.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,9 +29,10 @@ void tearDown(void)
 static int count6;
 
 /* Callback functions */
-static void countSolutions()
+static struct predicateResult countSolutions(int round)
 {
   count6++;
+  return PredicateFail;
 }
 
 /* Test functions */
@@ -40,10 +43,18 @@ static void testCanonical6()
   TEST_ASSERT_EQUAL(EQUIVOCAL, s6SymmetryType6(intArray(5, 5, 5, 4, 4, 4)));
 }
 
+/* The test program - just initialization and face degrees */
+static struct predicate countSolutionsPredicate = {countSolutions, NULL};
+static struct predicate* testProgram[] = {
+    &initializePredicate,
+    &faceDegreePredicate,
+    &countSolutionsPredicate
+};
+
 static void testCallback()
 {
-  s6FaceDegreeCanonicalCallback(countSolutions, NULL);
-
+  count6 = 0;
+  engine(testProgram, NULL);
   TEST_ASSERT_EQUAL(56, count6);
 }
 
