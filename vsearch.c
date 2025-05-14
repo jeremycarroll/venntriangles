@@ -136,7 +136,7 @@ FACE searchChooseNextFace(bool smallestFirst)
   return face;
 }
 
-void searchFull(void (*foundSolution)(void))
+static void searchFullX(void (*foundSolution)(void))
 {
   initializeS6();
   initialize();
@@ -146,6 +146,11 @@ void searchFull(void (*foundSolution)(void))
   StartPoint = Trail;
   GlobalSolutionsFound = 0;
   s6FaceDegreeCanonicalCallback(fullSearchCallback, (void*)foundSolution);
+}
+
+void searchFull(void (*foundSolution)(void))
+{
+  searchFullX(foundSolution);
 }
 
 static void solutionPrint(FILE* fp)

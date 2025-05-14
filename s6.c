@@ -227,19 +227,20 @@ static void engineCallback(void)
 {
   staticCallback(staticCallbackData, currentArgs);
 }
-
+extern struct predicate initializePredicate;
 /* The predicates array for 5-face degree sequence search */
 struct predicate faceDegreePredicate = {try5FaceDegree, retry5FaceDegree};
-struct predicate *predicates[] = {&faceDegreePredicate,    &facePredicate,
-                                  &solutionWritePredicate, &cornersPredicate,
-                                  &saveVariationPredicate, &failPredicate};
+struct predicate *nonDeterministicProgram[] = {
+    &initializePredicate,    &faceDegreePredicate, &facePredicate,
+    &solutionWritePredicate, &cornersPredicate,    &saveVariationPredicate,
+    &failPredicate};
 
 void s6FaceDegreeCanonicalCallback(void (*callback)(void *, FACE_DEGREE *),
                                    void *data)
 {
   // staticCallback = callback;
   // staticCallbackData = data;
-  engine(predicates, NULL);
+  // engine(predicates, NULL);
 }
 
 SIGNATURE s6MaxSignature(void)

@@ -2,6 +2,7 @@
 
 #include "main.h"
 
+#include "engine.h"
 #include "memory.h"
 #include "statistics.h"
 #include "utils.h"
@@ -30,6 +31,8 @@ static void setFaceDegrees(const char *faceDegrees);
 static int parsePostiveArgument(const char *arg, char flag, bool allowZero);
 
 char *Argv0;
+
+extern struct predicate *nonDeterministicProgram[];
 
 /* Externally linked functions */
 int dynamicMain0(int argc, char *argv[])
@@ -89,8 +92,11 @@ int dynamicMain0(int argc, char *argv[])
   }
 
   initializeOutputFolder();
+
   initializeStatisticLogging("/dev/stdout", 200, 10);
-  searchFull(saveResult);
+
+  engine(nonDeterministicProgram, NULL);
+
   statisticPrintFull();
   return 0;
 }

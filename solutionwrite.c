@@ -64,7 +64,7 @@ static struct predicateResult retrySolutionWrite(int round, int choice)
 
       snprintf(CurrentPrefix, sizeof(CurrentPrefix), "%s-%2.2d.txt",
                currentFilename, PerFaceDegreeSolutionNumber);
-    //  printf("CurrentPrefix: %s\n", CurrentPrefix);
+      //  printf("CurrentPrefix: %s\n", CurrentPrefix);
       currentFile = fopen(CurrentPrefix, "w");
       if (currentFile == NULL) {
         perror(CurrentPrefix);
