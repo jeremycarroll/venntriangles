@@ -135,24 +135,26 @@ static int parsePostiveArgument(const char *arg, char flag, bool allowZero)
   return value;
 }
 
+extern void writeSolution(void);
 /* File scoped static functions */
 static void saveResult(void)
 {
-  // GlobalSolutionsFound is incremented in vsearch.c
+  writeSolution();
+  // // GlobalSolutionsFound is incremented in vsearch.c
 
-  // Check if we should skip this solution based on global limits
-  if ((int64_t)GlobalSolutionsFound <= GlobalSkipSolutions) {
-    return;
-  }
+  // // Check if we should skip this solution based on global limits
+  // if ((int64_t)GlobalSolutionsFound <= GlobalSkipSolutions) {
+  //   return;
+  // }
 
-  // Check if we've hit the global maximum limit
-  if ((int64_t)GlobalSolutionsFound > GlobalMaxSolutions) {
-    return;
-  }
+  // // Check if we've hit the global maximum limit
+  // if ((int64_t)GlobalSolutionsFound > GlobalMaxSolutions) {
+  //   return;
+  // }
 
-  char *buffer = getBuffer();
-  sprintf(buffer, "%s/%s", TargetFolder, s6FaceDegreeSignature());
-  searchSolutionWrite(usingBuffer(buffer));
+  // char *buffer = getBuffer();
+  // sprintf(buffer, "%s/%s", TargetFolder, s6FaceDegreeSignature());
+  // searchSolutionWrite(usingBuffer(buffer));
 }
 
 static void initializeOutputFolder()

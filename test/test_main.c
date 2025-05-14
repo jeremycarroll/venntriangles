@@ -101,6 +101,10 @@ void searchSolutionWrite(const char *buffer)
 { /* stub for testing. */
 }
 
+void writeSolution(void)
+{ /* stub for testing. */
+}
+
 char *getBuffer()
 {
   return NULL;

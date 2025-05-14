@@ -20,7 +20,10 @@
 // TODO: think about these.
 extern int PerFaceDegreeSolutionNumber;
 extern int VariationCount;
+extern int VariationNumber;
+extern int Levels;
 extern const char* TargetFolder;
+extern char CurrentPrefix[1024];
 /* Static variables for solution writing */
 static char* currentFilename;
 static FILE* currentFile;
@@ -45,8 +48,8 @@ static struct predicateResult trySolutionWrite(int round)
     return PredicateFail;
   }
 
-  // Return choice of two items - first for initial write, second for final
-  // write
+  char* buffer = getBuffer();
+  sprintf(buffer, "%s/%s", TargetFolder, s6FaceDegreeSignature());
   return predicateChoices(2, NULL);
 }
 
@@ -59,18 +62,20 @@ static struct predicateResult retrySolutionWrite(int round, int choice)
       sprintf(buffer, "%s/%s", TargetFolder, s6FaceDegreeSignature());
       currentFilename = usingBuffer(buffer);
 
-      char filename[1024];
-      snprintf(filename, sizeof(filename), "%s-%2.2d.txt", currentFilename,
-               PerFaceDegreeSolutionNumber);
-      currentFile = fopen(filename, "w");
+      snprintf(CurrentPrefix, sizeof(CurrentPrefix), "%s-%2.2d.txt",
+               currentFilename, PerFaceDegreeSolutionNumber);
+      currentFile = fopen(CurrentPrefix, "w");
       if (currentFile == NULL) {
-        perror(filename);
+        perror(CurrentPrefix);
         exit(EXIT_FAILURE);
       }
+      VariationNumber = 1;
       solutionPrint(currentFile);
-      filename[strlen(filename) - 4] = '\0';
+      CurrentPrefix[strlen(CurrentPrefix) - 4] = '\0';
+      graphmlFileOps.initializeFolder(CurrentPrefix);
       currentNumberOfVariations =
           searchCountVariations(currentVariationMultiplication);
+      Levels = numberOfLevels(currentNumberOfVariations);
       fprintf(currentFile, "\nSolution signature %s\nClass signature %s\n",
               d6SignatureToString(s6SignatureFromFaces()),
               d6SignatureToString(s6MaxSignature()));
@@ -79,10 +84,9 @@ static struct predicateResult retrySolutionWrite(int round, int choice)
       return PredicateSuccessNextPredicate;
     case 1:
       // Second choice: Do final write and fail
-      int actualNumberOfVariations =
-          graphmlSaveAllVariations(currentFilename, currentNumberOfVariations);
       fprintf(currentFile, "Number of variations: %d/%d = 1%s\n",
-              actualNumberOfVariations, currentNumberOfVariations,
+
+              VariationNumber - 1, currentNumberOfVariations,
               currentVariationMultiplication);
       fclose(currentFile);
       return PredicateFail;
@@ -94,7 +98,12 @@ static struct predicateResult retrySolutionWrite(int round, int choice)
 /* The predicates array for solution writing */
 static struct predicate solutionWritePredicate = {trySolutionWrite,
                                                   retrySolutionWrite};
-static struct predicate* predicates[] = {&solutionWritePredicate, NULL};
+
+extern struct predicate cornersPredicate;
+extern struct predicate saveVariationPredicate;
+static struct predicate* predicates[] = {
+    &solutionWritePredicate, &cornersPredicate, &saveVariationPredicate,
+    &failPredicate};
 
 void writeSolution(void)
 {

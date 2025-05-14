@@ -202,6 +202,10 @@ static struct predicateResult retry5FaceDegree(int round, int choice)
     return PredicateFail;
   }
 
+  if (CentralFaceDegrees[round] > 0 && degree != CentralFaceDegrees[round]) {
+    return PredicateFail;  // Skip if there's a specific degree required for
+                           // this position
+  }
   // Try this degree
   currentArgs[round] = degree;
 

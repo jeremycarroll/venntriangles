@@ -18,6 +18,7 @@ struct graphmlFileIO {
 };
 extern struct graphmlFileIO graphmlFileOps;
 extern void saveVariation(EDGE (*corners)[3]);
+extern int numberOfLevels(int expectedVariations);
 
 // Internal function exposed for testing.
 void graphmlChooseCornersWithContinuation(

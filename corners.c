@@ -72,8 +72,8 @@ static struct predicateResult trySaveVariation(int round)
   return PredicateSuccessNextPredicate;
 }
 /* The predicates array for corner handling */
-static struct predicate cornersPredicate = {tryCorners, retryCorners};
-static struct predicate saveVariationPredicate = {trySaveVariation, NULL};
+struct predicate cornersPredicate = {tryCorners, retryCorners};
+struct predicate saveVariationPredicate = {trySaveVariation, NULL};
 static struct predicate* predicates[] = {
     &cornersPredicate, &saveVariationPredicate, &failPredicate};
 

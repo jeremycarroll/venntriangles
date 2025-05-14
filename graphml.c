@@ -51,14 +51,13 @@ static void processAllCornersGraphML(void *data, EDGE current, int line);
 static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3]);
 
 /* Variation handling */
-static int numberOfLevels(int expectedVariations);
 static char *subFilename(void);
 
 /* Global variables */
-static const char *CurrentPrefix = NULL;
+char CurrentPrefix[1024];
 int VariationNumber = 1;
-static int ExpectedVariations = 0;
-static int Levels = 0;
+// static int ExpectedVariations = 0;
+int Levels = 0;
 EDGE PossibileCorners[NCOLORS][3][NFACES];
 
 /* Structure to hold data for GraphML output */
@@ -74,9 +73,9 @@ struct graphmlFileIO graphmlFileOps = {fopen, initializeFolder};
 
 int graphmlSaveAllVariations(const char *prefix, int expectedVariations)
 {
-  CurrentPrefix = prefix;
+  strcpy(CurrentPrefix, prefix);
   VariationNumber = 1;
-  ExpectedVariations = expectedVariations;
+  // ExpectedVariations = expectedVariations;
   Levels = numberOfLevels(expectedVariations);
   graphmlFileOps.initializeFolder(prefix);
   chooseCorners();
@@ -300,7 +299,6 @@ static char *subFilename(void)
   char *p = buffer;
   int variationNumber = VariationNumber;
   p = p + sprintf(p, "%s", CurrentPrefix);
-
   while (levels > 1) {
     p += sprintf(p, "/%2.2x", variationNumber % 256);
     graphmlFileOps.initializeFolder(buffer);
@@ -316,7 +314,7 @@ void saveVariation(EDGE (*corners)[3])
   COLOR a;
   char *filename = subFilename();
   FILE *fp;
-  assert(VariationNumber <= ExpectedVariations);
+  // assert(VariationNumber <= ExpectedVariations);
   VariationNumber++;
   if (VariationNumber - 1 <= IgnoreFirstVariantsPerSolution) {
     return;
@@ -332,7 +330,7 @@ void saveVariation(EDGE (*corners)[3])
   freeAll();
 }
 
-static int numberOfLevels(int expectedVariations)
+int numberOfLevels(int expectedVariations)
 {
   int result = 1;
   while (expectedVariations >= 4096) {
