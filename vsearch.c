@@ -383,12 +383,27 @@ static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
     TotalWastedTime += used;
   }
 }
-
+static int FacePredicateInitialSolutionsFound = 0;
+static int FacePredicateInitialVariationCount = 0;
+static clock_t FacePredicateStart = 0;
 static FACE facesInOrderOfChoice[NFACES];
 static bool smallestFirst =
     true; /* New predicate functions for engine-based search */
 static struct predicateResult tryFace(int round)
 {
+  if (round == 0) {
+    FacePredicateStart = clock();
+    clock_t used;
+    FacePredicateInitialSolutionsFound = GlobalSolutionsFound;
+    FacePredicateInitialVariationCount = VariationCount;
+    PerFaceDegreeSolutionNumber = 0;
+#if NCOLORS > 4
+    dynamicFaceSetupCentral(CentralFaceDegrees);
+#endif
+  }
+  if ((int64_t)GlobalSolutionsFound >= GlobalMaxSolutions) {
+    return PredicateFail;
+  }
   facesInOrderOfChoice[round] = searchChooseNextFace(smallestFirst);
   if (facesInOrderOfChoice[round] == NULL) {
     if (faceFinalCorrectnessChecks() == NULL) {
@@ -404,11 +419,39 @@ static struct predicateResult tryFace(int round)
 
 static struct predicateResult retryFace(int round, int choice)
 {
+  int i;
   (void)choice;
   FACE face = facesInOrderOfChoice[round];
   // Not on trail, otherwise it would get unset before the next retry.
   face->cycle = chooseCycle(face, face->cycle);
   if (face->cycle == NULL) {
+    clock_t used = clock() - FacePredicateStart;
+    if ((int64_t)GlobalSolutionsFound != FacePredicateInitialSolutionsFound) {
+      TotalUsefulTime += used;
+      UsefulSearchCount += 1;
+
+#define PRINT_TIME(clockValue, counter)                        \
+  printf("[%1lu.%6.6lu (%d)] ", (clockValue) / CLOCKS_PER_SEC, \
+         (clockValue) % CLOCKS_PER_SEC, counter)
+      if (VerboseMode) {
+        PRINT_TIME(used, 0);
+        PRINT_TIME(TotalUsefulTime, UsefulSearchCount);
+        PRINT_TIME(TotalWastedTime, WastedSearchCount);
+      }
+#if 0
+      for (i = 0; i < NCOLORS; i++) {
+        printf("%llu ", CentralFaceDegrees[i]);
+      }
+      printf(" gives %llu/%d new solutions\n",
+             GlobalSolutionsFound - FacePredicateInitialSolutionsFound,
+             VariationCount - FacePredicateInitialVariationCount);
+      statisticPrintOneLine(0, true);
+#endif
+    } else {
+      WastedSearchCount += 1;
+      TotalWastedTime += used;
+    }
+
     return PredicateFail;
   }
   if (dynamicFaceBacktrackableChoice(face) == NULL) {
@@ -418,7 +461,7 @@ static struct predicateResult retryFace(int round, int choice)
 }
 
 /* The predicates array for corner handling */
-static struct predicate facePredicate = {tryFace, retryFace};
+struct predicate facePredicate = {tryFace, retryFace};
 static struct predicate* predicates[] = {
     &facePredicate, NULL  // Terminator
 };

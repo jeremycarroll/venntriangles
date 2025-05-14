@@ -64,6 +64,7 @@ static struct predicateResult retrySolutionWrite(int round, int choice)
 
       snprintf(CurrentPrefix, sizeof(CurrentPrefix), "%s-%2.2d.txt",
                currentFilename, PerFaceDegreeSolutionNumber);
+    //  printf("CurrentPrefix: %s\n", CurrentPrefix);
       currentFile = fopen(CurrentPrefix, "w");
       if (currentFile == NULL) {
         perror(CurrentPrefix);
@@ -96,8 +97,8 @@ static struct predicateResult retrySolutionWrite(int round, int choice)
 }
 
 /* The predicates array for solution writing */
-static struct predicate solutionWritePredicate = {trySolutionWrite,
-                                                  retrySolutionWrite};
+struct predicate solutionWritePredicate = {trySolutionWrite,
+                                           retrySolutionWrite};
 
 extern struct predicate cornersPredicate;
 extern struct predicate saveVariationPredicate;

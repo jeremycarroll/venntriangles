@@ -117,9 +117,12 @@ void dynamicFaceSetupCentral(FACE_DEGREE* faceDegrees)
   CYCLE cycle;
   uint64 i;
   FACE centralFace = Faces + (NFACES - 1);
+  printf("dynamicFaceSetupCentral ");
   for (i = 0; i < NCOLORS; i++) {
+    printf("%llu ", faceDegrees[i]);
     dynamicFaceSetCycleLength(~(1 << i), faceDegrees[i]);
   }
+  printf("\n");
   for (cycle = Cycles;; cycle++) {
     if (cycle->length != NCOLORS) {
       continue;

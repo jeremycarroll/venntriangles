@@ -19,9 +19,9 @@ int PerFaceDegreeMaxSolutions = INT_MAX;  // Per face degree maximum solutions
 int GlobalSkipSolutions = 0;              // Global solutions to skip
 int PerFaceDegreeSkipSolutions = 0;       // Per face degree solutions to skip
 int IgnoreFirstVariantsPerSolution = 0;  // Default to not ignoring any variants
-int CentralFaceDegrees[NCOLORS] = {0};   // Initialize all to 0
-uint64 GlobalSolutionsFound = 0;         // Counter for solutions found
-bool VerboseMode = false;                // Controls verbose output mode
+FACE_DEGREE CentralFaceDegrees[NCOLORS] = {0};  // Initialize all to 0
+uint64 GlobalSolutionsFound = 0;                // Counter for solutions found
+bool VerboseMode = false;                       // Controls verbose output mode
 
 /* Declaration of file scoped static functions */
 static void saveResult(void);
@@ -139,7 +139,7 @@ extern void writeSolution(void);
 /* File scoped static functions */
 static void saveResult(void)
 {
-  writeSolution();
+  // writeSolution();
   // // GlobalSolutionsFound is incremented in vsearch.c
 
   // // Check if we should skip this solution based on global limits

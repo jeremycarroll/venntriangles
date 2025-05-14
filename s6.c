@@ -73,6 +73,11 @@ static SIGNATURE d6SignaturePermuted(SIGNATURE sequence,
                                      PERMUTATION permutation);
 static int d6SignatureCompare(const void *a, const void *b);
 static SIGNATURE d6SignatureReflected(SIGNATURE sequence);
+extern struct predicate facePredicate;
+extern struct predicate solutionWritePredicate;
+extern struct predicate cornersPredicate;
+extern struct predicate saveVariationPredicate;
+extern struct predicate failPredicate;
 
 #define ADD_TO_SEQUENCE_ORDER(colors)               \
   do {                                              \
@@ -225,16 +230,16 @@ static void engineCallback(void)
 
 /* The predicates array for 5-face degree sequence search */
 struct predicate faceDegreePredicate = {try5FaceDegree, retry5FaceDegree};
-struct predicate *predicates[] = {
-    &faceDegreePredicate, NULL  // Terminator
-};
+struct predicate *predicates[] = {&faceDegreePredicate,    &facePredicate,
+                                  &solutionWritePredicate, &cornersPredicate,
+                                  &saveVariationPredicate, &failPredicate};
 
 void s6FaceDegreeCanonicalCallback(void (*callback)(void *, FACE_DEGREE *),
                                    void *data)
 {
-  staticCallback = callback;
-  staticCallbackData = data;
-  engine(predicates, engineCallback);
+  // staticCallback = callback;
+  // staticCallbackData = data;
+  engine(predicates, NULL);
 }
 
 SIGNATURE s6MaxSignature(void)
