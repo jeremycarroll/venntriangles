@@ -3,10 +3,14 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
+#include "engine.h"
 #include "face.h"
 
 #include <stdbool.h>
 #include <stdio.h>
+
+/* The face predicate */
+extern struct predicate facePredicate;
 
 extern void searchHere(bool smallestFirst, void (*foundSolution)(void));
 extern void searchFull(void (*foundSolution)(void));

@@ -8,11 +8,11 @@ TEST_SRC	= test/test_graphml.c test/test_venn5.c test/test_known_solution.c test
 TEST_BIN	= $(TEST_SRC:test/%.c=bin/%)
 # Do not include entrypoint.c in the test builds, it contains the main function, which is also in the test files.
 SRC		    = main.c trail.c failure.c color.c edge.c \
-			  vertex.c statistics.c vsearch.c s6.c face.c utils.c memory.c graphml.c triangles.c engine.c corners.c solutionwrite.c initialize.c
+			  vertex.c statistics.c vsearch.c s6.c face.c utils.c memory.c graphml.c triangles.c engine.c corners.c solutionwrite.c initialize.c nondeterminism.c
 TEST_HELPERS = test/test_helpers.c
 XSRC		= entrypoint.c
 HDR			= color.h edge.h statistics.h core.h face.h main.h trail.h \
-			  s6.h failure.h vertex.h vsearch.h memory.h graphml.h triangles.h engine.h corners.h solutionwrite.h initialize.h
+			  s6.h failure.h vertex.h vsearch.h memory.h graphml.h triangles.h engine.h corners.h solutionwrite.h initialize.h nondeterminism.h
 OBJ3		= $(SRC:%.c=objs3/%.o) $(TEST_HELPERS:test/test_%.c=objs3/test_%.o)
 OBJ4		= $(SRC:%.c=objs4/%.o) $(TEST_HELPERS:test/test_%.c=objs4/test_%.o)
 OBJ5		= $(SRC:%.c=objs5/%.o) $(TEST_HELPERS:test/test_%.c=objs5/test_%.o)

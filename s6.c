@@ -230,10 +230,6 @@ static void engineCallback(void)
 extern struct predicate initializePredicate;
 /* The predicates array for 5-face degree sequence search */
 struct predicate faceDegreePredicate = {try5FaceDegree, retry5FaceDegree};
-struct predicate *nonDeterministicProgram[] = {
-    &initializePredicate,    &faceDegreePredicate, &facePredicate,
-    &solutionWritePredicate, &cornersPredicate,    &saveVariationPredicate,
-    &failPredicate};
 
 void s6FaceDegreeCanonicalCallback(void (*callback)(void *, FACE_DEGREE *),
                                    void *data)

@@ -3,6 +3,11 @@
 #ifndef SOLUTIONWRITE_H
 #define SOLUTIONWRITE_H
 
+#include "engine.h"
+
+/* The solution write predicate */
+extern struct predicate solutionWritePredicate;
+
 /* Write a solution to disk */
 void writeSolution(void);
 

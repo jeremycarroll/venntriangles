@@ -4,6 +4,7 @@
 #define S6_H
 
 #include "color.h"
+#include "engine.h"
 
 typedef enum {
   CANONICAL,
@@ -35,6 +36,9 @@ typedef struct signature {
   COLORSET offset;
   bool reflected;
 } *SIGNATURE;
+
+/* The face degree predicate */
+extern struct predicate faceDegreePredicate;
 
 extern void initializeS6(void);
 extern SYMMETRY_TYPE s6FacesSymmetryType(void);
