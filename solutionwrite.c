@@ -97,7 +97,7 @@ static struct predicateResult retrySolutionWrite(int round, int choice)
 }
 
 /* The predicates array for solution writing */
-struct predicate solutionWritePredicate = {"saveMain", trySolutionWrite,
+struct predicate solutionWritePredicate = {"SaveMain", trySolutionWrite,
                                            retrySolutionWrite};
 
 extern struct predicate cornersPredicate;

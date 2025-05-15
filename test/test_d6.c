@@ -44,7 +44,7 @@ static void testCanonical6()
 }
 
 /* The test program - just initialization and face degrees */
-static struct predicate countSolutionsPredicate = {"count", countSolutions,
+static struct predicate countSolutionsPredicate = {"Count", countSolutions,
                                                    NULL};
 static struct predicate* testProgram[] = {
     &initializePredicate, &faceDegreePredicate, &countSolutionsPredicate};

@@ -58,6 +58,7 @@ void engine(struct predicate** predicates, void (*callback)(void))
         if (stackTop == stack) {
           return;  // All done
         }
+    //    trace("fail");
         stackTop--;
       } while (!stackTop->inChoiceMode);
       continue;
@@ -136,4 +137,4 @@ static struct predicateResult tryFail(int round)
 }
 
 /* The fail predicate - always fails */
-struct predicate failPredicate = {"fail", tryFail, NULL};
+struct predicate failPredicate = {"Fail", tryFail, NULL};
