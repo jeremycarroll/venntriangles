@@ -1,12 +1,12 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
+#include "engine.h"
 #include "face.h"
+#include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"
-#include "engine.h"
-#include "predicates.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,12 +44,10 @@ static void testCanonical6()
 }
 
 /* The test program - just initialization and face degrees */
-static struct predicate countSolutionsPredicate = {countSolutions, NULL};
+static struct predicate countSolutionsPredicate = {"count", countSolutions,
+                                                   NULL};
 static struct predicate* testProgram[] = {
-    &initializePredicate,
-    &faceDegreePredicate,
-    &countSolutionsPredicate
-};
+    &initializePredicate, &faceDegreePredicate, &countSolutionsPredicate};
 
 static void testCallback()
 {

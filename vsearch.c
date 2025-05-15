@@ -466,7 +466,7 @@ static struct predicateResult retryFace(int round, int choice)
 }
 
 /* The predicates array for corner handling */
-struct predicate facePredicate = {tryFace, retryFace};
+struct predicate facePredicate = {"face", tryFace, retryFace};
 static struct predicate* predicates[] = {
     &facePredicate, NULL  // Terminator
 };

@@ -23,6 +23,7 @@ int IgnoreFirstVariantsPerSolution = 0;  // Default to not ignoring any variants
 FACE_DEGREE CentralFaceDegrees[NCOLORS] = {0};  // Initialize all to 0
 uint64 GlobalSolutionsFound = 0;                // Counter for solutions found
 bool VerboseMode = false;                       // Controls verbose output mode
+bool Tracing = false;                           // Controls tracing output mode
 
 /* Declaration of file scoped static functions */
 static void saveResult(void);
@@ -44,7 +45,7 @@ int dynamicMain0(int argc, char *argv[])
   int localSkipSolutions = 0;
   Argv0 = argv[0];
 
-  while ((opt = getopt(argc, argv, "f:d:m:n:k:j:v")) != -1) {
+  while ((opt = getopt(argc, argv, "f:d:m:n:k:j:vt")) != -1) {
     switch (opt) {
       case 'f':
         TargetFolder = optarg;
@@ -68,6 +69,9 @@ int dynamicMain0(int argc, char *argv[])
         break;
       case 'v':
         VerboseMode = true;
+        break;
+      case 't':
+        Tracing = true;
         break;
       default:
         disaster("Invalid option");

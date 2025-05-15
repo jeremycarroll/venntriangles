@@ -42,7 +42,8 @@ static struct predicateResult retryInitialize(int round, int choice)
 }
 
 /* The predicates array for initialization */
-struct predicate initializePredicate = {tryInitialize, retryInitialize};
+struct predicate initializePredicate = {"initialize", tryInitialize,
+                                        retryInitialize};
 static struct predicate* predicates[] = {&initializePredicate, NULL};
 
 void runInitialize(void)

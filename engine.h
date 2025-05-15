@@ -57,6 +57,7 @@ extern struct predicate failPredicate;
   multiple times.
  */
 typedef struct predicate {
+  const char* name;  // Name of the predicate for debugging
   PredicateResult (*try)(int round);
   PredicateResult (*retry)(int round, int choice);
 }* PREDICATE;

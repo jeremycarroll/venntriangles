@@ -4,6 +4,7 @@
 
 #include "core.h"
 #include "face.h"
+#include "main.h"
 #include "statistics.h"
 #include "trail.h"
 
@@ -135,4 +136,4 @@ static struct predicateResult tryFail(int round)
 }
 
 /* The fail predicate - always fails */
-struct predicate failPredicate = {tryFail, NULL};
+struct predicate failPredicate = {"fail", tryFail, NULL};

@@ -15,6 +15,7 @@ extern int GlobalSkipSolutions;
 extern int PerFaceDegreeSkipSolutions;
 extern int IgnoreFirstVariantsPerSolution;
 extern bool VerboseMode;
+extern bool Tracing;  // Controls tracing output mode
 
 // statistic
 extern uint64 GlobalSolutionsFound;
