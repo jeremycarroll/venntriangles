@@ -65,12 +65,13 @@ typedef struct predicate {
 /* Stack entry for the engine's backtracking stack */
 struct stackEntry {
   bool inChoiceMode;
+  struct predicate* predicate;
+  struct predicate** predicates;
   int currentChoice;
   int round;
   TRAIL trail;
-  // predicate is always *predicates
-  PREDICATE predicate, *predicates;
-  struct choicePoint choicePoint;
+  int counter;                     // Counter for tracing
+  struct choicePoint choicePoint;  // For storing choice information
 };
 
 /* Runs each predicate in turn. The predicates argument is a null-terminated

@@ -34,6 +34,9 @@ struct predicateResult predicateChoices(int numberOfChoices, void* choices)
 }
 
 static void pushStackEntry(struct stackEntry* stack, PredicateResultCode code);
+static void trace(const char* message);
+static struct stackEntry stack[MAX_STACK_SIZE + 1], *stackTop = stack;
+static int Counter = 0;
 
 void engine(struct predicate** predicates, void (*callback)(void))
 {
@@ -43,9 +46,10 @@ void engine(struct predicate** predicates, void (*callback)(void))
   stackTop->inChoiceMode = false;
   stackTop->predicate = *predicates;
   stackTop->predicates = predicates;
-  stackTop->currentChoice = 0;
+  stackTop->currentChoice = -1;
   stackTop->round = 0;
   stackTop->trail = Trail;
+  stackTop->counter = Counter++;
 
   while (true) {
     freeAll();  // Malloced memory is for temporary use only.
@@ -58,7 +62,7 @@ void engine(struct predicate** predicates, void (*callback)(void))
         if (stackTop == stack) {
           return;  // All done
         }
-    //    trace("fail");
+        trace("fail");
         stackTop--;
       } while (!stackTop->inChoiceMode);
       continue;
@@ -68,7 +72,7 @@ void engine(struct predicate** predicates, void (*callback)(void))
 
     trailBacktrackTo(stackTop->trail);
     if (!stackTop->inChoiceMode) {
-      // Try the current predicate
+      trace("call");
       result = stackTop->predicate->try(stackTop->round);
 
       switch (result.code) {
@@ -90,7 +94,7 @@ void engine(struct predicate** predicates, void (*callback)(void))
           break;
       }
     } else {
-      // Try next choice
+      trace("retry");
       if (stackTop->currentChoice >= stackTop->choicePoint.numberOfChoices) {
         goto backtrack;
       }
@@ -125,8 +129,22 @@ static void pushStackEntry(struct stackEntry* stack, PredicateResultCode code)
   stack->predicate = *stack->predicates;
   stack->round =
       code == PREDICATE_SUCCESS_NEXT_PREDICATE ? 0 : stack[-1].round + 1;
-  stack->currentChoice = 0;
+  stack->currentChoice = -1;
   stack->trail = Trail;
+  stack->counter = Counter++;  // Increment counter
+}
+
+void trace(const char* message)
+{
+  if (!Tracing) return;
+  fprintf(stderr, "%d:%d:", stackTop->counter, stackTop - stack);
+  if (stackTop->currentChoice >= 0) {
+    fprintf(stderr, "%s(%d,%d) %s\n", message, stackTop->round,
+            stackTop->currentChoice, stackTop->predicate->name);
+  } else {
+    fprintf(stderr, "%s(%d) %s\n", message, stackTop->round,
+            stackTop->predicate->name);
+  }
 }
 
 /* Predicate that always fails - useful for terminating search paths */
