@@ -1,6 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #include "face.h"
+#include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
 #include "test_helpers.h"
@@ -11,20 +12,15 @@
 #include <stdlib.h>
 #include <unity.h>
 
-/* Test setup and teardown */
 void setUp(void)
 {
-  initialize();
-  initializeStatisticLogging("/dev/stdout", 20, 5);
+  initializeStatisticLogging(NULL, 4, 1);
+  engine((PREDICATE[]){&initializePredicate, &SUSPENDPredicate}, NULL);
 }
 
 void tearDown(void)
 {
-  resetGlobals();
-  resetInitialize();
-  resetTrail();
-  resetStatistics();
-  resetPoints();
+  engineResume((PREDICATE[]){&FAILPredicate});
 }
 
 /* Global variables */
@@ -36,8 +32,8 @@ static int MatchOuter = 0;
 static int MatchA = 0;
 static int MatchBCDE = 0;
 static int MatchABCDE = 0;
-/* Callback functions */
-static void countSolutions()
+
+static struct predicateResult countSolutions()
 {
   SolutionCount++;
   switch (s6FacesSymmetryType()) {
@@ -51,10 +47,10 @@ static void countSolutions()
       TEST_FAIL_MESSAGE("Non-canonical solution");
       break;
   }
+  return PredicateFail;
 }
 
-/* Callback functions */
-static void invertSolution()
+static struct predicateResult invertSolution()
 {
   CYCLE_ID cycleId = s6PermuteCycleId(Faces[0].cycle - Cycles,
                                       s6Automorphism(Faces[0].cycle - Cycles));
@@ -102,10 +98,11 @@ static void invertSolution()
       "(abdec) "  // BCDE
       "(acedb)",  // ABCDE
       s6SignatureToLongString(maxSignature));
+  return PredicateFail;
 }
 
 /* Callback functions */
-static void foundSolution()
+static struct predicateResult foundSolution()
 {
   SolutionCount++;
 
@@ -133,6 +130,7 @@ static void foundSolution()
         break;
     }
   }
+  return PredicateFail;
 }
 
 /* Test functions */
@@ -145,7 +143,8 @@ static void testSearchAbcde()
   MatchBCDE = 0;
   MatchABCDE = 0;
   dynamicFaceSetupCentral(intArray(0, 0, 0, 0, 0));
-  searchHere(false, foundSolution);
+  engineResume((PREDICATE[]){
+      &facePredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(152, SolutionCount);
   TEST_ASSERT_EQUAL(40, MatchingSolutions);
   // 4 actual solutions, times 5 rotations times 2 reflections.
@@ -161,7 +160,8 @@ static void testSearch44444()
   EquivocalCount = 0;
   CanonicalCount = 0;
   dynamicFaceSetupCentral(intArray(4, 4, 4, 4, 4));
-  searchHere(false, countSolutions);
+  engineResume((PREDICATE[]){
+      &facePredicate, &(struct predicate){"Found", countSolutions, NULL}});
   TEST_ASSERT_EQUAL(2, SolutionCount);
   TEST_ASSERT_EQUAL(2, EquivocalCount);
   TEST_ASSERT_EQUAL(0, CanonicalCount);
@@ -173,7 +173,8 @@ static void testSearch55433()
   EquivocalCount = 0;
   CanonicalCount = 0;
   dynamicFaceSetupCentral(intArray(5, 5, 4, 3, 3));
-  searchHere(false, countSolutions);
+  engineResume((PREDICATE[]){
+      &facePredicate, &(struct predicate){"Found", countSolutions, NULL}});
   TEST_ASSERT_EQUAL(6, SolutionCount);
   TEST_ASSERT_EQUAL(0, EquivocalCount);
   TEST_ASSERT_EQUAL(6, CanonicalCount);
@@ -185,7 +186,8 @@ static void testSearch55343()
   EquivocalCount = 0;
   CanonicalCount = 0;
   dynamicFaceSetupCentral(intArray(5, 5, 3, 4, 3));
-  searchHere(false, countSolutions);
+  engineResume((PREDICATE[]){
+      &facePredicate, &(struct predicate){"Found", countSolutions, NULL}});
   TEST_ASSERT_EQUAL(0, SolutionCount);
   TEST_ASSERT_EQUAL(0, EquivocalCount);
   TEST_ASSERT_EQUAL(0, CanonicalCount);
@@ -197,7 +199,8 @@ static void testSearch54443()
   EquivocalCount = 0;
   CanonicalCount = 0;
   dynamicFaceSetupCentral(intArray(5, 4, 4, 4, 3));
-  searchHere(false, countSolutions);
+  engineResume((PREDICATE[]){
+      &facePredicate, &(struct predicate){"Found", countSolutions, NULL}});
   TEST_ASSERT_EQUAL(4, SolutionCount);
   TEST_ASSERT_EQUAL(0, EquivocalCount);
   TEST_ASSERT_EQUAL(4, CanonicalCount);
@@ -209,7 +212,8 @@ static void testSearch54434()
   EquivocalCount = 0;
   CanonicalCount = 0;
   dynamicFaceSetupCentral(intArray(5, 4, 4, 3, 4));
-  searchHere(false, countSolutions);
+  engineResume((PREDICATE[]){
+      &facePredicate, &(struct predicate){"Found", countSolutions, NULL}});
   TEST_ASSERT_EQUAL(5, SolutionCount);
   TEST_ASSERT_EQUAL(0, EquivocalCount);
   TEST_ASSERT_EQUAL(5, CanonicalCount);
@@ -220,7 +224,8 @@ static void testInvert()
 {
   dynamicFaceSetupCentral(intArray(5, 4, 4, 3, 4));
   dynamicFaceSetCycleLength(1 << 2, 3);
-  searchHere(false, invertSolution);
+  engineResume((PREDICATE[]){
+      &facePredicate, &(struct predicate){"Found", invertSolution, NULL}});
 }
 /* Main test runner */
 int main(void)
