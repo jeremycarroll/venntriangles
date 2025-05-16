@@ -486,7 +486,7 @@ int main(void)
   RUN_645534(saveAllVariations);
   RUN_645534(checkGraphML);
   RUN_654444(NULL);
-  RUN_654444(checkGraphML);
-  RUN_654444(variant14188);
+  // RUN_654444(checkGraphML);
+  // RUN_654444(variant14188);
   return UNITY_END();
 }

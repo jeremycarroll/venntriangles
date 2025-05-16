@@ -23,7 +23,6 @@ void initialize()
   /* Verify uint64 is 64 bits */
   assert(sizeof(uint64) == 8);
 
-  freeAll();
   initializeCycleSets();
   initializeFacesAndEdges();
   initializePoints();
@@ -56,7 +55,6 @@ void resetGlobals()
   resetFaces();
   resetEdges();
   resetPoints();
-  freeAll();
 }
 
 void resetInitialize()

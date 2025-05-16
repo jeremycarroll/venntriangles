@@ -40,8 +40,6 @@ static int Counter = 0;
 
 void engine(struct predicate** predicates, void (*callback)(void))
 {
-  struct stackEntry stack[MAX_STACK_SIZE + 1], *stackTop = stack;
-
   // Initialize first stack entry
   stackTop->inChoiceMode = false;
   stackTop->predicate = *predicates;
@@ -59,10 +57,10 @@ void engine(struct predicate** predicates, void (*callback)(void))
     backtrack:
       // Backtrack to previous choice point
       do {
+        trace("fail");
         if (stackTop == stack) {
           return;  // All done
         }
-        trace("fail");
         stackTop--;
       } while (!stackTop->inChoiceMode);
       continue;
@@ -94,10 +92,10 @@ void engine(struct predicate** predicates, void (*callback)(void))
           break;
       }
     } else {
-      trace("retry");
       if (stackTop->currentChoice >= stackTop->choicePoint.numberOfChoices) {
         goto backtrack;
       }
+      trace("retry");
       result = stackTop->predicate->retry(stackTop->round,
                                           stackTop->currentChoice++);
 
