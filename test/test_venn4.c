@@ -1,6 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #include "face.h"
+#include "main.h"
 #include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
@@ -68,8 +69,11 @@ static void testSearch4433()
 }
 
 /* Main test runner */
-int main(void)
+int main(int argc, char *argv[])
 {
+  if (argc > 1 && strcmp(argv[1], "-t") == 0) {
+    Tracing = true;
+  }
   UNITY_BEGIN();
   RUN_TEST(testSearch);
   RUN_TEST(testSearch4343);
