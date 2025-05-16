@@ -13,31 +13,18 @@
 #include <time.h>
 #include <unity.h>
 
-/* Test setup and teardown */
 void setUp(void)
 {
-  initialize();
-  initializeStatisticLogging("/dev/stdout", 200, 10);
-  initializeS6();
+  initializeStatisticLogging(NULL, 4, 1);
+  engine((PREDICATE[]){&initializePredicate, &SUSPENDPredicate}, NULL);
 }
 
 void tearDown(void)
 {
-  resetGlobals();
-  resetInitialize();
-  resetTrail();
-  resetStatistics();
-  resetPoints();
+  engineResume((PREDICATE[]){&FAILPredicate});
 }
-
 /* Global variables */
 static int SolutionCount = 0;
-
-/* Callback functions */
-static void foundSolution()
-{
-  SolutionCount++;
-}
 
 /* Predicate functions */
 static struct predicateResult countSolutions(int round)
@@ -62,8 +49,8 @@ static void testSearchForBestSolution()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(5, 5, 5, 4, 4, 4));
-  searchHere(true, foundSolution);
-
+  engineResume((PREDICATE[]){
+      &facePredicate, &(struct predicate){"Found", countSolutions, NULL}});
   TEST_ASSERT_EQUAL(80, SolutionCount);
 }
 
@@ -83,7 +70,8 @@ static void testSearchForTwoSolutions()
   dynamicFaceAddSpecific("b", "abcf");
   dynamicFaceAddSpecific("f", "aefdc");
   */
-  searchHere(true, foundSolution);
+  engineResume((PREDICATE[]){
+      &facePredicate, &(struct predicate){"Found", countSolutions, NULL}});
 
   TEST_ASSERT_EQUAL(2, SolutionCount);
 }
@@ -96,9 +84,10 @@ static struct predicate* testProgram[] = {
 static void testFullSearch(void)
 {
   /* dynamicSearchFull includes initialization, so we undo our own setUp. */
-  tearDown();
   SolutionCount = 0;
-  engine(testProgram, NULL);
+  engineResume(
+      (PREDICATE[]){&faceDegreePredicate, &facePredicate,
+                    &(struct predicate){"Found", countSolutions, NULL}});
   TEST_ASSERT_EQUAL(233, SolutionCount);
 }
 
@@ -109,6 +98,6 @@ int main(void)
   RUN_TEST(testCentralFaceEdge);
   RUN_TEST(testSearchForBestSolution);
   RUN_TEST(testSearchForTwoSolutions);
-  // RUN_TEST(testFullSearch);
+  RUN_TEST(testFullSearch);
   return UNITY_END();
 }
