@@ -12,6 +12,6 @@ extern struct predicate facePredicate;
 extern struct predicate solutionWritePredicate;
 extern struct predicate cornersPredicate;
 extern struct predicate saveVariationPredicate;
-extern struct predicate failPredicate;
+
 
 #endif /* PREDICATES_H */ 

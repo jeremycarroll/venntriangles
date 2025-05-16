@@ -327,7 +327,6 @@ void saveVariation(EDGE (*corners)[3])
   }
   graphmlEnd(fp);
   fclose(fp);
-  freeAll();
 }
 
 int numberOfLevels(int expectedVariations)

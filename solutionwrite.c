@@ -104,10 +104,11 @@ extern struct predicate cornersPredicate;
 extern struct predicate saveVariationPredicate;
 static struct predicate* predicates[] = {
     &solutionWritePredicate, &cornersPredicate, &saveVariationPredicate,
-    &failPredicate};
+    &FAILPredicate};
 
 void writeSolution(void)
 {
+  assert(0);
   engine(predicates, NULL);
 }
 

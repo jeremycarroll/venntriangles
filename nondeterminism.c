@@ -21,4 +21,4 @@ struct predicate* nonDeterministicProgram[] = {
     /* Single call. Save the variation. */
     &saveVariationPredicate,
     /* Fail. */
-    &failPredicate};
+    &FAILPredicate};

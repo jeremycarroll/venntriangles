@@ -75,13 +75,14 @@ static struct predicateResult trySaveVariation(int round)
 struct predicate cornersPredicate = {"Corners", tryCorners, retryCorners};
 struct predicate saveVariationPredicate = {"SaveVariant", trySaveVariation,
                                            NULL};
-static struct predicate* predicates[] = {
-    &cornersPredicate, &saveVariationPredicate, &failPredicate};
+static PREDICATE predicates[] = {&cornersPredicate, &saveVariationPredicate,
+                                 &FAILPredicate};
 
 void chooseCorners(void)
 {
   //   filename = "variation.graphml";  // Or get this from somewhere else?
   //   numberOfVariations = searchCountVariations(NULL);
+  assert(0);
   engine(predicates, NULL);
 }
 

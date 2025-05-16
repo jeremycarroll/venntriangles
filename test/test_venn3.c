@@ -1,6 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #include "face.h"
+#include "predicates.h"
 #include "statistics.h"
 #include "utils.h"
 #include "vsearch.h"
@@ -10,17 +11,20 @@
 /* Test setup and teardown */
 void setUp(void)
 {
-  initialize();
   initializeStatisticLogging(NULL, 4, 1);
+  engine(
+      (PREDICATE[]){/* Single call: Initialization. On backtrack perform reset,
+                       then fail. */
+                    &initializePredicate,
+                    /* < 64 calls. Nondeterministic: choose facial cycle for
+                       every face. */
+                    &SUSPENDPredicate},
+      NULL);
 }
 
 void tearDown(void)
 {
-  resetGlobals();
-  resetInitialize();
-  resetTrail();
-  resetStatistics();
-  resetPoints();
+  engineResume((PREDICATE[]){&FAILPredicate});
 }
 
 /* Helper functions */
@@ -191,15 +195,17 @@ static void testChoosingAndBacktracking()
 static int SolutionCount = 0;
 
 /* Callback functions */
-static void foundSolution()
+static struct predicateResult foundSolution()
 {
   SolutionCount++;
+  return PredicateFail;
 }
 
 /* Test functions */
 static void testSearch()
 {
-  searchHere(true, foundSolution);
+  engineResume((PREDICATE[]){
+      &facePredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(2, SolutionCount);
 }
 

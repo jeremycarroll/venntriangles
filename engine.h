@@ -18,7 +18,8 @@ typedef enum {
   PREDICATE_FAIL,
   PREDICATE_SUCCESS_NEXT_PREDICATE,
   PREDICATE_SUCCESS_SAME_PREDICATE,
-  PREDICATE_CHOICES
+  PREDICATE_CHOICES,
+  PREDICATE_SUSPEND
 } PredicateResultCode;
 
 struct choicePoint {
@@ -37,9 +38,6 @@ extern const struct predicateResult PredicateSuccessSamePredicate;
 
 /* Helper function to create a predicate result with choices */
 struct predicateResult predicateChoices(int numberOfChoices, void* choices);
-
-/* The fail predicate - always fails */
-extern struct predicate failPredicate;
 
 /* A predicate has two methods:
    try:   First attempt to satisfy the predicate. Can return:
@@ -62,6 +60,8 @@ typedef struct predicate {
   PredicateResult (*retry)(int round, int choice);
 }* PREDICATE;
 
+extern struct predicate FAILPredicate, SUSPENDPredicate;
+
 /* Stack entry for the engine's backtracking stack */
 struct stackEntry {
   bool inChoiceMode;
@@ -77,6 +77,7 @@ struct stackEntry {
 /* Runs each predicate in turn. The predicates argument is a null-terminated
    array of predicates. The callback is called each time all predicates succeed.
  */
-extern void engine(struct predicate** predicates, void (*callback)(void));
+extern void engine(PREDICATE* predicates, void (*callback)(void));
+void engineResume(PREDICATE* predicates);
 
 #endif /* ENGINE_H */

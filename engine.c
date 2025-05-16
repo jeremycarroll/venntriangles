@@ -37,10 +37,12 @@ static void pushStackEntry(struct stackEntry* stack, PredicateResultCode code);
 static void trace(const char* message);
 static struct stackEntry stack[MAX_STACK_SIZE + 1], *stackTop = stack;
 static int Counter = 0;
+static bool engineLoop(void (*callback)(void));
 
-void engine(struct predicate** predicates, void (*callback)(void))
+void engine(PREDICATE* predicates, void (*callback)(void))
 {
   // Initialize first stack entry
+  assert(stackTop == stack);
   stackTop->inChoiceMode = false;
   stackTop->predicate = *predicates;
   stackTop->predicates = predicates;
@@ -49,6 +51,29 @@ void engine(struct predicate** predicates, void (*callback)(void))
   stackTop->trail = Trail;
   stackTop->counter = Counter++;
 
+  if (!engineLoop(callback) && Tracing) {
+    fprintf(stderr, "Engine suspended\n");
+  }
+}
+
+/* Continue from the suspension point, with a new set of predicates.
+  When the new predicates complete, we backtrack through
+  the suspension point to resume the previous execution.
+  This is intended for testing.
+*/
+void engineResume(PREDICATE* predicates)
+{
+  bool successfulRun;
+  pushStackEntry(++stackTop, PREDICATE_SUCCESS_NEXT_PREDICATE);
+  stackTop->predicate = *predicates;
+  stackTop->predicates = predicates;
+  successfulRun = engineLoop(NULL);
+  // Suspending twice is not supported.
+  assert(successfulRun);
+}
+
+static bool engineLoop(void (*callback)(void))
+{
   while (true) {
     freeAll();  // Malloced memory is for temporary use only.
     if (stackTop->predicate == NULL) {
@@ -59,7 +84,7 @@ void engine(struct predicate** predicates, void (*callback)(void))
       do {
         trace("fail");
         if (stackTop == stack) {
-          return;  // All done
+          return true;  // All done
         }
         stackTop--;
       } while (!stackTop->inChoiceMode);
@@ -90,6 +115,8 @@ void engine(struct predicate** predicates, void (*callback)(void))
           stackTop->choicePoint = result.choicePoint;
           stackTop->trail = Trail;
           break;
+        case PREDICATE_SUSPEND:
+          return false;
       }
     } else {
       if (stackTop->currentChoice >= stackTop->choicePoint.numberOfChoices) {
@@ -110,6 +137,7 @@ void engine(struct predicate** predicates, void (*callback)(void))
           assert(stackTop < stack + MAX_STACK_SIZE);
           break;
         case PREDICATE_CHOICES:
+        case PREDICATE_SUSPEND:
           assert(false);
           break;
       }
@@ -145,12 +173,13 @@ void trace(const char* message)
   }
 }
 
-/* Predicate that always fails - useful for terminating search paths */
-static struct predicateResult tryFail(int round)
-{
-  (void)round;  // Unused parameter
-  return PredicateFail;
-}
+#define SIMPLE_PREDICATE(name)                                    \
+  static struct predicateResult try##name(int round)              \
+  {                                                               \
+    (void)round;                                                  \
+    return (struct predicateResult){PREDICATE_##name, {0, NULL}}; \
+  }                                                               \
+  struct predicate name##Predicate = {#name, try##name, NULL};
 
-/* The fail predicate - always fails */
-struct predicate failPredicate = {"Fail", tryFail, NULL};
+SIMPLE_PREDICATE(FAIL)
+SIMPLE_PREDICATE(SUSPEND)
