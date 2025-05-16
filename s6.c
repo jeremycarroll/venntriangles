@@ -194,6 +194,7 @@ static struct predicateResult try5FaceDegree(int round)
     if (s6SymmetryType6(currentArgs) == NON_CANONICAL) {
       return PredicateFail;
     }
+    dynamicFaceSetupCentral(currentArgs);
     return PredicateSuccessNextPredicate;
   }
   return predicateChoices(NCOLORS - 2, NULL);
