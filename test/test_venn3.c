@@ -8,18 +8,10 @@
 
 #include <unity.h>
 
-/* Test setup and teardown */
 void setUp(void)
 {
   initializeStatisticLogging(NULL, 4, 1);
-  engine(
-      (PREDICATE[]){/* Single call: Initialization. On backtrack perform reset,
-                       then fail. */
-                    &initializePredicate,
-                    /* < 64 calls. Nondeterministic: choose facial cycle for
-                       every face. */
-                    &SUSPENDPredicate},
-      NULL);
+  engine((PREDICATE[]){&initializePredicate, &SUSPENDPredicate}, NULL);
 }
 
 void tearDown(void)
@@ -194,7 +186,6 @@ static void testChoosingAndBacktracking()
 /* Global variables */
 static int SolutionCount = 0;
 
-/* Callback functions */
 static struct predicateResult foundSolution()
 {
   SolutionCount++;

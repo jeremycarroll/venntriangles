@@ -1,6 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #include "face.h"
+#include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
 #include "test_helpers.h"
@@ -11,36 +12,31 @@
 #include <string.h>
 #include <unity.h>
 
-/* Test setup and teardown */
 void setUp(void)
 {
-  initialize();
-  initializeStatisticLogging("/dev/stdout", 20, 5);
+  initializeStatisticLogging(NULL, 4, 1);
+  engine((PREDICATE[]){&initializePredicate, &SUSPENDPredicate}, NULL);
 }
 
 void tearDown(void)
 {
-  resetGlobals();
-  resetInitialize();
-  resetTrail();
-  resetStatistics();
-  resetPoints();
+  engineResume((PREDICATE[]){&FAILPredicate});
 }
 
 /* Global variables */
 static int SolutionCount = 0;
 
-/* Callback functions */
-static void foundSolution()
+static struct predicateResult foundSolution()
 {
   SolutionCount++;
+  return PredicateFail;
 }
 
 /* Test functions */
 static void testSearch()
 {
-  SolutionCount = 0;
-  searchHere(false, foundSolution);
+  engineResume((PREDICATE[]){
+      &facePredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(FACTORIAL4, SolutionCount);
 }
 
@@ -48,7 +44,8 @@ static void testSearchAbcd()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(0, 0, 0, 0));
-  searchHere(false, foundSolution);
+  engineResume((PREDICATE[]){
+      &facePredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(4, SolutionCount);
 }
 
@@ -56,7 +53,8 @@ static void testSearch4343()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(4, 3, 4, 3));
-  searchHere(false, foundSolution);
+  engineResume((PREDICATE[]){
+      &facePredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(0, SolutionCount);
 }
 
@@ -64,7 +62,8 @@ static void testSearch4433()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(4, 4, 3, 3));
-  searchHere(false, foundSolution);
+  engineResume((PREDICATE[]){
+      &facePredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(1, SolutionCount);
 }
 
