@@ -3,7 +3,7 @@ CFLAGS	  = -g -Wall -Wextra -std=c11 -MMD -Wmissing-prototypes -Wmissing-declara
 UNITY_DIR   = ../Unity
 TEST_CFLAGS = -I$(UNITY_DIR)/src -I.
 TEST_SRC	= test/test_d6.c test/test_initialize.c test/test_known_solution.c test/test_main.c \
-              test/test_venn3.c test/test_venn4.c test/test_venn5.c  test/test_venn6.c # test/test_graphml.c 
+              test/test_graphml.c test/test_venn3.c test/test_venn4.c test/test_venn5.c  test/test_venn6.c 
 TEST_BIN	= $(TEST_SRC:test/%.c=bin/%)
 # Do not include entrypoint.c in the test builds, it contains the main function, which is also in the test files.
 SRC		    = main.c trail.c failure.c color.c edge.c \
