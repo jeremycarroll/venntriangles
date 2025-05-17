@@ -80,4 +80,34 @@ struct stackEntry {
 extern void engine(PREDICATE* predicates, void (*callback)(void));
 void engineResume(PREDICATE* predicates);
 
+#define FORWARD_BACKWARD_PREDICATE(name, gate, forward, backward) \
+  static PredicateResult try##name(int round)                     \
+  {                                                               \
+    bool (*gatingFunction)(void) = gate;                          \
+    if (gatingFunction && !gatingFunction()) {                    \
+      return PredicateFail;                                       \
+    }                                                             \
+    return predicateChoices(2, NULL);                             \
+  }                                                               \
+  static PredicateResult retry##name(int round, int choice)       \
+  {                                                               \
+    bool (*forwardFunction)(void) = forward;                      \
+    void (*backwardFunction)(void) = backward;                    \
+    switch (choice) {                                             \
+      case 0:                                                     \
+        if (forwardFunction && !forwardFunction()) {              \
+          return PredicateFail;                                   \
+        }                                                         \
+        return PredicateSuccessNextPredicate;                     \
+      case 1:                                                     \
+        if (backwardFunction) {                                   \
+          backwardFunction();                                     \
+        }                                                         \
+        return PredicateFail;                                     \
+      default:                                                    \
+        assert(0);                                                \
+    }                                                             \
+  }                                                               \
+  struct predicate name##Predicate = {#name, try##name, retry##name};
+
 #endif /* ENGINE_H */

@@ -16,7 +16,7 @@
 void setUp(void)
 {
   initializeStatisticLogging(NULL, 4, 1);
-  engine((PREDICATE[]){&initializePredicate, &SUSPENDPredicate}, NULL);
+  engine((PREDICATE[]){&InitializePredicate, &SUSPENDPredicate}, NULL);
 }
 
 void tearDown(void)
@@ -78,7 +78,7 @@ static void testSearchForTwoSolutions()
 
 /* The test program - initialization, face degrees, and face search */
 static struct predicate* testProgram[] = {
-    &initializePredicate, &faceDegreePredicate, &facePredicate,
+    &InitializePredicate, &faceDegreePredicate, &facePredicate,
     &(struct predicate){"count", countSolutions, NULL}};
 
 static void testFullSearch(void)

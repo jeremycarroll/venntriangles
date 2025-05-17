@@ -7,7 +7,7 @@
 /* The non-deterministic program is a sequence of predicates */
 struct predicate* nonDeterministicProgram[] = {
     /* Single call: Initialization. On backtrack perform reset, then fail. */
-    &initializePredicate,
+    &InitializePredicate,
     /* 6 Calls. Nondeterministic: choosse a canonical or equivocal sequence of 5
        face degrees summing to 27. */
     &faceDegreePredicate,
@@ -15,7 +15,7 @@ struct predicate* nonDeterministicProgram[] = {
     &facePredicate,
     /* Single call. Save the solution. On backtrack, also write the number of
        variants, then fail. */
-    &solutionWritePredicate,
+    &SaveMainPredicate,
     /* 6 Calls. Nondeterministic: choose the 18 corners of a variation. */
     &cornersPredicate,
     /* Single call. Save the variation. */

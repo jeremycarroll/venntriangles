@@ -31,80 +31,68 @@ static int currentNumberOfVariations;
 static char currentVariationMultiplication[128];
 static void solutionPrint(FILE* fp);
 
-static struct predicateResult trySolutionWrite(int round)
+static bool gateSave(void)
 {
-  // Check if we should skip this solution based on global limits
   if ((int64_t)GlobalSolutionsFound <= GlobalSkipSolutions) {
-    return PredicateFail;
+    return false;
   }
-
-  // Check if we've hit the global maximum limit
   if ((int64_t)GlobalSolutionsFound > GlobalMaxSolutions) {
-    return PredicateFail;
+    return false;
   }
-
   if (PerFaceDegreeSolutionNumber <= PerFaceDegreeSkipSolutions ||
       PerFaceDegreeSolutionNumber > PerFaceDegreeMaxSolutions) {
-    return PredicateFail;
+    return false;
   }
-
   char* buffer = getBuffer();
   sprintf(buffer, "%s/%s", TargetFolder, s6FaceDegreeSignature());
-  return predicateChoices(2, NULL);
+  return true;
 }
 
-static struct predicateResult retrySolutionWrite(int round, int choice)
+static bool beforeVariantsSave(void)
 {
-  switch (choice) {
-    case 0:
-      // First choice: Do initial write
-      char* buffer = getBuffer();
-      sprintf(buffer, "%s/%s", TargetFolder, s6FaceDegreeSignature());
-      currentFilename = usingBuffer(buffer);
+  char* buffer = getBuffer();
+  sprintf(buffer, "%s/%s", TargetFolder, s6FaceDegreeSignature());
+  currentFilename = usingBuffer(buffer);
 
-      snprintf(CurrentPrefix, sizeof(CurrentPrefix), "%s-%2.2d.txt",
-               currentFilename, PerFaceDegreeSolutionNumber);
-      //  printf("CurrentPrefix: %s\n", CurrentPrefix);
-      currentFile = fopen(CurrentPrefix, "w");
-      if (currentFile == NULL) {
-        perror(CurrentPrefix);
-        exit(EXIT_FAILURE);
-      }
-      VariationNumber = 1;
-      solutionPrint(currentFile);
-      CurrentPrefix[strlen(CurrentPrefix) - 4] = '\0';
-      graphmlFileOps.initializeFolder(CurrentPrefix);
-      currentNumberOfVariations =
-          searchCountVariations(currentVariationMultiplication);
-      Levels = numberOfLevels(currentNumberOfVariations);
-      fprintf(currentFile, "\nSolution signature %s\nClass signature %s\n",
-              d6SignatureToString(s6SignatureFromFaces()),
-              d6SignatureToString(s6MaxSignature()));
-      fflush(currentFile);
-      VariationCount += currentNumberOfVariations;
-      return PredicateSuccessNextPredicate;
-    case 1:
-      // Second choice: Do final write and fail
-      fprintf(currentFile, "Number of variations: %d/%d = 1%s\n",
-
-              VariationNumber - 1, currentNumberOfVariations,
-              currentVariationMultiplication);
-      fclose(currentFile);
-      return PredicateFail;
-    default:
-      assert(0);
+  snprintf(CurrentPrefix, sizeof(CurrentPrefix), "%s-%2.2d.txt",
+           currentFilename, PerFaceDegreeSolutionNumber);
+  currentFile = fopen(CurrentPrefix, "w");
+  if (currentFile == NULL) {
+    perror(CurrentPrefix);
+    exit(EXIT_FAILURE);
   }
+  VariationNumber = 1;
+  solutionPrint(currentFile);
+  CurrentPrefix[strlen(CurrentPrefix) - 4] = '\0';
+  graphmlFileOps.initializeFolder(CurrentPrefix);
+  currentNumberOfVariations =
+      searchCountVariations(currentVariationMultiplication);
+  Levels = numberOfLevels(currentNumberOfVariations);
+  fprintf(currentFile, "\nSolution signature %s\nClass signature %s\n",
+          d6SignatureToString(s6SignatureFromFaces()),
+          d6SignatureToString(s6MaxSignature()));
+  fflush(currentFile);
+  VariationCount += currentNumberOfVariations;
+  return true;
 }
 
-/* The predicates array for solution writing */
-struct predicate solutionWritePredicate = {"SaveMain", trySolutionWrite,
-                                           retrySolutionWrite};
+static void afterVariantsSave(void)
+{
+  fprintf(currentFile, "Number of variations: %d/%d = 1%s\n",
+
+          VariationNumber - 1, currentNumberOfVariations,
+          currentVariationMultiplication);
+  fclose(currentFile);
+}
+
+FORWARD_BACKWARD_PREDICATE(SaveMain, gateSave, beforeVariantsSave,
+                           afterVariantsSave)
 
 extern struct predicate cornersPredicate;
 extern struct predicate saveVariationPredicate;
-static struct predicate* predicates[] = {
-    &solutionWritePredicate, &cornersPredicate, &saveVariationPredicate,
-    &FAILPredicate};
+static struct predicate* predicates[] = {&SaveMainPredicate, &cornersPredicate,
+                                         &saveVariationPredicate,
+                                         &FAILPredicate};
 
 void writeSolution(void)
 {

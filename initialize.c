@@ -16,35 +16,26 @@
 #include <stdlib.h>
 #include <string.h>
 
-static struct predicateResult tryInitialize(int round)
+static bool forwardInitialize(void)
 {
-  // Return choice of two items - first for initialization, second for reset
-  return predicateChoices(2, NULL);
+  initializeS6();
+  initialize();
+  statisticIncludeInteger(&CycleGuessCounter, "?", "guesses", false);
+  statisticIncludeInteger(&GlobalVariantCount, "V", "variants", false);
+  statisticIncludeInteger(&GlobalSolutionsFound, "S", "solutions", false);
+  return true;
+}
+static void backwardInitialize(void)
+{
+  resetGlobals();
+  resetInitialize();
+  resetPoints();
 }
 
-static struct predicateResult retryInitialize(int round, int choice)
-{
-  if (choice == 0) {
-    // First choice: Do initialization
-    initializeS6();
-    initialize();
-    statisticIncludeInteger(&CycleGuessCounter, "?", "guesses", false);
-    statisticIncludeInteger(&GlobalVariantCount, "V", "variants", false);
-    statisticIncludeInteger(&GlobalSolutionsFound, "S", "solutions", false);
-    return PredicateSuccessNextPredicate;
-  } else {
-    // Second choice: Do reset and fail
-    resetGlobals();
-    resetInitialize();
-    resetPoints();
-    return PredicateFail;
-  }
-}
+FORWARD_BACKWARD_PREDICATE(Initialize, NULL, forwardInitialize,
+                           backwardInitialize)
 
-/* The predicates array for initialization */
-struct predicate initializePredicate = {"Initialize", tryInitialize,
-                                        retryInitialize};
-static struct predicate* predicates[] = {&initializePredicate, NULL};
+static struct predicate* predicates[] = {&InitializePredicate, NULL};
 
 void runInitialize(void)
 {

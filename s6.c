@@ -73,11 +73,6 @@ static SIGNATURE d6SignaturePermuted(SIGNATURE sequence,
                                      PERMUTATION permutation);
 static int d6SignatureCompare(const void *a, const void *b);
 static SIGNATURE d6SignatureReflected(SIGNATURE sequence);
-extern struct predicate facePredicate;
-extern struct predicate solutionWritePredicate;
-extern struct predicate cornersPredicate;
-extern struct predicate saveVariationPredicate;
-extern struct predicate failPredicate;
 
 #define ADD_TO_SEQUENCE_ORDER(colors)               \
   do {                                              \
@@ -228,7 +223,6 @@ static void engineCallback(void)
 {
   staticCallback(staticCallbackData, currentArgs);
 }
-extern struct predicate initializePredicate;
 /* The predicates array for 5-face degree sequence search */
 struct predicate faceDegreePredicate = {"InnerFaces", try5FaceDegree,
                                         retry5FaceDegree};
