@@ -95,13 +95,12 @@ void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
 static void trailSetArrayMemberIfNotNull(EDGE* array, int index, EDGE value)
 {
   if (array != NULL) {
-    trailSetPointer(array + index, value);
+    TRAIL_SET_POINTER(array + index, value);
   }
 }
 
 int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn)
 {
-  EDGE dummyReturn[NFACES];
   int i = 0;
   trailSetArrayMemberIfNotNull(pathReturn, i++, from);
   while (from != to) {
