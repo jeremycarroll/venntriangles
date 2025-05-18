@@ -5,10 +5,4 @@
 
 #include "engine.h"
 
-/* The initialization predicate */
-extern struct predicate initializePredicate;
-
-/* Run initialization and reset predicates */
-void runInitialize(void);
-
 #endif /* INITIALIZE_H */

@@ -59,7 +59,6 @@ extern FAILURE edgeCurveChecks(EDGE edge, int depth);
  * @return int The number of edges in the path.
  */
 extern int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn);
-extern char* edgeToString(EDGE edge);
 
 extern EDGE edgeOnCentralFace(COLOR a);
 extern void resetEdges(void);

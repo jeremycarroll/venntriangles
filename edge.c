@@ -113,18 +113,6 @@ int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn)
   return i;
 }
 
-char* edgeToString(EDGE edge)
-{
-  char* buffer = getBuffer();
-  if (edge == NULL) {
-    strcpy(buffer, "NULL");
-  } else {
-    sprintf(buffer, "%c%d", colorToChar(edge->color), edge->colors);
-  }
-  return usingBuffer(buffer);
-}
-
-/* File scoped static functions */
 static uint_trail curveLength(EDGE edge)
 {
   EDGE current;

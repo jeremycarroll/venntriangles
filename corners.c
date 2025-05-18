@@ -74,17 +74,6 @@ static struct predicateResult trySaveVariation(int round)
 struct predicate cornersPredicate = {"Corners", tryCorners, retryCorners};
 struct predicate saveVariationPredicate = {"SaveVariant", trySaveVariation,
                                            NULL};
-static PREDICATE predicates[] = {&cornersPredicate, &saveVariationPredicate,
-                                 &FAILPredicate};
-
-void chooseCorners(void)
-{
-  //   filename = "variation.graphml";  // Or get this from somewhere else?
-  //   numberOfVariations = searchCountVariations(NULL);
-  assert(0);
-  engine(predicates);
-}
-
 /* Path and corner functions */
 static void getPath(EDGE* path, EDGE from, EDGE to)
 {

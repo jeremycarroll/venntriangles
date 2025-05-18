@@ -20,7 +20,6 @@
 /* Output-related variables */
 int PerFaceDegreeSolutionNumber = 0;
 int VariationCount = 0;
-static char LastPrefix[128] = "";
 static clock_t TotalWastedTime = 0;
 static clock_t TotalUsefulTime = 0;
 static int WastedSearchCount = 0;
@@ -134,39 +133,6 @@ FACE searchChooseNextFace(bool smallestFirst)
   return face;
 }
 
-static void solutionPrint(FILE* fp)
-{
-  COLORSET colors = 0;
-  if (fp == NULL) {
-    fp = stdout;
-  }
-
-  while (true) {
-    FACE face = Faces + colors;
-    do {
-      char buffer[1024];
-      FACE next = face->next;
-      COLORSET colorBeingDropped = face->colors & ~next->colors;
-      COLORSET colorBeingAdded = next->colors & ~face->colors;
-      sprintf(buffer, "%s [%c,%c] ", faceToString(face),
-              colorToChar(ffs(colorBeingDropped) - 1),
-              colorToChar(ffs(colorBeingAdded) - 1));
-      if (strchr(buffer, '@')) {
-        fprintf(stderr, "buffer: %s\n", buffer);
-        fprintf(stderr, "faceToString: %s\n", faceToString(face));
-        exit(EXIT_FAILURE);
-      }
-      fputs(buffer, fp);
-      face = next;
-    } while (face->colors != colors);
-    fprintf(fp, "\n");
-    if (colors == (NFACES - 1)) {
-      break;
-    }
-    colors |= (face->previous->colors | 1);
-  }
-}
-
 int searchCountVariations(char* variationMultiplication)
 {
   EDGE corners[3][2];
@@ -192,41 +158,6 @@ int searchCountVariations(char* variationMultiplication)
     }
   }
   return numberOfVariations;
-}
-
-void searchSolutionWrite(const char* prefix)
-{
-  char filename[1024];
-  char variationMultiplication[128];
-  int numberOfVariations;
-  int actualNumberOfVariations;
-  FILE* fp;
-  if (strcmp(prefix, LastPrefix) != 0) {
-    strcpy(LastPrefix, prefix);
-  }
-  if (PerFaceDegreeSolutionNumber > PerFaceDegreeSkipSolutions &&
-      PerFaceDegreeSolutionNumber <= PerFaceDegreeMaxSolutions) {
-    snprintf(filename, sizeof(filename), "%s-%2.2d.txt", prefix,
-             PerFaceDegreeSolutionNumber);
-    fp = fopen(filename, "w");
-    if (fp == NULL) {
-      perror(filename);
-      exit(EXIT_FAILURE);
-    }
-    solutionPrint(fp);
-    filename[strlen(filename) - 4] = '\0';
-    numberOfVariations = searchCountVariations(variationMultiplication);
-    fprintf(fp, "\nSolution signature %s\nClass signature %s\n",
-            d6SignatureToString(s6SignatureFromFaces()),
-            d6SignatureToString(s6MaxSignature()));
-    fflush(fp);
-    VariationCount += numberOfVariations;
-    actualNumberOfVariations =
-        graphmlSaveAllVariations(filename, numberOfVariations);
-    fprintf(fp, "Number of variations: %d/%d = 1%s\n", actualNumberOfVariations,
-            numberOfVariations, variationMultiplication);
-    fclose(fp);
-  }
 }
 
 /* File scoped static functions */

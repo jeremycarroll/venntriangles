@@ -73,33 +73,62 @@ void engineResume(PREDICATE* predicates)
   assert(successfulRun);
 }
 
+static bool callPort(void)
+{
+  PredicateResult result = stackTop->predicate->try(stackTop->round);
+
+  switch (result.code) {
+    case PREDICATE_SUCCESS_NEXT_PREDICATE:
+    case PREDICATE_SUCCESS_SAME_PREDICATE:
+      pushStackEntry(++stackTop, result.code);
+      assert(stackTop < stack + MAX_STACK_SIZE);
+      break;
+
+    case PREDICATE_FAIL: /* 0 choices */
+    case PREDICATE_CHOICES:
+      // Start trying choice
+      stackTop->inChoiceMode = true;
+      stackTop->currentChoice = 0;
+      stackTop->numberOfChoices = result.numberOfChoices;
+      stackTop->trail = Trail;
+      break;
+    case PREDICATE_SUSPEND:
+      return false;
+  }
+  return true;
+}
+
+static void retryPort(void)
+{
+  PredicateResult result =
+      stackTop->predicate->retry(stackTop->round, stackTop->currentChoice++);
+
+  switch (result.code) {
+    case PREDICATE_FAIL:
+      trailBacktrackTo(stackTop->trail);
+      break;
+
+    case PREDICATE_SUCCESS_NEXT_PREDICATE:
+    case PREDICATE_SUCCESS_SAME_PREDICATE:
+      pushStackEntry(++stackTop, result.code);
+      assert(stackTop < stack + MAX_STACK_SIZE);
+      break;
+    case PREDICATE_CHOICES:
+    case PREDICATE_SUSPEND:
+      assert(false);
+      break;
+  }
+}
+
 static bool engineLoop(void)
 {
-  PredicateResult result;
   while (true) {
     freeAll();
     trailBacktrackTo(stackTop->trail);
     if (!stackTop->inChoiceMode) {
       trace("call");
-      result = stackTop->predicate->try(stackTop->round);
-
-      switch (result.code) {
-        case PREDICATE_SUCCESS_NEXT_PREDICATE:
-        case PREDICATE_SUCCESS_SAME_PREDICATE:
-          pushStackEntry(++stackTop, result.code);
-          assert(stackTop < stack + MAX_STACK_SIZE);
-          break;
-
-        case PREDICATE_FAIL: /* 0 choices */
-        case PREDICATE_CHOICES:
-          // Start trying choice
-          stackTop->inChoiceMode = true;
-          stackTop->currentChoice = 0;
-          stackTop->numberOfChoices = result.numberOfChoices;
-          stackTop->trail = Trail;
-          break;
-        case PREDICATE_SUSPEND:
-          return false;
+      if (!callPort()) {
+        return false;
       }
     } else {
       if (stackTop->currentChoice >= stackTop->numberOfChoices) {
@@ -114,24 +143,7 @@ static bool engineLoop(void)
         continue;
       }
       trace("retry");
-      result = stackTop->predicate->retry(stackTop->round,
-                                          stackTop->currentChoice++);
-
-      switch (result.code) {
-        case PREDICATE_FAIL:
-          trailBacktrackTo(stackTop->trail);
-          break;
-
-        case PREDICATE_SUCCESS_NEXT_PREDICATE:
-        case PREDICATE_SUCCESS_SAME_PREDICATE:
-          pushStackEntry(++stackTop, result.code);
-          assert(stackTop < stack + MAX_STACK_SIZE);
-          break;
-        case PREDICATE_CHOICES:
-        case PREDICATE_SUSPEND:
-          assert(false);
-          break;
-      }
+      retryPort();
     }
   }
 }

@@ -34,11 +34,3 @@ static void backwardInitialize(void)
 
 FORWARD_BACKWARD_PREDICATE(Initialize, NULL, forwardInitialize,
                            backwardInitialize)
-
-static struct predicate* predicates[] = {&InitializePredicate, NULL};
-
-void runInitialize(void)
-{
-  assert(0);
-  engine(predicates);
-}

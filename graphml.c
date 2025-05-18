@@ -71,17 +71,6 @@ typedef struct {
 /* Externally linked functions */
 struct graphmlFileIO graphmlFileOps = {fopen, initializeFolder};
 
-int graphmlSaveAllVariations(const char *prefix, int expectedVariations)
-{
-  strcpy(CurrentPrefix, prefix);
-  VariationNumber = 1;
-  // ExpectedVariations = expectedVariations;
-  Levels = numberOfLevels(expectedVariations);
-  graphmlFileOps.initializeFolder(prefix);
-  chooseCorners();
-  return VariationNumber - 1;
-}
-
 /* GraphML document structure functions */
 static void graphmlBegin(FILE *fp)
 {

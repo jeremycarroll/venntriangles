@@ -15,7 +15,6 @@ extern struct predicate facePredicate;
 // visible for testing
 extern uint64 CycleGuessCounter;
 extern FACE searchChooseNextFace(bool smallestFirst);
-extern void searchSolutionWrite(const char *prefix);
 extern int searchCountVariations(char *variationMultiplication);
 
 #endif  // SEARCH_H

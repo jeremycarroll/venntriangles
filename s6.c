@@ -106,7 +106,6 @@ void initializeS6(void)
   verifyS6Initialization(done, ix);
 }
 
-/* Externally linked functions - Dynamic */
 PERMUTATION s6Automorphism(CYCLE_ID cycleId)
 {
   CYCLE cycle = Cycles + cycleId;
@@ -118,10 +117,6 @@ PERMUTATION s6Automorphism(CYCLE_ID cycleId)
   return result;
 }
 
-/* Externally linked functions - Reset */
-// No reset functions in this file
-
-/* Externally linked functions - Other */
 CYCLE_ID s6PermuteCycleId(CYCLE_ID originalCycleId, PERMUTATION permutation)
 {
   COLOR permuted[NCOLORS * 2];
