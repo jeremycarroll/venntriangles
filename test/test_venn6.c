@@ -29,6 +29,7 @@ static int SolutionCount = 0;
 /* Predicate functions */
 static struct predicateResult countSolutions(int round)
 {
+  (void)round;  // Mark parameter as intentionally unused
   SolutionCount++;
   return PredicateFail;
 }
@@ -59,7 +60,7 @@ static void testSearchForTwoSolutions()
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(5, 5, 5, 4, 4, 4));
   dynamicFaceAddSpecific("c", "adbce");
-  /* This is a short statement of the best solution.
+  /* A short statement of the best solution.
   dynamicFaceAddSpecific("a", "abed");
   dynamicFaceAddSpecific("c", "adbce");
   dynamicFaceAddSpecific("bde", "bfd");
@@ -75,11 +76,6 @@ static void testSearchForTwoSolutions()
 
   TEST_ASSERT_EQUAL(2, SolutionCount);
 }
-
-/* The test program - initialization, face degrees, and face search */
-static struct predicate* testProgram[] = {
-    &InitializePredicate, &faceDegreePredicate, &facePredicate,
-    &(struct predicate){"count", countSolutions, NULL}};
 
 static void testFullSearch(void)
 {
