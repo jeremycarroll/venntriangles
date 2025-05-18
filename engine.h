@@ -74,8 +74,9 @@ struct stackEntry {
   struct choicePoint choicePoint;  // For storing choice information
 };
 
-/* Runs each predicate in turn. The predicates argument is a null-terminated
-   array of predicates.
+/* Runs each predicate in turn. The predicates argument must be terminated in a
+predicate that never succeeds with a PREDICATE_SUCCESS_NEXT_PREDICATE result,
+e.g. FAILPredicate or SUSPENDPredicate.
  */
 extern void engine(PREDICATE* predicates);
 void engineResume(PREDICATE* predicates);

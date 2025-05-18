@@ -76,25 +76,9 @@ void engineResume(PREDICATE* predicates)
 
 static bool engineLoop(void)
 {
+  PredicateResult result;
   while (true) {
-    freeAll();  // Malloced memory is for temporary use only.
-    if (stackTop->predicate == NULL) {
-      // We've reached the end of the predicates array successfully
-      goto backtrack;
-    backtrack:
-      // Backtrack to previous choice point
-      do {
-        trace("fail");
-        if (stackTop == stack) {
-          return true;  // All done
-        }
-        stackTop--;
-      } while (!stackTop->inChoiceMode);
-      continue;
-    }
-
-    PredicateResult result;
-
+    freeAll();
     trailBacktrackTo(stackTop->trail);
     if (!stackTop->inChoiceMode) {
       trace("call");
@@ -102,7 +86,15 @@ static bool engineLoop(void)
 
       switch (result.code) {
         case PREDICATE_FAIL:
-          goto backtrack;
+        backtrack:
+          do {
+            trace("fail");
+            if (stackTop == stack) {
+              return true;  // All done
+            }
+            stackTop--;
+          } while (!stackTop->inChoiceMode);
+          continue;
 
         case PREDICATE_SUCCESS_NEXT_PREDICATE:
         case PREDICATE_SUCCESS_SAME_PREDICATE:
