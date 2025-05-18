@@ -84,16 +84,6 @@ static bool engineLoop(void)
       result = stackTop->predicate->try(stackTop->round);
 
       switch (result.code) {
-        case PREDICATE_FAIL:
-        backtrack:
-          do {
-            trace("fail");
-            if (stackTop == stack) {
-              return true;  // All done
-            }
-            stackTop--;
-          } while (!stackTop->inChoiceMode);
-          continue;
 
         case PREDICATE_SUCCESS_NEXT_PREDICATE:
         case PREDICATE_SUCCESS_SAME_PREDICATE:
@@ -101,8 +91,9 @@ static bool engineLoop(void)
           assert(stackTop < stack + MAX_STACK_SIZE);
           break;
 
+        case PREDICATE_FAIL: /* 0 choices */
         case PREDICATE_CHOICES:
-          // Start trying choices
+          // Start trying choice
           stackTop->inChoiceMode = true;
           stackTop->currentChoice = 0;
           stackTop->numberOfChoices = result.numberOfChoices;
@@ -113,7 +104,15 @@ static bool engineLoop(void)
       }
     } else {
       if (stackTop->currentChoice >= stackTop->numberOfChoices) {
-        goto backtrack;
+        /* backtrack */
+        do {
+          trace("fail");
+          if (stackTop == stack) {
+            return true;  // All done
+          }
+          stackTop--;
+        } while (!stackTop->inChoiceMode);
+        continue;
       }
       trace("retry");
       result = stackTop->predicate->retry(stackTop->round,
