@@ -76,15 +76,12 @@ int dynamicMain0(int argc, char *argv[])
         disaster("Invalid option");
     }
   }
-
   if (optind != argc) {
     disaster("Invalid option");
   }
-
   if (TargetFolder == NULL) {
     disaster("Output folder not specified");
   }
-
   // Set the appropriate static variables based on whether -d was specified
   if (hasFaceDegrees) {
     PerFaceDegreeMaxSolutions = localMaxSolutions;
@@ -95,7 +92,6 @@ int dynamicMain0(int argc, char *argv[])
   }
 
   initializeOutputFolder();
-
   initializeStatisticLogging("/dev/stdout", 200, 10);
 
   engine(nonDeterministicProgram);
