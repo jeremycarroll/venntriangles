@@ -84,7 +84,6 @@ static bool engineLoop(void)
       result = stackTop->predicate->try(stackTop->round);
 
       switch (result.code) {
-
         case PREDICATE_SUCCESS_NEXT_PREDICATE:
         case PREDICATE_SUCCESS_SAME_PREDICATE:
           pushStackEntry(++stackTop, result.code);

@@ -75,26 +75,7 @@ void tearDown(void)
 /* Global variables */
 static int SolutionCount = 0;
 
-static struct predicateResult (*FoundSolution)(void);
-/* Callback functions */
-static struct predicateResult foundBasicSolution()
-{
-  SolutionCount++;
-  SIGNATURE signature = s6SignatureFromFaces();
-  SIGNATURE classSignature = s6MaxSignature();
-  if (strcmp(ExpectedSignature, d6SignatureToString(signature)) != 0) {
-    return PredicateFail;
-  }
-  TEST_ASSERT_EQUAL_STRING(ClassSignature, d6SignatureToString(classSignature));
-  return FoundSolution ? PredicateSuccessNextPredicate : PredicateFail;
-}
-
-static bool beginCountVariations()
-{
-  return true;
-}
-
-static void endCountVariations()
+static void endCountVariations(void)
 {
   TEST_ASSERT_EQUAL(1, FopenCount);
 }
@@ -308,20 +289,6 @@ static void matchGraphMlFile(void (*nodeMatch)(regmatch_t*),
                             "edge count: Euler, and 6 triangles");
 }
 
-static bool initializeGraphMLTest(void)
-{
-  memset(nodes, 0, sizeof(nodes));
-  nodeCount = 0;
-  compileRegexes();
-  return true;
-}
-
-static void verifyGraphMLFileOperations(void)
-{
-  graphmlSaveAllVariations("/tmp/foo", 100000);
-  TEST_ASSERT_EQUAL(1, FopenCount);
-}
-
 static void matchAndVerifyNodeCount(void)
 {
   size_t completeNodeCount;
@@ -397,14 +364,6 @@ static void backwardGraphML(void)
 FORWARD_BACKWARD_PREDICATE_STATIC(GraphML, NULL, forwardGraphML,
                                   backwardGraphML)
 
-static void checkGraphML(void)
-{
-  initializeGraphMLTest();
-  verifyGraphMLFileOperations();
-  matchAndVerifyNodeCount();
-  verifyAllNodes();
-  freeRegexes();
-}
 static regex_t internalEdgeRegex;
 /* This test exercises the code for dealing with two corners in the same face.
 The specific result picked out is 654444-26/6c/037.xml which includes three
@@ -443,57 +402,6 @@ static bool testVariationEstimate()
   TEST_ASSERT_EQUAL(128, searchCountVariations(NULL));
   return false;
 }
-
-static int ContinuationCount = 0;
-static int countContinuation(COLOR color, EDGE (*corners)[3])
-{
-  (void)color;    // Explicitly mark as unused
-  (void)corners;  // Explicitly mark as unused
-  ContinuationCount++;
-  return 0;
-}
-
-static void initializeFaceDegree(int a, int b, int c, int d, int e, int f)
-{
-  CentralFaceDegrees[0] = a;
-  CentralFaceDegrees[1] = b;
-  CentralFaceDegrees[2] = c;
-  CentralFaceDegrees[3] = d;
-  CentralFaceDegrees[4] = e;
-  CentralFaceDegrees[5] = f;
-}
-
-static char* TestName;
-
-static void setup645534()
-{
-  initializeFaceDegree(6, 4, 5, 5, 3, 4);
-  MaxVariantsPerSolution = 1;
-  IgnoreFirstVariantsPerSolution = 0;
-  ExpectedSignature =
-      "McDpAzHcCtAgAyKaNnAwEiCxAeClCyDxBwFnAyJzBqFwAzEvBvAxAsCwAaBwKjEuNfKcBdDe"
-      "BhAfAoCxDeBdEhEdAuBiDvCwBdDgBcEnAoDhApFyAcAtAdFzCvBpKoPd";
-  ClassSignature =
-      "PdJeIgFuAcEhAdDeDqAcDuGqElAdGnGhKoDpAbFnAnFeAaFwJdDmCzCyAeFkCyCzErDnDlDk"
-      "BqFwAzHcEsAxEpEyJjAwDcCxKjDoAaFwAsDeBvNwDiEtFhEsAyOrJwMx";
-}
-
-// static void setup654444()
-// {
-//   FACE_DEGREE* degrees = intArray(6, 5, 4, 4, 4, 4);
-//   for (int i = 0; i < NFACES; i++) {
-//     CentralFaceDegrees[i] = degrees[i];
-//   }
-//   MaxVariantsPerSolution = 10;
-//   IgnoreFirstVariantsPerSolution = 9;
-//   // From 654444-26.txt (this may change)
-//   ExpectedSignature =
-//       "OrCgChKeDtAoAwFhDxAcArEmDyBfDcEaAwAxBhFkBnBhAxEsEuDpBtFeBkBtFrEuLqBiBaDa"
-//       "EgApAdDvEyBmApDbDeAoGnDqBrAwBfDbAlBnAcDqDjKgAoEfAhBzKyPd";
-//   ClassSignature =
-//       "PdJeIgKbAcEhAdDwDqAcDbBeElAdEhBbNsFbEnCwAlFkAcCxEzDkDaDtFsDlElDsErDnDlEo"
-//       "BqFwAzEvEsAxFkBhFnBwFwBqEkDaEfCxAsDbCsEyDiHhDbDsDpMcIiOi";
-// }
 
 static int CornerCountColor;
 static int CornerCountExpected;
@@ -541,24 +449,6 @@ static void runx(void)
 #define RUN_645534(program) RUN_SEARCH_TEST(645534, __LINE__, program)
 #define RUN_654444(program) RUN_SEARCH_TEST(654444, __LINE__, program)
 
-static struct predicate* nonDeterministicProgram[] = {
-    /* Single call: Initialization. On backtrack perform reset, then fail. */
-    &InitializePredicate,
-    /* 6 Calls. Nondeterministic: choosse a canonical or equivocal sequence of 5
-       face degrees summing to 27. */
-    &faceDegreePredicate,
-    /* < 64 calls. Nondeterministic: choose facial cycle for every face. */
-    &facePredicate,
-    /* Single call. Save the solution. On backtrack, also write the number of
-       variants, then fail. */
-    &SaveMainPredicate,
-    /* 6 Calls. Nondeterministic: choose the 18 corners of a variation. */
-    &cornersPredicate,
-    /* Single call. Save the variation. */
-    &saveVariationPredicate,
-    /* Fail. */
-    &FAILPredicate};
-
 FORWARD_BACKWARD_PREDICATE_STATIC(Gate, gate, NULL, NULL)
 FORWARD_BACKWARD_PREDICATE_STATIC(VariationCount, testVariationEstimate, NULL,
                                   NULL)
@@ -584,7 +474,6 @@ static PREDICATE Variant14188[] = {
     &InitializePredicate, &Variant14188Predicate,  &GraphMLPredicate,
     &faceDegreePredicate, &facePredicate,          &GatePredicate,
     &cornersPredicate,    &saveVariationPredicate, &FAILPredicate};
-// #define RUN_654444(foundSolution) RUN_SEARCH_TEST(setup654444, foundSolution)
 static PREDICATE CornerCount[] = {&InitializePredicate, &faceDegreePredicate,
                                   &facePredicate, &GatePredicate,
                                   &CornerCountPredicate};
@@ -593,14 +482,28 @@ static char* ClassSignature;
 static PREDICATE* TestProgram;
 static void (*SetupSearchTest)(void);
 
-// #define DEFINE_TEST(signature, program) \
-//   static void program##signature(void)  \
-//   {                                     \
-//     TestProgram = program;              \
-//     SetupSearchTest = setup##signature; \
-//     SolutionCount = 0;                  \
-//     runx();                             \
-//   }
+static void initializeFaceDegree(int a, int b, int c, int d, int e, int f)
+{
+  CentralFaceDegrees[0] = a;
+  CentralFaceDegrees[1] = b;
+  CentralFaceDegrees[2] = c;
+  CentralFaceDegrees[3] = d;
+  CentralFaceDegrees[4] = e;
+  CentralFaceDegrees[5] = f;
+}
+
+static void setup645534()
+{
+  initializeFaceDegree(6, 4, 5, 5, 3, 4);
+  MaxVariantsPerSolution = 1;
+  IgnoreFirstVariantsPerSolution = 0;
+  ExpectedSignature =
+      "McDpAzHcCtAgAyKaNnAwEiCxAeClCyDxBwFnAyJzBqFwAzEvBvAxAsCwAaBwKjEuNfKcBdDe"
+      "BhAfAoCxDeBdEhEdAuBiDvCwBdDgBcEnAoDhApFyAcAtAdFzCvBpKoPd";
+  ClassSignature =
+      "PdJeIgFuAcEhAdDeDqAcDuGqElAdGnGhKoDpAbFnAnFeAaFwJdDmCzCyAeFkCyCzErDnDlDk"
+      "BqFwAzHcEsAxEpEyJjAwDcCxKjDoAaFwAsDeBvNwDiEtFhEsAyOrJwMx";
+}
 
 static void setup654444()
 {
@@ -615,17 +518,6 @@ static void setup654444()
       "PdJeIgKbAcEhAdDwDqAcDbBeElAdEhBbNsFbEnCwAlFkAcCxEzDkDaDtFsDlElDsErDnDlEo"
       "BqFwAzEvEsAxFkBhFnBwFwBqEkDaEfCxAsDbCsEyDiHhDbDsDpMcIiOi";
 }
-// static PREDICATE Basic[0];
-
-// static void runx(void)
-// {
-//   SetupSearchTest();
-//   // engine(TestProgram, NULL);
-//   TEST_ASSERT_EQUAL(1, 1);
-// }
-
-// DEFINE_TEST(645534, Basic)
-// DEFINE_TEST(654444, Basic)
 
 #define RUN_CORNER_COUNT(color, expected)                        \
   {                                                              \
@@ -636,34 +528,6 @@ static void setup654444()
     UnityDefaultTestRun(runx, "645534-Color-" #color, __LINE__); \
   };
 
-#if 0
-static void foundSolutionColor0()
-{
-  testColorContinuations(0, 8);
-}
-static void foundSolutionColor1()
-{
-  testColorContinuations(1, 1);
-}
-static void foundSolutionColor2()
-{
-  testColorContinuations(2, 2);
-}
-static void foundSolutionColor3()
-{
-  testColorContinuations(3, 1);
-}
-static void foundSolutionColor4()
-{
-  testColorContinuations(4, 2);
-}
-static void foundSolutionColor5()
-{
-  testColorContinuations(5, 4);
-}
-#endif
-
-extern EDGE PossibileCorners[NCOLORS][3][NFACES];
 /* Main test runner */
 int main(void)
 {
