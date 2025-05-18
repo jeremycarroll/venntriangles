@@ -31,6 +31,7 @@ static int count6;
 /* Callback functions */
 static struct predicateResult countSolutions(int round)
 {
+  (void)round;
   count6++;
   return PredicateFail;
 }

@@ -12,9 +12,6 @@
 /* The face predicate */
 extern struct predicate facePredicate;
 
-extern void searchHere(bool smallestFirst, void (*foundSolution)(void));
-extern void searchFull(void (*foundSolution)(void));
-
 // visible for testing
 extern uint64 CycleGuessCounter;
 extern FACE searchChooseNextFace(bool smallestFirst);

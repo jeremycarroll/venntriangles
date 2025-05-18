@@ -26,7 +26,6 @@ static clock_t TotalUsefulTime = 0;
 static int WastedSearchCount = 0;
 static int UsefulSearchCount = 0;
 uint64 CycleGuessCounter = 0;
-static TRAIL StartPoint;
 
 /* State machine states for the search process */
 typedef enum {
@@ -46,7 +45,6 @@ typedef struct {
 /* Declaration of file scoped static functions */
 static void setFaceCycleSetToSingleton(FACE face, uint64 cycleId);
 static CYCLE chooseCycle(FACE face, CYCLE cycle);
-static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args);
 static FAILURE checkFacePoints(FACE face, CYCLE cycle, int depth);
 static FAILURE checkEdgeCurvesAndCorners(FACE face, CYCLE cycle, int depth);
 static FAILURE propagateFaceChoices(FACE face, CYCLE cycle, int depth);
@@ -332,45 +330,6 @@ static FAILURE propagateRestrictionsToNonVertexAdjacentFaces(FACE face,
   return NULL;
 }
 
-static void fullSearchCallback(void* foundSolutionVoidPtr, FACE_DEGREE* args)
-{
-  clock_t now = clock();
-  clock_t used;
-  int initialSolutionsFound = GlobalSolutionsFound;
-  int initialVariationCount = VariationCount;
-  int i;
-  void (*foundSolution)(void) = foundSolutionVoidPtr;
-  if ((int64_t)GlobalSolutionsFound >= GlobalMaxSolutions) {
-    return;
-  }
-  PerFaceDegreeSolutionNumber = 0;
-  dynamicFaceSetupCentral(args);
-  searchHere(true, foundSolution);
-  used = clock() - now;
-  if ((int64_t)GlobalSolutionsFound != initialSolutionsFound) {
-    TotalUsefulTime += used;
-    UsefulSearchCount += 1;
-
-#define PRINT_TIME(clockValue, counter)                        \
-  printf("[%1lu.%6.6lu (%d)] ", (clockValue) / CLOCKS_PER_SEC, \
-         (clockValue) % CLOCKS_PER_SEC, counter)
-    if (VerboseMode) {
-      PRINT_TIME(used, 0);
-      PRINT_TIME(TotalUsefulTime, UsefulSearchCount);
-      PRINT_TIME(TotalWastedTime, WastedSearchCount);
-    }
-    for (i = 0; i < NCOLORS; i++) {
-      printf("%llu ", args[i]);
-    }
-    printf(" gives %llu/%d new solutions\n",
-           GlobalSolutionsFound - initialSolutionsFound,
-           VariationCount - initialVariationCount);
-    statisticPrintOneLine(0, true);
-  } else {
-    WastedSearchCount += 1;
-    TotalWastedTime += used;
-  }
-}
 static int FacePredicateInitialSolutionsFound = 0;
 static int FacePredicateInitialVariationCount = 0;
 static clock_t FacePredicateStart = 0;
@@ -381,7 +340,6 @@ static struct predicateResult tryFace(int round)
 {
   if (round == 0) {
     FacePredicateStart = clock();
-    clock_t used;
     FacePredicateInitialSolutionsFound = GlobalSolutionsFound;
     FacePredicateInitialVariationCount = VariationCount;
     PerFaceDegreeSolutionNumber = 0;
@@ -407,7 +365,6 @@ static struct predicateResult tryFace(int round)
 
 static struct predicateResult retryFace(int round, int choice)
 {
-  int i;
   (void)choice;
   FACE face = facesInOrderOfChoice[round];
   // Not on trail, otherwise it would get unset before the next retry.
@@ -450,14 +407,3 @@ static struct predicateResult retryFace(int round, int choice)
 
 /* The predicates array for corner handling */
 struct predicate facePredicate = {"Face", tryFace, retryFace};
-static struct predicate* predicates[] = {
-    &facePredicate, NULL  // Terminator
-};
-
-void searchHere(bool smallestFirstX, void (*foundSolution)(void))
-{
-  assert(0);
-  smallestFirst = smallestFirstX;
-
-  engine(predicates);
-}
