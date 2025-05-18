@@ -37,16 +37,12 @@ typedef struct signature {
   bool reflected;
 } *SIGNATURE;
 
-/* The face degree predicate */
-extern struct predicate faceDegreePredicate;
-
 extern void initializeS6(void);
 extern SYMMETRY_TYPE s6FacesSymmetryType(void);
 
 /* The faceDegrees is an array of NCOLORS integers between 3 and NCOLORS to be
    used as the face degrees for the NCOLORS faces around the central face. */
 typedef void (*UseFaceDegrees)(void *data, FACE_DEGREE *faceDegrees);
-extern void s6FaceDegreeCanonicalCallback(UseFaceDegrees callback, void *data);
 extern char *s6FaceDegreeSignature(void);
 
 extern SIGNATURE s6MaxSignature(void);

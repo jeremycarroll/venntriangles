@@ -136,23 +136,6 @@ FACE searchChooseNextFace(bool smallestFirst)
   return face;
 }
 
-static void searchFullX(void (*foundSolution)(void))
-{
-  initializeS6();
-  initialize();
-  statisticIncludeInteger(&CycleGuessCounter, "?", "guesses", false);
-  statisticIncludeInteger(&GlobalVariantCount, "V", "variants", false);
-  statisticIncludeInteger(&GlobalSolutionsFound, "S", "solutions", false);
-  StartPoint = Trail;
-  GlobalSolutionsFound = 0;
-  s6FaceDegreeCanonicalCallback(fullSearchCallback, (void*)foundSolution);
-}
-
-void searchFull(void (*foundSolution)(void))
-{
-  searchFullX(foundSolution);
-}
-
 static void solutionPrint(FILE* fp)
 {
   COLORSET colors = 0;

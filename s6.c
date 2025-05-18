@@ -166,8 +166,6 @@ char *s6FaceDegreeSignature(void)
 }
 
 /* Static variables for the engine-based callback */
-static void (*staticCallback)(void *, FACE_DEGREE *);
-static void *staticCallbackData;
 static FACE_DEGREE currentArgs[NCOLORS];
 
 static int sumFaceDegree(int round)
@@ -203,7 +201,8 @@ static struct predicateResult retry5FaceDegree(int round, int choice)
     return PredicateFail;
   }
 
-  if (CentralFaceDegrees[round] > 0 && degree != CentralFaceDegrees[round]) {
+  if (CentralFaceDegrees[round] > 0 &&
+      (FACE_DEGREE)degree != CentralFaceDegrees[round]) {
     return PredicateFail;  // Skip if there's a specific degree required for
                            // this position
   }
@@ -218,23 +217,8 @@ static struct predicateResult retry5FaceDegree(int round, int choice)
   return PredicateSuccessSamePredicate;
 }
 
-/* Static callback for the engine */
-static void engineCallback(void)
-{
-  staticCallback(staticCallbackData, currentArgs);
-}
-/* The predicates array for 5-face degree sequence search */
 struct predicate faceDegreePredicate = {"InnerFaces", try5FaceDegree,
                                         retry5FaceDegree};
-
-void s6FaceDegreeCanonicalCallback(void (*callback)(void *, FACE_DEGREE *),
-                                   void *data)
-{
-  // staticCallback = callback;
-  // staticCallbackData = data;
-  // engine(predicates, NULL);
-}
-
 SIGNATURE s6MaxSignature(void)
 {
   int resultsIndex = 0;
