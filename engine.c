@@ -32,7 +32,7 @@ struct predicateResult predicateChoices(int numberOfChoices)
   return (struct predicateResult){PREDICATE_CHOICES, numberOfChoices};
 }
 
-static void pushStackEntry(struct stackEntry* stack, PredicateResultCode code);
+static void pushStackEntry(struct stackEntry* entry, PredicateResultCode code);
 static void trace(const char* message);
 static struct stackEntry stack[MAX_STACK_SIZE + 1], *stackTop = stack;
 static int Counter = 0;
@@ -136,25 +136,25 @@ static bool engineLoop(void)
   }
 }
 
-static void pushStackEntry(struct stackEntry* stack, PredicateResultCode code)
+static void pushStackEntry(struct stackEntry* entry, PredicateResultCode code)
 {
-  stack->inChoiceMode = false;
-  stack->predicates = stack[-1].predicates;
-  stack->predicates = code == PREDICATE_SUCCESS_NEXT_PREDICATE
-                          ? stack[-1].predicates + 1
-                          : stack[-1].predicates;
-  stack->predicate = *stack->predicates;
-  stack->round =
-      code == PREDICATE_SUCCESS_NEXT_PREDICATE ? 0 : stack[-1].round + 1;
-  stack->currentChoice = -1;
-  stack->trail = Trail;
-  stack->counter = Counter++;  // Increment counter
+  entry->inChoiceMode = false;
+  entry->predicates = entry[-1].predicates;
+  entry->predicates = code == PREDICATE_SUCCESS_NEXT_PREDICATE
+                          ? entry[-1].predicates + 1
+                          : entry[-1].predicates;
+  entry->predicate = *entry->predicates;
+  entry->round =
+      code == PREDICATE_SUCCESS_NEXT_PREDICATE ? 0 : entry[-1].round + 1;
+  entry->currentChoice = -1;
+  entry->trail = Trail;
+  entry->counter = Counter++;  // Increment counter
 }
 
 void trace(const char* message)
 {
   if (!Tracing) return;
-  fprintf(stderr, "%d:%d:", stackTop->counter, stackTop - stack);
+  fprintf(stderr, "%d:%ld:", stackTop->counter, (long)(stackTop - stack));
   if (stackTop->currentChoice >= 0) {
     fprintf(stderr, "%s(%d,%d) %s\n", message, stackTop->round,
             stackTop->currentChoice, stackTop->predicate->name);
