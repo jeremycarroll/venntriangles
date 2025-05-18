@@ -83,7 +83,7 @@ void chooseCorners(void)
   //   filename = "variation.graphml";  // Or get this from somewhere else?
   //   numberOfVariations = searchCountVariations(NULL);
   assert(0);
-  engine(predicates, NULL);
+  engine(predicates);
 }
 
 /* Path and corner functions */

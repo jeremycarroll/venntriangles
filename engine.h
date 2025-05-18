@@ -75,9 +75,9 @@ struct stackEntry {
 };
 
 /* Runs each predicate in turn. The predicates argument is a null-terminated
-   array of predicates. The callback is called each time all predicates succeed.
+   array of predicates.
  */
-extern void engine(PREDICATE* predicates, void (*callback)(void));
+extern void engine(PREDICATE* predicates);
 void engineResume(PREDICATE* predicates);
 
 #define FORWARD_BACKWARD_PREDICATE_SCOPE(scope, name, gate, forward, backward) \

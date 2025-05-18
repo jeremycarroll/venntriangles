@@ -52,7 +52,7 @@ static struct predicate* testProgram[] = {
 static void testCallback()
 {
   count6 = 0;
-  engine(testProgram, NULL);
+  engine(testProgram);
   TEST_ASSERT_EQUAL(56, count6);
 }
 

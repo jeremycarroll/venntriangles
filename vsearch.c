@@ -476,5 +476,5 @@ void searchHere(bool smallestFirstX, void (*foundSolution)(void))
   assert(0);
   smallestFirst = smallestFirstX;
 
-  engine(predicates, foundSolution);
+  engine(predicates);
 }

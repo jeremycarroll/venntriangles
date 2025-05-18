@@ -96,8 +96,7 @@ static struct predicate* predicates[] = {&SaveMainPredicate, &cornersPredicate,
 
 void writeSolution(void)
 {
-  assert(0);
-  engine(predicates, NULL);
+  engine(predicates);
 }
 
 static void solutionPrint(FILE* fp)

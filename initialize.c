@@ -40,5 +40,5 @@ static struct predicate* predicates[] = {&InitializePredicate, NULL};
 void runInitialize(void)
 {
   assert(0);
-  engine(predicates, NULL);
+  engine(predicates);
 }

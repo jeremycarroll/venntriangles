@@ -37,9 +37,9 @@ static void pushStackEntry(struct stackEntry* stack, PredicateResultCode code);
 static void trace(const char* message);
 static struct stackEntry stack[MAX_STACK_SIZE + 1], *stackTop = stack;
 static int Counter = 0;
-static bool engineLoop(void (*callback)(void));
+static bool engineLoop(void);
 
-void engine(PREDICATE* predicates, void (*callback)(void))
+void engine(PREDICATE* predicates)
 {
   // Initialize first stack entry
   assert(stackTop == stack);
@@ -51,7 +51,7 @@ void engine(PREDICATE* predicates, void (*callback)(void))
   stackTop->trail = Trail;
   stackTop->counter = Counter++;
 
-  if (!engineLoop(callback) && Tracing) {
+  if (!engineLoop() && Tracing) {
     fprintf(stderr, "Engine suspended\n");
   } else {
     assert(stackTop == stack || stackTop->predicate == &SUSPENDPredicate);
@@ -69,18 +69,18 @@ void engineResume(PREDICATE* predicates)
   pushStackEntry(++stackTop, PREDICATE_SUCCESS_NEXT_PREDICATE);
   stackTop->predicate = *predicates;
   stackTop->predicates = predicates;
-  successfulRun = engineLoop(NULL);
+  successfulRun = engineLoop();
   // Suspending twice is not supported.
   assert(successfulRun);
 }
 
-static bool engineLoop(void (*callback)(void))
+static bool engineLoop(void)
 {
   while (true) {
     freeAll();  // Malloced memory is for temporary use only.
     if (stackTop->predicate == NULL) {
       // We've reached the end of the predicates array successfully
-      callback();
+      goto backtrack;
     backtrack:
       // Backtrack to previous choice point
       do {

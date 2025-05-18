@@ -530,7 +530,7 @@ static void runx(void)
   SolutionCount = 0;
   FopenCount = 0;
   SetupSearchTest();
-  engine(TestProgram, NULL);
+  engine(TestProgram);
   TEST_ASSERT_EQUAL(1, SolutionCount);
 }
 

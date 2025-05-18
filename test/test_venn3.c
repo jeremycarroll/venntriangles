@@ -12,7 +12,7 @@
 void setUp(void)
 {
   initializeStatisticLogging(NULL, 4, 1);
-  engine((PREDICATE[]){&InitializePredicate, &SUSPENDPredicate}, NULL);
+  engine((PREDICATE[]){&InitializePredicate, &SUSPENDPredicate});
 }
 
 void tearDown(void)
