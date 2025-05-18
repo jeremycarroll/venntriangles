@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Global variables for corner handling */
 static EDGE SelectedCorners[NCOLORS][3];
 extern EDGE PossibileCorners[NCOLORS][3][NFACES];
 extern int VariationNumber;
@@ -60,8 +59,8 @@ static struct predicateResult retryCorners(int round, int choice)
 {
   int cornerIndex = round % 3;
   int colorIndex = round / 3;
-  trailSetPointer(&SelectedCorners[colorIndex][cornerIndex],
-                  PossibileCorners[colorIndex][cornerIndex][choice]);
+  TRAIL_SET_POINTER(&SelectedCorners[colorIndex][cornerIndex],
+                    PossibileCorners[colorIndex][cornerIndex][choice]);
   return PredicateSuccessSamePredicate;
 }
 
@@ -95,7 +94,7 @@ static void getPath(EDGE* path, EDGE from, EDGE to)
 #endif
   assert(length > 0);
   assert(length == 1 || path[0] != path[length - 1]);
-  trailSetPointer(path + length, NULL);
+  TRAIL_SET_POINTER(path + length, NULL);
 }
 
 static void possibleCorners(EDGE* possibilities, COLOR color, EDGE from,
