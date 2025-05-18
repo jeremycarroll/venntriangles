@@ -419,7 +419,7 @@ static struct predicateResult tryFace(int round)
       return PredicateFail;
     }
   }
-  return predicateChoices(facesInOrderOfChoice[round]->cycleSetSize + 1, NULL);
+  return predicateChoices(facesInOrderOfChoice[round]->cycleSetSize + 1);
 }
 
 static struct predicateResult retryFace(int round, int choice)

@@ -502,8 +502,7 @@ static bool testCornerCount()
 {
   int multiple = 1;
   for (int i = 0; i < 3; i++) {
-    multiple *= cornersPredicate.try(3 * CornerCountColor + i)
-                    .choicePoint.numberOfChoices;
+    multiple *= cornersPredicate.try(3 * CornerCountColor + i).numberOfChoices;
   }
   TEST_ASSERT_EQUAL(CornerCountExpected, multiple);
   return false;

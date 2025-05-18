@@ -192,7 +192,7 @@ static struct predicateResult try5FaceDegree(int round)
     dynamicFaceSetupCentral(currentArgs);
     return PredicateSuccessNextPredicate;
   }
-  return predicateChoices(NCOLORS - 2, NULL);
+  return predicateChoices(NCOLORS - 2);
 }
 
 static struct predicateResult retry5FaceDegree(int round, int choice)

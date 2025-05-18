@@ -53,7 +53,7 @@ static struct predicateResult tryCorners(int round)
   possibleCorners(PossibileCorners[colorIndex][cornerIndex], colorIndex,
                   cornerPairs[cornerIndex][0], cornerPairs[cornerIndex][1]);
   return predicateChoices(
-      edgeArrayLength(PossibileCorners[colorIndex][cornerIndex]), NULL);
+      edgeArrayLength(PossibileCorners[colorIndex][cornerIndex]));
 }
 
 static struct predicateResult retryCorners(int round, int choice)

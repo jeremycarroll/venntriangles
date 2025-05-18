@@ -20,17 +20,16 @@
 #define MAX_STACK_SIZE 1000
 
 /* Predefined predicate results */
-const struct predicateResult PredicateFail = {PREDICATE_FAIL, {0, NULL}};
+const struct predicateResult PredicateFail = {PREDICATE_FAIL, 0};
 const struct predicateResult PredicateSuccessNextPredicate = {
-    PREDICATE_SUCCESS_NEXT_PREDICATE, {0, NULL}};
+    PREDICATE_SUCCESS_NEXT_PREDICATE, 0};
 const struct predicateResult PredicateSuccessSamePredicate = {
-    PREDICATE_SUCCESS_SAME_PREDICATE, {0, NULL}};
+    PREDICATE_SUCCESS_SAME_PREDICATE, 0};
 
 /* Helper function to create a predicate result with choices */
-struct predicateResult predicateChoices(int numberOfChoices, void* choices)
+struct predicateResult predicateChoices(int numberOfChoices)
 {
-  return (struct predicateResult){PREDICATE_CHOICES,
-                                  {numberOfChoices, choices}};
+  return (struct predicateResult){PREDICATE_CHOICES, numberOfChoices};
 }
 
 static void pushStackEntry(struct stackEntry* stack, PredicateResultCode code);
@@ -106,14 +105,14 @@ static bool engineLoop(void)
           // Start trying choices
           stackTop->inChoiceMode = true;
           stackTop->currentChoice = 0;
-          stackTop->choicePoint = result.choicePoint;
+          stackTop->numberOfChoices = result.numberOfChoices;
           stackTop->trail = Trail;
           break;
         case PREDICATE_SUSPEND:
           return false;
       }
     } else {
-      if (stackTop->currentChoice >= stackTop->choicePoint.numberOfChoices) {
+      if (stackTop->currentChoice >= stackTop->numberOfChoices) {
         goto backtrack;
       }
       trace("retry");
@@ -167,12 +166,12 @@ void trace(const char* message)
   }
 }
 
-#define SIMPLE_PREDICATE(name)                                    \
-  static struct predicateResult try##name(int round)              \
-  {                                                               \
-    (void)round;                                                  \
-    return (struct predicateResult){PREDICATE_##name, {0, NULL}}; \
-  }                                                               \
+#define SIMPLE_PREDICATE(name)                            \
+  static struct predicateResult try##name(int round)      \
+  {                                                       \
+    (void)round;                                          \
+    return (struct predicateResult){PREDICATE_##name, 0}; \
+  }                                                       \
   struct predicate name##Predicate = {#name, try##name, NULL};
 
 SIMPLE_PREDICATE(FAIL)

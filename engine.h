@@ -22,13 +22,9 @@ typedef enum {
   PREDICATE_SUSPEND
 } PredicateResultCode;
 
-struct choicePoint {
-  int numberOfChoices;
-  void* choices;
-};
 typedef struct predicateResult {
   PredicateResultCode code;
-  struct choicePoint choicePoint;
+  int numberOfChoices;
 } PredicateResult;
 
 /* Predefined predicate results */
@@ -37,7 +33,7 @@ extern const struct predicateResult PredicateSuccessNextPredicate;
 extern const struct predicateResult PredicateSuccessSamePredicate;
 
 /* Helper function to create a predicate result with choices */
-struct predicateResult predicateChoices(int numberOfChoices, void* choices);
+struct predicateResult predicateChoices(int numberOfChoices);
 
 /* A predicate has two methods:
    try:   First attempt to satisfy the predicate. Can return:
@@ -70,8 +66,8 @@ struct stackEntry {
   int currentChoice;
   int round;
   TRAIL trail;
-  int counter;                     // Counter for tracing
-  struct choicePoint choicePoint;  // For storing choice information
+  int counter;          // Counter for tracing
+  int numberOfChoices;  // For storing number of choices
 };
 
 /* Runs each predicate in turn. The predicates argument must be terminated in a
@@ -89,7 +85,7 @@ void engineResume(PREDICATE* predicates);
     if (gatingFunction && !gatingFunction()) {                                 \
       return PredicateFail;                                                    \
     }                                                                          \
-    return predicateChoices(2, NULL);                                          \
+    return predicateChoices(2);                                                \
   }                                                                            \
   static PredicateResult retry##name(int round, int choice)                    \
   {                                                                            \
