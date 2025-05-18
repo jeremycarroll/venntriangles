@@ -40,6 +40,8 @@ static size_t nodeCount = 0;
 static char* offsetBase;
 static char* ExpectedSignature;
 static char* ClassSignature;
+static PREDICATE* TestProgram;
+static void (*SetupSearchTest)(void);
 
 static void mockInitializeFolder(const char* folder)
 {
@@ -67,8 +69,8 @@ void setUp(void)
 }
 
 void tearDown(void)
-{ /* nothing */
-
+{ /* This is needed after a test failure, when unity uses a long jump out of the
+     engine. */
   engineResume((PREDICATE[]){&FAILPredicate});
 }
 
@@ -430,9 +432,7 @@ static bool gate()
   return true;
 }
 
-static PREDICATE* TestProgram;
-static void (*SetupSearchTest)(void);
-static void runx(void)
+static void run(void)
 {
   SolutionCount = 0;
   FopenCount = 0;
@@ -444,7 +444,7 @@ static void runx(void)
 #define RUN_SEARCH_TEST(signature, line, program) \
   TestProgram = program;                          \
   SetupSearchTest = setup##signature;             \
-  UnityDefaultTestRun(runx, #signature "-" #program, line)
+  UnityDefaultTestRun(run, #signature "-" #program, line)
 
 #define RUN_645534(program) RUN_SEARCH_TEST(645534, __LINE__, program)
 #define RUN_654444(program) RUN_SEARCH_TEST(654444, __LINE__, program)
@@ -477,10 +477,6 @@ static PREDICATE Variant14188[] = {
 static PREDICATE CornerCount[] = {&InitializePredicate, &faceDegreePredicate,
                                   &facePredicate, &GatePredicate,
                                   &CornerCountPredicate};
-static char* ExpectedSignature;
-static char* ClassSignature;
-static PREDICATE* TestProgram;
-static void (*SetupSearchTest)(void);
 
 static void initializeFaceDegree(int a, int b, int c, int d, int e, int f)
 {
@@ -519,13 +515,13 @@ static void setup654444()
       "BqFwAzEvEsAxFkBhFnBwFwBqEkDaEfCxAsDbCsEyDiHhDbDsDpMcIiOi";
 }
 
-#define RUN_CORNER_COUNT(color, expected)                        \
-  {                                                              \
-    TestProgram = CornerCount;                                   \
-    CornerCountColor = color;                                    \
-    CornerCountExpected = expected;                              \
-    SetupSearchTest = setup645534;                               \
-    UnityDefaultTestRun(runx, "645534-Color-" #color, __LINE__); \
+#define RUN_CORNER_COUNT(color, expected)                       \
+  {                                                             \
+    TestProgram = CornerCount;                                  \
+    CornerCountColor = color;                                   \
+    CornerCountExpected = expected;                             \
+    SetupSearchTest = setup645534;                              \
+    UnityDefaultTestRun(run, "645534-Color-" #color, __LINE__); \
   };
 
 /* Main test runner */
