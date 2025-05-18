@@ -92,20 +92,24 @@ void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
   }
 }
 
+static void trailSetArrayMemberIfNotNull(EDGE* array, int index, EDGE value)
+{
+  if (array != NULL) {
+    trailSetPointer(array + index, value);
+  }
+}
+
 int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn)
 {
   EDGE dummyReturn[NFACES];
   int i = 0;
-  if (pathReturn == NULL) {
-    pathReturn = dummyReturn;
-  }
-  pathReturn[i++] = from;
+  trailSetArrayMemberIfNotNull(pathReturn, i++, from);
   while (from != to) {
     from = edgeFollowForwards(from);
     assert(from != to->reversed);
     assert(from != NULL);
     assert(i < NFACES);
-    pathReturn[i++] = from;
+    trailSetArrayMemberIfNotNull(pathReturn, i++, from);
   }
   return i;
 }

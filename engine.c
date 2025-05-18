@@ -53,6 +53,8 @@ void engine(PREDICATE* predicates, void (*callback)(void))
 
   if (!engineLoop(callback) && Tracing) {
     fprintf(stderr, "Engine suspended\n");
+  } else {
+    assert(stackTop == stack || stackTop->predicate == &SUSPENDPredicate);
   }
 }
 

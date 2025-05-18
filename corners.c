@@ -60,8 +60,8 @@ static struct predicateResult retryCorners(int round, int choice)
 {
   int cornerIndex = round % 3;
   int colorIndex = round / 3;
-  SelectedCorners[colorIndex][cornerIndex] =
-      PossibileCorners[colorIndex][cornerIndex][choice];
+  trailSetPointer(&SelectedCorners[colorIndex][cornerIndex],
+                  PossibileCorners[colorIndex][cornerIndex][choice]);
   return PredicateSuccessSamePredicate;
 }
 
@@ -95,7 +95,7 @@ static void getPath(EDGE* path, EDGE from, EDGE to)
 #endif
   assert(length > 0);
   assert(length == 1 || path[0] != path[length - 1]);
-  path[length] = NULL;
+  trailSetPointer(path + length, NULL);
 }
 
 static void possibleCorners(EDGE* possibilities, COLOR color, EDGE from,
