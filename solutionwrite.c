@@ -22,7 +22,6 @@ extern int PerFaceDegreeSolutionNumber;
 extern int VariationCount;
 extern int VariationNumber;
 extern int Levels;
-extern const char* TargetFolder;
 extern char CurrentPrefix[1024];
 /* Static variables for solution writing */
 static char* currentFilename;

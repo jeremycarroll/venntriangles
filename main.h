@@ -7,22 +7,21 @@
 
 extern FACE_DEGREE CentralFaceDegrees[NCOLORS];
 
-// Global configuration constants
-extern int MaxVariantsPerSolution;
-extern int GlobalMaxSolutions;
-extern int PerFaceDegreeMaxSolutions;
-extern int GlobalSkipSolutions;
-extern int PerFaceDegreeSkipSolutions;
-extern int IgnoreFirstVariantsPerSolution;
-extern bool VerboseMode;
-extern bool Tracing;  // Controls tracing output mode
+extern char* TargetFolder;              // Output folder for results (-f)
+extern int MaxVariantsPerSolution;      // Maximum variants per solution (-n)
+extern int GlobalMaxSolutions;          // Global maximum solutions (-m)
+extern int PerFaceDegreeMaxSolutions;   // Per face degree maximum solutions (-m
+                                        // with -d)
+extern int GlobalSkipSolutions;         // Global solutions to skip (-k)
+extern int PerFaceDegreeSkipSolutions;  // Per face degree solutions to skip (-k
+                                        // with -d)
+extern int
+    IgnoreFirstVariantsPerSolution;  // Variants to ignore per solution (-j)
+extern FACE_DEGREE CentralFaceDegrees[];  // Central face degrees (-d)
+extern bool VerboseMode;                  // Verbose output mode (-v)
+extern bool Tracing;                      // Tracing output mode (-t)
 
-// Declare functions used in main.c
-extern char* s6FaceDegreeSignature(void);
+// Hook for testing and running.
 extern int dynamicMain0(int argc, char* argv[]);
-extern void searchSolutionWrite(const char* prefix);
-extern void searchFull(void (*foundSolution)(void));
-extern void disaster(const char* message);
-extern char* Argv0;
 
 #endif  // MAIN_H

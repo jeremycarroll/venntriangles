@@ -73,9 +73,9 @@ void resetInitialize()
   "Otherwise, they apply globally across all face degree patterns.\n"         \
   "Use -v to enable verbose output mode.\n"
 
-void disaster(const char *message)
+void disaster(const char *programName, const char *message)
 {
-  fprintf(stderr, USAGE_ONE_LINE, Argv0);
+  fprintf(stderr, USAGE_ONE_LINE, programName);
   fprintf(stderr, USAGE_WITH_D_EXPLANATION);
   fprintf(stderr, "%s\n", message);
   exit(EXIT_FAILURE);

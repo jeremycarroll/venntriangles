@@ -71,6 +71,7 @@
 
 #define MAX_CORNERS 3
 
+#define STRINGIFY(x) #x
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 
 /* Define our own 64-bit unsigned integer type, to avoid platform dependent
