@@ -5,6 +5,12 @@
 
 #include "engine.h"
 
+extern int PerFaceDegreeSolutionNumber;
+extern int VariationCount;
+extern int VariationNumber;
+extern int Levels;
+extern char CurrentPrefix[1024];
+
 /* Write a solution to disk */
 void writeSolution(void);
 

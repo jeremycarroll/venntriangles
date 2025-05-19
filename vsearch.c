@@ -8,6 +8,7 @@
 #include "main.h"
 #include "memory.h"
 #include "s6.h"
+#include "solutionwrite.h"
 #include "statistics.h"
 #include "trail.h"
 #include "utils.h"
@@ -18,8 +19,6 @@
 #include <time.h>
 
 /* Output-related variables */
-int PerFaceDegreeSolutionNumber = 0;
-int VariationCount = 0;
 static clock_t TotalWastedTime = 0;
 static clock_t TotalUsefulTime = 0;
 static int WastedSearchCount = 0;

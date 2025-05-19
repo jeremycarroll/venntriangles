@@ -7,6 +7,7 @@
 #include "graphml.h"
 #include "main.h"
 #include "memory.h"
+#include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
 #include "trail.h"
@@ -17,12 +18,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-// TODO: think about these.
-extern int PerFaceDegreeSolutionNumber;
-extern int VariationCount;
-extern int VariationNumber;
-extern int Levels;
-extern char CurrentPrefix[1024];
+int PerFaceDegreeSolutionNumber;
+int VariationCount;
+int VariationNumber;
+int Levels;
+char CurrentPrefix[1024];
 /* Static variables for solution writing */
 static char* currentFilename;
 static FILE* currentFile;
@@ -86,17 +86,6 @@ static void afterVariantsSave(void)
 
 FORWARD_BACKWARD_PREDICATE(SaveMain, gateSave, beforeVariantsSave,
                            afterVariantsSave)
-
-extern struct predicate cornersPredicate;
-extern struct predicate saveVariationPredicate;
-static struct predicate* predicates[] = {&SaveMainPredicate, &cornersPredicate,
-                                         &saveVariationPredicate,
-                                         &FAILPredicate};
-
-void writeSolution(void)
-{
-  engine(predicates);
-}
 
 static void solutionPrint(FILE* fp)
 {

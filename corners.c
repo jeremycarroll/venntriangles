@@ -6,7 +6,10 @@
 #include "engine.h"
 #include "face.h"
 #include "graphml.h"
+#include "main.h"
 #include "memory.h"
+#include "predicates.h"
+#include "solutionwrite.h"
 #include "trail.h"
 #include "triangles.h"
 
@@ -14,9 +17,7 @@
 #include <stdlib.h>
 
 static EDGE SelectedCorners[NCOLORS][3];
-extern EDGE PossibileCorners[NCOLORS][3][NFACES];
-extern int VariationNumber;
-extern int MaxVariantsPerSolution;
+static EDGE PossibleCorners[NCOLORS][3][NFACES];
 static void possibleCorners(EDGE* possibilities, COLOR color, EDGE from,
                             EDGE to);
 
@@ -49,10 +50,10 @@ static struct predicateResult tryCorners(int round)
     return PredicateSuccessNextPredicate;
   }
   edgeFindAndAlignCorners(colorIndex, cornerPairs);
-  possibleCorners(PossibileCorners[colorIndex][cornerIndex], colorIndex,
+  possibleCorners(PossibleCorners[colorIndex][cornerIndex], colorIndex,
                   cornerPairs[cornerIndex][0], cornerPairs[cornerIndex][1]);
   return predicateChoices(
-      edgeArrayLength(PossibileCorners[colorIndex][cornerIndex]));
+      edgeArrayLength(PossibleCorners[colorIndex][cornerIndex]));
 }
 
 static struct predicateResult retryCorners(int round, int choice)
@@ -60,7 +61,7 @@ static struct predicateResult retryCorners(int round, int choice)
   int cornerIndex = round % 3;
   int colorIndex = round / 3;
   TRAIL_SET_POINTER(&SelectedCorners[colorIndex][cornerIndex],
-                    PossibileCorners[colorIndex][cornerIndex][choice]);
+                    PossibleCorners[colorIndex][cornerIndex][choice]);
   return PredicateSuccessSamePredicate;
 }
 

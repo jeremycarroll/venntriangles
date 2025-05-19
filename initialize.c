@@ -6,6 +6,7 @@
 #include "face.h"
 #include "graphml.h"
 #include "main.h"
+#include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
 #include "trail.h"

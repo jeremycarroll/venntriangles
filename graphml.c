@@ -56,9 +56,7 @@ static char *subFilename(void);
 /* Global variables */
 char CurrentPrefix[1024];
 int VariationNumber = 1;
-// static int ExpectedVariations = 0;
 int Levels = 0;
-EDGE PossibileCorners[NCOLORS][3][NFACES];
 
 /* Structure to hold data for GraphML output */
 typedef struct {
