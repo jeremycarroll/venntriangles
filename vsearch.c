@@ -25,6 +25,8 @@ static clock_t TotalUsefulTime = 0;
 static int WastedSearchCount = 0;
 static int UsefulSearchCount = 0;
 uint64 CycleGuessCounter = 0;
+uint64_t GlobalSolutionsFound =
+    0;  // Counter for solutions found during execution
 
 /* State machine states for the search process */
 typedef enum {

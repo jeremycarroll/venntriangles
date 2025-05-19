@@ -17,9 +17,6 @@ extern int IgnoreFirstVariantsPerSolution;
 extern bool VerboseMode;
 extern bool Tracing;  // Controls tracing output mode
 
-// statistic
-extern uint64 GlobalSolutionsFound;
-
 // Declare functions used in main.c
 extern char* s6FaceDegreeSignature(void);
 extern int dynamicMain0(int argc, char* argv[]);

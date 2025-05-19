@@ -17,4 +17,12 @@ extern uint64 CycleGuessCounter;
 extern FACE searchChooseNextFace(bool smallestFirst);
 extern int searchCountVariations(char *variationMultiplication);
 
+/* Runtime statistics */
+extern uint64_t
+    GlobalSolutionsFound;  // Counter for solutions found during execution
+
+/* Externally linked functions */
+extern void searchFull(void (*foundSolution)(void));
+extern void searchSolutionWrite(const char *prefix);
+
 #endif  // SEARCH_H

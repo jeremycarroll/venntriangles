@@ -21,7 +21,6 @@ int GlobalSkipSolutions = 0;              // Global solutions to skip
 int PerFaceDegreeSkipSolutions = 0;       // Per face degree solutions to skip
 int IgnoreFirstVariantsPerSolution = 0;  // Default to not ignoring any variants
 FACE_DEGREE CentralFaceDegrees[NCOLORS] = {0};  // Initialize all to 0
-uint64 GlobalSolutionsFound = 0;                // Counter for solutions found
 bool VerboseMode = false;                       // Controls verbose output mode
 bool Tracing = false;                           // Controls tracing output mode
 
