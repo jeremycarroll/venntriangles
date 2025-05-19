@@ -5,6 +5,7 @@
 #include "corners.h"
 #include "main.h"
 #include "memory.h"
+#include "solutionwrite.h"
 #include "trail.h"
 #include "triangles.h"
 #include "utils.h"

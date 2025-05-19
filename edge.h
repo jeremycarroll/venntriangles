@@ -69,4 +69,6 @@ extern void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4);
 #define IS_PRIMARY_EDGE(edge) \
   (COLORSET_HAS_MEMBER((edge)->color, (edge)->colors))
 
+extern COLORSET ColorCompleted;
+
 #endif  // EDGE_H

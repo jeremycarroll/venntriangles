@@ -2,10 +2,10 @@
 
 #include "s6.h"
 
-#include "engine.h"
 #include "face.h"
 #include "main.h"
 #include "memory.h"
+#include "predicates.h"
 #include "statistics.h"
 #include "trail.h"
 #include "utils.h"

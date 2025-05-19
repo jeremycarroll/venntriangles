@@ -20,9 +20,6 @@
 
 int PerFaceDegreeSolutionNumber;
 int VariationCount;
-int VariationNumber;
-int Levels;
-char CurrentPrefix[1024];
 /* Static variables for solution writing */
 static char* currentFilename;
 static FILE* currentFile;

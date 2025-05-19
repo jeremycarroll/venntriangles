@@ -37,8 +37,6 @@ extern FAILURE dynamicFaceIncludeVertex(FACE face, COLOR aColor, COLOR bColor,
                                         int depth);
 extern bool dynamicColorRemoveFromSearch(COLOR color);
 
-extern COLORSET ColorCompleted;
-
 extern char *faceToString(FACE face);
 
 extern void initializeFacesAndEdges(void);

@@ -119,15 +119,14 @@ FAILURE dynamicFaceBacktrackableChoice(FACE face)
   return NULL;
 }
 
-FACE searchChooseNextFace(bool smallestFirst)
+FACE searchChooseNextFace(void)
 {
   FACE face = NULL;
-  int sign = smallestFirst ? 1 : -1;
-  int64_t min = smallestFirst ? (NCYCLES + 1) : 0;
+  int64_t min = NCYCLES + 1;
   int i;
   for (i = 0; i < NFACES; i++) {
-    if (sign * (int64_t)Faces[i].cycleSetSize < min && Faces[i].cycle == NULL) {
-      min = sign * (int64_t)Faces[i].cycleSetSize;
+    if ((int64_t)Faces[i].cycleSetSize < min && Faces[i].cycle == NULL) {
+      min = (int64_t)Faces[i].cycleSetSize;
       face = Faces + i;
     }
   }
@@ -266,8 +265,6 @@ static int FacePredicateInitialSolutionsFound = 0;
 static int FacePredicateInitialVariationCount = 0;
 static clock_t FacePredicateStart = 0;
 static FACE facesInOrderOfChoice[NFACES];
-static bool smallestFirst =
-    true; /* New predicate functions for engine-based search */
 static struct predicateResult tryFace(int round)
 {
   if (round == 0) {
@@ -282,7 +279,7 @@ static struct predicateResult tryFace(int round)
   if ((int64_t)GlobalSolutionsFound >= GlobalMaxSolutions) {
     return PredicateFail;
   }
-  facesInOrderOfChoice[round] = searchChooseNextFace(smallestFirst);
+  facesInOrderOfChoice[round] = searchChooseNextFace();
   if (facesInOrderOfChoice[round] == NULL) {
     if (faceFinalCorrectnessChecks() == NULL) {
       GlobalSolutionsFound++;

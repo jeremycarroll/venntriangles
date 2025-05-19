@@ -5,7 +5,7 @@
 #include "statistics.h"
 
 /* Global variables (file scoped static) */
-struct trail TrailArray[TRAIL_SIZE];
+static struct trail TrailArray[TRAIL_SIZE];
 TRAIL Trail = TrailArray;
 static uint64 MaxTrailSize = 0;
 
