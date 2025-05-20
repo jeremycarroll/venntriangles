@@ -93,7 +93,7 @@ int dynamicMain0(int argc, char *argv[])
   initializeOutputFolder();
   initializeStatisticLogging("/dev/stdout", 200, 10);
 
-  engine(nonDeterministicProgram);
+  engine(NonDeterministicProgram);
 
   statisticPrintFull();
   return 0;

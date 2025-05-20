@@ -5,20 +5,20 @@
 #include "predicates.h"
 
 /* The non-deterministic program is a sequence of predicates */
-struct predicate* nonDeterministicProgram[] = {
+struct predicate* NonDeterministicProgram[] = {
     /* Single call: Initialization (idempotent; does not undo). */
     &InitializePredicate,
     /* 6 Calls. Nondeterministic: choosse a canonical or equivocal sequence of 5
        face degrees summing to 27. */
-    &faceDegreePredicate,
+    &FaceDegreePredicate,
     /* < 64 calls. Nondeterministic: choose facial cycle for every face. */
-    &facePredicate,
+    &FacePredicate,
     /* Single call. Save the solution. On backtrack, also write the number of
        variants, then fail. */
     &SaveMainPredicate,
     /* 6 Calls. Nondeterministic: choose the 18 corners of a variation. */
-    &cornersPredicate,
+    &CornersPredicate,
     /* Single call. Save the variation. */
-    &saveVariationPredicate,
+    &SaveVariationPredicate,
     /* Fail. */
     &FAILPredicate};

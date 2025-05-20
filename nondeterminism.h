@@ -6,6 +6,6 @@
 #include "engine.h"
 
 /* The non-deterministic program is a sequence of predicates */
-extern struct predicate* nonDeterministicProgram[];
+extern struct predicate* NonDeterministicProgram[];
 
 #endif /* NONDETERMINISM_H */

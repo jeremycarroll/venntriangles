@@ -64,8 +64,8 @@ static FILE* mockFopen(const char* filename, const char* mode)
 void setUp(void)
 {
   initializeStatisticLogging("/dev/null", 1000, 1000);  // Reduce logging
-  graphmlFileOps.initializeFolder = mockInitializeFolder;
-  graphmlFileOps.fopen = mockFopen;
+  GraphmlFileOps.initializeFolder = mockInitializeFolder;
+  GraphmlFileOps.fopen = mockFopen;
 }
 
 void tearDown(void)
@@ -412,7 +412,7 @@ static bool testCornerCount()
 {
   int multiple = 1;
   for (int i = 0; i < 3; i++) {
-    multiple *= cornersPredicate.try(3 * CornerCountColor + i).numberOfChoices;
+    multiple *= CornersPredicate.try(3 * CornerCountColor + i).numberOfChoices;
   }
   TEST_ASSERT_EQUAL(CornerCountExpected, multiple);
   return false;
@@ -423,12 +423,12 @@ static bool gate()
 {
   SIGNATURE signature = s6SignatureFromFaces();
   SIGNATURE classSignature = s6MaxSignature();
-  if (strcmp(ExpectedSignature, d6SignatureToString(signature)) != 0) {
+  if (strcmp(ExpectedSignature, s6SignatureToString(signature)) != 0) {
     return false;
   }
   VariationNumber = 1;
   SolutionCount++;
-  TEST_ASSERT_EQUAL_STRING(ClassSignature, d6SignatureToString(classSignature));
+  TEST_ASSERT_EQUAL_STRING(ClassSignature, s6SignatureToString(classSignature));
   return true;
 }
 
@@ -453,29 +453,29 @@ FORWARD_BACKWARD_PREDICATE_STATIC(Gate, gate, NULL, NULL)
 FORWARD_BACKWARD_PREDICATE_STATIC(VariationCount, testVariationEstimate, NULL,
                                   NULL)
 
-static PREDICATE Basic[] = {&InitializePredicate, &faceDegreePredicate,
-                            &facePredicate, &GatePredicate, &FAILPredicate};
-static PREDICATE EstimateCount[] = {&InitializePredicate, &faceDegreePredicate,
-                                    &facePredicate, &GatePredicate,
+static PREDICATE Basic[] = {&InitializePredicate, &FaceDegreePredicate,
+                            &FacePredicate, &GatePredicate, &FAILPredicate};
+static PREDICATE EstimateCount[] = {&InitializePredicate, &FaceDegreePredicate,
+                                    &FacePredicate, &GatePredicate,
                                     &VariationCountPredicate};
 static PREDICATE ExactCount[] = {&InitializePredicate,
-                                 &faceDegreePredicate,
-                                 &facePredicate,
+                                 &FaceDegreePredicate,
+                                 &FacePredicate,
                                  &GatePredicate,
                                  &CountVariationsPredicate,
-                                 &cornersPredicate,
-                                 &saveVariationPredicate,
+                                 &CornersPredicate,
+                                 &SaveVariationPredicate,
                                  &FAILPredicate};
 static PREDICATE CheckGraphML[] = {&InitializePredicate,    &GraphMLPredicate,
-                                   &faceDegreePredicate,    &facePredicate,
-                                   &GatePredicate,          &cornersPredicate,
-                                   &saveVariationPredicate, &FAILPredicate};
+                                   &FaceDegreePredicate,    &FacePredicate,
+                                   &GatePredicate,          &CornersPredicate,
+                                   &SaveVariationPredicate, &FAILPredicate};
 static PREDICATE Variant14188[] = {
     &InitializePredicate, &Variant14188Predicate,  &GraphMLPredicate,
-    &faceDegreePredicate, &facePredicate,          &GatePredicate,
-    &cornersPredicate,    &saveVariationPredicate, &FAILPredicate};
-static PREDICATE CornerCount[] = {&InitializePredicate, &faceDegreePredicate,
-                                  &facePredicate, &GatePredicate,
+    &FaceDegreePredicate, &FacePredicate,          &GatePredicate,
+    &CornersPredicate,    &SaveVariationPredicate, &FAILPredicate};
+static PREDICATE CornerCount[] = {&InitializePredicate, &FaceDegreePredicate,
+                                  &FacePredicate, &GatePredicate,
                                   &CornerCountPredicate};
 
 static void initializeFaceDegree(int a, int b, int c, int d, int e, int f)

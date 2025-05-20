@@ -7,10 +7,10 @@
 
 /* Core predicates used in the main program */
 extern struct predicate InitializePredicate;
-extern struct predicate faceDegreePredicate;
-extern struct predicate facePredicate;
-extern struct predicate cornersPredicate;
-extern struct predicate saveVariationPredicate;
+extern struct predicate FaceDegreePredicate;
+extern struct predicate FacePredicate;
+extern struct predicate CornersPredicate;
+extern struct predicate SaveVariationPredicate;
 extern struct predicate SaveMainPredicate;
 
 

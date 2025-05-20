@@ -105,7 +105,7 @@ void writeSolution(void)
 { /* stub for testing. */
 }
 
-struct predicate *nonDeterministicProgram[] = {/* stub for testing. */};
+struct predicate *NonDeterministicProgram[] = {/* stub for testing. */};
 
 void engine(struct predicate *predicates[])
 {

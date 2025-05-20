@@ -15,7 +15,7 @@ struct graphmlFileIO {
   FILE* (*fopen)(const char* filename, const char* mode);
   void (*initializeFolder)(const char* folder);
 };
-extern struct graphmlFileIO graphmlFileOps;
+extern struct graphmlFileIO GraphmlFileOps;
 extern void saveVariation(EDGE (*corners)[3]);
 extern int numberOfLevels(int expectedVariations);
 

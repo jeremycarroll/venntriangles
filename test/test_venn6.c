@@ -51,7 +51,7 @@ static void testSearchForBestSolution()
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(5, 5, 5, 4, 4, 4));
   engineResume((PREDICATE[]){
-      &facePredicate, &(struct predicate){"Found", countSolutions, NULL}});
+      &FacePredicate, &(struct predicate){"Found", countSolutions, NULL}});
   TEST_ASSERT_EQUAL(80, SolutionCount);
 }
 
@@ -72,7 +72,7 @@ static void testSearchForTwoSolutions()
   dynamicFaceAddSpecific("f", "aefdc");
   */
   engineResume((PREDICATE[]){
-      &facePredicate, &(struct predicate){"Found", countSolutions, NULL}});
+      &FacePredicate, &(struct predicate){"Found", countSolutions, NULL}});
 
   TEST_ASSERT_EQUAL(2, SolutionCount);
 }
@@ -82,7 +82,7 @@ static void testFullSearch(void)
   /* dynamicSearchFull includes initialization, so we undo our own setUp. */
   SolutionCount = 0;
   engineResume(
-      (PREDICATE[]){&faceDegreePredicate, &facePredicate,
+      (PREDICATE[]){&FaceDegreePredicate, &FacePredicate,
                     &(struct predicate){"Found", countSolutions, NULL}});
   TEST_ASSERT_EQUAL(233, SolutionCount);
 }

@@ -72,8 +72,8 @@ static struct predicateResult trySaveVariation(int round)
   return PredicateSuccessNextPredicate;
 }
 /* The predicates array for corner handling */
-struct predicate cornersPredicate = {"Corners", tryCorners, retryCorners};
-struct predicate saveVariationPredicate = {"SaveVariant", trySaveVariation,
+struct predicate CornersPredicate = {"Corners", tryCorners, retryCorners};
+struct predicate SaveVariationPredicate = {"SaveVariant", trySaveVariation,
                                            NULL};
 /* Path and corner functions */
 static void getPath(EDGE* path, EDGE from, EDGE to)

@@ -68,7 +68,7 @@ typedef struct {
 } GraphMLData;
 
 /* Externally linked functions */
-struct graphmlFileIO graphmlFileOps = {fopen, initializeFolder};
+struct graphmlFileIO GraphmlFileOps = {fopen, initializeFolder};
 
 /* GraphML document structure functions */
 static void graphmlBegin(FILE *fp)
@@ -289,7 +289,7 @@ static char *subFilename(void)
   p = p + sprintf(p, "%s", CurrentPrefix);
   while (levels > 1) {
     p += sprintf(p, "/%2.2x", variationNumber % 256);
-    graphmlFileOps.initializeFolder(buffer);
+    GraphmlFileOps.initializeFolder(buffer);
     variationNumber /= 256;
     levels--;
   }
@@ -308,7 +308,7 @@ void saveVariation(EDGE (*corners)[3])
     return;
   }
   GlobalVariantCount++;
-  fp = graphmlFileOps.fopen(filename, "w");
+  fp = GraphmlFileOps.fopen(filename, "w");
   graphmlBegin(fp);
   for (a = 0; a < NCOLORS; a++, corners++) {
     saveTriangle(fp, a, corners);

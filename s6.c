@@ -68,11 +68,11 @@ static SYMMETRY_TYPE d6IsMaxInSequenceOrder(
     ...);
 static SIGNATURE maxSpunSignature(SIGNATURE onCurrentFace);
 static int compareCycleIdSequence(const void *a, const void *b);
-static SIGNATURE d6SignatureRecentered(SIGNATURE sequence, COLORSET center);
-static SIGNATURE d6SignaturePermuted(SIGNATURE sequence,
+static SIGNATURE s6SignatureRecentered(SIGNATURE sequence, COLORSET center);
+static SIGNATURE s6SignaturePermuted(SIGNATURE sequence,
                                      PERMUTATION permutation);
-static int d6SignatureCompare(const void *a, const void *b);
-static SIGNATURE d6SignatureReflected(SIGNATURE sequence);
+static int s6SignatureCompare(const void *a, const void *b);
+static SIGNATURE s6SignatureReflected(SIGNATURE sequence);
 
 #define ADD_TO_SEQUENCE_ORDER(colors)               \
   do {                                              \
@@ -212,7 +212,7 @@ static struct predicateResult retry5FaceDegree(int round, int choice)
   return PredicateSuccessSamePredicate;
 }
 
-struct predicate faceDegreePredicate = {"InnerFaces", try5FaceDegree,
+struct predicate FaceDegreePredicate = {"InnerFaces", try5FaceDegree,
                                         retry5FaceDegree};
 SIGNATURE s6MaxSignature(void)
 {
@@ -223,17 +223,17 @@ SIGNATURE s6MaxSignature(void)
   SIGNATURE results[NFACES * 2];
   for (center = 0; center < NFACES; center++) {
     if (Faces[center].cycle->length == NCOLORS) {
-      recentered = d6SignatureRecentered(fromFaces, center);
+      recentered = s6SignatureRecentered(fromFaces, center);
       results[resultsIndex++] = maxSpunSignature(recentered);
       results[resultsIndex++] =
-          maxSpunSignature(d6SignatureReflected(recentered));
+          maxSpunSignature(s6SignatureReflected(recentered));
     }
   }
   qsort(results, resultsIndex, sizeof(results[0]), compareCycleIdSequence);
   return results[0];
 }
 
-SIGNATURE d6SignatureRecentered(SIGNATURE sequence, COLORSET center)
+SIGNATURE s6SignatureRecentered(SIGNATURE sequence, COLORSET center)
 {
   SIGNATURE result = NEW(SIGNATURE);
   for (int i = 0; i < NFACES; i++) {
@@ -245,7 +245,7 @@ SIGNATURE d6SignatureRecentered(SIGNATURE sequence, COLORSET center)
   return result;
 }
 
-SIGNATURE d6SignaturePermuted(SIGNATURE sequence, PERMUTATION permutation)
+SIGNATURE s6SignaturePermuted(SIGNATURE sequence, PERMUTATION permutation)
 {
   SIGNATURE result = NEW(SIGNATURE);
   for (COLORSET i = 0; i < NFACES; i++) {
@@ -257,7 +257,7 @@ SIGNATURE d6SignaturePermuted(SIGNATURE sequence, PERMUTATION permutation)
   return result;
 }
 
-SIGNATURE d6SignatureReflected(SIGNATURE sequence)
+SIGNATURE s6SignatureReflected(SIGNATURE sequence)
 {
   SIGNATURE result = NEW(SIGNATURE);
   for (int i = 0; i < NFACES; i++) {
@@ -269,7 +269,7 @@ SIGNATURE d6SignatureReflected(SIGNATURE sequence)
   return result;
 }
 
-int d6SignatureCompare(const void *a, const void *b)
+int s6SignatureCompare(const void *a, const void *b)
 {
   return memcmp(a, b, sizeof(((CYCLE_ID_SEQUENCE)NULL)[0]));
 }
@@ -285,7 +285,7 @@ SIGNATURE s6SignatureFromFaces(void)
   return result;
 }
 
-char *d6SignatureToString(SIGNATURE signature)
+char *s6SignatureToString(SIGNATURE signature)
 {
   char *result = getBuffer();
   char *p = result;
@@ -380,20 +380,20 @@ static SIGNATURE maxSpunSignature(SIGNATURE onCurrentFace)
   SIGNATURE best = onCurrentFace;
   PERMUTATION permutation =
       s6Automorphism(onCurrentFace->classSignature.faceCycleId[0]);
-  SIGNATURE permuted = d6SignaturePermuted(onCurrentFace, permutation);
+  SIGNATURE permuted = s6SignaturePermuted(onCurrentFace, permutation);
   for (counter = 0; counter < NFACES; counter++) {
     assert(permuted->classSignature.faceCycleId[0] == NCYCLES - 1);
-    if (d6SignatureCompare(permuted, best) > 0) {
+    if (s6SignatureCompare(permuted, best) > 0) {
       best = permuted;
     }
-    permuted = d6SignaturePermuted(permuted, abcNCycle);
+    permuted = s6SignaturePermuted(permuted, abcNCycle);
   }
   return best;
 }
 
 static int compareCycleIdSequence(const void *a, const void *b)
 {
-  return -d6SignatureCompare(*(SIGNATURE *)a, *(SIGNATURE *)b);
+  return -s6SignatureCompare(*(SIGNATURE *)a, *(SIGNATURE *)b);
 }
 
 static FACE_DEGREE_SEQUENCE sortPermutationsOfSequence(

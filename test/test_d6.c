@@ -48,7 +48,7 @@ static void testCanonical6()
 static struct predicate countSolutionsPredicate = {"Count", countSolutions,
                                                    NULL};
 static struct predicate* testProgram[] = {
-    &InitializePredicate, &faceDegreePredicate, &countSolutionsPredicate};
+    &InitializePredicate, &FaceDegreePredicate, &countSolutionsPredicate};
 
 static void testCallback()
 {

@@ -60,13 +60,13 @@ static bool beforeVariantsSave(void)
   VariationNumber = 1;
   solutionPrint(currentFile);
   CurrentPrefix[strlen(CurrentPrefix) - 4] = '\0';
-  graphmlFileOps.initializeFolder(CurrentPrefix);
+  GraphmlFileOps.initializeFolder(CurrentPrefix);
   currentNumberOfVariations =
       searchCountVariations(currentVariationMultiplication);
   Levels = numberOfLevels(currentNumberOfVariations);
   fprintf(currentFile, "\nSolution signature %s\nClass signature %s\n",
-          d6SignatureToString(s6SignatureFromFaces()),
-          d6SignatureToString(s6MaxSignature()));
+          s6SignatureToString(s6SignatureFromFaces()),
+          s6SignatureToString(s6MaxSignature()));
   fflush(currentFile);
   VariationCount += currentNumberOfVariations;
   return true;

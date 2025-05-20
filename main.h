@@ -23,6 +23,6 @@ extern bool Tracing;                      // Tracing output mode (-t)
 
 // Hook for testing and running.
 extern int dynamicMain0(int argc, char* argv[]);
-extern struct predicate* nonDeterministicProgram[];
+extern struct predicate* NonDeterministicProgram[];
 
 #endif  // MAIN_H

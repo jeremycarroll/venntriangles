@@ -47,7 +47,7 @@ extern char *s6FaceDegreeSignature(void);
 
 extern SIGNATURE s6MaxSignature(void);
 extern SIGNATURE s6SignatureFromFaces(void);
-extern char *d6SignatureToString(SIGNATURE signature);
+extern char *s6SignatureToString(SIGNATURE signature);
 
 // For testing.
 extern PERMUTATION s6Automorphism(CYCLE_ID cycleId);
