@@ -40,7 +40,6 @@ extern bool dynamicColorRemoveFromSearch(COLOR color);
 extern char *faceToString(FACE face);
 
 extern void initializeFacesAndEdges(void);
-extern void resetFaces(void);
 extern FAILURE faceRestrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
                                               int depth);
 extern FAILURE facePropogateChoice(FACE face, EDGE edge, int depth);

@@ -43,26 +43,6 @@ void initializeStatisticLogging(char* filename, int frequency, int seconds)
   initializeFailures();
 }
 
-void resetStatistics(void)
-{
-  for (int i = 0; i < MAX_STATISTICS; i++) {
-    if (Statistics[i].countPtr == NULL) {
-      break;
-    }
-    *Statistics[i].countPtr = 0;
-    Statistics[i].countPtr = NULL;
-  }
-  for (int i = 0; i < MAX_STATISTICS; i++) {
-    if (Failures[i] == NULL) {
-      break;
-    }
-    if (Failures[i]->count[0] == 0) {
-      break;
-    }
-    memset(Failures[i]->count, 0, sizeof(Failures[i]->count));
-  }
-}
-
 void statisticIncludeInteger(uint64* counter, char* shortName, char* name,
                              bool verboseOnly)
 {

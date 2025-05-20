@@ -7,17 +7,13 @@
 /* Global variables (file scoped static) */
 static struct trail TrailArray[TRAIL_SIZE];
 TRAIL Trail = TrailArray;
+static TRAIL frozenTrail = NULL;
 static uint64 MaxTrailSize = 0;
 
 /* Externally linked functions */
 void initializeTrail()
 {
   statisticIncludeInteger(&MaxTrailSize, "$", "MaxTrail", true);
-}
-
-void resetTrail()
-{
-  Trail = TrailArray;
 }
 
 void trailSetPointer(void** ptr, void* value)
@@ -35,6 +31,11 @@ void trailMaybeSetInt(uint_trail* ptr, uint_trail value)
   }
 }
 
+void trailFreeze()
+{
+  frozenTrail = Trail;
+}
+
 void trailSetInt(uint_trail* ptr, uint_trail value)
 {
   Trail->ptr = ptr;
@@ -50,6 +51,9 @@ bool trailBacktrackTo(TRAIL backtrackPoint)
     MaxTrailSize = trailSize;
   }
   bool result = false;
+  if (backtrackPoint < frozenTrail) {
+    backtrackPoint = frozenTrail;
+  }
   while (Trail > backtrackPoint) {
     result = true;
     Trail--;

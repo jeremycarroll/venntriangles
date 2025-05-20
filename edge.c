@@ -27,15 +27,6 @@ static FAILURE checkForDisconnectedCurve(EDGE edge, int depth);
 static EDGE findStartOfCurve(EDGE edge);
 static EDGE edgeFollowForwards(EDGE edge);
 
-/* Externally linked functions - reset... */
-void resetEdges()
-{
-  memset(EdgeCountsByDirectionAndColor, 0,
-         sizeof(EdgeCountsByDirectionAndColor));
-  memset(EdgeCrossingCounts, 0, sizeof(EdgeCrossingCounts));
-  memset(EdgeCurvesComplete, 0, sizeof(EdgeCurvesComplete));
-}
-
 /* Externally linked functions - edge... */
 FAILURE edgeCheckCrossingLimit(COLOR a, COLOR b, int depth)
 {

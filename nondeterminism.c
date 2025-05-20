@@ -6,7 +6,7 @@
 
 /* The non-deterministic program is a sequence of predicates */
 struct predicate* nonDeterministicProgram[] = {
-    /* Single call: Initialization. On backtrack perform reset, then fail. */
+    /* Single call: Initialization (idempotent; does not undo). */
     &InitializePredicate,
     /* 6 Calls. Nondeterministic: choosse a canonical or equivocal sequence of 5
        face degrees summing to 27. */

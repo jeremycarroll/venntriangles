@@ -34,12 +34,15 @@ static void memoizeCycleTriples(void);
 /* Externally linked functions - initialize... */
 void initializeCycleSets(void)
 {
-  initializeCycles();
-  memoizeCyclePairs();
-  memoizeCycleTriples();
-  initializeSameDirection();
-  initializeOppositeDirection();
-  initializeOmittingCycleSets();
+  if (NextCycle == 0) {
+    initializeCycles();
+    memoizeCyclePairs();
+    memoizeCycleTriples();
+    initializeSameDirection();
+    initializeOppositeDirection();
+    initializeOmittingCycleSets();
+  }
+  assert(NextCycle == ARRAY_LEN(Cycles));
 }
 
 #define FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET \
@@ -54,19 +57,6 @@ void initializeCycleSetUniversal(CYCLESET cycleSet)
   }
 #endif
   cycleSet[i] = FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET;
-}
-
-/* Externally linked functions - reset... */
-void resetCycles()
-{
-  memset(CycleSetPairs, 0, sizeof(CycleSetPairs));
-  memset(CycleSetTriples, 0, sizeof(CycleSetTriples));
-  memset(CycleSetSets, 0, sizeof(CycleSetSets));
-  memset(CycleSetOmittingOneColor, 0, sizeof(CycleSetOmittingOneColor));
-  memset(CycleSetOmittingColorPair, 0, sizeof(CycleSetOmittingColorPair));
-
-  NextCycle = 0;
-  NextSetOfCycleSets = 0;
 }
 
 /* Externally linked functions - color... */
@@ -324,6 +314,7 @@ static void initializeCycles(void)
   for (c1 = 2; c1 < NCOLORS; c1++) {
     initializeCyclesWithMaxValue(c1);
   }
+
   assert(NextCycle == ARRAY_LEN(Cycles));
 }
 

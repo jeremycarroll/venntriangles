@@ -29,6 +29,7 @@ void initialize()
   initializeTrail();
   initializeMemory();
   initializeS6();
+  trailFreeze();
 }
 
 void initializeFolder(const char *folder)
@@ -48,18 +49,6 @@ void initializeFolder(const char *folder)
       exit(EXIT_FAILURE);
     }
   }
-}
-
-void resetGlobals()
-{
-  resetFaces();
-  resetEdges();
-  resetPoints();
-}
-
-void resetInitialize()
-{
-  resetCycles();
 }
 
 #define USAGE_ONE_LINE                                                   \

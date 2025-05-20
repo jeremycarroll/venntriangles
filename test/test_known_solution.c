@@ -295,22 +295,23 @@ static char* testData6[][2] = {
     },
 };
 
+static TRAIL trail = NULL;
 /* Test setup and teardown */
 void setUp(void)
 {
   FACE_DEGREE args[] = {5, 5, 5, 4, 4, 4};
   initialize();
   initializeStatisticLogging("/dev/stdout", 20, 5);
-  dynamicFaceSetupCentral(args);
+  if (trail == NULL) {
+    dynamicFaceSetupCentral(args);
+    trail = Trail;
+  }
+  CycleGuessCounter = 1;
 }
 
 void tearDown(void)
 {
-  resetGlobals();
-  resetInitialize();
-  resetTrail();
-  resetStatistics();
-  resetPoints();
+  trailBacktrackTo(trail);
   CycleGuessCounter = 0;
 }
 
@@ -329,7 +330,7 @@ static void addFacesFromTestData(char* testData[][2], int length)
       TEST_ASSERT_EQUAL(Cycles + cycleId, cycleSetFirst(face->possibleCycles));
       TEST_ASSERT_EQUAL(face->cycle, Cycles + cycleId);
     } else {
-      face->cycle = Cycles + cycleId;
+      TRAIL_SET_POINTER(&face->cycle, Cycles + cycleId);
       failure = dynamicFaceBacktrackableChoice(face);
       if (failure != NULL) {
         printf("Failure: %s %s\n", failure->label, failure->shortLabel);

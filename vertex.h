@@ -53,7 +53,6 @@ struct Vertex {
 };
 
 extern void initializePoints(void);
-extern void resetPoints(void);
 extern VERTEX initializeVertexIncomingEdge(COLORSET colorsOfFace,
                                            EDGE incomingEdge, COLOR othercolor);
 extern char* vertexToString(VERTEX up);

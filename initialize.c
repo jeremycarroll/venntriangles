@@ -26,12 +26,5 @@ static bool forwardInitialize(void)
   statisticIncludeInteger(&GlobalSolutionsFound, "S", "solutions", false);
   return true;
 }
-static void backwardInitialize(void)
-{
-  resetGlobals();
-  resetInitialize();
-  resetPoints();
-}
 
-FORWARD_BACKWARD_PREDICATE(Initialize, NULL, forwardInitialize,
-                           backwardInitialize)
+FORWARD_BACKWARD_PREDICATE(Initialize, NULL, forwardInitialize, NULL)

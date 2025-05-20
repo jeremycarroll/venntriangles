@@ -25,14 +25,6 @@ static uint32_t getIncomingEdgeSlot(EDGE incomingEdge, COLOR othercolor,
 static bool detectCornerAndUpdateCrossingSets(COLORSET other, COLORSET* outside,
                                               COLORSET* passed);
 
-/* Externally linked functions */
-void resetPoints()
-{
-  memset(AllUPointPointers, 0, sizeof(AllUPointPointers));
-  memset(VertexAllUVertices, 0, sizeof(VertexAllUVertices));
-  NextUVertexId = 0;
-}
-
 VERTEX initializeVertexIncomingEdge(COLORSET colors, EDGE incomingEdge,
                                     COLOR othercolor)
 {

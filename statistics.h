@@ -30,6 +30,4 @@ extern void statisticIncludeFailure(FAILURE failure);
 extern void statisticPrintOneLine(int position, bool force);
 extern void statisticPrintFull(void);
 
-// exposed for testing
-extern void resetStatistics(void);
 #endif  // STATISTICS_H
