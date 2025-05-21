@@ -2,10 +2,11 @@
 
 #include "graphml.h"
 
-#include "corners.h"
+#include "engine.h"
 #include "main.h"
 #include "memory.h"
-#include "solutionwrite.h"
+#include "predicates.h"
+#include "save.h"
 #include "trail.h"
 #include "triangles.h"
 #include "utils.h"
@@ -326,3 +327,12 @@ int numberOfLevels(int expectedVariations)
   }
   return result;
 }
+
+static struct predicateResult trySaveVariation(int round)
+{
+  (void)round;  // Unused parameter
+  saveVariation(SelectedCorners);
+  return PredicateSuccessNextPredicate;
+}
+
+struct predicate GraphMLPredicate = {"GraphML", trySaveVariation, NULL};

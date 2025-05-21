@@ -1,6 +1,6 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "solutionwrite.h"
+#include "save.h"
 
 #include "engine.h"
 #include "face.h"
@@ -81,7 +81,7 @@ static void afterVariantsSave(void)
   fclose(currentFile);
 }
 
-FORWARD_BACKWARD_PREDICATE(SaveMain, gateSave, beforeVariantsSave,
+FORWARD_BACKWARD_PREDICATE(Save, gateSave, beforeVariantsSave,
                            afterVariantsSave)
 
 static void solutionPrint(FILE* fp)

@@ -9,16 +9,17 @@ struct predicate* NonDeterministicProgram[] = {
     /* Single call: Initialization (idempotent; does not undo). */
     &InitializePredicate,
     /* 6 Calls. Nondeterministic: choosse a canonical or equivocal sequence of 5
-       face degrees summing to 27. */
-    &FaceDegreePredicate,
+       face degrees summing to 27. */ // InnerFaceDegree
+    &InnerFacePredicate,
     /* < 64 calls. Nondeterministic: choose facial cycle for every face. */
-    &FacePredicate,
+    // Log
+    &VennPredicate,   // Venn
     /* Single call. Save the solution. On backtrack, also write the number of
        variants, then fail. */
-    &SaveMainPredicate,
+    &SavePredicate, // Save
     /* 6 Calls. Nondeterministic: choose the 18 corners of a variation. */
-    &CornersPredicate,
+    &CornersPredicate, // Corners
     /* Single call. Save the variation. */
-    &SaveVariationPredicate,
+    &GraphMLPredicate, // GraphML
     /* Fail. */
     &FAILPredicate};

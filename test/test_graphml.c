@@ -271,7 +271,7 @@ static void matchGraphMlFile(void (*nodeMatch)(regmatch_t*),
   int nodeCounter = 0, edgeCounter = 0;
   outputBufferPtr = outputBuffer;
   matchRegex(&graphRegex);
-  while (outputBufferPtr < outputBuffer + 50000) {
+  while (outputBufferPtr < outputBuffer + sizeof(outputBuffer)) {
     matchRegex(&nodeOrEdgeRegex);
 
     if (offsets[5].rm_eo != -1) {
@@ -363,7 +363,7 @@ static void backwardGraphML(void)
   freeRegexes();
 }
 
-FORWARD_BACKWARD_PREDICATE_STATIC(GraphML, NULL, forwardGraphML,
+FORWARD_BACKWARD_PREDICATE_STATIC(CheckGraphML, NULL, forwardGraphML,
                                   backwardGraphML)
 
 static regex_t internalEdgeRegex;
@@ -453,29 +453,29 @@ FORWARD_BACKWARD_PREDICATE_STATIC(Gate, gate, NULL, NULL)
 FORWARD_BACKWARD_PREDICATE_STATIC(VariationCount, testVariationEstimate, NULL,
                                   NULL)
 
-static PREDICATE Basic[] = {&InitializePredicate, &FaceDegreePredicate,
-                            &FacePredicate, &GatePredicate, &FAILPredicate};
-static PREDICATE EstimateCount[] = {&InitializePredicate, &FaceDegreePredicate,
-                                    &FacePredicate, &GatePredicate,
+static PREDICATE Basic[] = {&InitializePredicate, &InnerFacePredicate,
+                            &VennPredicate, &GatePredicate, &FAILPredicate};
+static PREDICATE EstimateCount[] = {&InitializePredicate, &InnerFacePredicate,
+                                    &VennPredicate, &GatePredicate,
                                     &VariationCountPredicate};
 static PREDICATE ExactCount[] = {&InitializePredicate,
-                                 &FaceDegreePredicate,
-                                 &FacePredicate,
+                                 &InnerFacePredicate,
+                                 &VennPredicate,
                                  &GatePredicate,
                                  &CountVariationsPredicate,
                                  &CornersPredicate,
-                                 &SaveVariationPredicate,
+                                 &GraphMLPredicate,
                                  &FAILPredicate};
-static PREDICATE CheckGraphML[] = {&InitializePredicate,    &GraphMLPredicate,
-                                   &FaceDegreePredicate,    &FacePredicate,
-                                   &GatePredicate,          &CornersPredicate,
-                                   &SaveVariationPredicate, &FAILPredicate};
+static PREDICATE CheckGraphML[] = {&InitializePredicate, &CheckGraphMLPredicate,
+                                   &InnerFacePredicate,  &VennPredicate,
+                                   &GatePredicate,       &CornersPredicate,
+                                   &GraphMLPredicate,    &FAILPredicate};
 static PREDICATE Variant14188[] = {
-    &InitializePredicate, &Variant14188Predicate,  &GraphMLPredicate,
-    &FaceDegreePredicate, &FacePredicate,          &GatePredicate,
-    &CornersPredicate,    &SaveVariationPredicate, &FAILPredicate};
-static PREDICATE CornerCount[] = {&InitializePredicate, &FaceDegreePredicate,
-                                  &FacePredicate, &GatePredicate,
+    &InitializePredicate, &Variant14188Predicate, &CheckGraphMLPredicate,
+    &InnerFacePredicate,  &VennPredicate,         &GatePredicate,
+    &CornersPredicate,    &GraphMLPredicate,      &FAILPredicate};
+static PREDICATE CornerCount[] = {&InitializePredicate, &InnerFacePredicate,
+                                  &VennPredicate, &GatePredicate,
                                   &CornerCountPredicate};
 
 static void initializeFaceDegree(int a, int b, int c, int d, int e, int f)

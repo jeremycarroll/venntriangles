@@ -197,7 +197,7 @@ static struct predicateResult foundSolution()
 static void testSearch()
 {
   engineResume((PREDICATE[]){
-      &FacePredicate, &(struct predicate){"Found", foundSolution, NULL}});
+      &VennPredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(2, SolutionCount);
 }
 

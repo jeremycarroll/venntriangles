@@ -101,10 +101,6 @@ void searchSolutionWrite(const char *buffer)
 { /* stub for testing. */
 }
 
-void writeSolution(void)
-{ /* stub for testing. */
-}
-
 struct predicate *NonDeterministicProgram[] = {/* stub for testing. */};
 
 void engine(struct predicate *predicates[])

@@ -1,7 +1,5 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "corners.h"
-
 #include "edge.h"
 #include "engine.h"
 #include "face.h"
@@ -9,14 +7,14 @@
 #include "main.h"
 #include "memory.h"
 #include "predicates.h"
-#include "solutionwrite.h"
+#include "save.h"
 #include "trail.h"
 #include "triangles.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-static EDGE SelectedCorners[NCOLORS][3];
+EDGE SelectedCorners[NCOLORS][3];
 static EDGE PossibleCorners[NCOLORS][3][NFACES];
 static void possibleCorners(EDGE* possibilities, COLOR color, EDGE from,
                             EDGE to);
@@ -65,16 +63,8 @@ static struct predicateResult retryCorners(int round, int choice)
   return PredicateSuccessSamePredicate;
 }
 
-static struct predicateResult trySaveVariation(int round)
-{
-  (void)round;  // Unused parameter
-  saveVariation(SelectedCorners);
-  return PredicateSuccessNextPredicate;
-}
 /* The predicates array for corner handling */
 struct predicate CornersPredicate = {"Corners", tryCorners, retryCorners};
-struct predicate SaveVariationPredicate = {"SaveVariant", trySaveVariation,
-                                           NULL};
 /* Path and corner functions */
 static void getPath(EDGE* path, EDGE from, EDGE to)
 {

@@ -37,7 +37,7 @@ static struct predicateResult foundSolution()
 static void testSearch()
 {
   engineResume((PREDICATE[]){
-      &FacePredicate, &(struct predicate){"Found", foundSolution, NULL}});
+      &VennPredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(FACTORIAL4, SolutionCount);
 }
 
@@ -46,7 +46,7 @@ static void testSearchAbcd()
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(0, 0, 0, 0));
   engineResume((PREDICATE[]){
-      &FacePredicate, &(struct predicate){"Found", foundSolution, NULL}});
+      &VennPredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(4, SolutionCount);
 }
 
@@ -55,7 +55,7 @@ static void testSearch4343()
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(4, 3, 4, 3));
   engineResume((PREDICATE[]){
-      &FacePredicate, &(struct predicate){"Found", foundSolution, NULL}});
+      &VennPredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(0, SolutionCount);
 }
 
@@ -64,7 +64,7 @@ static void testSearch4433()
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(4, 4, 3, 3));
   engineResume((PREDICATE[]){
-      &FacePredicate, &(struct predicate){"Found", foundSolution, NULL}});
+      &VennPredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(1, SolutionCount);
 }
 

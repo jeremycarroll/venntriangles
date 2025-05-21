@@ -18,5 +18,6 @@ struct graphmlFileIO {
 extern struct graphmlFileIO GraphmlFileOps;
 extern void saveVariation(EDGE (*corners)[3]);
 extern int numberOfLevels(int expectedVariations);
+extern EDGE SelectedCorners[NCOLORS][3];
 
 #endif  // GRAPHML_H

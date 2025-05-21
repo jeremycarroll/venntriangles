@@ -7,11 +7,10 @@
 
 /* Core predicates used in the main program */
 extern struct predicate InitializePredicate;
-extern struct predicate FaceDegreePredicate;
-extern struct predicate FacePredicate;
+extern struct predicate InnerFacePredicate;
+extern struct predicate VennPredicate;
 extern struct predicate CornersPredicate;
-extern struct predicate SaveVariationPredicate;
-extern struct predicate SaveMainPredicate;
-
+extern struct predicate GraphMLPredicate;
+extern struct predicate SavePredicate;
 
 #endif /* PREDICATES_H */ 
