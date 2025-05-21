@@ -5,12 +5,12 @@
 
 #include "engine.h"
 
-/* Core predicates used in the main program */
 extern struct predicate InitializePredicate;
 extern struct predicate InnerFacePredicate;
+extern struct predicate LogPredicate;
 extern struct predicate VennPredicate;
+extern struct predicate SavePredicate;
 extern struct predicate CornersPredicate;
 extern struct predicate GraphMLPredicate;
-extern struct predicate SavePredicate;
 
 #endif /* PREDICATES_H */ 

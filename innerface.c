@@ -12,14 +12,14 @@
  * This lemma is part of an ongoing proof about the structure of Venn diagrams.
  */
 #define TOTAL_5FACE_DEGREE 27
-
-static FACE_DEGREE currentArgs[NCOLORS];
+extern FACE_DEGREE CurrentFaceDegrees[NCOLORS];
+FACE_DEGREE CurrentFaceDegrees[NCOLORS];
 
 static int sumFaceDegree(int round)
 {
   int sum = 0;
   for (int i = 0; i < round; i++) {
-    sum += currentArgs[i];
+    sum += CurrentFaceDegrees[i];
   }
   return sum;
 }
@@ -30,10 +30,10 @@ static struct predicateResult try5FaceDegree(int round)
     if (sumFaceDegree(round) != TOTAL_5FACE_DEGREE) {
       return PredicateFail;
     }
-    if (s6SymmetryType6(currentArgs) == NON_CANONICAL) {
+    if (s6SymmetryType6(CurrentFaceDegrees) == NON_CANONICAL) {
       return PredicateFail;
     }
-    dynamicFaceSetupCentral(currentArgs);
+    dynamicFaceSetupCentral(CurrentFaceDegrees);
     return PredicateSuccessNextPredicate;
   }
   return predicateChoices(NCOLORS - 2);
@@ -53,7 +53,7 @@ static struct predicateResult retry5FaceDegree(int round, int choice)
                            // this position
   }
   // Try this degree
-  currentArgs[round] = degree;
+  CurrentFaceDegrees[round] = degree;
 
   if (sumFaceDegree(round + 1) + 3 * (NCOLORS - round - 1) >
       TOTAL_5FACE_DEGREE) {

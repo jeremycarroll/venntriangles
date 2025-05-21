@@ -68,7 +68,7 @@ static bool beforeVariantsSave(void)
           s6SignatureToString(s6SignatureFromFaces()),
           s6SignatureToString(s6MaxSignature()));
   fflush(currentFile);
-  VariationCount += currentNumberOfVariations;
+
   return true;
 }
 
@@ -78,6 +78,7 @@ static void afterVariantsSave(void)
 
           VariationNumber - 1, currentNumberOfVariations,
           currentVariationMultiplication);
+  VariationCount += VariationNumber - 1;
   fclose(currentFile);
 }
 

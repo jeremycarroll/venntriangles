@@ -15,7 +15,7 @@
 
 void setUp(void)
 {
-  initializeStatisticLogging(NULL, 4, 1);
+  initializeStatisticLogging(NULL, 4, 20);
   engine((PREDICATE[]){&InitializePredicate, &SUSPENDPredicate});
 }
 
@@ -82,7 +82,7 @@ static void testFullSearch(void)
   /* dynamicSearchFull includes initialization, so we undo our own setUp. */
   SolutionCount = 0;
   engineResume(
-      (PREDICATE[]){&InnerFacePredicate, &VennPredicate,
+      (PREDICATE[]){&InnerFacePredicate, &LogPredicate, &VennPredicate,
                     &(struct predicate){"Found", countSolutions, NULL}});
   TEST_ASSERT_EQUAL(233, SolutionCount);
 }

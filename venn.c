@@ -58,33 +58,6 @@ static struct predicateResult retryFace(int round, int choice)
   // Not on trail, otherwise it would get unset before the next retry.
   face->cycle = chooseCycle(face, face->cycle);
   if (face->cycle == NULL) {
-    clock_t used = clock() - FacePredicateStart;
-    if ((int64_t)GlobalSolutionsFound != FacePredicateRecentSolutionsFound) {
-      TotalUsefulTime += used;
-      UsefulSearchCount += 1;
-
-#define PRINT_TIME(clockValue, counter)                        \
-  printf("[%1lu.%6.6lu (%d)] ", (clockValue) / CLOCKS_PER_SEC, \
-         (clockValue) % CLOCKS_PER_SEC, counter)
-      if (VerboseMode) {
-        PRINT_TIME(used, 0);
-        PRINT_TIME(TotalUsefulTime, UsefulSearchCount);
-        PRINT_TIME(TotalWastedTime, WastedSearchCount);
-      }
-#if 0
-      for (int i = 0; i < NCOLORS; i++) {
-        printf("%llu ", CentralFaceDegrees[i]);
-      }
-      printf(" gives %llu/%d new solutions\n",
-             GlobalSolutionsFound - FacePredicateRecentSolutionsFound,
-             VariationCount - FacePredicateInitialVariationCount);
-      statisticPrintOneLine(0, true);
-#endif
-    } else {
-      WastedSearchCount += 1;
-      TotalWastedTime += used;
-    }
-    FacePredicateRecentSolutionsFound = GlobalSolutionsFound;
     return PredicateFail;
   }
   if (dynamicFaceBacktrackableChoice(face) == NULL) {
