@@ -3,7 +3,6 @@
 #include "main.h"
 
 #include "engine.h"
-#include "memory.h"
 #include "nondeterminism.h"
 #include "statistics.h"
 #include "utils.h"

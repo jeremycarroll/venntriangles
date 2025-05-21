@@ -6,8 +6,6 @@
 #include "edge.h"
 #include "vertex.h"
 
-#include <stdio.h>
-
 extern uint64 GlobalVariantCount;
 
 // Allow mocking of file operations.

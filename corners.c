@@ -1,14 +1,11 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #include "edge.h"
-#include "engine.h"
 #include "face.h"
 #include "graphml.h"
 #include "main.h"
-#include "memory.h"
 #include "predicates.h"
 #include "save.h"
-#include "trail.h"
 #include "triangles.h"
 
 #include <stdio.h>

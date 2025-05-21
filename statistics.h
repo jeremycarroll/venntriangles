@@ -5,10 +5,7 @@
 
 #include "core.h"
 #include "failure.h"
-#include "memory.h"
 
-#include <stdint.h>
-#include <stdio.h>
 #include <time.h>
 
 #define MAX_STATISTICS 10

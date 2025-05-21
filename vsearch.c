@@ -2,15 +2,12 @@
 
 #include "vsearch.h"
 
-#include "engine.h"
 #include "face.h"
 #include "graphml.h"
 #include "main.h"
-#include "memory.h"
 #include "s6.h"
 #include "save.h"
 #include "statistics.h"
-#include "trail.h"
 #include "utils.h"
 
 #include <stdio.h>

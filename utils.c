@@ -5,11 +5,8 @@
 #include "color.h"
 #include "edge.h"
 #include "face.h"
-#include "memory.h"
 #include "s6.h"
 #include "statistics.h"
-#include "trail.h"
-#include "vertex.h"
 #include <sys/stat.h>
 
 #include <stdlib.h>

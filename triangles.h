@@ -4,7 +4,6 @@
 #define TRIANGLES_H
 
 #include "edge.h"
-#include "vertex.h"
 
 /* Structure to hold callbacks for triangle traversal */
 typedef struct {

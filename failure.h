@@ -4,9 +4,6 @@
 #define FAILURE_H
 
 #include "core.h"
-#include "memory.h"
-
-#include <stdint.h>
 
 struct failure {
   char *label;

@@ -4,8 +4,6 @@
 
 #include "trail.h"
 
-#include <stdlib.h>
-
 /* Global variables - globally scoped */
 uint64 EdgeCountsByDirectionAndColor[2][NCOLORS];
 COLORSET ColorCompleted;

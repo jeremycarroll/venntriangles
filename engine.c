@@ -2,10 +2,8 @@
 
 #include "engine.h"
 
-#include "core.h"
 #include "face.h"
 #include "main.h"
-#include "statistics.h"
 #include "trail.h"
 
 /* The engine implements a WAM-like execution model for our search process.

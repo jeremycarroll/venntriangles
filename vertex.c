@@ -5,8 +5,6 @@
 #include "trail.h"
 #include "utils.h"
 
-#include <stddef.h>
-
 /* Global variables */
 struct Vertex VertexAllUVertices[NPOINTS];
 static int NextUVertexId = 0;

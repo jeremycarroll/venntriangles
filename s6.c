@@ -4,16 +4,12 @@
 
 #include "face.h"
 #include "main.h"
-#include "memory.h"
 #include "predicates.h"
 #include "statistics.h"
-#include "trail.h"
 #include "utils.h"
 
 #include <stdarg.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #define TOTAL_SEQUENCE_STORAGE 100
 #define DEBUG 0

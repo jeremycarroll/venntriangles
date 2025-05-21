@@ -5,9 +5,6 @@
 
 #include "core.h"
 
-#include <stdbool.h>
-#include <stdint.h>
-
 typedef struct trail *TRAIL;
 typedef uint64 uint_trail;
 

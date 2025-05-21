@@ -1,6 +1,5 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "engine.h"
 #include "face.h"
 #include "failure.h"
 #include "main.h"
@@ -10,10 +9,6 @@
 #include "statistics.h"
 #include "utils.h"
 #include "vsearch.h"
-static clock_t TotalWastedTime = 0;
-static clock_t TotalUsefulTime = 0;
-static int WastedSearchCount = 0;
-static int UsefulSearchCount = 0;
 static int FacePredicateRecentSolutionsFound = 0;
 static int FacePredicateInitialVariationCount = 0;
 static clock_t FacePredicateStart = 0;

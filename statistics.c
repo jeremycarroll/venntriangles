@@ -5,9 +5,7 @@
 #include "face.h"
 #include "main.h"
 
-#include <assert.h>
 #include <math.h>
-#include <string.h>
 
 /* Global variables (file scoped static) */
 static Statistic Statistics[MAX_STATISTICS];

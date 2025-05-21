@@ -2,15 +2,11 @@
 
 #include "graphml.h"
 
-#include "engine.h"
 #include "main.h"
-#include "memory.h"
 #include "predicates.h"
 #include "save.h"
-#include "trail.h"
 #include "triangles.h"
 #include "utils.h"
-#include "vertex.h"
 
 #include <stdio.h>
 #include <string.h>

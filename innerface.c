@@ -1,6 +1,5 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "engine.h"
 #include "main.h"
 #include "predicates.h"
 #include "s6.h"
