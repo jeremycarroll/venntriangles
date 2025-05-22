@@ -1,10 +1,10 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
+#include "dataflow.h"
 #include "main.h"
 #include "predicates.h"
 #include "save.h"
 #include "statistics.h"
-#include "vsearch.h"
 
 extern FACE_DEGREE CurrentFaceDegrees[NCOLORS];
 static clock_t TotalWastedTime = 0;
@@ -14,6 +14,34 @@ static int UsefulSearchCount = 0;
 static int FacePredicateRecentSolutionsFound = 0;
 static int FacePredicateInitialVariationCount = 0;
 static clock_t FacePredicateStart = 0;
+
+int searchCountVariations(char* variationMultiplication)
+{
+  EDGE corners[3][2];
+  int numberOfVariations = 1;
+  int pLength;
+  if (variationMultiplication != NULL) {
+    variationMultiplication[0] = '\0';
+  }
+  for (COLOR a = 0; a < NCOLORS; a++) {
+    edgeFindAndAlignCorners(a, corners);
+    for (int i = 0; i < 3; i++) {
+      if (corners[i][0] == NULL) {
+        EDGE edge = edgeOnCentralFace(a);
+        pLength = edgePathLength(edge, edgeFollowBackwards(edge), NULL);
+      } else {
+        pLength = edgePathLength(corners[i][0]->reversed, corners[i][1], NULL);
+      }
+      numberOfVariations *= pLength;
+      if (variationMultiplication != NULL && pLength > 1) {
+        variationMultiplication +=
+            sprintf(variationMultiplication, "*%d", pLength);
+      }
+    }
+  }
+  return numberOfVariations;
+}
+
 static bool forwardLog(void)
 {
   FacePredicateStart = clock();

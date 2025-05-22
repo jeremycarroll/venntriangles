@@ -5,7 +5,7 @@
 #include "predicates.h"
 #include "statistics.h"
 #include "utils.h"
-#include "vsearch.h"
+#include "visible_for_testing.h"
 
 #include <unity.h>
 

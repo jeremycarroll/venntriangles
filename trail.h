@@ -13,7 +13,7 @@ struct trail {
   uint_trail value;
 };
 
-/* We actually need 4834 */
+/* We actually need about 8000 */
 #define TRAIL_SIZE 16384
 
 extern TRAIL Trail;

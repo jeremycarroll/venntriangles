@@ -6,7 +6,6 @@
 #include "nondeterminism.h"
 #include "statistics.h"
 #include "utils.h"
-#include "vsearch.h"
 
 #include <getopt.h>
 #include <limits.h>

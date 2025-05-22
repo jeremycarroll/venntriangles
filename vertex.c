@@ -211,3 +211,34 @@ static FAILURE findCornersByTraversal(EDGE start, int depth,
   }
   return NULL;
 }
+
+void initializePoints(void)
+{
+  uint32_t i, j, k;
+  if (VertexAllUVertices[0].incomingEdges[0]->possiblyTo[1].next == NULL) {
+    for (i = 0; i < NPOINTS; i++) {
+      VERTEX p = VertexAllUVertices + i;
+      edgeLink(p->incomingEdges[0], p->incomingEdges[1], p->incomingEdges[2],
+               p->incomingEdges[3]);
+      edgeLink(p->incomingEdges[2], p->incomingEdges[3], p->incomingEdges[0],
+               p->incomingEdges[1]);
+    }
+    for (i = 0; i < NFACES; i++) {
+      FACE f = Faces + i;
+      for (j = 0; j < NCOLORS; j++) {
+        for (k = 0; k < NCOLORS; k++) {
+          assert(j == f->edges[j].color);
+          if (k == j) {
+            continue;
+          }
+          assert(f->edges[j].possiblyTo[k].vertex != NULL);
+          assert(f->edges[j].possiblyTo[k].next != NULL);
+          assert(f->edges[j].possiblyTo[k].next->color == j);
+          assert(
+              f->edges[j].possiblyTo[k].next->reversed->possiblyTo[k].vertex ==
+              f->edges[j].possiblyTo[k].vertex);
+        }
+      }
+    }
+  }
+}

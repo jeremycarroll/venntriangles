@@ -7,7 +7,6 @@
 #include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"
-#include "vsearch.h"
 
 #include <stdlib.h>
 #include <string.h>

@@ -4,7 +4,6 @@
 #define S6_H
 
 #include "color.h"
-#include "engine.h"
 
 typedef enum {
   CANONICAL,

@@ -6,8 +6,6 @@
 #include "edge.h"
 #include "vertex.h"
 
-extern uint64 GlobalVariantCount;
-
 // Allow mocking of file operations.
 struct graphmlFileIO {
   FILE* (*fopen)(const char* filename, const char* mode);

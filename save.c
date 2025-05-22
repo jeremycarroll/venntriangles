@@ -2,6 +2,7 @@
 
 #include "save.h"
 
+#include "dataflow.h"
 #include "face.h"
 #include "graphml.h"
 #include "main.h"
@@ -9,7 +10,6 @@
 #include "s6.h"
 #include "statistics.h"
 #include "utils.h"
-#include "vsearch.h"
 
 #include <stdio.h>
 #include <stdlib.h>

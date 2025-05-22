@@ -5,7 +5,7 @@
 #include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"
-#include "vsearch.h"
+#include "visible_for_testing.h"
 
 #include <stdio.h>
 #include <stdlib.h>

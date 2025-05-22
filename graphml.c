@@ -2,6 +2,7 @@
 
 #include "graphml.h"
 
+#include "dataflow.h"
 #include "main.h"
 #include "predicates.h"
 #include "save.h"
