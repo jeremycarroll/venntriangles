@@ -13,13 +13,7 @@ extern CYCLESET_DECLARE CycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
 /* Test setup and teardown */
 void setUp(void) {}
 
-void tearDown(void)
-{
-  resetGlobals();
-  resetInitialize();
-  resetStatistics();
-  resetPoints();
-}
+void tearDown(void) {}
 
 /* Test functions */
 static void testInitialize(void)
@@ -209,14 +203,14 @@ int main(void)
 {
   UNITY_BEGIN();
   RUN_TEST(testInitialize);
-  RUN_TEST(testContains2);
-  RUN_TEST(testContains3);
-  RUN_TEST(testCycleset);
   RUN_TEST(testSizeOfCycleSet);
   RUN_TEST(testLastCycles);
   RUN_TEST(testSameAndOppositeDirections);
   RUN_TEST(testFaceChoiceCount);
   RUN_TEST(testOppositeDirections);
   RUN_TEST(testNextCycle);
+  RUN_TEST(testContains2);
+  RUN_TEST(testContains3);
+  RUN_TEST(testCycleset);
   return UNITY_END();
 }

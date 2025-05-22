@@ -59,15 +59,15 @@ extern FAILURE edgeCurveChecks(EDGE edge, int depth);
  * @return int The number of edges in the path.
  */
 extern int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn);
-extern char* edgeToString(EDGE edge);
 
 extern EDGE edgeOnCentralFace(COLOR a);
-extern void resetEdges(void);
 
 extern FAILURE edgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
 extern void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4);
 
 #define IS_PRIMARY_EDGE(edge) \
   (COLORSET_HAS_MEMBER((edge)->color, (edge)->colors))
+
+extern COLORSET ColorCompleted;
 
 #endif  // EDGE_H

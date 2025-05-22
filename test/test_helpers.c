@@ -19,7 +19,7 @@ FACE dynamicFaceAddSpecific(char* colors, char* cycle)
     TEST_ASSERT_EQUAL(face->cycle, cycleSetFirst(face->possibleCycles));
     TEST_ASSERT_EQUAL(face->cycle, Cycles + cycleId);
   } else {
-    face->cycle = Cycles + cycleId;
+    TRAIL_SET_POINTER(&face->cycle, Cycles + cycleId);
     failure = dynamicFaceBacktrackableChoice(face);
 
     if (failure != NULL) {

@@ -1,26 +1,23 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #include "face.h"
+#include "main.h"
+#include "predicates.h"
 #include "statistics.h"
 #include "utils.h"
-#include "vsearch.h"
+#include "visible_for_testing.h"
 
 #include <unity.h>
 
-/* Test setup and teardown */
 void setUp(void)
 {
-  initialize();
   initializeStatisticLogging(NULL, 4, 1);
+  engine((PREDICATE[]){&InitializePredicate, &SUSPENDPredicate});
 }
 
 void tearDown(void)
 {
-  resetGlobals();
-  resetInitialize();
-  resetTrail();
-  resetStatistics();
-  resetPoints();
+  engineResume((PREDICATE[]){&FAILPredicate});
 }
 
 /* Helper functions */
@@ -190,22 +187,26 @@ static void testChoosingAndBacktracking()
 /* Global variables */
 static int SolutionCount = 0;
 
-/* Callback functions */
-static void foundSolution()
+static struct predicateResult foundSolution()
 {
   SolutionCount++;
+  return PredicateFail;
 }
 
 /* Test functions */
 static void testSearch()
 {
-  searchHere(true, foundSolution);
+  engineResume((PREDICATE[]){
+      &VennPredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(2, SolutionCount);
 }
 
 /* Main test runner */
-int main(void)
+int main(int argc, char *argv[])
 {
+  if (argc > 1 && strcmp(argv[1], "-t") == 0) {
+    Tracing = true;
+  }
   UNITY_BEGIN();
   RUN_TEST(testOuterFace);
   RUN_TEST(testAFace);

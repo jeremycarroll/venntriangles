@@ -57,7 +57,6 @@ extern char *colorSetToBareString(COLORSET colors);
 extern char *cycleToString(CYCLE cycle);
 extern void cycleSetRemoveCycleWithTrail(CYCLESET cycleSet, uint32_t cycleId);
 extern void initializeCycleSets(void);
-extern void resetCycles(void);
 extern void initializeCycleSetUniversal(CYCLESET cycleSet);
 extern CYCLE_ID cycleIdReverseDirection(CYCLE_ID cycleId);
 

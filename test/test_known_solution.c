@@ -5,7 +5,7 @@
 #include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"
-#include "vsearch.h"
+#include "visible_for_testing.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,9 +22,7 @@ static void test3456(void);
 static void test4356(void);
 static void test6543(void);
 static void test5364(void);
-static void testInOrder(bool smallestFirst);
-static void testInBestOrder(void);
-static void testInWorstOrder(void);
+static void testInOrder(void);
 static void testDE1(void);
 static void testDE2(void);
 
@@ -128,7 +126,7 @@ static char* testData3[][2] = {
     },
 };
 
-char* testData4[][2] = {
+static char* testData4[][2] = {
     {
         "a",
         "abed",
@@ -297,22 +295,23 @@ static char* testData6[][2] = {
     },
 };
 
+static TRAIL trail = NULL;
 /* Test setup and teardown */
 void setUp(void)
 {
   FACE_DEGREE args[] = {5, 5, 5, 4, 4, 4};
   initialize();
   initializeStatisticLogging("/dev/stdout", 20, 5);
-  dynamicFaceSetupCentral(args);
+  if (trail == NULL) {
+    dynamicFaceSetupCentral(args);
+    trail = Trail;
+  }
+  CycleGuessCounter = 1;
 }
 
 void tearDown(void)
 {
-  resetGlobals();
-  resetInitialize();
-  resetTrail();
-  resetStatistics();
-  resetPoints();
+  trailBacktrackTo(trail);
   CycleGuessCounter = 0;
 }
 
@@ -331,7 +330,7 @@ static void addFacesFromTestData(char* testData[][2], int length)
       TEST_ASSERT_EQUAL(Cycles + cycleId, cycleSetFirst(face->possibleCycles));
       TEST_ASSERT_EQUAL(face->cycle, Cycles + cycleId);
     } else {
-      face->cycle = Cycles + cycleId;
+      TRAIL_SET_POINTER(&face->cycle, Cycles + cycleId);
       failure = dynamicFaceBacktrackableChoice(face);
       if (failure != NULL) {
         printf("Failure: %s %s\n", failure->label, failure->shortLabel);
@@ -422,13 +421,13 @@ static void test5364(void)
   TEST_ASSERT_EQUAL(11, CycleGuessCounter);
 }
 
-static void testInOrder(bool smallestFirst)
+static void testInOrder(void)
 {
   FACE face;
   char colors[7];
   int i;
   COLOR color;
-  while ((face = searchChooseNextFace(smallestFirst))) {
+  while ((face = searchChooseNextFace())) {
     for (color = 0, i = 0; color < NCOLORS; color++) {
       if (COLORSET_HAS_MEMBER(color, face->colors)) {
         colors[i++] = 'a' + color;
@@ -437,18 +436,7 @@ static void testInOrder(bool smallestFirst)
     colors[i] = 0;
     TEST_ASSERT_EQUAL(face, addFaceFromTestData(colors));
   }
-}
-
-static void testInBestOrder(void)
-{
-  testInOrder(true);
   TEST_ASSERT_EQUAL(26, CycleGuessCounter);
-}
-
-static void testInWorstOrder(void)
-{
-  testInOrder(false);
-  TEST_ASSERT_EQUAL(10, CycleGuessCounter);
 }
 
 static void testDE1(void)
@@ -489,7 +477,6 @@ int main(void)
   RUN_TEST(test5364);
   RUN_TEST(testDE1);
   RUN_TEST(testDE2);
-  RUN_TEST(testInBestOrder);
-  RUN_TEST(testInWorstOrder);
+  RUN_TEST(testInOrder);
   return UNITY_END();
 }

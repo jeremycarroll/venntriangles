@@ -42,55 +42,28 @@ void initializeFacesAndEdges(void)
   uint32_t facecolors, color;
   FACE face, adjacent;
   EDGE edge;
+  if (Faces[1].colors == 0) {
+    statisticIncludeInteger(&CycleForcedCounter, "+", "forced", false);
+    statisticIncludeInteger(&CycleSetReducedCounter, "-", "reduced", true);
+    initializeLengthOfCycleOfFaces();
+    for (facecolors = 0, face = Faces; facecolors < NFACES;
+         facecolors++, face++) {
+      face->colors = facecolors;
+      initializeCycleSetUniversal(face->possibleCycles);
 
-  statisticIncludeInteger(&CycleForcedCounter, "+", "forced", false);
-  statisticIncludeInteger(&CycleSetReducedCounter, "-", "reduced", true);
-  initializeLengthOfCycleOfFaces();
-  for (facecolors = 0, face = Faces; facecolors < NFACES;
-       facecolors++, face++) {
-    face->colors = facecolors;
-    initializeCycleSetUniversal(face->possibleCycles);
-
-    for (color = 0; color < NCOLORS; color++) {
-      uint32_t colorbit = (1 << color);
-      adjacent = Faces + (facecolors ^ (colorbit));
-      face->adjacentFaces[color] = adjacent;
-      edge = &face->edges[color];
-      edge->colors = face->colors;
-      edge->level = __builtin_popcount(face->colors);
-      edge->color = color;
-      edge->reversed = &adjacent->edges[color];
-    }
-  }
-  applyMonotonicity();
-  initializePossiblyTo();
-}
-
-void initializePoints(void)
-{
-  uint32_t i, j, k;
-  for (i = 0; i < NPOINTS; i++) {
-    VERTEX p = VertexAllUVertices + i;
-    edgeLink(p->incomingEdges[0], p->incomingEdges[1], p->incomingEdges[2],
-             p->incomingEdges[3]);
-    edgeLink(p->incomingEdges[2], p->incomingEdges[3], p->incomingEdges[0],
-             p->incomingEdges[1]);
-  }
-  for (i = 0; i < NFACES; i++) {
-    FACE f = Faces + i;
-    for (j = 0; j < NCOLORS; j++) {
-      for (k = 0; k < NCOLORS; k++) {
-        assert(j == f->edges[j].color);
-        if (k == j) {
-          continue;
-        }
-        assert(f->edges[j].possiblyTo[k].vertex != NULL);
-        assert(f->edges[j].possiblyTo[k].next != NULL);
-        assert(f->edges[j].possiblyTo[k].next->color == j);
-        assert(f->edges[j].possiblyTo[k].next->reversed->possiblyTo[k].vertex ==
-               f->edges[j].possiblyTo[k].vertex);
+      for (color = 0; color < NCOLORS; color++) {
+        uint32_t colorbit = (1 << color);
+        adjacent = Faces + (facecolors ^ (colorbit));
+        face->adjacentFaces[color] = adjacent;
+        edge = &face->edges[color];
+        edge->colors = face->colors;
+        edge->level = __builtin_popcount(face->colors);
+        edge->color = color;
+        edge->reversed = &adjacent->edges[color];
       }
     }
+    applyMonotonicity();
+    initializePossiblyTo();
   }
 }
 
@@ -179,13 +152,6 @@ bool dynamicColorRemoveFromSearch(COLOR color)
     }
   }
   return true;
-}
-
-/* Externally linked functions - reset... */
-void resetFaces()
-{
-  memset(Faces, 0, sizeof(Faces));
-  memset(FaceSumOfFaceDegree, 0, sizeof(FaceSumOfFaceDegree));
 }
 
 /* Externally linked functions - face... */

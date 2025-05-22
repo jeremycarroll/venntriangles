@@ -1,46 +1,42 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #include "face.h"
+#include "main.h"
+#include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"
-#include "vsearch.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <unity.h>
 
-/* Test setup and teardown */
 void setUp(void)
 {
-  initialize();
-  initializeStatisticLogging("/dev/stdout", 20, 5);
+  initializeStatisticLogging(NULL, 4, 1);
+  engine((PREDICATE[]){&InitializePredicate, &SUSPENDPredicate});
 }
 
 void tearDown(void)
 {
-  resetGlobals();
-  resetInitialize();
-  resetTrail();
-  resetStatistics();
-  resetPoints();
+  engineResume((PREDICATE[]){&FAILPredicate});
 }
 
 /* Global variables */
 static int SolutionCount = 0;
 
-/* Callback functions */
-static void foundSolution()
+static struct predicateResult foundSolution()
 {
   SolutionCount++;
+  return PredicateFail;
 }
 
 /* Test functions */
 static void testSearch()
 {
-  SolutionCount = 0;
-  searchHere(false, foundSolution);
+  engineResume((PREDICATE[]){
+      &VennPredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(FACTORIAL4, SolutionCount);
 }
 
@@ -48,7 +44,8 @@ static void testSearchAbcd()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(0, 0, 0, 0));
-  searchHere(false, foundSolution);
+  engineResume((PREDICATE[]){
+      &VennPredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(4, SolutionCount);
 }
 
@@ -56,7 +53,8 @@ static void testSearch4343()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(4, 3, 4, 3));
-  searchHere(false, foundSolution);
+  engineResume((PREDICATE[]){
+      &VennPredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(0, SolutionCount);
 }
 
@@ -64,13 +62,17 @@ static void testSearch4433()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(4, 4, 3, 3));
-  searchHere(false, foundSolution);
+  engineResume((PREDICATE[]){
+      &VennPredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(1, SolutionCount);
 }
 
 /* Main test runner */
-int main(void)
+int main(int argc, char *argv[])
 {
+  if (argc > 1 && strcmp(argv[1], "-t") == 0) {
+    Tracing = true;
+  }
   UNITY_BEGIN();
   RUN_TEST(testSearch);
   RUN_TEST(testSearch4343);

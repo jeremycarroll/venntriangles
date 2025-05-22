@@ -2,19 +2,19 @@
 
 #include "graphml.h"
 
+#include "dataflow.h"
 #include "main.h"
-#include "memory.h"
-#include "trail.h"
+#include "predicates.h"
+#include "save.h"
 #include "triangles.h"
 #include "utils.h"
-#include "vertex.h"
 
 #include <stdio.h>
 #include <string.h>
 #define DEBUG 0
 
 /* Global variables */
-uint64 GlobalVariantCount = 0;
+uint64_t GlobalVariantCount = 0;
 /* GraphML namespace and schema definitions */
 static const char *GRAPHML_NS = "http://graphml.graphdrawing.org/xmlns";
 static const char *GRAPHML_SCHEMA =
@@ -49,26 +49,13 @@ static void processAdjacentCornersGraphML(void *data, EDGE current, int line);
 static void processAllCornersGraphML(void *data, EDGE current, int line);
 static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3]);
 
-/* Path and corner functions */
-static void getPath(EDGE *path, EDGE from, EDGE to);
-static void possibleCorners(EDGE *possibilities, COLOR color, EDGE from,
-                            EDGE to);
-
 /* Variation handling */
-static void saveVariation(EDGE (*corners)[3]);
-static int savePartialVariations(COLOR current, EDGE (*corners)[3]);
-static void chooseCornersThenSavePartialVariations(int cornerIndex,
-                                                   COLOR current,
-                                                   EDGE (*corners)[3]);
-static int numberOfLevels(int expectedVariations);
 static char *subFilename(void);
 
 /* Global variables */
-static const char *CurrentPrefix = NULL;
-static int VariationNumber = 1;
-static int ExpectedVariations = 0;
-static int Levels = 0;
-static EDGE PossibileCorners[NCOLORS][3][NFACES];
+char CurrentPrefix[1024];
+int VariationNumber = 1;
+int Levels = 0;
 
 /* Structure to hold data for GraphML output */
 typedef struct {
@@ -79,58 +66,7 @@ typedef struct {
 } GraphMLData;
 
 /* Externally linked functions */
-struct graphmlFileIO graphmlFileOps = {fopen, initializeFolder};
-
-void graphmlPossibleCorners(void)
-{
-  for (int current = 0; current < NCOLORS; current++) {
-    EDGE cornerPairs[3][2];
-    edgeFindAndAlignCorners(current, cornerPairs);
-    for (int cornerIndex = 0; cornerIndex < 3; cornerIndex++) {
-      possibleCorners(PossibileCorners[current][cornerIndex], current,
-                      cornerPairs[cornerIndex][0], cornerPairs[cornerIndex][1]);
-    }
-  }
-}
-
-int graphmlSaveAllVariations(const char *prefix, int expectedVariations)
-{
-  EDGE corners[NCOLORS][3];
-  CurrentPrefix = prefix;
-  VariationNumber = 1;
-  ExpectedVariations = expectedVariations;
-  Levels = numberOfLevels(expectedVariations);
-  graphmlFileOps.initializeFolder(prefix);
-  graphmlPossibleCorners();
-  savePartialVariations(0, corners);
-  return VariationNumber - 1;
-}
-
-void graphmlChooseCornersWithContinuation(
-    int cornerIndex, COLOR current, EDGE (*corners)[3],
-    int (*continuation)(COLOR, EDGE (*corners)[3]))
-{
-  EDGE *possibilities = PossibileCorners[current][cornerIndex];
-  int i;
-
-  if (VariationNumber > MaxVariantsPerSolution) {
-    return;
-  }
-
-  if (cornerIndex == 3) {
-    TRAIL trail = Trail;
-    if (triangleLinesNotCrossed(current, corners + current)) {
-      continuation(current + 1, corners);
-    }
-    trailBacktrackTo(trail);
-    return;
-  }
-  for (i = 0; possibilities[i] != NULL; i++) {
-    corners[current][cornerIndex] = possibilities[i];
-    graphmlChooseCornersWithContinuation(cornerIndex + 1, current, corners,
-                                         continuation);
-  }
-}
+struct graphmlFileIO GraphmlFileOps = {fopen, initializeFolder};
 
 /* GraphML document structure functions */
 static void graphmlBegin(FILE *fp)
@@ -204,6 +140,7 @@ static char *cornerId(COLOR color, int counter)
 {
   char *buffer = getBuffer();
   assert(counter < 3);
+  assert(color >= 0);
   sprintf(buffer, "%c_%d", colorToChar(color), counter);
   return usingBuffer(buffer);
 }
@@ -340,29 +277,6 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
   addCornerNodes(fp, corners, color, gml.cornerIds);
 }
 
-/* Path and corner functions */
-static void getPath(EDGE *path, EDGE from, EDGE to)
-{
-  int length = edgePathLength(from, to, path);
-#if DEBUG
-  printf("getPath: %c %x -> %x %d\n", 'A' + from->color, from, to, length);
-#endif
-  assert(length > 0);
-  assert(length == 1 || path[0] != path[length - 1]);
-  path[length] = NULL;
-}
-
-static void possibleCorners(EDGE *possibilities, COLOR color, EDGE from,
-                            EDGE to)
-{
-  if (from == NULL) {
-    EDGE edge = edgeOnCentralFace(color);
-    getPath(possibilities, edge->reversed, edgeFollowBackwards(edge->reversed));
-  } else {
-    getPath(possibilities, from->reversed, to);
-  }
-}
-
 /* Variation handling */
 static char *subFilename(void)
 {
@@ -371,10 +285,9 @@ static char *subFilename(void)
   char *p = buffer;
   int variationNumber = VariationNumber;
   p = p + sprintf(p, "%s", CurrentPrefix);
-
   while (levels > 1) {
     p += sprintf(p, "/%2.2x", variationNumber % 256);
-    graphmlFileOps.initializeFolder(buffer);
+    GraphmlFileOps.initializeFolder(buffer);
     variationNumber /= 256;
     levels--;
   }
@@ -382,28 +295,27 @@ static char *subFilename(void)
   return usingBuffer(buffer);
 }
 
-static void saveVariation(EDGE (*corners)[3])
+void saveVariation(EDGE (*corners)[3])
 {
   COLOR a;
   char *filename = subFilename();
   FILE *fp;
-  assert(VariationNumber <= ExpectedVariations);
+  // assert(VariationNumber <= ExpectedVariations);
   VariationNumber++;
   if (VariationNumber - 1 <= IgnoreFirstVariantsPerSolution) {
     return;
   }
   GlobalVariantCount++;
-  fp = graphmlFileOps.fopen(filename, "w");
+  fp = GraphmlFileOps.fopen(filename, "w");
   graphmlBegin(fp);
   for (a = 0; a < NCOLORS; a++, corners++) {
     saveTriangle(fp, a, corners);
   }
   graphmlEnd(fp);
   fclose(fp);
-  freeAll();
 }
 
-static int numberOfLevels(int expectedVariations)
+int numberOfLevels(int expectedVariations)
 {
   int result = 1;
   while (expectedVariations >= 4096) {
@@ -413,20 +325,11 @@ static int numberOfLevels(int expectedVariations)
   return result;
 }
 
-static void chooseCornersThenSavePartialVariations(int cornerIndex,
-                                                   COLOR current,
-                                                   EDGE (*corners)[3])
+static struct predicateResult trySaveVariation(int round)
 {
-  graphmlChooseCornersWithContinuation(cornerIndex, current, corners,
-                                       savePartialVariations);
+  (void)round;  // Unused parameter
+  saveVariation(SelectedCorners);
+  return PredicateSuccessNextPredicate;
 }
 
-static int savePartialVariations(COLOR current, EDGE (*corners)[3])
-{
-  if (current >= NCOLORS) {
-    saveVariation(corners);
-    return 1;
-  }
-  chooseCornersThenSavePartialVariations(0, current, corners);
-  return 0;
-}
+struct predicate GraphMLPredicate = {"GraphML", trySaveVariation, NULL};

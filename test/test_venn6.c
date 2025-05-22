@@ -1,40 +1,36 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
+#include "engine.h"
 #include "face.h"
+#include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"
-#include "vsearch.h"
 
 #include <stdlib.h>
 #include <time.h>
 #include <unity.h>
 
-/* Test setup and teardown */
 void setUp(void)
 {
-  initialize();
-  initializeStatisticLogging("/dev/stdout", 200, 10);
-  initializeS6();
+  initializeStatisticLogging(NULL, 4, 20);
+  engine((PREDICATE[]){&InitializePredicate, &SUSPENDPredicate});
 }
 
 void tearDown(void)
 {
-  resetGlobals();
-  resetInitialize();
-  resetTrail();
-  resetStatistics();
-  resetPoints();
+  engineResume((PREDICATE[]){&FAILPredicate});
 }
-
 /* Global variables */
 static int SolutionCount = 0;
 
-/* Callback functions */
-static void foundSolution()
+/* Predicate functions */
+static struct predicateResult countSolutions(int round)
 {
+  (void)round;  // Mark parameter as intentionally unused
   SolutionCount++;
+  return PredicateFail;
 }
 
 /* Test functions */
@@ -53,8 +49,8 @@ static void testSearchForBestSolution()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(5, 5, 5, 4, 4, 4));
-  searchHere(true, foundSolution);
-
+  engineResume((PREDICATE[]){
+      &VennPredicate, &(struct predicate){"Found", countSolutions, NULL}});
   TEST_ASSERT_EQUAL(80, SolutionCount);
 }
 
@@ -63,7 +59,7 @@ static void testSearchForTwoSolutions()
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(5, 5, 5, 4, 4, 4));
   dynamicFaceAddSpecific("c", "adbce");
-  /* This is a short statement of the best solution.
+  /* A short statement of the best solution.
   dynamicFaceAddSpecific("a", "abed");
   dynamicFaceAddSpecific("c", "adbce");
   dynamicFaceAddSpecific("bde", "bfd");
@@ -74,17 +70,19 @@ static void testSearchForTwoSolutions()
   dynamicFaceAddSpecific("b", "abcf");
   dynamicFaceAddSpecific("f", "aefdc");
   */
-  searchHere(true, foundSolution);
+  engineResume((PREDICATE[]){
+      &VennPredicate, &(struct predicate){"Found", countSolutions, NULL}});
 
   TEST_ASSERT_EQUAL(2, SolutionCount);
 }
 
 static void testFullSearch(void)
 {
-  /* dyanmicSearchFull includes initialization, so we undo our own setUp. */
-  tearDown();
+  /* dynamicSearchFull includes initialization, so we undo our own setUp. */
   SolutionCount = 0;
-  searchFull(foundSolution);
+  engineResume(
+      (PREDICATE[]){&InnerFacePredicate, &LogPredicate, &VennPredicate,
+                    &(struct predicate){"Found", countSolutions, NULL}});
   TEST_ASSERT_EQUAL(233, SolutionCount);
 }
 

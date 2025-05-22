@@ -5,11 +5,8 @@
 #include "color.h"
 #include "edge.h"
 #include "face.h"
-#include "memory.h"
 #include "s6.h"
 #include "statistics.h"
-#include "trail.h"
-#include "vertex.h"
 #include <sys/stat.h>
 
 #include <stdlib.h>
@@ -23,13 +20,13 @@ void initialize()
   /* Verify uint64 is 64 bits */
   assert(sizeof(uint64) == 8);
 
-  freeAll();
   initializeCycleSets();
   initializeFacesAndEdges();
   initializePoints();
   initializeTrail();
   initializeMemory();
   initializeS6();
+  trailFreeze();
 }
 
 void initializeFolder(const char *folder)
@@ -51,19 +48,6 @@ void initializeFolder(const char *folder)
   }
 }
 
-void resetGlobals()
-{
-  resetFaces();
-  resetEdges();
-  resetPoints();
-  freeAll();
-}
-
-void resetInitialize()
-{
-  resetCycles();
-}
-
 #define USAGE_ONE_LINE                                                   \
   "Usage: %s -f outputFolder [-d centralFaceDegrees] [-m maxSolutions] " \
   "[-n maxVariantsPerSolution] [-k skipFirstSolutions] [-j "             \
@@ -75,9 +59,9 @@ void resetInitialize()
   "Otherwise, they apply globally across all face degree patterns.\n"         \
   "Use -v to enable verbose output mode.\n"
 
-void disaster(const char *message)
+void disaster(const char *programName, const char *message)
 {
-  fprintf(stderr, USAGE_ONE_LINE, Argv0);
+  fprintf(stderr, USAGE_ONE_LINE, programName);
   fprintf(stderr, USAGE_WITH_D_EXPLANATION);
   fprintf(stderr, "%s\n", message);
   exit(EXIT_FAILURE);

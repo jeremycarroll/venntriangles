@@ -4,8 +4,6 @@
 
 #include "trail.h"
 
-#include <stdlib.h>
-
 /* Global variables - globally scoped */
 uint64 EdgeCountsByDirectionAndColor[2][NCOLORS];
 COLORSET ColorCompleted;
@@ -26,15 +24,6 @@ static uint_trail curveLength(EDGE edge);
 static FAILURE checkForDisconnectedCurve(EDGE edge, int depth);
 static EDGE findStartOfCurve(EDGE edge);
 static EDGE edgeFollowForwards(EDGE edge);
-
-/* Externally linked functions - reset... */
-void resetEdges()
-{
-  memset(EdgeCountsByDirectionAndColor, 0,
-         sizeof(EdgeCountsByDirectionAndColor));
-  memset(EdgeCrossingCounts, 0, sizeof(EdgeCrossingCounts));
-  memset(EdgeCurvesComplete, 0, sizeof(EdgeCurvesComplete));
-}
 
 /* Externally linked functions - edge... */
 FAILURE edgeCheckCrossingLimit(COLOR a, COLOR b, int depth)
@@ -92,36 +81,27 @@ void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
   }
 }
 
+static void trailSetArrayMemberIfNotNull(EDGE* array, int index, EDGE value)
+{
+  if (array != NULL) {
+    TRAIL_SET_POINTER(array + index, value);
+  }
+}
+
 int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn)
 {
-  EDGE dummyReturn[NFACES];
   int i = 0;
-  if (pathReturn == NULL) {
-    pathReturn = dummyReturn;
-  }
-  pathReturn[i++] = from;
+  trailSetArrayMemberIfNotNull(pathReturn, i++, from);
   while (from != to) {
     from = edgeFollowForwards(from);
     assert(from != to->reversed);
     assert(from != NULL);
     assert(i < NFACES);
-    pathReturn[i++] = from;
+    trailSetArrayMemberIfNotNull(pathReturn, i++, from);
   }
   return i;
 }
 
-char* edgeToString(EDGE edge)
-{
-  char* buffer = getBuffer();
-  if (edge == NULL) {
-    strcpy(buffer, "NULL");
-  } else {
-    sprintf(buffer, "%c%d", colorToChar(edge->color), edge->colors);
-  }
-  return usingBuffer(buffer);
-}
-
-/* File scoped static functions */
 static uint_trail curveLength(EDGE edge)
 {
   EDGE current;

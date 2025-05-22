@@ -7,9 +7,6 @@
 #include "utils.h"
 #include "vertex.h"
 
-#include <assert.h>
-#include <stdbool.h>
-
 /* Structure to hold data for line crossing check */
 typedef struct {
   uint64 linesCrossed;

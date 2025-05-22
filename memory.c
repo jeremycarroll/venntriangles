@@ -5,7 +5,6 @@
 #include "statistics.h"
 
 #include <stdlib.h>
-#include <string.h>
 
 // Each allocation is wrapped in a header that links to the next allocation
 typedef struct AllocationHeader {

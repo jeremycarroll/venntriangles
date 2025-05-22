@@ -2,26 +2,14 @@
 
 #include "s6.h"
 
-#include "color.h"
 #include "face.h"
 #include "main.h"
-#include "memory.h"
+#include "predicates.h"
 #include "statistics.h"
-#include "trail.h"
 #include "utils.h"
 
 #include <stdarg.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-/* Global variables - file scoped */
-/* Lemma: In a simple Venn diagram of convex curves, the faces inside k curves
- * have total face degree being 2 * nCk + nC(k-1), where nCk is the binomial
- * coefficient "n choose k". For n = 6 and k = 5, this equals 2 * 6 + 15 = 27.
- * This lemma is part of an ongoing proof about the structure of Venn diagrams.
- */
-#define TOTAL_5FACE_DEGREE 27
 
 #define TOTAL_SEQUENCE_STORAGE 100
 #define DEBUG 0
@@ -57,8 +45,6 @@ static int compareFaceDegree(const void *a, const void *b);
 static SYMMETRY_TYPE d6SymmetryType64(FACE_DEGREE_SEQUENCE sizes);
 static SYMMETRY_TYPE d6SymmetryTypeN(int n, FACE_DEGREE_SEQUENCE args);
 static FACE_DEGREE_SEQUENCE d6FaceDegreesInSequenceOrder(void);
-static void canoncialCallbackImpl(int depth, int sum, FACE_DEGREE *args,
-                                  UseFaceDegrees callback, void *data);
 static FACE_DEGREE_SEQUENCE sortPermutationsOfSequence(
     const int count, const FACE_DEGREE_SEQUENCE first, va_list moreSequences);
 static COLOR colorPermute(COLOR color, PERMUTATION permutation);
@@ -70,11 +56,11 @@ static SYMMETRY_TYPE d6IsMaxInSequenceOrder(
     ...);
 static SIGNATURE maxSpunSignature(SIGNATURE onCurrentFace);
 static int compareCycleIdSequence(const void *a, const void *b);
-static SIGNATURE d6SignatureRecentered(SIGNATURE sequence, COLORSET center);
-static SIGNATURE d6SignaturePermuted(SIGNATURE sequence,
+static SIGNATURE s6SignatureRecentered(SIGNATURE sequence, COLORSET center);
+static SIGNATURE s6SignaturePermuted(SIGNATURE sequence,
                                      PERMUTATION permutation);
-static int d6SignatureCompare(const void *a, const void *b);
-static SIGNATURE d6SignatureReflected(SIGNATURE sequence);
+static int s6SignatureCompare(const void *a, const void *b);
+static SIGNATURE s6SignatureReflected(SIGNATURE sequence);
 
 #define ADD_TO_SEQUENCE_ORDER(colors)               \
   do {                                              \
@@ -108,7 +94,6 @@ void initializeS6(void)
   verifyS6Initialization(done, ix);
 }
 
-/* Externally linked functions - Dynamic */
 PERMUTATION s6Automorphism(CYCLE_ID cycleId)
 {
   CYCLE cycle = Cycles + cycleId;
@@ -120,10 +105,6 @@ PERMUTATION s6Automorphism(CYCLE_ID cycleId)
   return result;
 }
 
-/* Externally linked functions - Reset */
-// No reset functions in this file
-
-/* Externally linked functions - Other */
 CYCLE_ID s6PermuteCycleId(CYCLE_ID originalCycleId, PERMUTATION permutation)
 {
   COLOR permuted[NCOLORS * 2];
@@ -167,12 +148,6 @@ char *s6FaceDegreeSignature(void)
   return Result;
 }
 
-void s6FaceDegreeCanonicalCallback(UseFaceDegrees callback, void *data)
-{
-  FACE_DEGREE args[NCOLORS];
-  canoncialCallbackImpl(0, 0, args, callback, data);
-}
-
 SIGNATURE s6MaxSignature(void)
 {
   int resultsIndex = 0;
@@ -182,17 +157,17 @@ SIGNATURE s6MaxSignature(void)
   SIGNATURE results[NFACES * 2];
   for (center = 0; center < NFACES; center++) {
     if (Faces[center].cycle->length == NCOLORS) {
-      recentered = d6SignatureRecentered(fromFaces, center);
+      recentered = s6SignatureRecentered(fromFaces, center);
       results[resultsIndex++] = maxSpunSignature(recentered);
       results[resultsIndex++] =
-          maxSpunSignature(d6SignatureReflected(recentered));
+          maxSpunSignature(s6SignatureReflected(recentered));
     }
   }
   qsort(results, resultsIndex, sizeof(results[0]), compareCycleIdSequence);
   return results[0];
 }
 
-SIGNATURE d6SignatureRecentered(SIGNATURE sequence, COLORSET center)
+SIGNATURE s6SignatureRecentered(SIGNATURE sequence, COLORSET center)
 {
   SIGNATURE result = NEW(SIGNATURE);
   for (int i = 0; i < NFACES; i++) {
@@ -204,7 +179,7 @@ SIGNATURE d6SignatureRecentered(SIGNATURE sequence, COLORSET center)
   return result;
 }
 
-SIGNATURE d6SignaturePermuted(SIGNATURE sequence, PERMUTATION permutation)
+SIGNATURE s6SignaturePermuted(SIGNATURE sequence, PERMUTATION permutation)
 {
   SIGNATURE result = NEW(SIGNATURE);
   for (COLORSET i = 0; i < NFACES; i++) {
@@ -216,7 +191,7 @@ SIGNATURE d6SignaturePermuted(SIGNATURE sequence, PERMUTATION permutation)
   return result;
 }
 
-SIGNATURE d6SignatureReflected(SIGNATURE sequence)
+SIGNATURE s6SignatureReflected(SIGNATURE sequence)
 {
   SIGNATURE result = NEW(SIGNATURE);
   for (int i = 0; i < NFACES; i++) {
@@ -228,7 +203,7 @@ SIGNATURE d6SignatureReflected(SIGNATURE sequence)
   return result;
 }
 
-int d6SignatureCompare(const void *a, const void *b)
+int s6SignatureCompare(const void *a, const void *b)
 {
   return memcmp(a, b, sizeof(((CYCLE_ID_SEQUENCE)NULL)[0]));
 }
@@ -244,7 +219,7 @@ SIGNATURE s6SignatureFromFaces(void)
   return result;
 }
 
-char *d6SignatureToString(SIGNATURE signature)
+char *s6SignatureToString(SIGNATURE signature)
 {
   char *result = getBuffer();
   char *p = result;
@@ -339,20 +314,20 @@ static SIGNATURE maxSpunSignature(SIGNATURE onCurrentFace)
   SIGNATURE best = onCurrentFace;
   PERMUTATION permutation =
       s6Automorphism(onCurrentFace->classSignature.faceCycleId[0]);
-  SIGNATURE permuted = d6SignaturePermuted(onCurrentFace, permutation);
+  SIGNATURE permuted = s6SignaturePermuted(onCurrentFace, permutation);
   for (counter = 0; counter < NFACES; counter++) {
     assert(permuted->classSignature.faceCycleId[0] == NCYCLES - 1);
-    if (d6SignatureCompare(permuted, best) > 0) {
+    if (s6SignatureCompare(permuted, best) > 0) {
       best = permuted;
     }
-    permuted = d6SignaturePermuted(permuted, abcNCycle);
+    permuted = s6SignaturePermuted(permuted, abcNCycle);
   }
   return best;
 }
 
 static int compareCycleIdSequence(const void *a, const void *b)
 {
-  return -d6SignatureCompare(*(SIGNATURE *)a, *(SIGNATURE *)b);
+  return -s6SignatureCompare(*(SIGNATURE *)a, *(SIGNATURE *)b);
 }
 
 static FACE_DEGREE_SEQUENCE sortPermutationsOfSequence(
@@ -401,53 +376,4 @@ static FACE_DEGREE_SEQUENCE d6FaceDegreesInSequenceOrder()
     faceDegrees->faceDegrees[i] = Faces[SequenceOrder[i]].cycle->length;
   }
   return faceDegrees;
-}
-
-/* Generate all interesting sequences of face degrees that:
- * 1. Sum to TOTAL_5FACE_DEGREE (27) - due to the lemma about total face degree
- * 2. Are either CANONICAL or EQUIVOCAL in symmetry type
- *
- * The function recursively builds sequences of face degrees, checking at each
- * step:
- * - If the partial sum exceeds TOTAL_5FACE_DEGREE, backtrack
- * - If we've reached depth NCOLORS, check if the sum equals TOTAL_5FACE_DEGREE
- *   and if the symmetry type is interesting (CANONICAL or EQUIVOCAL)
- * - Otherwise, try all possible face degrees >= 3 for the current position
- *
- * The high cyclomatic complexity (CCN 8) is inherent to the problem:
- * - Multiple necessary conditions (sum checks, symmetry checks, degree
- * requirements)
- * - Recursive generation of all possible sequences
- * While the function could be split, this would make the algorithm's flow
- * harder to follow and require sharing state between functions.
- */
-static void canoncialCallbackImpl(int depth, int sum, FACE_DEGREE *args,
-                                  UseFaceDegrees callback, void *data)
-{
-  if (sum > TOTAL_5FACE_DEGREE) {
-    return;  // Early return if we've exceeded the target sum
-  }
-
-  if (depth == NCOLORS) {
-    if (sum != TOTAL_5FACE_DEGREE) {
-      return;  // Only interested in sequences that sum exactly to 27
-    }
-
-    freeAll();  // Reset any state before checking symmetry
-    if (s6SymmetryType6(args) == NON_CANONICAL) {
-      return;  // Skip non-canonical sequences as they're covered by symmetry
-    }
-
-    callback(data, args);  // Found an interesting sequence - call the callback
-    return;
-  }
-
-  // Try all possible face degrees >= 3 for the current position
-  for (int i = NCOLORS; i >= 3; i--) {
-    args[depth] = i;
-    if (CentralFaceDegrees[depth] > 0 && i != CentralFaceDegrees[depth]) {
-      continue;  // Skip if there's a specific degree required for this position
-    }
-    canoncialCallbackImpl(depth + 1, sum + i, args, callback, data);
-  }
 }

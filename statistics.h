@@ -5,10 +5,7 @@
 
 #include "core.h"
 #include "failure.h"
-#include "memory.h"
 
-#include <stdint.h>
-#include <stdio.h>
 #include <time.h>
 
 #define MAX_STATISTICS 10
@@ -30,6 +27,4 @@ extern void statisticIncludeFailure(FAILURE failure);
 extern void statisticPrintOneLine(int position, bool force);
 extern void statisticPrintFull(void);
 
-// exposed for testing
-extern void resetStatistics(void);
 #endif  // STATISTICS_H

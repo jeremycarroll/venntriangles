@@ -53,7 +53,6 @@ struct Vertex {
 };
 
 extern void initializePoints(void);
-extern void resetPoints(void);
 extern VERTEX initializeVertexIncomingEdge(COLORSET colorsOfFace,
                                            EDGE incomingEdge, COLOR othercolor);
 extern char* vertexToString(VERTEX up);
@@ -61,5 +60,24 @@ extern char* vertexToColorSetString(VERTEX up);
 extern struct Vertex VertexAllUVertices[NPOINTS];
 extern FAILURE dynamicEdgeCornerCheck(EDGE start, int depth);
 extern void edgeFindAndAlignCorners(COLOR a, EDGE result[3][2]);
+
+struct face {
+  // cycle must be null if cycleSetSize is not 1.
+  DYNAMIC struct facialCycle* cycle;
+  DYNAMIC TRAIL backtrack;
+  /* We vertex to previous and next with the same number of colors. */
+  DYNAMIC FACE previous;
+  DYNAMIC FACE next;
+  STATIC COLORSET colors;           // holds up to NFACES
+  DYNAMIC uint_trail cycleSetSize;  // holds up to NCYCLES
+  DYNAMIC CYCLESET_DECLARE possibleCycles;
+  STATIC struct face* adjacentFaces[NCOLORS];
+  STATIC struct edge edges[NCOLORS];
+  /* Precomputed lookup tables for previous and next. */
+  STATIC FACE previousByCycleId[NCYCLES];
+  STATIC FACE nextByCycleId[NCYCLES];
+};
+
+extern STATIC struct face Faces[NFACES];
 
 #endif  // VERTEX_H

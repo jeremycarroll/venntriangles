@@ -6,21 +6,14 @@
 #include "edge.h"
 #include "vertex.h"
 
-#include <stdio.h>
-
-extern uint64 GlobalVariantCount;
-extern int graphmlSaveAllVariations(const char* prefix, int expectedVariations);
-
 // Allow mocking of file operations.
 struct graphmlFileIO {
   FILE* (*fopen)(const char* filename, const char* mode);
   void (*initializeFolder)(const char* folder);
 };
-extern struct graphmlFileIO graphmlFileOps;
+extern struct graphmlFileIO GraphmlFileOps;
+extern void saveVariation(EDGE (*corners)[3]);
+extern int numberOfLevels(int expectedVariations);
+extern EDGE SelectedCorners[NCOLORS][3];
 
-// Internal function exposed for testing.
-void graphmlPossibleCorners(void);
-void graphmlChooseCornersWithContinuation(
-    int cornerIndex, COLOR current, EDGE (*corners)[3],
-    int (*continuation)(COLOR, EDGE (*corners)[3]));
 #endif  // GRAPHML_H

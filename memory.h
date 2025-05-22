@@ -1,4 +1,4 @@
-/* Copyright (C) 2024 Jeremy J. Carroll. See LICENSE for details. */
+/* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #ifndef MEMORY_H
 #define MEMORY_H

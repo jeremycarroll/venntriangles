@@ -5,9 +5,6 @@
 
 #include "core.h"
 
-#include <stdbool.h>
-#include <stdint.h>
-
 typedef struct trail *TRAIL;
 typedef uint64 uint_trail;
 
@@ -16,7 +13,7 @@ struct trail {
   uint_trail value;
 };
 
-/* We actually need 4834 */
+/* We actually need about 8000 */
 #define TRAIL_SIZE 16384
 
 extern TRAIL Trail;
@@ -26,10 +23,8 @@ extern void trailSetPointer(void **ptr, void *value);
 extern void trailSetInt(uint_trail *ptr, uint_trail value);
 extern bool trailBacktrackTo(TRAIL backtrackPoint);
 extern void trailMaybeSetInt(uint_trail *ptr, uint_trail value);
+extern void trailFreeze(void);
 
 extern void initializeTrail(void);
-
-// exposed for testing
-extern void resetTrail(void);
 
 #endif  // TRAIL_H
