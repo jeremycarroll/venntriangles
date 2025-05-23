@@ -1,12 +1,11 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #define _GNU_SOURCE
+#include "common.h"
 #include "face.h"
-#include "graphml.h"
 #include "main.h"
 #include "predicates.h"
 #include "s6.h"
-#include "save.h"
 #include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"
@@ -19,7 +18,7 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
 static int FopenCount = 0;
-extern int VariationNumber;
+extern int VariationNumberIPC;
 struct nodeInfo {
   char id[64];
   struct colorInfo {
@@ -382,8 +381,8 @@ static bool forwardVariant14188(void)
    > ibase=16
    > 37 * 100 + 6C
    */
-  MaxVariantsPerSolution = 14188;
-  IgnoreFirstVariantsPerSolution = MaxVariantsPerSolution - 1;
+  MaxVariantsPerSolutionFlag = 14188;
+  IgnoreFirstVariantsPerSolution = MaxVariantsPerSolutionFlag - 1;
   return true;
 }
 
@@ -426,7 +425,7 @@ static bool gate()
   if (strcmp(ExpectedSignature, s6SignatureToString(signature)) != 0) {
     return false;
   }
-  VariationNumber = 1;
+  VariationNumberIPC = 1;
   SolutionCount++;
   TEST_ASSERT_EQUAL_STRING(ClassSignature, s6SignatureToString(classSignature));
   return true;
@@ -480,18 +479,18 @@ static PREDICATE CornerCount[] = {&InitializePredicate, &InnerFacePredicate,
 
 static void initializeFaceDegree(int a, int b, int c, int d, int e, int f)
 {
-  CentralFaceDegrees[0] = a;
-  CentralFaceDegrees[1] = b;
-  CentralFaceDegrees[2] = c;
-  CentralFaceDegrees[3] = d;
-  CentralFaceDegrees[4] = e;
-  CentralFaceDegrees[5] = f;
+  CentralFaceDegreesFlag[0] = a;
+  CentralFaceDegreesFlag[1] = b;
+  CentralFaceDegreesFlag[2] = c;
+  CentralFaceDegreesFlag[3] = d;
+  CentralFaceDegreesFlag[4] = e;
+  CentralFaceDegreesFlag[5] = f;
 }
 
 static void setup645534()
 {
   initializeFaceDegree(6, 4, 5, 5, 3, 4);
-  MaxVariantsPerSolution = 1;
+  MaxVariantsPerSolutionFlag = 1;
   IgnoreFirstVariantsPerSolution = 0;
   ExpectedSignature =
       "McDpAzHcCtAgAyKaNnAwEiCxAeClCyDxBwFnAyJzBqFwAzEvBvAxAsCwAaBwKjEuNfKcBdDe"
@@ -504,7 +503,7 @@ static void setup645534()
 static void setup654444()
 {
   initializeFaceDegree(6, 5, 4, 4, 4, 4);
-  MaxVariantsPerSolution = 10;
+  MaxVariantsPerSolutionFlag = 10;
   IgnoreFirstVariantsPerSolution = 9;
   // From 654444-26.txt (this may change)
   ExpectedSignature =

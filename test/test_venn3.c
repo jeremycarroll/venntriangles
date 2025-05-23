@@ -178,10 +178,10 @@ static void testChoosingAndBacktracking()
     face->cycle = Cycles;
     TEST_ASSERT_NULL(dynamicFaceBacktrackableChoice(face));
     verifyFaceSize(1);
-    trailBacktrackTo(face->backtrack);
+    trailBacktrackTo(startTrail);
     face->cycle = NULL;
   }
-  TEST_ASSERT_EQUAL(8, CycleGuessCounter);
+  TEST_ASSERT_EQUAL(8, CycleGuessCounterIPC);
 }
 
 /* Global variables */
@@ -205,7 +205,7 @@ static void testSearch()
 int main(int argc, char *argv[])
 {
   if (argc > 1 && strcmp(argv[1], "-t") == 0) {
-    Tracing = true;
+    TracingFlag = true;
   }
   UNITY_BEGIN();
   RUN_TEST(testOuterFace);

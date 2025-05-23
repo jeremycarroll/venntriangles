@@ -46,11 +46,8 @@ extern CYCLE cycleSetNext(CYCLESET cycleSet, CYCLE cycle);
 extern uint32_t cycleSetSize(CYCLESET cycleSet);
 extern CYCLE_ID getCycleId(uint32_t *cycle, uint32_t length);
 extern bool cycleContainsAthenB(CYCLE cycle, uint32_t a, uint32_t b);
-extern bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t a, uint32_t b,
-                                     uint32_t c);
 extern uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color);
 extern struct facialCycle Cycles[NCYCLES];
-extern CYCLE_ID cycleIdFromColors(char *colors);
 extern int colorToChar(COLOR c);
 extern char *colorSetToString(COLORSET colors);
 extern char *colorSetToBareString(COLORSET colors);

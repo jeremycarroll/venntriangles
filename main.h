@@ -5,21 +5,21 @@
 
 #include "face.h"
 
-extern FACE_DEGREE CentralFaceDegrees[NCOLORS];
+extern FACE_DEGREE CentralFaceDegreesFlag[NCOLORS];
 
-extern char* TargetFolder;              // Output folder for results (-f)
-extern int MaxVariantsPerSolution;      // Maximum variants per solution (-n)
-extern int GlobalMaxSolutions;          // Global maximum solutions (-m)
-extern int PerFaceDegreeMaxSolutions;   // Per face degree maximum solutions (-m
-                                        // with -d)
-extern int GlobalSkipSolutions;         // Global solutions to skip (-k)
-extern int PerFaceDegreeSkipSolutions;  // Per face degree solutions to skip (-k
-                                        // with -d)
+extern char* TargetFolderFlag;             // Output folder for results (-f)
+extern int MaxVariantsPerSolutionFlag;     // Maximum variants per solution (-n)
+extern int GlobalMaxSolutionsFlag;         // Global maximum solutions (-m)
+extern int PerFaceDegreeMaxSolutionsFlag;  // Per face degree maximum solutions
+                                           // (-m with -d)
+extern int GlobalSkipSolutionsFlag;        // Global solutions to skip (-k)
+extern int PerFaceDegreeSkipSolutionsFlag;  // Per face degree solutions to skip
+                                            // (-k with -d)
 extern int
     IgnoreFirstVariantsPerSolution;  // Variants to ignore per solution (-j)
-extern FACE_DEGREE CentralFaceDegrees[];  // Central face degrees (-d)
-extern bool VerboseMode;                  // Verbose output mode (-v)
-extern bool Tracing;                      // Tracing output mode (-t)
+extern FACE_DEGREE CentralFaceDegreesFlag[];  // Central face degrees (-d)
+extern bool VerboseModeFlag;                  // Verbose output mode (-v)
+extern bool TracingFlag;                      // TracingFlag output mode (-t)
 
 // Hook for testing and running.
 extern int dynamicMain0(int argc, char* argv[]);

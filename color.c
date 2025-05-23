@@ -3,6 +3,7 @@
 #include "color.h"
 
 #include "trail.h"
+#include "visible_for_testing.h"
 
 #include <stdarg.h>
 

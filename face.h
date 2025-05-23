@@ -23,10 +23,4 @@ extern FAILURE faceRestrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
                                               int depth);
 extern FAILURE facePropogateChoice(FACE face, EDGE edge, int depth);
 
-// exposed for testing
-extern void facePrintSelected(void);
-extern bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length);
-extern FACE faceFromColors(char *colors);
-extern FACE dynamicFaceAddSpecific(char *colors, char *cycle);
-
 #endif  // FACE_H

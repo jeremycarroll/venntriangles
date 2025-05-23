@@ -1,8 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "dataflow.h"
+#include "common.h"
 #include "face.h"
-#include "graphml.h"
 #include "main.h"
 #include "predicates.h"
 #include "s6.h"
@@ -17,9 +16,9 @@ static bool forwardInitialize(void)
 {
   initializeS6();
   initialize();
-  statisticIncludeInteger(&CycleGuessCounter, "?", "guesses", false);
-  statisticIncludeInteger(&GlobalVariantCount, "V", "variants", false);
-  statisticIncludeInteger(&GlobalSolutionsFound, "S", "solutions", false);
+  statisticIncludeInteger(&CycleGuessCounterIPC, "?", "guesses", false);
+  statisticIncludeInteger(&GlobalVariantCountIPC, "V", "variants", false);
+  statisticIncludeInteger(&GlobalSolutionsFoundIPC, "S", "solutions", false);
   return true;
 }
 

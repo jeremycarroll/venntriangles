@@ -86,7 +86,7 @@ void statisticPrintOneLine(int position, bool force)
       char elapsedStr[20];
       formatElapsedTime(elapsed, elapsedStr, sizeof(elapsedStr));
 
-      if (VerboseMode) {
+      if (VerboseModeFlag) {
         fprintf(LogFile, "%s %s %d %.1f p %d ", timestr + 11, elapsedStr,
                 statisticCountChosen(), statisticCalculateSearchSpace(),
                 position);
@@ -113,7 +113,7 @@ void statisticPrintFull(void)
 
   fprintf(LogFile, "%sRuntime: %s\n", timestr, elapsedStr);
 
-  if (VerboseMode) {
+  if (VerboseModeFlag) {
     fprintf(LogFile,
             "Chosen faces: %d\nOpen Search Space Size: Log = %.2f "
             "; i.e. %6.3g\n",
@@ -200,7 +200,7 @@ static int findMaxNonZeroIndex(Failure* failure)
 
 static void printFailureCounts(bool oneLine)
 {
-  if (!VerboseMode) {
+  if (!VerboseModeFlag) {
     return;  // Skip failures in non-verbose mode
   }
   for (int i = 0; i < MAX_STATISTICS; i++) {
@@ -224,7 +224,7 @@ static void printStatisticsCounters(bool oneLine)
     if (Statistics[i].countPtr == NULL) {
       break;
     }
-    if (!Statistics[i].verboseOnly || VerboseMode) {
+    if (!Statistics[i].verboseOnly || VerboseModeFlag) {
       if (oneLine) {
         fprintf(LogFile, "%s %llu ", Statistics[i].shortName,
                 *Statistics[i].countPtr);

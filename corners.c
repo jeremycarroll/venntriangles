@@ -1,17 +1,15 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "edge.h"
+#include "common.h"
 #include "face.h"
-#include "graphml.h"
 #include "main.h"
 #include "predicates.h"
-#include "save.h"
 #include "triangles.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-EDGE SelectedCorners[NCOLORS][3];
+EDGE SelectedCornersIPC[NCOLORS][3];
 static EDGE PossibleCorners[NCOLORS][3][NFACES];
 static void possibleCorners(EDGE* possibilities, COLOR color, EDGE from,
                             EDGE to);
@@ -31,13 +29,13 @@ static struct predicateResult tryCorners(int round)
   int cornerIndex = round % 3;
   int colorIndex = round / 3;
 
-  if (VariationNumber > MaxVariantsPerSolution) {
+  if (VariationNumberIPC > MaxVariantsPerSolutionFlag) {
     return PredicateFail;
   }
 
   if (cornerIndex == 0 && colorIndex > 0) {
     if (!triangleLinesNotCrossed(colorIndex - 1,
-                                 SelectedCorners + colorIndex - 1)) {
+                                 SelectedCornersIPC + colorIndex - 1)) {
       return PredicateFail;
     }
   }
@@ -55,7 +53,7 @@ static struct predicateResult retryCorners(int round, int choice)
 {
   int cornerIndex = round % 3;
   int colorIndex = round / 3;
-  TRAIL_SET_POINTER(&SelectedCorners[colorIndex][cornerIndex],
+  TRAIL_SET_POINTER(&SelectedCornersIPC[colorIndex][cornerIndex],
                     PossibleCorners[colorIndex][cornerIndex][choice]);
   return PredicateSuccessSamePredicate;
 }

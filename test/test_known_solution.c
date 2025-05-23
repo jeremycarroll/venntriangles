@@ -306,13 +306,13 @@ void setUp(void)
     dynamicFaceSetupCentral(args);
     trail = Trail;
   }
-  CycleGuessCounter = 1;
+  CycleGuessCounterIPC = 1;
 }
 
 void tearDown(void)
 {
   trailBacktrackTo(trail);
-  CycleGuessCounter = 0;
+  CycleGuessCounterIPC = 0;
 }
 
 /* Helper functions */
@@ -391,7 +391,7 @@ static void test3456(void)
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
-  TEST_ASSERT_EQUAL(14, CycleGuessCounter);
+  TEST_ASSERT_EQUAL(14, CycleGuessCounterIPC);
 }
 
 static void test4356(void)
@@ -400,7 +400,7 @@ static void test4356(void)
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
-  TEST_ASSERT_EQUAL(11, CycleGuessCounter);
+  TEST_ASSERT_EQUAL(11, CycleGuessCounterIPC);
 }
 
 static void test6543(void)
@@ -409,7 +409,7 @@ static void test6543(void)
   addFacesFromTestData(testData5, sizeof(testData5) / sizeof(testData5[0]));
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
-  TEST_ASSERT_EQUAL(12, CycleGuessCounter);
+  TEST_ASSERT_EQUAL(12, CycleGuessCounterIPC);
 }
 
 static void test5364(void)
@@ -418,7 +418,7 @@ static void test5364(void)
   addFacesFromTestData(testData3, sizeof(testData3) / sizeof(testData3[0]));
   addFacesFromTestData(testData6, sizeof(testData6) / sizeof(testData6[0]));
   addFacesFromTestData(testData4, sizeof(testData4) / sizeof(testData4[0]));
-  TEST_ASSERT_EQUAL(11, CycleGuessCounter);
+  TEST_ASSERT_EQUAL(11, CycleGuessCounterIPC);
 }
 
 static void testInOrder(void)
@@ -436,7 +436,7 @@ static void testInOrder(void)
     colors[i] = 0;
     TEST_ASSERT_EQUAL(face, addFaceFromTestData(colors));
   }
-  TEST_ASSERT_EQUAL(26, CycleGuessCounter);
+  TEST_ASSERT_EQUAL(26, CycleGuessCounterIPC);
 }
 
 static void testDE1(void)

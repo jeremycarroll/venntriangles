@@ -12,16 +12,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-char *TargetFolder = NULL;
-int MaxVariantsPerSolution = INT_MAX;     // Maximum value means unlimited
-int GlobalMaxSolutions = INT_MAX;         // Global maximum solutions
-int PerFaceDegreeMaxSolutions = INT_MAX;  // Per face degree maximum solutions
-int GlobalSkipSolutions = 0;              // Global solutions to skip
-int PerFaceDegreeSkipSolutions = 0;       // Per face degree solutions to skip
+char *TargetFolderFlag = NULL;
+int MaxVariantsPerSolutionFlag = INT_MAX;  // Maximum value means unlimited
+int GlobalMaxSolutionsFlag = INT_MAX;      // Global maximum solutions
+int PerFaceDegreeMaxSolutionsFlag =
+    INT_MAX;                             // Per face degree maximum solutions
+int GlobalSkipSolutionsFlag = 0;         // Global solutions to skip
+int PerFaceDegreeSkipSolutionsFlag = 0;  // Per face degree solutions to skip
 int IgnoreFirstVariantsPerSolution = 0;  // Default to not ignoring any variants
-FACE_DEGREE CentralFaceDegrees[NCOLORS] = {0};  // Initialize all to 0
-bool VerboseMode = false;                       // Controls verbose output mode
-bool Tracing = false;                           // Controls tracing output mode
+FACE_DEGREE CentralFaceDegreesFlag[NCOLORS] = {0};  // Initialize all to 0
+bool VerboseModeFlag = false;  // Controls verbose output mode
+bool TracingFlag = false;      // Controls tracing output mode
 
 static void initializeOutputFolder(void);
 static void setFaceDegrees(const char *programName, const char *faceDegrees);
@@ -32,7 +33,7 @@ static int parsePostiveArgument(const char *programName, const char *arg,
 int dynamicMain0(int argc, char *argv[])
 {
   int opt;
-  TargetFolder = NULL;
+  TargetFolderFlag = NULL;
   bool hasFaceDegrees = false;
   int localMaxSolutions = INT_MAX;
   int localSkipSolutions = 0;
@@ -41,7 +42,7 @@ int dynamicMain0(int argc, char *argv[])
   while ((opt = getopt(argc, argv, "f:d:m:n:k:j:vt")) != -1) {
     switch (opt) {
       case 'f':
-        TargetFolder = optarg;
+        TargetFolderFlag = optarg;
         break;
       case 'd':
         hasFaceDegrees = true;
@@ -52,7 +53,7 @@ int dynamicMain0(int argc, char *argv[])
             parsePostiveArgument(programName, optarg, 'm', false);
         break;
       case 'n':
-        MaxVariantsPerSolution =
+        MaxVariantsPerSolutionFlag =
             parsePostiveArgument(programName, optarg, 'n', false);
         break;
       case 'k':
@@ -64,10 +65,10 @@ int dynamicMain0(int argc, char *argv[])
             parsePostiveArgument(programName, optarg, 'j', true);
         break;
       case 'v':
-        VerboseMode = true;
+        VerboseModeFlag = true;
         break;
       case 't':
-        Tracing = true;
+        TracingFlag = true;
         break;
       default:
         disaster(programName, "Invalid option");
@@ -76,16 +77,16 @@ int dynamicMain0(int argc, char *argv[])
   if (optind != argc) {
     disaster(programName, "Invalid option");
   }
-  if (TargetFolder == NULL) {
+  if (TargetFolderFlag == NULL) {
     disaster(programName, "Output folder not specified");
   }
   // Set the appropriate static variables based on whether -d was specified
   if (hasFaceDegrees) {
-    PerFaceDegreeMaxSolutions = localMaxSolutions;
-    PerFaceDegreeSkipSolutions = localSkipSolutions;
+    PerFaceDegreeMaxSolutionsFlag = localMaxSolutions;
+    PerFaceDegreeSkipSolutionsFlag = localSkipSolutions;
   } else {
-    GlobalMaxSolutions = localMaxSolutions;
-    GlobalSkipSolutions = localSkipSolutions;
+    GlobalMaxSolutionsFlag = localMaxSolutions;
+    GlobalSkipSolutionsFlag = localSkipSolutions;
   }
 
   initializeOutputFolder();
@@ -110,7 +111,7 @@ static void setFaceDegrees(const char *programName, const char *faceDegrees)
       disaster(programName,
                "Each digit in central face degrees must be between 3 and 6\n");
     }
-    CentralFaceDegrees[i] = c - '0';
+    CentralFaceDegreesFlag[i] = c - '0';
   }
 }
 
@@ -139,5 +140,5 @@ static int parsePostiveArgument(const char *programName, const char *arg,
 
 static void initializeOutputFolder()
 {
-  initializeFolder(TargetFolder);
+  initializeFolder(TargetFolderFlag);
 }

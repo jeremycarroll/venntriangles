@@ -1,10 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "save.h"
-
-#include "dataflow.h"
+#include "common.h"
 #include "face.h"
-#include "graphml.h"
 #include "main.h"
 #include "predicates.h"
 #include "s6.h"
@@ -15,8 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-int PerFaceDegreeSolutionNumber;
-int VariationCount;
+int PerFaceDegreeSolutionNumberIPC;
+int VariationCountIPC;
 /* Static variables for solution writing */
 static char* currentFilename;
 static FILE* currentFile;
@@ -26,41 +23,41 @@ static void solutionPrint(FILE* fp);
 
 static bool gateSave(void)
 {
-  if ((int64_t)GlobalSolutionsFound <= GlobalSkipSolutions) {
+  if ((int64_t)GlobalSolutionsFoundIPC <= GlobalSkipSolutionsFlag) {
     return false;
   }
-  if ((int64_t)GlobalSolutionsFound > GlobalMaxSolutions) {
+  if ((int64_t)GlobalSolutionsFoundIPC > GlobalMaxSolutionsFlag) {
     return false;
   }
-  if (PerFaceDegreeSolutionNumber <= PerFaceDegreeSkipSolutions ||
-      PerFaceDegreeSolutionNumber > PerFaceDegreeMaxSolutions) {
+  if (PerFaceDegreeSolutionNumberIPC <= PerFaceDegreeSkipSolutionsFlag ||
+      PerFaceDegreeSolutionNumberIPC > PerFaceDegreeMaxSolutionsFlag) {
     return false;
   }
   char* buffer = getBuffer();
-  sprintf(buffer, "%s/%s", TargetFolder, s6FaceDegreeSignature());
+  sprintf(buffer, "%s/%s", TargetFolderFlag, s6FaceDegreeSignature());
   return true;
 }
 
 static bool beforeVariantsSave(void)
 {
   char* buffer = getBuffer();
-  sprintf(buffer, "%s/%s", TargetFolder, s6FaceDegreeSignature());
+  sprintf(buffer, "%s/%s", TargetFolderFlag, s6FaceDegreeSignature());
   currentFilename = usingBuffer(buffer);
 
-  snprintf(CurrentPrefix, sizeof(CurrentPrefix), "%s-%2.2d.txt",
-           currentFilename, PerFaceDegreeSolutionNumber);
-  currentFile = fopen(CurrentPrefix, "w");
+  snprintf(CurrentPrefixIPC, sizeof(CurrentPrefixIPC), "%s-%2.2d.txt",
+           currentFilename, PerFaceDegreeSolutionNumberIPC);
+  currentFile = fopen(CurrentPrefixIPC, "w");
   if (currentFile == NULL) {
-    perror(CurrentPrefix);
+    perror(CurrentPrefixIPC);
     exit(EXIT_FAILURE);
   }
-  VariationNumber = 1;
+  VariationNumberIPC = 1;
   solutionPrint(currentFile);
-  CurrentPrefix[strlen(CurrentPrefix) - 4] = '\0';
-  GraphmlFileOps.initializeFolder(CurrentPrefix);
+  CurrentPrefixIPC[strlen(CurrentPrefixIPC) - 4] = '\0';
+  GraphmlFileOps.initializeFolder(CurrentPrefixIPC);
   currentNumberOfVariations =
       searchCountVariations(currentVariationMultiplication);
-  Levels = numberOfLevels(currentNumberOfVariations);
+  LevelsIPC = numberOfLevels(currentNumberOfVariations);
   fprintf(currentFile, "\nSolution signature %s\nClass signature %s\n",
           s6SignatureToString(s6SignatureFromFaces()),
           s6SignatureToString(s6MaxSignature()));
@@ -73,9 +70,9 @@ static void afterVariantsSave(void)
 {
   fprintf(currentFile, "Number of variations: %d/%d = 1%s\n",
 
-          VariationNumber - 1, currentNumberOfVariations,
+          VariationNumberIPC - 1, currentNumberOfVariations,
           currentVariationMultiplication);
-  VariationCount += VariationNumber - 1;
+  VariationCountIPC += VariationNumberIPC - 1;
   fclose(currentFile);
 }
 

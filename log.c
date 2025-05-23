@@ -1,9 +1,8 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "dataflow.h"
+#include "common.h"
 #include "main.h"
 #include "predicates.h"
-#include "save.h"
 #include "statistics.h"
 
 extern FACE_DEGREE CurrentFaceDegrees[NCOLORS];
@@ -45,23 +44,22 @@ int searchCountVariations(char* variationMultiplication)
 static bool forwardLog(void)
 {
   FacePredicateStart = clock();
-  FacePredicateRecentSolutionsFound = GlobalSolutionsFound;
-  FacePredicateInitialVariationCount = VariationCount;
-  PerFaceDegreeSolutionNumber = 0;
+  FacePredicateRecentSolutionsFound = GlobalSolutionsFoundIPC;
+  FacePredicateInitialVariationCount = VariationCountIPC;
   return true;
 }
 
 static void backwardLog(void)
 {
   clock_t used = clock() - FacePredicateStart;
-  if ((int64_t)GlobalSolutionsFound != FacePredicateRecentSolutionsFound) {
+  if ((int64_t)GlobalSolutionsFoundIPC != FacePredicateRecentSolutionsFound) {
     TotalUsefulTime += used;
     UsefulSearchCount += 1;
 
 #define PRINT_TIME(clockValue, counter)                        \
   printf("[%1lu.%6.6lu (%d)] ", (clockValue) / CLOCKS_PER_SEC, \
          (clockValue) % CLOCKS_PER_SEC, counter)
-    if (VerboseMode) {
+    if (VerboseModeFlag) {
       PRINT_TIME(used, 0);
       PRINT_TIME(TotalUsefulTime, UsefulSearchCount);
       PRINT_TIME(TotalWastedTime, WastedSearchCount);
@@ -70,14 +68,14 @@ static void backwardLog(void)
       printf("%llu ", CurrentFaceDegrees[i]);
     }
     printf(" gives %llu/%d new solutions\n",
-           GlobalSolutionsFound - FacePredicateRecentSolutionsFound,
-           VariationCount - FacePredicateInitialVariationCount);
+           GlobalSolutionsFoundIPC - FacePredicateRecentSolutionsFound,
+           VariationCountIPC - FacePredicateInitialVariationCount);
     statisticPrintOneLine(0, false);
   } else {
     WastedSearchCount += 1;
     TotalWastedTime += used;
   }
-  FacePredicateRecentSolutionsFound = GlobalSolutionsFound;
+  FacePredicateRecentSolutionsFound = GlobalSolutionsFoundIPC;
 }
 
 FORWARD_BACKWARD_PREDICATE(Log, NULL, forwardLog, backwardLog);

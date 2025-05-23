@@ -3,6 +3,7 @@
 #include "face.h"
 #include "statistics.h"
 #include "utils.h"
+#include "visible_for_testing.h"
 
 #include <unity.h>
 
