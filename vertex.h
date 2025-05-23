@@ -57,14 +57,12 @@ extern VERTEX initializeVertexIncomingEdge(COLORSET colorsOfFace,
                                            EDGE incomingEdge, COLOR othercolor);
 extern char* vertexToString(VERTEX up);
 extern char* vertexToColorSetString(VERTEX up);
-extern struct Vertex VertexAllUVertices[NPOINTS];
 extern FAILURE dynamicEdgeCornerCheck(EDGE start, int depth);
 extern void edgeFindAndAlignCorners(COLOR a, EDGE result[3][2]);
 
 struct face {
   // cycle must be null if cycleSetSize is not 1.
   DYNAMIC struct facialCycle* cycle;
-  DYNAMIC TRAIL backtrack;
   /* We vertex to previous and next with the same number of colors. */
   DYNAMIC FACE previous;
   DYNAMIC FACE next;

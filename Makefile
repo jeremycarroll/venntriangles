@@ -11,7 +11,7 @@ SRC		    = main.c trail.c failure.c color.c edge.c log.c \
 TEST_HELPERS = test/test_helpers.c
 XSRC		= entrypoint.c
 HDR			= color.h edge.h statistics.h core.h face.h main.h trail.h \
-			  s6.h failure.h vertex.h memory.h graphml.h triangles.h engine.h nondeterminism.h
+			  s6.h failure.h vertex.h memory.h common.h triangles.h engine.h nondeterminism.h
 OBJ3		= $(SRC:%.c=objs3/%.o) $(TEST_HELPERS:test/test_%.c=objs3/test_%.o)
 OBJ4		= $(SRC:%.c=objs4/%.o) $(TEST_HELPERS:test/test_%.c=objs4/test_%.o)
 OBJ5		= $(SRC:%.c=objs5/%.o) $(TEST_HELPERS:test/test_%.c=objs5/test_%.o)

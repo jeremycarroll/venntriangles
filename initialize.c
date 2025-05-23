@@ -1,8 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "dataflow.h"
+#include "common.h"
 #include "face.h"
-#include "graphml.h"
 #include "main.h"
 #include "predicates.h"
 #include "s6.h"

@@ -1,9 +1,8 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "dataflow.h"
+#include "common.h"
 #include "main.h"
 #include "predicates.h"
-#include "save.h"
 #include "statistics.h"
 
 extern FACE_DEGREE CurrentFaceDegrees[NCOLORS];
@@ -47,7 +46,6 @@ static bool forwardLog(void)
   FacePredicateStart = clock();
   FacePredicateRecentSolutionsFound = GlobalSolutionsFound;
   FacePredicateInitialVariationCount = VariationCount;
-  PerFaceDegreeSolutionNumber = 0;
   return true;
 }
 

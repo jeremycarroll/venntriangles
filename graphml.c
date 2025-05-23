@@ -1,11 +1,8 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "graphml.h"
-
-#include "dataflow.h"
+#include "common.h"
 #include "main.h"
 #include "predicates.h"
-#include "save.h"
 #include "triangles.h"
 #include "utils.h"
 
@@ -295,7 +292,7 @@ static char *subFilename(void)
   return usingBuffer(buffer);
 }
 
-void saveVariation(EDGE (*corners)[3])
+static void saveVariation(EDGE (*corners)[3])
 {
   COLOR a;
   char *filename = subFilename();

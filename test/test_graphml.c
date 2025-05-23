@@ -1,12 +1,11 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #define _GNU_SOURCE
+#include "common.h"
 #include "face.h"
-#include "graphml.h"
 #include "main.h"
 #include "predicates.h"
 #include "s6.h"
-#include "save.h"
 #include "statistics.h"
 #include "test_helpers.h"
 #include "utils.h"

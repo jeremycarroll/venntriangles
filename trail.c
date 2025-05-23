@@ -4,6 +4,11 @@
 
 #include "statistics.h"
 
+struct trail {
+  void* ptr;
+  uint_trail value;
+};
+
 /* Global variables (file scoped static) */
 static struct trail TrailArray[TRAIL_SIZE];
 TRAIL Trail = TrailArray;

@@ -178,7 +178,7 @@ static void testChoosingAndBacktracking()
     face->cycle = Cycles;
     TEST_ASSERT_NULL(dynamicFaceBacktrackableChoice(face));
     verifyFaceSize(1);
-    trailBacktrackTo(face->backtrack);
+    trailBacktrackTo(startTrail);
     face->cycle = NULL;
   }
   TEST_ASSERT_EQUAL(8, CycleGuessCounter);

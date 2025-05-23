@@ -8,11 +8,6 @@
 typedef struct trail *TRAIL;
 typedef uint64 uint_trail;
 
-struct trail {
-  void *ptr;
-  uint_trail value;
-};
-
 /* We actually need about 8000 */
 #define TRAIL_SIZE 16384
 
