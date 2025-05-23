@@ -6,8 +6,8 @@ TEST_SRC	= test/test_d6.c test/test_initialize.c test/test_known_solution.c test
               test/test_graphml.c test/test_venn3.c test/test_venn4.c test/test_venn5.c  test/test_venn6.c 
 TEST_BIN	= $(TEST_SRC:test/%.c=bin/%)
 # Do not include entrypoint.c in the test builds, it contains the main function, which is also in the test files.
-SRC		    = main.c trail.c failure.c color.c edge.c log.c \
-			  vertex.c statistics.c s6.c face.c utils.c memory.c graphml.c triangles.c engine.c corners.c initialize.c nondeterminism.c innerface.c venn.c save.c
+SRC		    = main.c failure.c color.c edge.c log.c vertex.c statistics.c s6.c face.c utils.c \
+			  memory.c graphml.c triangles.c engine.c corners.c initialize.c nondeterminism.c innerface.c venn.c save.c
 TEST_HELPERS = test/test_helpers.c
 XSRC		= entrypoint.c
 HDR			= color.h edge.h statistics.h core.h face.h main.h trail.h \

@@ -6,11 +6,11 @@
 
 #include "edge.h"
 
-/* Data variables shared between predicates. 
+/* Data variables shared between predicates.
 Each of these is set by typically one predicate,
 and read by at least one other predicate.
 
-The reader may be after or before the writer. 
+The reader may be after or before the writer.
 When the reader is before the writer, the reading
 typically happens during the backtracking.
 */

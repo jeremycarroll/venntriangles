@@ -4,7 +4,75 @@
 
 #include "face.h"
 #include "main.h"
+#include "statistics.h"
 #include "trail.h"
+
+/* We actually need about 8000, but we use 16384 to avoid
+   reallocating the trail array. */
+#define TRAIL_SIZE 16384
+
+/* Trail implementation for backtracking */
+struct trail {
+  void* ptr;
+  uint_trail value;
+};
+
+/* Global variables (file scoped static) */
+static struct trail TrailArray[TRAIL_SIZE];
+TRAIL Trail = TrailArray;
+static TRAIL frozenTrail = NULL;
+static uint64 MaxTrailSize = 0;
+
+void initializeTrail()
+{
+  statisticIncludeInteger(&MaxTrailSize, "$", "MaxTrail", true);
+}
+
+void trailSetPointer(void** ptr, void* value)
+{
+  Trail->ptr = ptr;
+  Trail->value = (uint_trail)*ptr;
+  Trail++;
+  *ptr = value;
+}
+
+void trailMaybeSetInt(uint_trail* ptr, uint_trail value)
+{
+  if (*ptr != value) {
+    trailSetInt(ptr, value);
+  }
+}
+
+void trailFreeze()
+{
+  frozenTrail = Trail;
+}
+
+void trailSetInt(uint_trail* ptr, uint_trail value)
+{
+  Trail->ptr = ptr;
+  Trail->value = *ptr;
+  Trail++;
+  *ptr = value;
+}
+
+bool trailBacktrackTo(TRAIL backtrackPoint)
+{
+  uint64 trailSize = Trail - TrailArray;
+  if (trailSize > MaxTrailSize) {
+    MaxTrailSize = trailSize;
+  }
+  bool result = false;
+  if (backtrackPoint < frozenTrail) {
+    backtrackPoint = frozenTrail;
+  }
+  while (Trail > backtrackPoint) {
+    result = true;
+    Trail--;
+    *(uint_trail*)Trail->ptr = Trail->value;
+  }
+  return result;
+}
 
 /* The engine implements a WAM-like execution model for our search process.
    Each phase of the search is implemented as a predicate that can:
