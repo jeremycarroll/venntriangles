@@ -12,7 +12,7 @@ extern int MaxVariantsPerSolutionFlag;     // Maximum variants per solution (-n)
 extern int GlobalMaxSolutionsFlag;         // Global maximum solutions (-m)
 extern int PerFaceDegreeMaxSolutionsFlag;  // Per face degree maximum solutions
                                            // (-m with -d)
-extern int GlobalSkipSolutionsFlag;         // Global solutions to skip (-k)
+extern int GlobalSkipSolutionsFlag;        // Global solutions to skip (-k)
 extern int PerFaceDegreeSkipSolutionsFlag;  // Per face degree solutions to skip
                                             // (-k with -d)
 extern int

@@ -13,7 +13,6 @@ extern void trailSetPointer(void **ptr, void *value);
 #define TRAIL_SET_POINTER(a, b) trailSetPointer((void **)a, b)
 
 extern void trailSetInt(uint_trail *ptr, uint_trail value);
-extern bool trailBacktrackTo(TRAIL backtrackPoint);
 extern void trailMaybeSetInt(uint_trail *ptr, uint_trail value);
 extern void trailFreeze(void);
 

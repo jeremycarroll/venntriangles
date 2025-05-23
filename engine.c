@@ -6,6 +6,7 @@
 #include "main.h"
 #include "statistics.h"
 #include "trail.h"
+#include "visible_for_testing.h"
 
 /* We actually need about 8000, but we use 16384 to avoid
    reallocating the trail array. */

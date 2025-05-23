@@ -6,6 +6,7 @@
 #include "s6.h"
 #include "statistics.h"
 #include "utils.h"
+#include "visible_for_testing.h"
 
 /* Global variables - globally scoped */
 struct face Faces[NFACES];

@@ -3,7 +3,7 @@
 #ifndef TEST_HELPERS_H
 #define TEST_HELPERS_H
 
-#include "face.h"
+#include "visible_for_testing.h"
 
 extern FACE dynamicFaceAddSpecific(char* colors, char* cycle);
 extern FACE_DEGREE* intArray(int a, ...);
