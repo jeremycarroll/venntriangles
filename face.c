@@ -443,7 +443,7 @@ static FAILURE checkLengthOfCycleOfFaces(FACE face)
 static void countEdge(EDGE edge)
 {
   uint_trail* edgeCountPtr =
-      &EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color];
+      &EdgeColorCountState[IS_PRIMARY_EDGE(edge)][edge->color];
   trailSetInt(edgeCountPtr, (*edgeCountPtr) + 1);
 }
 

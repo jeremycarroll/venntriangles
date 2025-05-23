@@ -10,8 +10,8 @@
 #include "utils.h"
 #include "visible_for_testing.h"
 
-uint64 CycleGuessCounter = 0;
-uint64 GlobalSolutionsFound = 0;
+uint64 CycleGuessCounterIPC = 0;
+uint64 GlobalSolutionsFoundIPC = 0;
 
 static FACE facesInOrderOfChoice[NFACES];
 
@@ -66,8 +66,8 @@ FAILURE dynamicFaceBacktrackableChoice(FACE face)
   FAILURE failure;
   COLOR completedColor;
   uint64 cycleId;
-  CycleGuessCounter++;
-  ColorCompleted = 0;
+  CycleGuessCounterIPC++;
+  ColorCompletedState = 0;
   assert(face->cycle != NULL);
   cycleId = face->cycle - Cycles;
   assert(cycleId < NCYCLES);
@@ -78,9 +78,9 @@ FAILURE dynamicFaceBacktrackableChoice(FACE face)
   if (failure != NULL) {
     return failure;
   }
-  if (ColorCompleted) {
+  if (ColorCompletedState) {
     for (completedColor = 0; completedColor < NCOLORS; completedColor++) {
-      if (COLORSET_HAS_MEMBER(completedColor, ColorCompleted)) {
+      if (COLORSET_HAS_MEMBER(completedColor, ColorCompletedState)) {
         if (!dynamicColorRemoveFromSearch(completedColor)) {
           return failureDisconnectedCurve(0);
         }
@@ -208,19 +208,19 @@ static CYCLE chooseCycle(FACE face, CYCLE cycle)
 static struct predicateResult tryFace(int round)
 {
   if (round == 0) {
-    PerFaceDegreeSolutionNumber = 0;
+    PerFaceDegreeSolutionNumberIPC = 0;
 #if NCOLORS > 4
-    dynamicFaceSetupCentral(CentralFaceDegrees);
+    dynamicFaceSetupCentral(CentralFaceDegreesFlag);
 #endif
   }
-  if ((int64_t)GlobalSolutionsFound >= GlobalMaxSolutions) {
+  if ((int64_t)GlobalSolutionsFoundIPC >= GlobalMaxSolutionsFlag) {
     return PredicateFail;
   }
   facesInOrderOfChoice[round] = searchChooseNextFace();
   if (facesInOrderOfChoice[round] == NULL) {
     if (faceFinalCorrectnessChecks() == NULL) {
-      GlobalSolutionsFound++;
-      PerFaceDegreeSolutionNumber++;
+      GlobalSolutionsFoundIPC++;
+      PerFaceDegreeSolutionNumberIPC++;
       return PredicateSuccessNextPredicate;
     } else {
       return PredicateFail;

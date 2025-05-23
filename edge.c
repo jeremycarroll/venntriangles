@@ -5,8 +5,8 @@
 #include "trail.h"
 
 /* Global variables - globally scoped */
-uint64 EdgeCountsByDirectionAndColor[2][NCOLORS];
-COLORSET ColorCompleted;
+uint64 EdgeColorCountState[2][NCOLORS];
+COLORSET ColorCompletedState;
 
 /* Global variables - file scoped */
 #define MAX_ONE_WAY_CURVE_CROSSINGS 3
@@ -120,16 +120,14 @@ static FAILURE checkForDisconnectedCurve(EDGE edge, int depth)
   if (edge->reversed->to != NULL) {
     // We have a colored cycle in the FISC.
     length = curveLength(edge);
-    if (length <
-        EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color]) {
+    if (length < EdgeColorCountState[IS_PRIMARY_EDGE(edge)][edge->color]) {
       return failureDisconnectedCurve(depth);
     }
-    assert(length ==
-           EdgeCountsByDirectionAndColor[IS_PRIMARY_EDGE(edge)][edge->color]);
-    if (ColorCompleted & 1u << edge->color) {
+    assert(length == EdgeColorCountState[IS_PRIMARY_EDGE(edge)][edge->color]);
+    if (ColorCompletedState & 1u << edge->color) {
       return NULL;
     }
-    ColorCompleted |= 1u << edge->color;
+    ColorCompletedState |= 1u << edge->color;
     trailSetInt(&EdgeCurvesComplete[edge->color], 1);
   }
   return NULL;

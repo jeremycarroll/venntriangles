@@ -43,7 +43,7 @@ struct edge {
   STATIC struct curveLink possiblyTo[NCOLORS];
 };
 
-extern uint64 EdgeCountsByDirectionAndColor[2][NCOLORS];
+extern uint64 EdgeColorCountState[2][NCOLORS];
 
 extern EDGE edgeFollowBackwards(EDGE edge);
 extern FAILURE edgeCurveChecks(EDGE edge, int depth);
@@ -68,6 +68,6 @@ extern void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4);
 #define IS_PRIMARY_EDGE(edge) \
   (COLORSET_HAS_MEMBER((edge)->color, (edge)->colors))
 
-extern COLORSET ColorCompleted;
+extern COLORSET ColorCompletedState;
 
 #endif  // EDGE_H

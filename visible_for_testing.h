@@ -8,6 +8,6 @@
 
 /* Internal declarations that should be visible to test files will go here */
 extern FACE searchChooseNextFace(void);
-extern uint64 CycleGuessCounter ;
+extern uint64 CycleGuessCounterIPC ;
 
 #endif  // VISIBLE_FOR_TESTING_H 

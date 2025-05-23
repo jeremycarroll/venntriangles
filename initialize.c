@@ -16,9 +16,9 @@ static bool forwardInitialize(void)
 {
   initializeS6();
   initialize();
-  statisticIncludeInteger(&CycleGuessCounter, "?", "guesses", false);
-  statisticIncludeInteger(&GlobalVariantCount, "V", "variants", false);
-  statisticIncludeInteger(&GlobalSolutionsFound, "S", "solutions", false);
+  statisticIncludeInteger(&CycleGuessCounterIPC, "?", "guesses", false);
+  statisticIncludeInteger(&GlobalVariantCountIPC, "V", "variants", false);
+  statisticIncludeInteger(&GlobalSolutionsFoundIPC, "S", "solutions", false);
   return true;
 }
 

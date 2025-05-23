@@ -11,7 +11,7 @@
 #define DEBUG 0
 
 /* Global variables */
-uint64_t GlobalVariantCount = 0;
+uint64_t GlobalVariantCountIPC = 0;
 /* GraphML namespace and schema definitions */
 static const char *GRAPHML_NS = "http://graphml.graphdrawing.org/xmlns";
 static const char *GRAPHML_SCHEMA =
@@ -50,9 +50,9 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3]);
 static char *subFilename(void);
 
 /* Global variables */
-char CurrentPrefix[1024];
-int VariationNumber = 1;
-int Levels = 0;
+char CurrentPrefixIPC[1024];
+int VariationNumberIPC = 1;
+int LevelsIPC = 0;
 
 /* Structure to hold data for GraphML output */
 typedef struct {
@@ -278,10 +278,10 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
 static char *subFilename(void)
 {
   char *buffer = getBuffer();
-  int levels = Levels;
+  int levels = LevelsIPC;
   char *p = buffer;
-  int variationNumber = VariationNumber;
-  p = p + sprintf(p, "%s", CurrentPrefix);
+  int variationNumber = VariationNumberIPC;
+  p = p + sprintf(p, "%s", CurrentPrefixIPC);
   while (levels > 1) {
     p += sprintf(p, "/%2.2x", variationNumber % 256);
     GraphmlFileOps.initializeFolder(buffer);
@@ -297,12 +297,12 @@ static void saveVariation(EDGE (*corners)[3])
   COLOR a;
   char *filename = subFilename();
   FILE *fp;
-  // assert(VariationNumber <= ExpectedVariations);
-  VariationNumber++;
-  if (VariationNumber - 1 <= IgnoreFirstVariantsPerSolution) {
+  // assert(VariationNumberIPC <= ExpectedVariations);
+  VariationNumberIPC++;
+  if (VariationNumberIPC - 1 <= IgnoreFirstVariantsPerSolution) {
     return;
   }
-  GlobalVariantCount++;
+  GlobalVariantCountIPC++;
   fp = GraphmlFileOps.fopen(filename, "w");
   graphmlBegin(fp);
   for (a = 0; a < NCOLORS; a++, corners++) {
@@ -325,7 +325,7 @@ int numberOfLevels(int expectedVariations)
 static struct predicateResult trySaveVariation(int round)
 {
   (void)round;  // Unused parameter
-  saveVariation(SelectedCorners);
+  saveVariation(SelectedCornersIPC);
   return PredicateSuccessNextPredicate;
 }
 

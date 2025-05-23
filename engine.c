@@ -48,7 +48,7 @@ void engine(PREDICATE* predicates)
   stackTop->trail = Trail;
   stackTop->counter = Counter++;
 
-  if (!engineLoop() && Tracing) {
+  if (!engineLoop() && TracingFlag) {
     fprintf(stderr, "Engine suspended\n");
   } else {
     assert(stackTop == stack || stackTop->predicate == &SUSPENDPredicate);
@@ -163,7 +163,7 @@ static void pushStackEntry(struct stackEntry* entry, PredicateResultCode code)
 
 void trace(const char* message)
 {
-  if (!Tracing) return;
+  if (!TracingFlag) return;
   fprintf(stderr, "%d:%ld:", stackTop->counter, (long)(stackTop - stack));
   if (stackTop->currentChoice >= 0) {
     fprintf(stderr, "%s(%d,%d) %s\n", message, stackTop->round,
