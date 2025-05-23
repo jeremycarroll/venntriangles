@@ -26,15 +26,11 @@ branch of the search ends in failure and we backtrack to the previous
 choicepoint, and make the next guess.
 
 Success is very similar to failure. We get to the end of the search,
-satisfying the critieria for this phase. We then call a callback function
-that takes us to the next phase (writing the graphml file being the final phase).
-After executing the callback function, we backtrack to proceed to the next guess.
+satisfying the critieria for this phase. We then proceed to the next phase of the search,
+which is based on the results so far.
+After executing the next phase, we backtrack, undoing the guesses we have made so far,
+and proceed to the next guess.
 
-In the first and third phases, we structure the search on the call stack, with six
-recursive calls, one for each color. Some of the constraints can be evaluated
-on each call, some after the final choice.
-
-In the second phase we have a loop with more explicit choice points.
 
 ### Searching for Venn Diagrams
 
@@ -53,71 +49,122 @@ Conversely, the choice of face for this iteration
 is not backtrackable - the face chosen has to have a facial cycle, we have decided
 to guess it now.
 
-## Backtracking, Memory and the Trail
+## Nondeterministic Engine, Backtracking, Memory and the Trail
 
-Memory management presents a challenge to most C programs.
+Given that the problem is non-deterministic, with three separate non-deterministic subproblems,
+we encode them all uniformly as top-down searches, and abandon the usual top-level control flow
+of C-programs to instead use a non-deterministic engine.
+The engine executes a short non-deterministic program,
+consisting of a sequence of predicates. Each predicate can be evaluated to either succeed or fail
+or create a choice point. Each choice point has a known number of choices. Each choice can either succeed
+or fail, continuing to the next choice. When the choices are exhausted the predicate fails.
 
-In the crucial main phase, our design is to not use any memory on the heap,
-and most of the memory used is global memory, defining a single static
-solution to the problem. This reflects that at each point of program
-execution we are only considering one of the many solutions.
+Success has two flavors: _success-same-predicate_ is a partial success that re-invokes the
+current predicate with an incremented _round_ (starting at 0); _success-nest-predicate_ is a full success,
+indicating that the engine should move on to the next predicate. It is a run time disaster if the final 
+predicate in the program succeeeds with _success-nest-predicate_. A constant predicate the _FAILPredicate_ is provided to be the final entry in most programs.
 
-As part of this design, we preallocate global memory for every possible
-edge and every possible vertex, even though only some of them are used
-in each solution.
+On failure, if the current execution is a choice-point, the next choice (if any) is invoked. Otherwise,
+the program backtracks to the previous predicate. If there are no previous predicates then the 
+program execution has completed, since the top-down search has been exhausted.
 
-In order to reuse this single record of a solution, we record
-every assignment to it, or more precisely the previous value
-of every assignment, in a trail, so that as the search fails (or succeeds)
-followed by backtracking, we can undo all the changes we made 
-by reversing the trail.
+The engine is somewhat motivated by Prolog.
 
-In the first and third parts of the search, we use the callstack
-to implement the depth first search, so naturally local variables
-on the stack get allocated while that part of the search is in scope.
+### Forward Backward Predicates
 
-In the third phase, the vertex to line mapping, needed in identifying
-faulty corner guesses, is stored in the solution memory,
-and tracked on the trail. Other aspects are in local memory.
+There are several control predicates defined by two boolean functions and a void function.
 
-### Memoization
+The first function is a gate, which can fail the predicate; if the gate passes then the
+predicate has a simple choice between two options. The first, the forward operation, can: pass, proceeding to the next
+predicate; or fail, proceeding directly to the third function. The third function, the backward operation, 
+is executed, and then the predicate fails. This allows for inserting code execution into the program execution
+as the non-deterministic search proceeds forward or backward.
 
-During the main search, performance is critical. Hence, any operation
-that gets repeated is precomputed during an initialization phase.
-Many of these correspond to some of the constraints seen in [MATH.md](./MATH.md),
-for example, we precompute the set of all facial cycles that contain
-the sequence _i_, _j_, _k_ for all triples _i_, _j_, _k_. This allows
-the constraint to be applied during the search as a simple bitwise operation
-which is very fast, uses fixed memory, and is quick and easy to add to the trail.
+In Prolog terms, this is:
 
-In some sense, many of the relationships between faces, and possible edges,
-and possible vertices, are also memoized - in the sense that these are all
-precomputed during initialization and then, when needed, simply put into place,
-often just by changing a single pointer.
+```
+predicate :- gate, (forward; backward, fail).
+```
 
-### Use of the Heap
+### Memory Management
 
-During other stages, the use of heap, particularly for strings, 
-simplifies the program, since we do not need to decide ahead of time,
-how much memory we need. However, rather than carefully balancing
-malloc and free calls, we hold to a design where heap memory has limited
-life and we free all heap memory at regular points through the program
-execution.
+While each execution step follows normal C memory management (e.g. local stack, static variables, malloc),
+the behavior between the predicates and on backtracking is mixed.
 
-## Six Phases
+1. The main program state, is in a single variable Faces. This stores: the facial cycle of each face; 
+   the edges around the face; the adjacent faces; the faces that might be adjacent, or might have been adjacent;
+   the vertices, both their actual, and possible configurations, etc. This state is tracked on the trail,
+   and when the engine backtracks through the normal non-determinstic operation, any changes to this state
+   are reversed. Thus the state reflects the currently active choices.
+1. Ancillary state: there are a few global variables that are similarly tracked with the trail, e.g.
+   the number of times each pair of colors are crossing in the current solution.
+1. heap, through malloc. This is temporary memory only, and is freed on each step in the engine. This is 
+   useful for temporary strings, and arrays etc. but long term use of the memory is not supported.
+1. flags set on the command line, and readable through out the code.
+1. shared state between the different predicates of the non-deterministic program, not on the trail.
+   The engine provides no explicit data flow between the predicates being executed. The data flow is
+   implicitly encoded with state variables, such as `GlobalSolutionsFoundIPC` which is incremented
+   as each solution is found, in the main search predicate, and read in several other predicates
+   to support various output related tasks. Notice that the read accesses can occur in predicates both
+   before and after the predicate updating the variable. In this particular case, we can log the solution
+   number in the later predicates, operating in a forward direction, and log the number of solutions found, 
+   in the earlier predicates, operating in a backward direction.
+1. Memoized computation. In the initialize phase (which is implemented as the first predicate
+   of the non-deterministic program), we compute many reusable structures. 
+   During the main search, performance is critical. Hence, any operation
+   that gets repeated is precomputed during an initialization phase.
+   Many of these correspond to some of the constraints seen in [MATH.md](./MATH.md),
+   for example, we precompute the set of all facial cycles that contain
+   the sequence _i_, _j_, _k_ for all triples _i_, _j_, _k_. This allows
+   the constraint to be applied during the search as a simple bitwise operation
+   which is very fast, uses fixed memory, and is quick and easy to add to the trail.
 
-There are hence the following phases:
+   In some sense, many of the relationships between faces, and possible edges,
+   and possible vertices, are also memoized - in the sense that these are all
+   precomputed during initialization and then, when needed, simply put into place,
+   often just by changing a single pointer.
+   
+   e.g. for each member of each
+   possible facial cycle, we compute: the set of facial cycles, with two entries going in the same direction, 
+   which might restrict a vertex adjacent face; and a set of facial cycles, with three entries going in the reverse direction, 
+   which might restrict an edge adjacent face.
 
-1. Initialization
+
+## Seven Phases & Eight Predicates
+
+There are hence the following phases and predicates:
+
+1. Deterministic initialization
 
    As well as the usual, this includes initializing the global solution space; and memoizing
    several results needed for the main search.
 
 1. Finding 5-degree signatures
+1. A deterministic logging step
+
+   With logging the number of results
+   for a specific 5-face degree signature
+   on the backward execution.
+
 1. Finding Venn diagrams (the main search)
+
+   This selects a solution.
+
+1. A deterministic save step
+
+   Writing the current solution to an appropriate
+   file (and including the number of variation on 
+   the backward execution)
+
 1. Assigning corners
-1. Writing GraphML
-1. Reset of memory structures (for unit tests only)
+
+   Selecting all mappings of the 18 corners
+   of the diagram to the possible faces in which 
+   they might lie; this determines a variation
+   of the solution.
+
+1. Deterministically Writing GraphML
+1. Fail - to force exhaustive searching
 
 ## Unit Testing
 

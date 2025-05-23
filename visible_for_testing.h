@@ -22,6 +22,8 @@ extern PERMUTATION s6Automorphism(CYCLE_ID cycleId);
 extern CYCLE_ID s6PermuteCycleId(CYCLE_ID originalCycleId,
                                  PERMUTATION permutation);
 extern char *s6SignatureToLongString(SIGNATURE signature);
+
 extern bool trailBacktrackTo(TRAIL backtrackPoint);
+extern TRAIL Trail;
 
 #endif  // VISIBLE_FOR_TESTING_H 
