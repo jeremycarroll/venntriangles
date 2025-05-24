@@ -287,7 +287,7 @@ Each .c file has the following layout:
 - the externally linked functions are ordered as:
     - `initialize...` functions
     - `dynamic...` functions
-    - other functions'
+    - other functions
     - predicates (i.e. the global variables)
 
 ## References
