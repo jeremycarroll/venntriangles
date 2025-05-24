@@ -12,9 +12,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+void initialize()
+{
+  /* Not true on all architectures, but assumed in our Trail. */
+  assert((sizeof(uint64) == sizeof(void *)));
+  /* Verify uint64 is 64 bits */
+  assert(sizeof(uint64) == 8);
+
+  initializeCycleSets();
+  initializeFacesAndEdges();
+  initializePoints();
+  initializeTrail();
+  initializeMemory();
+  initializeS6();
+  trailFreeze();
+}
+
 static bool forwardInitialize(void)
 {
-  initializeS6();
   initialize();
   statisticIncludeInteger(&CycleGuessCounterIPC, "?", "guesses", false);
   statisticIncludeInteger(&GlobalVariantCountIPC, "V", "variants", false);

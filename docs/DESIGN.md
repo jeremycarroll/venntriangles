@@ -173,7 +173,7 @@ There are hence the following phases and predicates:
 
 The program was developed using TDD (test driven development),
 so while the tests are comprehensive and have good coverage,
-there is a somewhat _ad hoc_ selection.
+there is a somewhat _ad hoc_ selection. Moreover, they were ported to make extensive use of the engine, and _ad hoc_ test non-deterministic programs, in which the non-determinism is typically constrained by some of the global variables. The engine itself has no unit tests.
 
 We use [Unity](https://github.com/ThrowTheSwitch/Unity) test framework.
 Moreover, while the program uses the value 6 for the number of colors, and the number
@@ -187,10 +187,9 @@ using folders `objs[3456]` to store the corresponding object files.
 
 ### MEMO and DYNAMIC annotations
 
-In [core.h](../core.h),  _SOLUTION_, _MEMO_, _DYNAMIC_ are defined as empty,
+In [core.h](../core.h), _MEMO_, _DYNAMIC_ are defined as empty,
 i.e. they are simply comments on global variables.
-_SOLUTION_ is used to mark a global variable as one of those that get used
-in the solution found during the main search phase. Some fields or 
+Some fields or 
 global variables maybe marked as _MEMO_ 
 indicating that those fields are set during the initialization phase, and 
 then do not change. Those fields or variables marked as _DYNAMIC_ do get changed
@@ -212,6 +211,7 @@ to allow for backtracking.
 | Vertex | vertex.c, vertex.h | A possible oriented vertex between 4 specific faces, forward reference to EDGE |
 | Triangle | vertex.c, vertex.h | a closed curve, satisfying various triangle rules in relationship to other triangles |
 | Face  | face.c, face.h  | A face of a Venn diagram |
+| Triangles | triangles.c, triangles.h | The six triangles that make up the Venn diagram, each a closed curve with the same label |
 
 The geometric files are in the sequence above, with each header file including the previous header file,
 and each c file including the corresponding header file, so that face.h and face.c include everything.
@@ -238,6 +238,22 @@ color.h includes core.h which defines various constants needed.
 Each predicate file implements a single predicate, with the predicate's name matching the file name.
 The header files declare the predicate structure and any helper functions needed by the predicate.
 The implementation files contain the predicate's logic and any file-scoped helper functions.
+
+### Other Source Files
+
+| Files | Notes |
+| ------------- | ---- |
+| s6.c, s6.h | The dihedral group D6, used to avoid computing symmetries without loss of generality |
+| engine.h, common.h, predicates.h | Common definitions for the non-deterministic engine and predicates |
+| nondeterminism.c, nondeterminism.h | The non-deterministic program |
+| core.h | Core constants and type definitions |
+| failure.c, failure.h | Failures to meet the Venn condition, for the main search. |
+| entrypoint.c, main.c, main.h | Program entry point and command line handling |
+| trail.h | Trail interface for backtracking |
+| memory.c, memory.h | Memory management utilities |
+| utils.c, utils.h | General utility functions |
+| statistics.c, statistics.h | Performance statistics collection |
+| visible_for_testing.h | Testing support definitions |
 
 ### Naming Conventions
 
