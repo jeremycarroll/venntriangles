@@ -21,13 +21,13 @@ struct curveLink {
 
 struct edge {
   /* The label on the edge. */
-  STATIC COLOR color;
+  MEMO COLOR color;
 
   /* The label on the face of which this is an edge. */
-  STATIC COLORSET colors;
+  MEMO COLORSET colors;
   /* The edge going in the other direction, with the same color, attached to the
    * face with a label differing only by the one color.  */
-  STATIC EDGE reversed;
+  MEMO EDGE reversed;
   /*
   to starts off as NULL, and is set to the jth member of possiblyTo
   where (color, j) is in the facial cycle of inner, equivalently
@@ -35,12 +35,12 @@ struct edge {
   */
   DYNAMIC CURVELINK to;
   /* A value between 0 and NCOLORS, being the cardinality of face. */
-  STATIC uint64 level;
+  MEMO uint64 level;
   /* This vertex at the end of this edge may cross one of the other colors.
   We have all 5 pre-initialized in this array, with the color-th entry
   being all NULL.
    */
-  STATIC struct curveLink possiblyTo[NCOLORS];
+  MEMO struct curveLink possiblyTo[NCOLORS];
 };
 
 extern uint64 EdgeColorCountState[2][NCOLORS];

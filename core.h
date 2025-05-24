@@ -61,8 +61,8 @@
 
 #define NPOINTS ((1 << (NCOLORS - 2)) * NCOLORS * (NCOLORS - 1))
 
-#ifndef STATIC
-#define STATIC
+#ifndef MEMO
+#define MEMO
 #endif
 #ifndef DYNAMIC
 #define DYNAMIC
