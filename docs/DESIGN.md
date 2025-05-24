@@ -1,7 +1,7 @@
 # Design Considerations
 
 The goal of the program is to find all choices of facial cycle for each face such that
-the overall result describes a planar graph that can be drawn with six traingles.
+the overall result describes a planar graph that can be drawn with six triangles.
 
 We cover both high level design and comments on lower level issues of wide scope. 
 Comments about lower level issues which fit better in the code are in the code.
@@ -22,10 +22,10 @@ into a [GraphML](http://graphml.graphdrawing.org/primer/graphml-primer.html) fil
 
 We approach this in top-down fashion. Each of the three steps, involve guessing, and we usually guess badly. That
 branch of the search ends in failure and we backtrack to the previous
-choicepoint, and make the next guess.
+choice point, and make the next guess.
 
 Success is very similar to failure. We get to the end of the search,
-satisfying the critieria for this phase. We then proceed to the next phase of the search,
+satisfying the criteria for this phase. We then proceed to the next phase of the search,
 which is based on the results so far.
 After executing the next phase, we backtrack, undoing the guesses we have made so far,
 and proceed to the next guess.
@@ -61,7 +61,7 @@ or fail, continuing to the next choice. When the choices are exhausted the predi
 Success has two flavors: _success-same-predicate_ is a partial success that re-invokes the
 current predicate with an incremented _round_ (starting at 0); _success-nest-predicate_ is a full success,
 indicating that the engine should move on to the next predicate. It is a run time disaster if the final 
-predicate in the program succeeeds with _success-nest-predicate_. A constant predicate the _FAILPredicate_ is provided to be the final entry in most programs.
+predicate in the program succeeds with _success-nest-predicate_. A constant predicate the _FAILPredicate_ is provided to be the final entry in most programs.
 
 On failure, if the current execution is a choice-point, the next choice (if any) is invoked. Otherwise,
 the program backtracks to the previous predicate. If there are no previous predicates then the 
@@ -93,13 +93,13 @@ the behavior between the predicates and on backtracking is mixed.
 1. The main program state, is in a single variable `Faces`. This stores: the facial cycle of each face; 
    the edges around the face; the adjacent faces; the faces that might be adjacent, or might have been adjacent;
    the vertices, both their actual, and possible configurations, etc. This state is tracked on the trail,
-   and when the engine backtracks through the normal non-determinstic operation, any changes to this state
+   and when the engine backtracks through the normal non-deterministic operation, any changes to this state
    are reversed. Thus the state reflects the currently active choices.
 1. Ancillary state: there are a couple of global variables that are similarly tracked with the trail, e.g. `EdgeColorCount`**`State`**
    the number of times each pair of colors are crossing in the current solution. 
 1. heap, through malloc. This is temporary memory only, and is freed on each step in the engine. This is 
    useful for temporary strings, and arrays etc. but long term use of the memory is not supported.
-1. flags set on the command line, and readable through out the code, e.g. `TargetFolder`**`Flag`**
+1. flags set on the command line, and readable throughout the code, e.g. `TargetFolder`**`Flag`**
 1. shared state between the different predicates of the non-deterministic program, not on the trail.
    The engine provides no explicit data flow between the predicates being executed. The data flow is
    implicitly encoded with state variables, such as `GlobalSolutionsFound`**`IPC`** (IPC: inter-predicate communication) which is incremented
