@@ -257,13 +257,12 @@ We use the following naming conventions:
   the changes on the trail start with `dynamic...`
 
 
-
 ### File Layout Conventions
 
 Most of the files correspond to geometric concepts with both a .c file and .h file.
 Sometimes we put more than one geometric concept into one .c file.
 
-We have additional files for the trail concept, for the top level search primitives, for the dihedral group D6,
+We have additional files for the trail concept, for the symmetric group S₆, with explicit support for the dihedral group D₆,
 which we use to avoid computing symmetries, without loss of generality, and for utils.
 
 Each .c file has the following layout:
