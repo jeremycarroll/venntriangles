@@ -8,8 +8,7 @@ Comments about lower level issues which fit better in the code are in the code.
 
 ## High-Level Design
 
-The problem of finding diagrams of 6 Venn triangles is a search problem,
-which we address in a top-down fashion. 
+The problem of finding diagrams of 6 Venn triangles is a search problem. 
 The search is divided into three parts:
 
 1. Find a maximal sequence of 6 integers making a 5-degree signature.
@@ -21,7 +20,7 @@ The search is divided into three parts:
 The final step is to write the resulting Venn diagram, including its corners
 into a [GraphML](http://graphml.graphdrawing.org/primer/graphml-primer.html) file.
 
-Each of the three steps, involve guessing, and we usually guess badly. That
+We approach this in top-down fashion. Each of the three steps, involve guessing, and we usually guess badly. That
 branch of the search ends in failure and we backtrack to the previous
 choicepoint, and make the next guess.
 
@@ -49,11 +48,11 @@ Conversely, the choice of face for this iteration
 is not backtrackable - the face chosen has to have a facial cycle, we have decided
 to guess it now.
 
-## Nondeterministic Engine, Backtracking, Memory and the Trail
+## Non-deterministic Engine, Backtracking, Memory and the Trail
 
 Given that the problem is non-deterministic, with three separate non-deterministic subproblems,
 we encode them all uniformly as top-down searches, and abandon the usual top-level control flow
-of C-programs to instead use a non-deterministic engine.
+of C programs to instead use a non-deterministic engine.
 The engine executes a short non-deterministic program,
 consisting of a sequence of predicates. Each predicate can be evaluated to either succeed or fail
 or create a choice point. Each choice point has a known number of choices. Each choice can either succeed
@@ -91,19 +90,19 @@ predicate :- gate, (forward; backward, fail).
 While each execution step follows normal C memory management (e.g. local stack, static variables, malloc),
 the behavior between the predicates and on backtracking is mixed.
 
-1. The main program state, is in a single variable Faces. This stores: the facial cycle of each face; 
+1. The main program state, is in a single variable `Faces`. This stores: the facial cycle of each face; 
    the edges around the face; the adjacent faces; the faces that might be adjacent, or might have been adjacent;
    the vertices, both their actual, and possible configurations, etc. This state is tracked on the trail,
    and when the engine backtracks through the normal non-determinstic operation, any changes to this state
    are reversed. Thus the state reflects the currently active choices.
-1. Ancillary state: there are a few global variables that are similarly tracked with the trail, e.g.
-   the number of times each pair of colors are crossing in the current solution.
+1. Ancillary state: there are a couple of global variables that are similarly tracked with the trail, e.g. `EdgeColorCount`**`State`**
+   the number of times each pair of colors are crossing in the current solution. 
 1. heap, through malloc. This is temporary memory only, and is freed on each step in the engine. This is 
    useful for temporary strings, and arrays etc. but long term use of the memory is not supported.
-1. flags set on the command line, and readable through out the code.
+1. flags set on the command line, and readable through out the code, e.g. `TargetFolder`**`Flag`**
 1. shared state between the different predicates of the non-deterministic program, not on the trail.
    The engine provides no explicit data flow between the predicates being executed. The data flow is
-   implicitly encoded with state variables, such as `GlobalSolutionsFoundIPC` which is incremented
+   implicitly encoded with state variables, such as `GlobalSolutionsFound`**`IPC`** (IPC: inter-predicate communication) which is incremented
    as each solution is found, in the main search predicate, and read in several other predicates
    to support various output related tasks. Notice that the read accesses can occur in predicates both
    before and after the predicate updating the variable. In this particular case, we can log the solution
@@ -129,7 +128,9 @@ the behavior between the predicates and on backtracking is mixed.
    which might restrict a vertex adjacent face; and a set of facial cycles, with three entries going in the reverse direction, 
    which might restrict an edge adjacent face.
 
+1. The predicates, such as `InnerFace`**`Predicate`**, which finds  6 integers making a 5-degree signature.
 
+1. A couple of miscellaneous extras, like the `NonDeterministicProgram` itself.
 ## Seven Phases & Eight Predicates
 
 There are hence the following phases and predicates:
@@ -236,7 +237,7 @@ We use the following naming conventions:
   before we begin the search start with `initialize...`
 - functions that modify the Scratch area during the dynamic search, recording
   the changes on the trail start with `dynamic...`
-- functions that reset the Scratch area during testing, start with `reset...`
+
 
 
 ### File Layout Conventions
