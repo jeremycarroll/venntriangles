@@ -97,14 +97,14 @@ the behavior between the predicates and on backtracking is mixed.
    the vertices, both their actual, and possible configurations, etc. This state is tracked on the trail,
    and when the engine backtracks through the normal non-deterministic operation, any changes to this state
    are reversed. Thus the state reflects the currently active choices.
-1. Ancillary state: there are a couple of global variables that are similarly tracked with the trail, e.g. _EdgeColorCount**State**_**
+1. Ancillary state: there are a couple of global variables that are similarly tracked with the trail, e.g. _EdgeColorCount**State**_
    the number of times each pair of colors are crossing in the current solution. 
 1. heap, through malloc. This is temporary memory only, and is freed on each step in the engine. This is 
    useful for temporary strings, and arrays etc. but long term use of the memory is not supported.
-1. flags set on the command line, and readable throughout the code, e.g. _TargetFolder**Flag**_**
+1. flags set on the command line, and readable throughout the code, e.g. _TargetFolder**Flag**_
 1. shared state between the different predicates of the non-deterministic program, not on the trail.
    The engine provides no explicit data flow between the predicates being executed. The data flow is
-   implicitly encoded with state variables, such as _GlobalSolutionsFound**IPC**_** (IPC: inter-predicate communication) which is incremented
+   implicitly encoded with state variables, such as _GlobalSolutionsFound**IPC**_ (IPC: inter-predicate communication) which is incremented
    as each solution is found, in the main search predicate, and read in several other predicates
    to support various output related tasks. Notice that the read accesses can occur in predicates both
    before and after the predicate updating the variable. In this particular case, we can log the solution
@@ -130,7 +130,7 @@ the behavior between the predicates and on backtracking is mixed.
    which might restrict a vertex adjacent face; and a set of facial cycles, with three entries going in the reverse direction, 
    which might restrict an edge adjacent face.
 
-1. The predicates, such as _InnerFace**Predicate**_**, which finds  6 integers making a 5-degree signature.
+1. The predicates, such as _InnerFace**Predicate**_, which finds  6 integers making a 5-degree signature.
 
 1. A couple of miscellaneous extras, like the `NonDeterministicProgram` itself.
 ## Seven Phases & Eight Predicates
