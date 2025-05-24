@@ -219,6 +219,24 @@ the files.
 
 color.h includes core.h which defines various constants needed.
 
+### Predicate Files
+
+| Predicate | Files | Notes |
+| ------------- | ------------- | ---- |
+| Initialize | initialize.c | Initializes solution space and memoizes results |
+| InnerFace | innerface.c | Processes inner faces |
+| Log | log.c | Logging of inner faces |
+| Venn | venn.c | Main search for Venn diagrams |
+| Save | save.c | Saves solutions |
+| Corners | corners.c | Assigns corners to faces |
+| GraphML | graphml.c | Writes GraphML output |
+| FAIL | engine.c | Final predicate that always fails |
+| SUSPEND | engine.c | Special predicate for testing |
+
+Each predicate file implements a single predicate, with the predicate's name matching the file name.
+The header files declare the predicate structure and any helper functions needed by the predicate.
+The implementation files contain the predicate's logic and any file-scoped helper functions.
+
 ### Naming Conventions
 
 Static variables of any scope (function, file, global) are in PascalCase.
