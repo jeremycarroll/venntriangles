@@ -11,8 +11,8 @@ Some other comments about lower level issues are in the code.
 The problem of finding diagrams of 6 Venn triangles is a search problem. 
 The search is divided into three parts:
 
-1. Find a maximal sequence of 6 integers making a 5-degree signature.
-1. (the main search) Find 64 facial cycles defining a Venn diagram with this 5-degree signature,
+1. Find a maximal sequence of 6 integers making a 5-face degree signature.
+1. (the main search) Find 64 facial cycles defining a Venn diagram with this 5-face degree signature,
    which satisfies several necessary conditions to be drawable with triangles.
 1. Find an edge to corner mapping for this Venn diagram,
    satisfying the condition that every pair of lines cross at most once.
@@ -130,7 +130,7 @@ the behavior between the predicates and on backtracking is mixed.
    which might restrict a vertex adjacent face; and a set of facial cycles, with three entries going in the reverse direction, 
    which might restrict an edge adjacent face.
 
-1. The predicates, such as _InnerFace**Predicate**_, which finds  6 integers making a 5-degree signature.
+1. The predicates, such as _InnerFace**Predicate**_, which finds  6 integers making a 5-face degree signature.
 
 1. A couple of miscellaneous extras, like the `NonDeterministicProgram` itself.
 ## Seven Phases & Eight Predicates
@@ -142,7 +142,7 @@ There are hence the following phases and predicates:
    As well as the usual, this includes initializing the global solution space; and memoizing
    several results needed for the main search.
 
-1. Finding 5-degree signatures
+1. Finding 5-face degree signatures
 1. A deterministic logging step
 
    With logging the number of results
@@ -208,8 +208,7 @@ to allow for backtracking.
 | Link in Curve | edge.h | The pointy end of an edge, where it meets a vertex, forward reference to EDGE and POINT |
 | Edge | edge.c, edge.h | A directed, labelled side of a face, between two points, one of which is called out as the arrowhead |
 | Curve | edge.c, edge.h | a connected sequence of edges with the same label |
-| Vertex | vertex.c, vertex.h | A possible oriented vertex between 4 specific faces, forward reference to EDGE |
-| Triangle | vertex.c, vertex.h | a closed curve, satisfying various triangle rules in relationship to other triangles |
+| Vertex | vertex.c, vertex.h | A possible oriented vertex between 4 specific faces. |
 | Face  | face.c, face.h  | A face of a Venn diagram |
 | Triangles | triangles.c, triangles.h | The six triangles that make up the Venn diagram, each a closed curve with the same label |
 
@@ -243,7 +242,7 @@ The implementation files contain the predicate's logic and any file-scoped helpe
 
 | Files | Notes |
 | ------------- | ---- |
-| s6.c, s6.h | The dihedral group D6, used to avoid computing symmetries without loss of generality |
+| s6.c, s6.h | The symmetric group S₆ and the dihedral group D₆, used to avoid computing symmetries without loss of generality |
 | engine.h, common.h, predicates.h | Common definitions for the non-deterministic engine and predicates |
 | nondeterminism.c, nondeterminism.h | The non-deterministic program |
 | core.h | Core constants and type definitions |
@@ -251,8 +250,8 @@ The implementation files contain the predicate's logic and any file-scoped helpe
 | entrypoint.c, main.c, main.h | Program entry point and command line handling |
 | trail.h | Trail interface for backtracking |
 | memory.c, memory.h | Memory management utilities |
-| utils.c, utils.h | General utility functions |
-| statistics.c, statistics.h | Performance statistics collection |
+| statistics.c, statistics.h | Performance statistics collection and printing |
+| utils.c, utils.h | Two other functions |
 | visible_for_testing.h | Testing support definitions |
 
 ### Naming Conventions
@@ -271,30 +270,26 @@ We use the following naming conventions:
 
 - functions that modify the solution area, or create memoized results, 
   before we begin the search start with `initialize...`
-- functions that modify the Scratch area during the dynamic search, recording
+- functions that modify the `Faces` variable during the dynamic search, recording
   the changes on the trail start with `dynamic...`
-
 
 ### File Layout Conventions
 
 Most of the files correspond to geometric concepts with both a .c file and .h file.
-Sometimes we put more than one geometric concept into one .c file.
-
-We have additional files for the trail concept, for the symmetric group S₆, with explicit support for the dihedral group D₆,
-which we use to avoid computing symmetries, without loss of generality, and for utils.
+Sometimes we put more than one geometric concept into one .c file. A few .h files
+are motivated independently.
 
 Each .c file has the following layout:
 
 - includes
-- global variables: first globally scoped then file scope
-- declaration of any file scoped static functions
-- externally linked functions in the following sections
+- global variables: first globally scoped then file scope (except predicates)
+- functions follow a define before use paradigm, so that the external entry points are grouped together at the end of the files.
+- the externally linked functions are ordered as:
     - `initialize...` functions
-    - `dyanmic...` functions
-    - `reset...` functions
-    - other functions (in alphabetical order)
-- file scoped static functions
+    - `dynamic...` functions
+    - other functions'
+    - predicates (i.e. the global variables)
 
-# References
+## References
 
 Byrd, Lawrence. "Understanding the control flow of Prolog programs." in _Proceedings of the Logic Programming Workshop in Debrecen, Hungary_ (Sten Åke Tärnlund, editor). 1980. See these [notes](https://github.com/dtonhofer/prolog_notes/blob/master/other_notes/about_byrd_box_model/README.md).
