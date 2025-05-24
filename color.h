@@ -33,8 +33,6 @@ struct facialCycle {
 
 /* These cycleSets are accessed from cycles, with the pointers set up during
    initialization. */
-extern CYCLESET_DECLARE CycleSetPairs[NCOLORS][NCOLORS];
-extern CYCLESET_DECLARE CycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
 extern CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
 extern CYCLESET_DECLARE CycleSetOmittingColorPair[NCOLORS][NCOLORS];
 

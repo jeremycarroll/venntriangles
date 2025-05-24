@@ -5,10 +5,8 @@
 
 #include "core.h"
 
-typedef struct trail *TRAIL;
 typedef uint64 uint_trail;
 
-extern TRAIL Trail;
 extern void trailSetPointer(void **ptr, void *value);
 #define TRAIL_SET_POINTER(a, b) trailSetPointer((void **)a, b)
 
@@ -17,5 +15,6 @@ extern void trailMaybeSetInt(uint_trail *ptr, uint_trail value);
 extern void trailFreeze(void);
 
 extern void initializeTrail(void);
+typedef struct trail *TRAIL;
 
 #endif  // TRAIL_H

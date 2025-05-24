@@ -37,14 +37,14 @@ struct Vertex {
 
   The outgoing edges are found by reversing the incoming edges
   */
-  STATIC EDGE incomingEdges[4];
+  MEMO EDGE incomingEdges[4];
 
   /* Colors can also be accessed from the edges as above.
    */
-  STATIC COLOR primary, secondary;
+  MEMO COLOR primary, secondary;
 
   /* A set of the two colors. */
-  STATIC COLORSET colors;
+  MEMO COLORSET colors;
 
   /* The first of the two lines at this vertex.
      lines count from 1; 0 means not yet set.
@@ -66,16 +66,16 @@ struct face {
   /* We vertex to previous and next with the same number of colors. */
   DYNAMIC FACE previous;
   DYNAMIC FACE next;
-  STATIC COLORSET colors;           // holds up to NFACES
+  MEMO COLORSET colors;             // holds up to NFACES
   DYNAMIC uint_trail cycleSetSize;  // holds up to NCYCLES
   DYNAMIC CYCLESET_DECLARE possibleCycles;
-  STATIC struct face* adjacentFaces[NCOLORS];
-  STATIC struct edge edges[NCOLORS];
+  MEMO struct face* adjacentFaces[NCOLORS];
+  MEMO struct edge edges[NCOLORS];
   /* Precomputed lookup tables for previous and next. */
-  STATIC FACE previousByCycleId[NCYCLES];
-  STATIC FACE nextByCycleId[NCYCLES];
+  MEMO FACE previousByCycleId[NCYCLES];
+  MEMO FACE nextByCycleId[NCYCLES];
 };
 
-extern STATIC struct face Faces[NFACES];
+extern MEMO struct face Faces[NFACES];
 
 #endif  // VERTEX_H

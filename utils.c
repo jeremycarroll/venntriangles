@@ -2,32 +2,10 @@
 
 #include "utils.h"
 
-#include "color.h"
-#include "edge.h"
-#include "face.h"
-#include "s6.h"
-#include "statistics.h"
 #include <sys/stat.h>
 
 #include <stdlib.h>
 #include <unistd.h>
-
-/* Externally linked functions */
-void initialize()
-{
-  /* Not true on all architectures, but assumed in our Trail. */
-  assert((sizeof(uint64) == sizeof(void *)));
-  /* Verify uint64 is 64 bits */
-  assert(sizeof(uint64) == 8);
-
-  initializeCycleSets();
-  initializeFacesAndEdges();
-  initializePoints();
-  initializeTrail();
-  initializeMemory();
-  initializeS6();
-  trailFreeze();
-}
 
 void initializeFolder(const char *folder)
 {
