@@ -4,7 +4,7 @@ The goal of the program is to find all choices of facial cycle for each face suc
 the overall result describes a planar graph that can be drawn with six triangles.
 
 We cover both high level design and comments on lower level issues of wide scope. 
-Comments about lower level issues which fit better in the code are in the code.
+Some other comments about lower level issues are in the code.
 
 ## High-Level Design
 
@@ -34,19 +34,21 @@ and proceed to the next guess.
 ### Searching for Venn Diagrams
 
 In the main search, at each step we assign a specific facial cycle to a specific face.
-At every step in the search we have a set of possible facial cycles for each face.
+At every step in the search we have a set of remaining possible facial cycles for each face.
 If this set is empty for any face, then the search has failed and we backtrack to 
 the previous choice point.
 If this set is a singleton for any face, then we make that choice
 and compute all its consequences, which may result in failure, or
 in a further assignment in a face with only one remaining facial cycle.
 
-In the main loop, we first choose the next face to assign to, then we choose
-the facial cycle for the face. We can backtrack and guess again
-over all possible choices for the facial cycle for the chosen face.
-Conversely, the choice of face for this iteration
-is not backtrackable - the face chosen has to have a facial cycle, we have decided
-to guess it now.
+In the main loop, we first select the face with the fewest possible choices of facial cycle as the next face.
+We choose
+a facial cycle for that face. We will later backtrack and guess again
+making all possible choices for the facial cycle for that chosen face. 
+With each choice, we compute has many consequences as we can, retricting the possible facial cycles for other faces.
+The selection of which face to use for this iteration of the loop
+is not backtrackable - the selected face does need to have a facial cycle: we have decided
+to choose it now.
 
 ## Non-deterministic Engine, Backtracking, Memory and the Trail
 
@@ -67,7 +69,7 @@ On failure, if the current execution is a choice-point, the next choice (if any)
 the program backtracks to the previous predicate. If there are no previous predicates then the 
 program execution has completed, since the top-down search has been exhausted.
 
-The engine is somewhat motivated by Prolog.
+The engine is somewhat motivated by Prolog: see in particular the Byrd box model.
 
 ### Forward Backward Predicates
 
@@ -95,14 +97,14 @@ the behavior between the predicates and on backtracking is mixed.
    the vertices, both their actual, and possible configurations, etc. This state is tracked on the trail,
    and when the engine backtracks through the normal non-deterministic operation, any changes to this state
    are reversed. Thus the state reflects the currently active choices.
-1. Ancillary state: there are a couple of global variables that are similarly tracked with the trail, e.g. `EdgeColorCount`**`State`**
+1. Ancillary state: there are a couple of global variables that are similarly tracked with the trail, e.g. _EdgeColorCount**State**_**
    the number of times each pair of colors are crossing in the current solution. 
 1. heap, through malloc. This is temporary memory only, and is freed on each step in the engine. This is 
    useful for temporary strings, and arrays etc. but long term use of the memory is not supported.
-1. flags set on the command line, and readable throughout the code, e.g. `TargetFolder`**`Flag`**
+1. flags set on the command line, and readable throughout the code, e.g. _TargetFolder**Flag**_**
 1. shared state between the different predicates of the non-deterministic program, not on the trail.
    The engine provides no explicit data flow between the predicates being executed. The data flow is
-   implicitly encoded with state variables, such as `GlobalSolutionsFound`**`IPC`** (IPC: inter-predicate communication) which is incremented
+   implicitly encoded with state variables, such as _GlobalSolutionsFound**IPC**_** (IPC: inter-predicate communication) which is incremented
    as each solution is found, in the main search predicate, and read in several other predicates
    to support various output related tasks. Notice that the read accesses can occur in predicates both
    before and after the predicate updating the variable. In this particular case, we can log the solution
@@ -128,7 +130,7 @@ the behavior between the predicates and on backtracking is mixed.
    which might restrict a vertex adjacent face; and a set of facial cycles, with three entries going in the reverse direction, 
    which might restrict an edge adjacent face.
 
-1. The predicates, such as `InnerFace`**`Predicate`**, which finds  6 integers making a 5-degree signature.
+1. The predicates, such as _InnerFace**Predicate**_**, which finds  6 integers making a 5-degree signature.
 
 1. A couple of miscellaneous extras, like the `NonDeterministicProgram` itself.
 ## Seven Phases & Eight Predicates
@@ -276,3 +278,7 @@ Each .c file has the following layout:
     - `reset...` functions
     - other functions (in alphabetical order)
 - file scoped static functions
+
+# References
+
+Byrd, Lawrence. "Understanding the control flow of Prolog programs." in _Proceedings of the Logic Programming Workshop in Debrecen, Hungary_ (Sten Åke Tärnlund, editor). 1980. See these [notes](https://github.com/dtonhofer/prolog_notes/blob/master/other_notes/about_byrd_box_model/README.md).
