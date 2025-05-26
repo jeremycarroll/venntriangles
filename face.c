@@ -11,7 +11,7 @@
 /* Global variables - globally scoped */
 struct face Faces[NFACES];
 static uint64 FaceSumOfFaceDegree[NCOLORS + 1];
-static uint64 CycleForcedCounter = 0;
+uint64 CycleForcedCounter = 0;
 static uint64 CycleSetReducedCounter = 0;
 
 /* Declaration of file scoped static functions */

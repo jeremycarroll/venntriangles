@@ -30,7 +30,6 @@ which is based on the results so far.
 After executing the next phase, we backtrack, undoing the guesses we have made so far,
 and proceed to the next guess.
 
-
 ### Searching for Venn Diagrams
 
 In the main search, at each step we assign a specific facial cycle to a specific face.
@@ -83,7 +82,7 @@ as the non-deterministic search proceeds forward or backward.
 
 In Prolog terms, this is:
 
-```
+```prolog
 predicate :- gate, (forward; backward, fail).
 ```
 
@@ -124,7 +123,7 @@ the behavior between the predicates and on backtracking is mixed.
    and possible vertices, are also memoized - in the sense that these are all
    precomputed during initialization and then, when needed, simply put into place,
    often just by changing a single pointer.
-   
+
    e.g. for each member of each
    possible facial cycle, we compute: the set of facial cycles, with two entries going in the same direction, 
    which might restrict a vertex adjacent face; and a set of facial cycles, with three entries going in the reverse direction, 
@@ -133,6 +132,7 @@ the behavior between the predicates and on backtracking is mixed.
 1. The predicates, such as _InnerFace**Predicate**_, which finds  6 integers making a 5-face degree signature.
 
 1. A couple of miscellaneous extras, like the `NonDeterministicProgram` itself.
+
 ## Seven Phases & Eight Predicates
 
 There are hence the following phases and predicates:
@@ -285,10 +285,10 @@ Each .c file has the following layout:
 - global variables: first globally scoped then file scope (except predicates)
 - functions follow a define before use paradigm, so that the external entry points are grouped together at the end of the files.
 - the externally linked functions are ordered as:
-    - `initialize...` functions
-    - `dynamic...` functions
-    - other functions
-    - predicates (i.e. the global variables)
+  - `initialize...` functions
+  - `dynamic...` functions
+  - other functions
+  - predicates (i.e. the global variables)
 
 ## References
 

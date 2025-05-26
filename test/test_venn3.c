@@ -9,9 +9,21 @@
 
 #include <unity.h>
 
+#define A 0
+#define B 1
+#define C 2
+#define Abits (1 << A)
+#define Bbits (1 << B)
+#define Cbits (1 << C)
+#define ABCbits (Abits | Bbits | Cbits)
+#define ABbits (Abits | Bbits)
+#define ACbits (Abits | Cbits)
+#define BCbits (Bbits | Cbits)
+
 void setUp(void)
 {
   initializeStatisticLogging(NULL, 4, 1);
+  CycleForcedCounter = 0;
   engine((PREDICATE[]){&InitializePredicate, &SUSPENDPredicate});
 }
 
@@ -50,57 +62,70 @@ static void testOuterFace()
 {
   FACE face = Faces;
   TEST_ASSERT_EQUAL(0, face->colors);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[0], Faces + 1);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[1], Faces + 2);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 4);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[A], Faces + Abits);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[B], Faces + Bbits);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[C], Faces + Cbits);
 }
 
 static void testAFace()
 {
-  FACE face = Faces + 1;
-  TEST_ASSERT_EQUAL(1, face->colors);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[0], Faces);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[1], Faces + 3);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 5);
+  FACE face = Faces + Abits;
+  TEST_ASSERT_EQUAL(Abits, face->colors);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[A], Faces);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[B], Faces + ABbits);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[C], Faces + ACbits);
 }
 
 static void testAbFace()
 {
-  FACE face = Faces + 3;
-  TEST_ASSERT_EQUAL(3, face->colors);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[0], Faces + 2);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[1], Faces + 1);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 7);
+  FACE face = Faces + ABbits;
+  TEST_ASSERT_EQUAL(ABbits, face->colors);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[A], Faces + Bbits);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[B], Faces + Abits);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[C], Faces + ABCbits);
 }
 
 static void testAbcFace()
 {
-  FACE face = Faces + 7;
-  TEST_ASSERT_EQUAL(7, face->colors);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[0], Faces + 6);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[1], Faces + 5);
-  TEST_ASSERT_EQUAL(face->adjacentFaces[2], Faces + 3);
+  FACE face = Faces + ABCbits;
+  TEST_ASSERT_EQUAL(ABCbits, face->colors);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[A], Faces + BCbits);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[B], Faces + ACbits);
+  TEST_ASSERT_EQUAL(face->adjacentFaces[C], Faces + ABbits);
 }
 
+/* We have the A edge of a face. We check the properties
+   of the B vertex that it possibly points to.
+   We are given: whether this edge is primary on its face;
+   whether A is primary at the B vertex;
+   and the colors associated with the A edge on the other side of the B vertex.
+ */
+static void checkBVertexOfAEdge(FACE face, EDGE edge, bool primary,
+                                bool primaryAtBVertex, COLORSET nextBcolors)
+{
+  TEST_ASSERT_EQUAL(primary, IS_PRIMARY_EDGE(edge));
+  TEST_ASSERT_EQUAL(face->colors, edge->colors);
+  TEST_ASSERT_NULL(edge->to);
+  TEST_ASSERT_EQUAL(A, edge->color);
+  TEST_ASSERT_NULL(edge->possiblyTo[A].vertex);
+  TEST_ASSERT_NULL(edge->possiblyTo[A].next);
+  TEST_ASSERT_EQUAL(primaryAtBVertex ? A : B,
+                    edge->possiblyTo[B].vertex->primary);
+  TEST_ASSERT_EQUAL(primaryAtBVertex ? B : A,
+                    edge->possiblyTo[B].vertex->secondary);
+  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[B].vertex, edge->possiblyTo[C].vertex);
+  TEST_ASSERT_EQUAL(A, edge->possiblyTo[B].next->color);
+  TEST_ASSERT_EQUAL(nextBcolors, edge->possiblyTo[B].next->colors);
+  sanityVertex(edge->possiblyTo[B].vertex);
+}
 /*
 TODO add picture to justify the following test.
 */
 static void testOuterAEdge()
 {
   FACE face = Faces;
-  EDGE edge = &face->edges[0];
-  TEST_ASSERT_FALSE(IS_PRIMARY_EDGE(edge));
-  TEST_ASSERT_EQUAL(face->colors, edge->colors);
-  TEST_ASSERT_NULL(edge->to);
-  TEST_ASSERT_EQUAL(0, edge->color);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].vertex);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].next);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].vertex->primary);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].vertex->secondary);
-  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].vertex, edge->possiblyTo[2].vertex);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
-  TEST_ASSERT_EQUAL(2, edge->possiblyTo[1].next->colors);
-  sanityVertex(edge->possiblyTo[1].vertex);
+  EDGE edge = &face->edges[A];
+  checkBVertexOfAEdge(face, edge, false, true, Bbits);
 }
 
 /*
@@ -108,20 +133,9 @@ TODO add picture to justify the following test.
 */
 static void testAFaceAEdge()
 {
-  FACE face = Faces + 1;
-  EDGE edge = &face->edges[0];
-  TEST_ASSERT_TRUE(IS_PRIMARY_EDGE(edge));
-  TEST_ASSERT_EQUAL(face->colors, edge->colors);
-  TEST_ASSERT_NULL(edge->to);
-  TEST_ASSERT_EQUAL(0, edge->color);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].vertex);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].next);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].vertex->secondary);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].vertex->primary);
-  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].vertex, edge->possiblyTo[2].vertex);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
-  TEST_ASSERT_EQUAL(3, edge->possiblyTo[1].next->colors);
-  sanityVertex(edge->possiblyTo[1].vertex);
+  FACE face = Faces + Abits;
+  EDGE edge = &face->edges[A];
+  checkBVertexOfAEdge(face, edge, true, false, ABbits);
 }
 
 /*
@@ -129,20 +143,9 @@ TODO add picture to justify the following test.
 */
 static void testAbFaceAEdge()
 {
-  FACE face = Faces + 3;
-  EDGE edge = &face->edges[0];
-  TEST_ASSERT_TRUE(IS_PRIMARY_EDGE(edge));
-  TEST_ASSERT_EQUAL(face->colors, edge->colors);
-  TEST_ASSERT_NULL(edge->to);
-  TEST_ASSERT_EQUAL(0, edge->color);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].vertex);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].next);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].vertex->primary);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].vertex->secondary);
-  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].vertex, edge->possiblyTo[2].vertex);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].next->colors);
-  sanityVertex(edge->possiblyTo[1].vertex);
+  FACE face = Faces + ABbits;
+  EDGE edge = &face->edges[A];
+  checkBVertexOfAEdge(face, edge, true, true, Abits);
 }
 
 /*
@@ -150,20 +153,9 @@ TODO add picture to justify the following test.
 */
 static void testAbcFaceAEdge()
 {
-  FACE face = Faces + 7;
-  EDGE edge = &face->edges[0];
-  TEST_ASSERT_TRUE(IS_PRIMARY_EDGE(edge));
-  TEST_ASSERT_EQUAL(face->colors, edge->colors);
-  TEST_ASSERT_NULL(edge->to);
-  TEST_ASSERT_EQUAL(0, edge->color);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].vertex);
-  TEST_ASSERT_NULL(edge->possiblyTo[0].next);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].vertex->primary);
-  TEST_ASSERT_EQUAL(1, edge->possiblyTo[1].vertex->secondary);
-  TEST_ASSERT_NOT_EQUAL(edge->possiblyTo[1].vertex, edge->possiblyTo[2].vertex);
-  TEST_ASSERT_EQUAL(0, edge->possiblyTo[1].next->color);
-  TEST_ASSERT_EQUAL(5, edge->possiblyTo[1].next->colors);
-  sanityVertex(edge->possiblyTo[1].vertex);
+  FACE face = Faces + ABCbits;
+  EDGE edge = &face->edges[A];
+  checkBVertexOfAEdge(face, edge, true, true, ACbits);
 }
 
 static void testChoosingAndBacktracking()
@@ -171,20 +163,25 @@ static void testChoosingAndBacktracking()
   int i;
   FACE face;
   TRAIL startTrail = Trail;
+  // For each face in turn, we can guess that is cycle is acb (the first one of
+  // the two cycles),
   for (i = 0; i < NFACES; i++) {
+    CycleForcedCounter = 0;
     TEST_ASSERT_EQUAL(startTrail, Trail);
     verifyFaceSize(2);
     face = Faces + i;
     face->cycle = Cycles;
     TEST_ASSERT_NULL(dynamicFaceBacktrackableChoice(face));
+    // Having selected one face, all of the other faces are determined.
     verifyFaceSize(1);
+    TEST_ASSERT_EQUAL(7, CycleForcedCounter);
     trailBacktrackTo(startTrail);
     face->cycle = NULL;
   }
+  // There are 8 faces, so 8 guesses.
   TEST_ASSERT_EQUAL(8, CycleGuessCounterIPC);
 }
 
-/* Global variables */
 static int SolutionCount = 0;
 
 static struct predicateResult foundSolution()
@@ -193,12 +190,12 @@ static struct predicateResult foundSolution()
   return PredicateFail;
 }
 
-/* Test functions */
 static void testSearch()
 {
   engineResume((PREDICATE[]){
       &VennPredicate, &(struct predicate){"Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(2, SolutionCount);
+  TEST_ASSERT_EQUAL(14, CycleForcedCounter);
 }
 
 /* Main test runner */

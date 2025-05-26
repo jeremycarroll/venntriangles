@@ -26,6 +26,7 @@ extern char *s6SignatureToLongString(SIGNATURE signature);
 extern bool trailBacktrackTo(TRAIL backtrackPoint);
 extern CYCLESET_DECLARE CycleSetPairs[NCOLORS][NCOLORS];
 extern CYCLESET_DECLARE CycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
+extern uint64  CycleForcedCounter;
 
 extern TRAIL Trail;
 
