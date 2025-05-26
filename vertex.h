@@ -6,7 +6,7 @@
 #include "edge.h"
 #include "trail.h"
 
-/* We create all possible points during initialization.
+/* We create all possible vertices during initialization.
 
    The vertex is being used if incomingEdges[i]->to is non-null
    for each i.

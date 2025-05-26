@@ -103,7 +103,7 @@ static void testAbcFace()
 static void checkBVertexOfAEdge(FACE face, EDGE edge, bool primary,
                                 bool primaryAtBVertex, COLORSET nextBcolors)
 {
-  TEST_ASSERT_EQUAL(primary, IS_PRIMARY_EDGE(edge));
+  TEST_ASSERT_EQUAL(primary, IS_CLOCKWISE_EDGE(edge));
   TEST_ASSERT_EQUAL(face->colors, edge->colors);
   TEST_ASSERT_NULL(edge->to);
   TEST_ASSERT_EQUAL(A, edge->color);
@@ -118,9 +118,7 @@ static void checkBVertexOfAEdge(FACE face, EDGE edge, bool primary,
   TEST_ASSERT_EQUAL(nextBcolors, edge->possiblyTo[B].next->colors);
   sanityVertex(edge->possiblyTo[B].vertex);
 }
-/*
-TODO add picture to justify the following test.
-*/
+
 static void testOuterAEdge()
 {
   FACE face = Faces;
@@ -128,9 +126,6 @@ static void testOuterAEdge()
   checkBVertexOfAEdge(face, edge, false, true, Bbits);
 }
 
-/*
-TODO add picture to justify the following test.
-*/
 static void testAFaceAEdge()
 {
   FACE face = Faces + Abits;
@@ -138,9 +133,6 @@ static void testAFaceAEdge()
   checkBVertexOfAEdge(face, edge, true, false, ABbits);
 }
 
-/*
-TODO add picture to justify the following test.
-*/
 static void testAbFaceAEdge()
 {
   FACE face = Faces + ABbits;
@@ -148,9 +140,6 @@ static void testAbFaceAEdge()
   checkBVertexOfAEdge(face, edge, true, true, Abits);
 }
 
-/*
-TODO add picture to justify the following test.
-*/
 static void testAbcFaceAEdge()
 {
   FACE face = Faces + ABCbits;
