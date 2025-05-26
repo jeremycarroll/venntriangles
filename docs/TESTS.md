@@ -2,9 +2,25 @@
 
 This document describes the test suite and includes illustrations for tests that benefit from visual representation.
 
-## test_venn3.c
+## 3-Venn Diagram; test_venn3.c
 
-<img src="../images/ABC.jpg" alt="ABC Diagram" width="400"/>
+There is only one simple 3 venn diagram:
+
+<img src="../images/Venn3.jpg" alt="Basic 3-Venn Diagram" width="400"/>
+
+Other 3 venn diagrams, have multiple lines going through a single point,
+e.g. from the online survey [Ruskey and Weston]
+
+<img src="../images/images/combinatorics-ds5-venn3c-03-04.gif" alt="Two other 3-Venn diagrams" width="400"/>
+
+
+
+<img src="../images/Venn3ABC.jpg" alt="3-Venn Diagram with ABC labels" width="400"/>
+<img src="../images/Venn3ABCFaceAEdge.jpg" alt="3-Venn Diagram ABC Face A Edge" width="400"/>
+<img src="../images/Venn3ABFaceAEdge.jpg" alt="3-Venn Diagram AB Face A Edge" width="400"/>
+<img src="../images/Venn3ACB.jpg" alt="3-Venn Diagram with ACB labels" width="400"/>
+<img src="../images/Venn3AFaceAEdge.jpg" alt="3-Venn Diagram A Face A Edge" width="400"/>
+<img src="../images/Venn3OuterFaceAEdge.jpg" alt="3-Venn Diagram Outer Face A Edge" width="400"/>
 
 This test suite verifies the basic structure of a 3-Venn diagram. Several tests would benefit from illustrations:
 
