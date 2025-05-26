@@ -4,7 +4,7 @@ This document describes the test suite and includes illustrations for tests that
 
 ## test_venn3.c
 
-![ABC Diagram](../images/ABC.jpg)
+<img src="../images/ABC.jpg" alt="ABC Diagram" width="400"/>
 
 This test suite verifies the basic structure of a 3-Venn diagram. Several tests would benefit from illustrations:
 
