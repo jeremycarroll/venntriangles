@@ -98,6 +98,21 @@ There is one other simple 4-Venn diagram, but this can't be drawn with convex cu
 
 <img src="../images/4nonconvex.jpg" alt="4-Venn Diagram" width="400"/>
 
+### Search Tests
+
+The tests are less interesting than for the 3-Venn case. With no constraints on the faces, there are 
+[24 different solutions](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn4.c#L40),
+corresponding to the 4! different orderings of _abcd_.
+
+If we set the facial cycle of the inner face to _abcd_, then that eliminates 3! options of variability, 
+leaving [4 different labellings](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn4.c#L49).
+
+From the [maths](./MATH.md) we know that the sum of the degrees of the 3-faces will be 14, and that gives either 
+`(4, 4, 3, 3)` or `(4, 3, 4, 3)` as the cycle of face degrees. THe formers has the faces BCD and ACD with four sides, and
+the faces ABD and ABC with 3 sides. This eliminate all variability and 
+finds the [single solution](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn4.c#L67). 
+The latter has [no solutions](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn4.c#L58).
+
 ## test_venn5.c
 
 This test suite includes tests for the 5-Venn diagram, with existing illustrations for the inversion tests:
