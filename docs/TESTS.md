@@ -108,32 +108,57 @@ If we set the facial cycle of the inner face to _abcd_, then that eliminates 3! 
 leaving [4 different labellings](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn4.c#L49).
 
 From the [maths](./MATH.md) we know that the sum of the degrees of the 3-faces will be 14, and that gives either 
-`(4, 4, 3, 3)` or `(4, 3, 4, 3)` as the cycle of face degrees. THe formers has the faces BCD and ACD with four sides, and
+`(4, 4, 3, 3)` or `(4, 3, 4, 3)` as the cycle of face degrees. The former has the faces BCD and ACD with four sides, and
 the faces ABD and ABC with 3 sides. This eliminate all variability and 
 finds the [single solution](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn4.c#L67). 
 The latter has [no solutions](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn4.c#L58).
 
 ## test_venn5.c
 
-This test suite includes tests for the 5-Venn diagram, with existing illustrations for the inversion tests:
+With the 5-Venn diagrams, we test the functionality that identifies isomorphism classes of the Venn diagrams.
 
-### Inversion Tests
+The diagram of interest is this one:
 
-The test `testInvert` verifies the behavior of the diagram under label inversion. The following illustrations are available in `images/test_venn5.testInvert/`:
+<img src="../images/5plain.jpg" alt="A 5-Venn Diagram" width="700"/>
 
-1. `original.pdf` - The original diagram
-2. `labels-inverted.pdf` - The diagram with inverted labels
-3. `fully-inverted.pdf` - The fully inverted diagram
+This can be projected onto a sphere and then back down onto a plane at the other pole, to invert the picture to give:
 
-These illustrations demonstrate how the diagram structure changes under different types of inversions.
+<img src="../images/5half-inverted.jpg" alt="A 5-Venn Diagram" width="700"/>
+
+This in turn can be relabelled to give:
+
+<img src="../images/5fully-inverted.jpg" alt="A 5-Venn Diagram" width="700"/>
+
+These are two different 5-Venn diagrams from the same isomorphism class.
+For both, we see the faces labelled _A_ and _BCDE_ also have degree 5, and we can similarly project the spherical diagram through the _A_ face or _BCDE_ face
+onto the plain, and get two more simple convex diagrams. (The _convex_ part is not a consequence of the operations, it just happens to be 
+the case for this particular diagram). So we have four different solutions from the same isomorphism class.
+
+This is verified through the action of [testSearchAbcde](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn5.c#L144)
+which does a complete search with duplicates for each member of the dihedral group D₅, giving 
+[40 matches](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn5.c#L148-L153)
+with the appropriate signature, 10 from each solution.
+
+In [testInvert](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn5.c#L222C13-L222C23)
+we note that setting up the face degrees for the 4-faces as `(5,4,4,3,4)` (summing to 2 × 5 + 10), and restricting
+the C face to have three sides, restricts us to this case, and we can verify 
+[the facial cycles for the inverse](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn5.c#L66-L98), coded
+from the picture. [TODO - need pictures of the two other cases, maybe another couple of tests].
+
+## test_venn6.c
+
+These tests are less interesting, simply exercising the Venn code to search the space, and find the known number of solutions for
+the different test scenarios. [testFullSearch](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn6.c#L79C13-L79C27)
+does the complete search of the space of 6-Venn triangles in just a few seconds. It excludes the corner assignment which adds to the
+search space, and slows things down a bit, but is a lot less challenging mathematically than the Venn search.
 
 ## test_known_solution.c
 
-This test suite verifies the Carroll 2000 solution and its properties. It would benefit from illustrations showing:
+In the test driven development approach used, this was one of the earlier test files. 
+This builds from the Carroll 2000 solution, relabelled like here. The details are not that interesting,
+each test takes the known facial cycle for some of the faces and checks that we can build them together.
 
-1. The face relationships
-2. The cycles around faces
-3. The dihedral group transformations (testDE1, testDE2)
+
 
 TODO: Add illustrations for these tests.
 
@@ -146,14 +171,6 @@ This test suite verifies the GraphML output format. Future illustrations will be
 3. The corner assignments
 4. The color/label assignments
 
-Note: These illustrations will be generated in a future project using the GraphML output files.
-
-## Future Work
-
-1. Generate illustrations for test_venn3.c edge tests
-2. Generate illustrations for test_known_solution.c
-3. Create a tool to generate pseudoline diagrams from GraphML files
-4. Generate illustrations for test_graphml.c using the GraphML output 
 
 ## References
 
