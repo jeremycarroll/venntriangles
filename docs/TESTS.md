@@ -58,6 +58,7 @@ and so one or other of the _ABC_ or _ACB_ pictures applies: the one in which the
 The first three cases are illustrated:
 
 The _ABC_ picture is the one with the a,b vertex on the A-face. The _ACB_ picture has a b,a vertex on the A-face.
+
 <img src="../images/Venn3AFaceAEdge.jpg" alt="3-Venn Diagram A Face A Edge" width="600"/>
 
 The _ACB_ picture is the one with the a,b, vertex on the AB-face.
@@ -98,6 +99,9 @@ There is one other simple 4-Venn diagram, but this can't be drawn with convex cu
 
 <img src="../images/4nonconvex.jpg" alt="4-Venn Diagram" width="400"/>
 
+Being non-convex, this is excluded from our search. The exclusion is implemented in [applyMonotonicity](https://github.com/jeremycarroll/venntriangles/blob/testdocs/face.c#L387),
+the tests below, simply by counting the solutions, verify that that function is working correctly to exclude this case.
+
 ### Search Tests
 
 The tests are less interesting than for the 3-Venn case. With no constraints on the faces, there are 
@@ -121,29 +125,55 @@ The diagram of interest is this one:
 
 <img src="../images/5plain.jpg" alt="A 5-Venn Diagram" width="700"/>
 
-This can be projected onto a sphere and then back down onto a plane at the other pole, to invert the picture to give:
+This can be relabeled to flip the inner face with the outer face:
 
 <img src="../images/5half-inverted.jpg" alt="A 5-Venn Diagram" width="700"/>
 
-This in turn can be relabelled to give:
+And then projected onto a sphere and then back down onto a plane at the other pole, inverting the picture:
 
 <img src="../images/5fully-inverted.jpg" alt="A 5-Venn Diagram" width="700"/>
 
-These are two different 5-Venn diagrams from the same isomorphism class.
-For both, we see the faces labelled _A_ and _BCDE_ also have degree 5, and we can similarly project the spherical diagram through the _A_ face or _BCDE_ face
-onto the plain, and get two more simple convex diagrams. (The _convex_ part is not a consequence of the operations, it just happens to be 
-the case for this particular diagram). So we have four different solutions from the same isomorphism class.
+We also can flip the circle in the first diagram to give:
+
+<img src="../images/5flipped1.jpg" alt="A 5-Venn Diagram" width="700"/>
+
+and relabelling it to give:
+
+<img src="../images/5flipped2.jpg" alt="A 5-Venn Diagram" width="700"/>
+
+Either inverting this picture, or flipping the circle in the inverted picture, and relabelling we get:
+
+<img src="../images/5flipped-inverted.jpg" alt="A 5-Venn Diagram" width="700"/>
+
+These four different diagrams are the same when viewed on a sphere rather than the Euclidean plane.
+This is described as them being in the same isomorphism class.
+
+The code identifies the isomorphism class using [s6MaxSignature](https://github.com/jeremycarroll/venntriangles/blob/testdocs/s6.c#L152-L169).
+A key goal of this test file is to test that function.
+
+We can choose one of the 32 = 2<sup>N</sup>, and one of the 120 = 5! labellings of the lines, and compute a signature being simply the sequence
+of the 2<sup>N</sup> facial cycles, in some ordering of the faces.
+Given any total ordering of the facial cycles, we can then take the maximum signature, over these 32 × 120 possible choices.
+For simplicity in the code, we choose to write down the faces in numeric order by bits, i.e. `( ∅, A, B, AB, C, AC, BC, ABC, D, ... )`
+we also order the facial cycles somewhat arbitrarily but ensuring all the 5-cycles are after the 4-cycles, which are after the 3-cycles,
+and also ensuring `(a,b,c,d,e)` is last (maximal). Given these arbitrary choices, the maximum signature in this case is one in which the
+outer face, the A face and the B face, all have face degree being 5, and the outer facial cycle is `(a,b,c,d,e)`. The actual maximal value
+corresponds to the first diagram, labelled differently:
+
+<img src="../images/5max.jpg" alt="A 5-Venn Diagram" width="700"/>
+
+this labelling is listed in the [test file](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn5.c#L66-L98).
+
+These are four different 5-Venn diagrams from the same isomorphism class.
 
 This is verified through the action of [testSearchAbcde](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn5.c#L144)
 which does a complete search with duplicates for each member of the dihedral group D₅, giving 
 [40 matches](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn5.c#L148-L153)
-with the appropriate signature, 10 from each solution.
+with the appropriate signature, 10 from each solution (corresponding to the 10 members of D₅: 5 rotations, each of which can be reflected).
 
 In [testInvert](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn5.c#L222C13-L222C23)
 we note that setting up the face degrees for the 4-faces as `(5,4,4,3,4)` (summing to 2 × 5 + 10), and restricting
-the C face to have three sides, restricts us to this case, and we can verify 
-[the facial cycles for the inverse](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_venn5.c#L66-L98), coded
-from the picture. [TODO - need pictures of the two other cases, maybe another couple of tests].
+the BC face to have three sides, restricts us to this case, and we can verify the signature as above.
 
 ## test_venn6.c
 
