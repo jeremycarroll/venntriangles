@@ -184,22 +184,25 @@ search space, and slows things down a bit, but is a lot less challenging mathema
 
 ## test_known_solution.c
 
-In the test driven development approach used, this was one of the earlier test files. 
-This builds from the Carroll 2000 solution, relabelled like here. The details are not that interesting,
-each test takes the known facial cycle for some of the faces and checks that we can build them together.
+In the test driven development approach used, this was one of the earlier test files. We are testing the deterministic parts of choosing facial cycles, to make sure that
+it is possible to use the individual facial cycles from the Carroll 2000 solution, to find that complete solution.
 
+We relabel the published solution:
 
+<img src="../images/carroll2000.jpg" alt="A 6-Venn Diagram" width="900"/>
 
-TODO: Add illustrations for these tests.
+to have the inner face have cycle `(a b c d e f)`
+
+ublished solution:
+
+<img src="../images/carroll2000bis.jpg" alt="A 6-Venn Diagram" width="900"/>
+
+We record each of the facial cycles in the [test data](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_known_solution.c#L29-L296). Each test 
+adds some or all of these facial cycles to the solution recorded in the `Faces` variable, and computes the consequences.
 
 ## test_graphml.c
 
-This test suite verifies the GraphML output format. Future illustrations will be generated from the GraphML files showing:
-
-1. The node/vertex structure
-2. The edge relationships
-3. The corner assignments
-4. The color/label assignments
+This test suite verifies the GraphML output format.
 
 
 ## References
