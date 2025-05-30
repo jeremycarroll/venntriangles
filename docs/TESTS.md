@@ -6,12 +6,12 @@ This document describes the test suite and includes illustrations for tests that
 
 A simple 3-Venn diagram is one where each pair of curves intersects exactly once, and no three curves intersect at a single point. There is only one such diagram up to homeomorphism:
 
-<img src="../images/Venn3.jpg" alt="Basic 3-Venn Diagram" width="400"/>
+<img src="../images/Venn3.jpg" alt="Basic 3-Venn Diagram" width="200"/>
 
 Other 3-Venn diagrams exist, but they violate the simplicity condition by having multiple lines through a single point. For example, from the online survey [Ruskey and Weston], notice that the left one of this pair can be drawn with convex curves (e.g. triangles), and the right one cannot (e.g. the outer face has only two sides;
 breaking monotonicity (see [maths](./MATH.md)) preventing convex shapes).
 
-<img src="../images/combinatorics-ds5-venn3c-03-04.gif" alt="Two other 3-Venn diagrams" width="400"/>
+<img src="../images/combinatorics-ds5-venn3c-03-04.gif" alt="Two other 3-Venn diagrams" width="300"/>
 
 This means that compiling the code with `NCOLORS` as 3 allows
 us to verify the data structures fairly easily since they are small, and less complicated than with 6 colors.
@@ -93,11 +93,11 @@ A full search finds both solutions _ABC_ and _ACB_, and has 14 forced settings o
 
 There is also only one simple, convex 4-Venn diagram:
 
-<img src="../images/4ellipses.jpg" alt="4-Venn Diagram" width="400"/>
+<img src="../images/4ellipses.jpg" alt="4-Venn Diagram" width="250"/>
 
 There is one other simple 4-Venn diagram, but this can't be drawn with convex curves: the outer faces has only three sides.
 
-<img src="../images/4nonconvex.jpg" alt="4-Venn Diagram" width="400"/>
+<img src="../images/4nonconvex.jpg" alt="4-Venn Diagram" width="250"/>
 
 Being non-convex, this is excluded from our search. The exclusion is implemented in [applyMonotonicity](https://github.com/jeremycarroll/venntriangles/blob/testdocs/face.c#L387),
 the tests below, simply by counting the solutions, verify that that function is working correctly to exclude this case.
@@ -202,8 +202,15 @@ adds some or all of these facial cycles to the solution recorded in the `Faces` 
 
 This test suite verifies the GraphML output format of a few specific runs.
 
-One is [the XML](./555444-64-27-005.xml) corresponding to the known solution above, tested here.
+One is [the XML](./555444-64-27-005.xml) corresponding to the known solution above, 
+[tested here](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_graphml.c#L608),
+against [the corner to face mapping](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_graphml.c#L414-L426) 
+read from the picture.
 
+The [basic XML check](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_graphml.c#L606) uses a solution found in [this XML file](./645534-01-001.xml).
+
+A more interesting solution is [this one](654444-26-0a-000.xml), or [this variation](654444-26-6c-037.xml) where there are 
+[three pairs of corners with no intervening vertices](https://github.com/jeremycarroll/venntriangles/blob/testdocs/test/test_graphml.c#L388-L396).
 
 ## References
 

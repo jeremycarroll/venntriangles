@@ -6,12 +6,14 @@ This is a new re-implementation of the method descibed in [Carroll, 2000](https:
 ## Overview
 
 This program searches the space of all monotone simple 6-Venn diagrams looking
-for ones that satisfy various necessary conditions for the diagram to be stretchible
+for ones that satisfy various necessary conditions for the diagram to be stretchable
 into a diagram drawn with six triangles.
 
 The output is as graphml files, each defining a planar graph, labelled to show
 18 pseudoline segments in six sets of three.
-It is known that many of these are stretchible. The problem of stretching the 
+It is known that many of these are stretchable. 
+The problem of stretching the pseudoline segments to make the drawing is not addressed in this program.
+It is possible, with several hours work, to do such a stretching by hand, for the easier cases.
 
 ## Installation
 
