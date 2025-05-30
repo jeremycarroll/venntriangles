@@ -6,12 +6,14 @@ This is a new re-implementation of the method descibed in [Carroll, 2000](https:
 ## Overview
 
 This program searches the space of all monotone simple 6-Venn diagrams looking
-for ones that satisfy various necessary conditions for the diagram to be stretchible
+for ones that satisfy various necessary conditions for the diagram to be stretchable
 into a diagram drawn with six triangles.
 
 The output is as graphml files, each defining a planar graph, labelled to show
 18 pseudoline segments in six sets of three.
-It is known that many of these are stretchible. The problem of stretching the 
+It is known that many of these are stretchable. 
+The problem of stretching the pseudoline segments to make the drawing is not addressed in this program.
+It is possible, with several hours work, to do such a stretching by hand, for the easier cases.
 
 ## Installation
 
@@ -96,20 +98,29 @@ format, and needs further processing ... in particular it hopefully contains an
 arrangement of 18 pseudoline segments which needs to be stretched to give a Venn diagram
 of six triangles.
 
+An [example output file](./docs/555444-64-27-005.xml) has a pseudoline segment arrangement
+that can be stretched to:
+
+<img src="./images/carroll2000bis.jpg" alt="A 6-Venn Diagram" width="900"/>
 
 ## Documentation
 
 ### Mathematical Foundations
+
 See [MATH.md](docs/MATH.md) for mathematical concepts, conjectures, and references.
 
 ### System Design
+
 See [DESIGN.md](docs/DESIGN.md) for implementation details and design decisions.
 
 ### Results
+
 See [RESULTS.md](docs/RESULTS.md) for a summary of the solutions found.
 
 ### Test Cases
-See [TEST_IMAGES.md](docs/TEST_IMAGES.md) for visual documentation of a few test cases.
+
+See [TESTS.md](docs/TESTS.md) for visual documentation of some of the test cases.
 
 ## References
+
 See [MATH.md](docs/MATH.md#references).

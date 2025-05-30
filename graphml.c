@@ -170,7 +170,7 @@ static void addEdge(FILE *fp, COLOR color, int line, char *source, char *target)
 static void graphmlAddEdge(FILE *fp, EDGE edge, int line)
 {
   /* Use the primary edge for consistent ID generation */
-  if (!IS_PRIMARY_EDGE(edge)) {
+  if (!IS_CLOCKWISE_EDGE(edge)) {
     edge = edge->reversed;
   }
   char *source = graphmlVertexId(edge->reversed->to->vertex);

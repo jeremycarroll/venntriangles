@@ -120,10 +120,10 @@ static FAILURE checkForDisconnectedCurve(EDGE edge, int depth)
   if (edge->reversed->to != NULL) {
     // We have a colored cycle in the FISC.
     length = curveLength(edge);
-    if (length < EdgeColorCountState[IS_PRIMARY_EDGE(edge)][edge->color]) {
+    if (length < EdgeColorCountState[IS_CLOCKWISE_EDGE(edge)][edge->color]) {
       return failureDisconnectedCurve(depth);
     }
-    assert(length == EdgeColorCountState[IS_PRIMARY_EDGE(edge)][edge->color]);
+    assert(length == EdgeColorCountState[IS_CLOCKWISE_EDGE(edge)][edge->color]);
     if (ColorCompletedState & 1u << edge->color) {
       return NULL;
     }

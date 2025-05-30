@@ -4,7 +4,6 @@ We outline the key mathematical concepts and open problems related to Venn trian
 We switch, without comment, between treating the number of curves in the Venn diagram as N, or 6; 
 the reader is left to make the jump as needed.
 
-
 ## Venn Diagrams, Facial Cycles, and FISCs
 
 A family of intersecting simple closed curves (a FISC) is a collection of N Jordan curves in the Euclidean plane, with some inner face, inside all the curves, and with every two curves intersecting finitely. This is a Venn diagram, if for every subset of the curves, there is exactly one face inside those curves, and outside the other curves.
@@ -17,7 +16,6 @@ We focus on cases where:
 - no three curves meet at any vertex
 
 We use the word _vertex_ as a point of intersection between two curves; _edge_ as the segment of a curve between two adjacent vertices on the curve, _face_ as the enclosed region between some cycle of edges not containing other vertices or edges.
-
 
 A 6-Venn diagram can be labeled by labelling the curves a,b,c,d,e,f (often in our code 0, 1, 2, 3, 4, 5) and then labelling the faces A, AB, ABC, ABCD, etc. to reflect which curves the face is inside (in our code, a number between 0 and 63 interpretted bitwise). The labelling is arbitrary and is not part of the Venn diagram; we also ignore rotations and reflections of the plane. This labels are known as colors - i.e. each edge has a color, each face has a set of colors.
 
@@ -119,6 +117,18 @@ facial cycle signature of a labelling of the Venn diagram under the action of $D
 The class facial cycle signature is found similarly by finding the maximal value under the action of $S_N$, allowing
 any face to play the role of the outer face, since all faces are equivalent on the sphere.
 
+## Pseudolines and Pseudoline Segments
+
+A further mathematical area is that of pseudolines in the Euclidean plane.
+
+A pseudoline is an unbounded Jordan curve cutting the Euclidean plane into two parts.
+
+A pseudoline arrangement is a set of pseudolines such that every pair intersect exactly once.
+
+A pseudoline arrangement can be stretched if it is isomorphic to an arrangement of straight lines.
+
+A pseudoline segment is a portion of a pseudoline. An arrangement of pseudoline segments is stretchable if the segments can be mapped to straight line segments while preserving all intersection properties. Many arrangements of pseudoline segments are not stretchable, and determining whether a given arrangement is stretchable is computationally difficult.
+
 # Relationship to the Code
 
 The code is based on an exploration of all possible combinations of facial cycles.
@@ -131,7 +141,14 @@ We discard duplicates where the full sequence of 64 face degrees is non-maximal.
 
 There is a small confusion since the definition of facial cycle signature assumes that the outermost face has facial cycle (a, b, c, d, e, f), which usually requires a relabelling.
 
+The only aspects of the theory of pseudolines that appears in the code are the output files, and the prohibition on pseudoline segments intersecting more than once.
+
 # References
 
 [Bultena, Bette, Branko Grünbaum, and Frank Ruskey. "Convex drawings of intersecting families of simple closed curves." CCCG. 1999.](https://www.cccg.ca/proceedings/1999/c14.pdf)
+
 [Carroll, Jeremy J. "Drawing Venn triangles." HP LABORATORIES TECHNICAL REPORT HPL 73 (2000).](https://shiftleft.com/mirrors/www.hpl.hp.com/techreports/2000/HPL-2000-73.pdf)
+
+Grünbaum, Branko. "The importance of being straight." In Proc. 12th Biannual Intern. Seminar of the Canadian Math. Congress (Vancouver 1969), pp. 243-254. 1970.
+
+[Felsner, Stefan, and Jacob E. Goodman. "Pseudoline arrangements." In Handbook of Discrete and Computational Geometry, pp. 125-157. Chapman and Hall/CRC, 2017.](https://www.csun.edu/~ctoth/Handbook/chap5.pdf)

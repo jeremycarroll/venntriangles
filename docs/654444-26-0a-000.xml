@@ -1,0 +1,980 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="colors" for="node" attr.name="colors" attr.type="string"/>
+  <key id="primary" for="node" attr.name="primary" attr.type="string"/>
+  <key id="secondary" for="node" attr.name="secondary" attr.type="string"/>
+  <key id="color" for="edge" attr.name="color" attr.type="string"/>
+  <key id="line" for="edge" attr.name="line" attr.type="string"/>
+  <graph id="venn_diagram" edgedefault="undirected">
+    <edge source="p_abcdef_f_a" target="a_2">
+      <data key="color">a</data>
+      <data key="line">a0</data>
+    </edge>
+    <edge source="a_2" target="p_abcdef_a_b">
+      <data key="color">a</data>
+      <data key="line">a1</data>
+    </edge>
+    <node id="p_abcdef_a_b">
+      <data key="colors">abcdef</data>
+      <data key="primary">a</data>
+      <data key="secondary">b</data>
+    </node>
+    <edge source="p_abcdef_a_b" target="p_acdef_a_d">
+      <data key="color">a</data>
+      <data key="line">a1</data>
+    </edge>
+    <node id="p_acdef_a_d">
+      <data key="colors">acdef</data>
+      <data key="primary">a</data>
+      <data key="secondary">d</data>
+    </node>
+    <edge source="p_acdef_a_d" target="p_acef_a_c">
+      <data key="color">a</data>
+      <data key="line">a1</data>
+    </edge>
+    <node id="p_acef_a_c">
+      <data key="colors">acef</data>
+      <data key="primary">a</data>
+      <data key="secondary">c</data>
+    </node>
+    <edge source="p_acef_a_c" target="p_aef_a_e">
+      <data key="color">a</data>
+      <data key="line">a1</data>
+    </edge>
+    <node id="p_aef_a_e">
+      <data key="colors">aef</data>
+      <data key="primary">a</data>
+      <data key="secondary">e</data>
+    </node>
+    <edge source="p_aef_a_e" target="a_0">
+      <data key="color">a</data>
+      <data key="line">a1</data>
+    </edge>
+    <edge source="a_0" target="p_adf_d_a">
+      <data key="color">a</data>
+      <data key="line">a2</data>
+    </edge>
+    <edge source="p_adf_d_a" target="p_adef_e_a">
+      <data key="color">a</data>
+      <data key="line">a2</data>
+    </edge>
+    <edge source="p_adef_e_a" target="p_adef_a_f">
+      <data key="color">a</data>
+      <data key="line">a2</data>
+    </edge>
+    <node id="p_adef_a_f">
+      <data key="colors">adef</data>
+      <data key="primary">a</data>
+      <data key="secondary">f</data>
+    </node>
+    <edge source="p_adef_a_f" target="p_abde_b_a">
+      <data key="color">a</data>
+      <data key="line">a2</data>
+    </edge>
+    <edge source="p_abde_b_a" target="p_abde_a_d">
+      <data key="color">a</data>
+      <data key="line">a2</data>
+    </edge>
+    <node id="p_abde_a_d">
+      <data key="colors">abde</data>
+      <data key="primary">a</data>
+      <data key="secondary">d</data>
+    </node>
+    <edge source="p_abde_a_d" target="p_abce_c_a">
+      <data key="color">a</data>
+      <data key="line">a2</data>
+    </edge>
+    <edge source="p_abce_c_a" target="p_abce_a_e">
+      <data key="color">a</data>
+      <data key="line">a2</data>
+    </edge>
+    <node id="p_abce_a_e">
+      <data key="colors">abce</data>
+      <data key="primary">a</data>
+      <data key="secondary">e</data>
+    </node>
+    <edge source="p_abce_a_e" target="p_abc_a_c">
+      <data key="color">a</data>
+      <data key="line">a2</data>
+    </edge>
+    <node id="p_abc_a_c">
+      <data key="colors">abc</data>
+      <data key="primary">a</data>
+      <data key="secondary">c</data>
+    </node>
+    <edge source="p_abc_a_c" target="p_ab_a_b">
+      <data key="color">a</data>
+      <data key="line">a2</data>
+    </edge>
+    <node id="p_ab_a_b">
+      <data key="colors">ab</data>
+      <data key="primary">a</data>
+      <data key="secondary">b</data>
+    </node>
+    <edge source="p_ab_a_b" target="a_1">
+      <data key="color">a</data>
+      <data key="line">a2</data>
+    </edge>
+    <edge source="a_1" target="p_ae_e_a">
+      <data key="color">a</data>
+      <data key="line">a0</data>
+    </edge>
+    <edge source="p_ae_e_a" target="p_ace_c_a">
+      <data key="color">a</data>
+      <data key="line">a0</data>
+    </edge>
+    <edge source="p_ace_c_a" target="p_acde_d_a">
+      <data key="color">a</data>
+      <data key="line">a0</data>
+    </edge>
+    <edge source="p_acde_d_a" target="p_abcde_b_a">
+      <data key="color">a</data>
+      <data key="line">a0</data>
+    </edge>
+    <edge source="p_abcde_b_a" target="p_abcdef_f_a">
+      <data key="color">a</data>
+      <data key="line">a0</data>
+    </edge>
+    <node id="a_2">
+      <data key="colors">af</data>
+      <data key="primary">a</data>
+      <data key="secondary">a</data>
+    </node>
+    <node id="a_0">
+      <data key="colors">a</data>
+      <data key="primary">a</data>
+      <data key="secondary">a</data>
+    </node>
+    <node id="a_1">
+      <data key="colors">abcdef</data>
+      <data key="primary">a</data>
+      <data key="secondary">a</data>
+    </node>
+    <edge source="p_abcdef_a_b" target="b_2">
+      <data key="color">b</data>
+      <data key="line">b0</data>
+    </edge>
+    <edge source="b_2" target="p_abcdef_b_c">
+      <data key="color">b</data>
+      <data key="line">b1</data>
+    </edge>
+    <node id="p_abcdef_b_c">
+      <data key="colors">abcdef</data>
+      <data key="primary">b</data>
+      <data key="secondary">c</data>
+    </node>
+    <edge source="p_abcdef_b_c" target="p_abdef_b_f">
+      <data key="color">b</data>
+      <data key="line">b1</data>
+    </edge>
+    <node id="p_abdef_b_f">
+      <data key="colors">abdef</data>
+      <data key="primary">b</data>
+      <data key="secondary">f</data>
+    </node>
+    <edge source="p_abdef_b_f" target="p_abde_b_a">
+      <data key="color">b</data>
+      <data key="line">b1</data>
+    </edge>
+    <node id="p_abde_b_a">
+      <data key="colors">abde</data>
+      <data key="primary">b</data>
+      <data key="secondary">a</data>
+    </node>
+    <edge source="p_abde_b_a" target="p_bde_b_e">
+      <data key="color">b</data>
+      <data key="line">b1</data>
+    </edge>
+    <node id="p_bde_b_e">
+      <data key="colors">bde</data>
+      <data key="primary">b</data>
+      <data key="secondary">e</data>
+    </node>
+    <edge source="p_bde_b_e" target="p_bd_b_d">
+      <data key="color">b</data>
+      <data key="line">b1</data>
+    </edge>
+    <node id="p_bd_b_d">
+      <data key="colors">bd</data>
+      <data key="primary">b</data>
+      <data key="secondary">d</data>
+    </node>
+    <edge source="p_bd_b_d" target="b_0">
+      <data key="color">b</data>
+      <data key="line">b1</data>
+    </edge>
+    <edge source="b_0" target="p_ab_a_b">
+      <data key="color">b</data>
+      <data key="line">b2</data>
+    </edge>
+    <edge source="p_ab_a_b" target="p_abd_d_b">
+      <data key="color">b</data>
+      <data key="line">b2</data>
+    </edge>
+    <edge source="p_abd_d_b" target="p_abcd_c_b">
+      <data key="color">b</data>
+      <data key="line">b2</data>
+    </edge>
+    <edge source="p_abcd_c_b" target="p_abcde_e_b">
+      <data key="color">b</data>
+      <data key="line">b2</data>
+    </edge>
+    <edge source="p_abcde_e_b" target="p_abcde_b_a">
+      <data key="color">b</data>
+      <data key="line">b2</data>
+    </edge>
+    <node id="p_abcde_b_a">
+      <data key="colors">abcde</data>
+      <data key="primary">b</data>
+      <data key="secondary">a</data>
+    </node>
+    <edge source="p_abcde_b_a" target="p_bcde_b_e">
+      <data key="color">b</data>
+      <data key="line">b2</data>
+    </edge>
+    <node id="p_bcde_b_e">
+      <data key="colors">bcde</data>
+      <data key="primary">b</data>
+      <data key="secondary">e</data>
+    </node>
+    <edge source="p_bcde_b_e" target="p_bcdf_f_b">
+      <data key="color">b</data>
+      <data key="line">b2</data>
+    </edge>
+    <edge source="p_bcdf_f_b" target="p_bcdf_b_d">
+      <data key="color">b</data>
+      <data key="line">b2</data>
+    </edge>
+    <node id="p_bcdf_b_d">
+      <data key="colors">bcdf</data>
+      <data key="primary">b</data>
+      <data key="secondary">d</data>
+    </node>
+    <edge source="p_bcdf_b_d" target="p_bcf_b_c">
+      <data key="color">b</data>
+      <data key="line">b2</data>
+    </edge>
+    <node id="p_bcf_b_c">
+      <data key="colors">bcf</data>
+      <data key="primary">b</data>
+      <data key="secondary">c</data>
+    </node>
+    <edge source="p_bcf_b_c" target="b_1">
+      <data key="color">b</data>
+      <data key="line">b2</data>
+    </edge>
+    <edge source="b_1" target="p_bef_e_b">
+      <data key="color">b</data>
+      <data key="line">b0</data>
+    </edge>
+    <edge source="p_bef_e_b" target="p_bcef_c_b">
+      <data key="color">b</data>
+      <data key="line">b0</data>
+    </edge>
+    <edge source="p_bcef_c_b" target="p_bcdef_d_b">
+      <data key="color">b</data>
+      <data key="line">b0</data>
+    </edge>
+    <edge source="p_bcdef_d_b" target="p_abcdef_a_b">
+      <data key="color">b</data>
+      <data key="line">b0</data>
+    </edge>
+    <node id="b_2">
+      <data key="colors">b</data>
+      <data key="primary">b</data>
+      <data key="secondary">b</data>
+    </node>
+    <node id="b_0">
+      <data key="colors">bf</data>
+      <data key="primary">b</data>
+      <data key="secondary">b</data>
+    </node>
+    <node id="b_1">
+      <data key="colors">abcdef</data>
+      <data key="primary">b</data>
+      <data key="secondary">b</data>
+    </node>
+    <edge source="p_abcdef_b_c" target="p_abcdef_c_d">
+      <data key="color">c</data>
+      <data key="line">c0</data>
+    </edge>
+    <node id="p_abcdef_c_d">
+      <data key="colors">abcdef</data>
+      <data key="primary">c</data>
+      <data key="secondary">d</data>
+    </node>
+    <edge source="p_abcdef_c_d" target="p_abcef_c_f">
+      <data key="color">c</data>
+      <data key="line">c0</data>
+    </edge>
+    <node id="p_abcef_c_f">
+      <data key="colors">abcef</data>
+      <data key="primary">c</data>
+      <data key="secondary">f</data>
+    </node>
+    <edge source="p_abcef_c_f" target="p_abce_c_a">
+      <data key="color">c</data>
+      <data key="line">c0</data>
+    </edge>
+    <node id="p_abce_c_a">
+      <data key="colors">abce</data>
+      <data key="primary">c</data>
+      <data key="secondary">a</data>
+    </node>
+    <edge source="p_abce_c_a" target="p_bce_c_e">
+      <data key="color">c</data>
+      <data key="line">c0</data>
+    </edge>
+    <node id="p_bce_c_e">
+      <data key="colors">bce</data>
+      <data key="primary">c</data>
+      <data key="secondary">e</data>
+    </node>
+    <edge source="p_bce_c_e" target="c_2">
+      <data key="color">c</data>
+      <data key="line">c0</data>
+    </edge>
+    <edge source="c_2" target="p_abc_a_c">
+      <data key="color">c</data>
+      <data key="line">c1</data>
+    </edge>
+    <edge source="p_abc_a_c" target="p_abcf_f_c">
+      <data key="color">c</data>
+      <data key="line">c1</data>
+    </edge>
+    <edge source="p_abcf_f_c" target="p_abcdf_d_c">
+      <data key="color">c</data>
+      <data key="line">c1</data>
+    </edge>
+    <edge source="p_abcdf_d_c" target="p_abcdf_c_f">
+      <data key="color">c</data>
+      <data key="line">c1</data>
+    </edge>
+    <node id="p_abcdf_c_f">
+      <data key="colors">abcdf</data>
+      <data key="primary">c</data>
+      <data key="secondary">f</data>
+    </node>
+    <edge source="p_abcdf_c_f" target="p_abcd_c_b">
+      <data key="color">c</data>
+      <data key="line">c1</data>
+    </edge>
+    <node id="p_abcd_c_b">
+      <data key="colors">abcd</data>
+      <data key="primary">c</data>
+      <data key="secondary">b</data>
+    </node>
+    <edge source="p_abcd_c_b" target="p_acd_c_d">
+      <data key="color">c</data>
+      <data key="line">c1</data>
+    </edge>
+    <node id="p_acd_c_d">
+      <data key="colors">acd</data>
+      <data key="primary">c</data>
+      <data key="secondary">d</data>
+    </node>
+    <edge source="p_acd_c_d" target="p_ace_e_c">
+      <data key="color">c</data>
+      <data key="line">c1</data>
+    </edge>
+    <edge source="p_ace_e_c" target="p_ace_c_a">
+      <data key="color">c</data>
+      <data key="line">c1</data>
+    </edge>
+    <node id="p_ace_c_a">
+      <data key="colors">ace</data>
+      <data key="primary">c</data>
+      <data key="secondary">a</data>
+    </node>
+    <edge source="p_ace_c_a" target="p_ce_c_e">
+      <data key="color">c</data>
+      <data key="line">c1</data>
+    </edge>
+    <node id="p_ce_c_e">
+      <data key="colors">ce</data>
+      <data key="primary">c</data>
+      <data key="secondary">e</data>
+    </node>
+    <edge source="p_ce_c_e" target="c_0">
+      <data key="color">c</data>
+      <data key="line">c1</data>
+    </edge>
+    <edge source="c_0" target="p_cf_f_c">
+      <data key="color">c</data>
+      <data key="line">c2</data>
+    </edge>
+    <edge source="p_cf_f_c" target="p_bcf_b_c">
+      <data key="color">c</data>
+      <data key="line">c2</data>
+    </edge>
+    <edge source="p_bcf_b_c" target="p_bcdf_d_c">
+      <data key="color">c</data>
+      <data key="line">c2</data>
+    </edge>
+    <edge source="p_bcdf_d_c" target="p_bcdef_e_c">
+      <data key="color">c</data>
+      <data key="line">c2</data>
+    </edge>
+    <edge source="p_bcdef_e_c" target="p_bcdef_c_d">
+      <data key="color">c</data>
+      <data key="line">c2</data>
+    </edge>
+    <node id="p_bcdef_c_d">
+      <data key="colors">bcdef</data>
+      <data key="primary">c</data>
+      <data key="secondary">d</data>
+    </node>
+    <edge source="p_bcdef_c_d" target="p_bcef_c_b">
+      <data key="color">c</data>
+      <data key="line">c2</data>
+    </edge>
+    <node id="p_bcef_c_b">
+      <data key="colors">bcef</data>
+      <data key="primary">c</data>
+      <data key="secondary">b</data>
+    </node>
+    <edge source="p_bcef_c_b" target="p_acef_a_c">
+      <data key="color">c</data>
+      <data key="line">c2</data>
+    </edge>
+    <edge source="p_acef_a_c" target="p_acef_c_e">
+      <data key="color">c</data>
+      <data key="line">c2</data>
+    </edge>
+    <node id="p_acef_c_e">
+      <data key="colors">acef</data>
+      <data key="primary">c</data>
+      <data key="secondary">e</data>
+    </node>
+    <edge source="p_acef_c_e" target="c_1">
+      <data key="color">c</data>
+      <data key="line">c2</data>
+    </edge>
+    <edge source="c_1" target="p_acdf_d_c">
+      <data key="color">c</data>
+      <data key="line">c0</data>
+    </edge>
+    <edge source="p_acdf_d_c" target="p_acdef_e_c">
+      <data key="color">c</data>
+      <data key="line">c0</data>
+    </edge>
+    <edge source="p_acdef_e_c" target="p_abcdef_b_c">
+      <data key="color">c</data>
+      <data key="line">c0</data>
+    </edge>
+    <node id="c_2">
+      <data key="colors">bc</data>
+      <data key="primary">c</data>
+      <data key="secondary">c</data>
+    </node>
+    <node id="c_0">
+      <data key="colors">c</data>
+      <data key="primary">c</data>
+      <data key="secondary">c</data>
+    </node>
+    <node id="c_1">
+      <data key="colors">acf</data>
+      <data key="primary">c</data>
+      <data key="secondary">c</data>
+    </node>
+    <edge source="p_abcdef_c_d" target="p_abcdef_d_e">
+      <data key="color">d</data>
+      <data key="line">d0</data>
+    </edge>
+    <node id="p_abcdef_d_e">
+      <data key="colors">abcdef</data>
+      <data key="primary">d</data>
+      <data key="secondary">e</data>
+    </node>
+    <edge source="p_abcdef_d_e" target="p_abcdf_d_c">
+      <data key="color">d</data>
+      <data key="line">d0</data>
+    </edge>
+    <node id="p_abcdf_d_c">
+      <data key="colors">abcdf</data>
+      <data key="primary">d</data>
+      <data key="secondary">c</data>
+    </node>
+    <edge source="p_abcdf_d_c" target="p_abdf_d_f">
+      <data key="color">d</data>
+      <data key="line">d0</data>
+    </edge>
+    <node id="p_abdf_d_f">
+      <data key="colors">abdf</data>
+      <data key="primary">d</data>
+      <data key="secondary">f</data>
+    </node>
+    <edge source="p_abdf_d_f" target="p_abd_d_b">
+      <data key="color">d</data>
+      <data key="line">d0</data>
+    </edge>
+    <node id="p_abd_d_b">
+      <data key="colors">abd</data>
+      <data key="primary">d</data>
+      <data key="secondary">b</data>
+    </node>
+    <edge source="p_abd_d_b" target="d_2">
+      <data key="color">d</data>
+      <data key="line">d0</data>
+    </edge>
+    <edge source="d_2" target="p_acd_c_d">
+      <data key="color">d</data>
+      <data key="line">d1</data>
+    </edge>
+    <edge source="p_acd_c_d" target="p_acde_e_d">
+      <data key="color">d</data>
+      <data key="line">d1</data>
+    </edge>
+    <edge source="p_acde_e_d" target="p_acde_d_a">
+      <data key="color">d</data>
+      <data key="line">d1</data>
+    </edge>
+    <node id="p_acde_d_a">
+      <data key="colors">acde</data>
+      <data key="primary">d</data>
+      <data key="secondary">a</data>
+    </node>
+    <edge source="p_acde_d_a" target="p_cde_d_e">
+      <data key="color">d</data>
+      <data key="line">d1</data>
+    </edge>
+    <node id="p_cde_d_e">
+      <data key="colors">cde</data>
+      <data key="primary">d</data>
+      <data key="secondary">e</data>
+    </node>
+    <edge source="p_cde_d_e" target="p_cdf_f_d">
+      <data key="color">d</data>
+      <data key="line">d1</data>
+    </edge>
+    <edge source="p_cdf_f_d" target="p_bcdf_b_d">
+      <data key="color">d</data>
+      <data key="line">d1</data>
+    </edge>
+    <edge source="p_bcdf_b_d" target="p_bcdf_d_c">
+      <data key="color">d</data>
+      <data key="line">d1</data>
+    </edge>
+    <node id="p_bcdf_d_c">
+      <data key="colors">bcdf</data>
+      <data key="primary">d</data>
+      <data key="secondary">c</data>
+    </node>
+    <edge source="p_bcdf_d_c" target="d_0">
+      <data key="color">d</data>
+      <data key="line">d1</data>
+    </edge>
+    <edge source="d_0" target="p_bdef_e_d">
+      <data key="color">d</data>
+      <data key="line">d2</data>
+    </edge>
+    <edge source="p_bdef_e_d" target="p_bcdef_c_d">
+      <data key="color">d</data>
+      <data key="line">d2</data>
+    </edge>
+    <edge source="p_bcdef_c_d" target="p_bcdef_d_b">
+      <data key="color">d</data>
+      <data key="line">d2</data>
+    </edge>
+    <node id="p_bcdef_d_b">
+      <data key="colors">bcdef</data>
+      <data key="primary">d</data>
+      <data key="secondary">b</data>
+    </node>
+    <edge source="p_bcdef_d_b" target="p_acdef_a_d">
+      <data key="color">d</data>
+      <data key="line">d2</data>
+    </edge>
+    <edge source="p_acdef_a_d" target="p_acdef_d_e">
+      <data key="color">d</data>
+      <data key="line">d2</data>
+    </edge>
+    <node id="p_acdef_d_e">
+      <data key="colors">acdef</data>
+      <data key="primary">d</data>
+      <data key="secondary">e</data>
+    </node>
+    <edge source="p_acdef_d_e" target="p_acdf_d_c">
+      <data key="color">d</data>
+      <data key="line">d2</data>
+    </edge>
+    <node id="p_acdf_d_c">
+      <data key="colors">acdf</data>
+      <data key="primary">d</data>
+      <data key="secondary">c</data>
+    </node>
+    <edge source="p_acdf_d_c" target="p_adf_d_a">
+      <data key="color">d</data>
+      <data key="line">d2</data>
+    </edge>
+    <node id="p_adf_d_a">
+      <data key="colors">adf</data>
+      <data key="primary">d</data>
+      <data key="secondary">a</data>
+    </node>
+    <edge source="p_adf_d_a" target="p_df_d_f">
+      <data key="color">d</data>
+      <data key="line">d2</data>
+    </edge>
+    <node id="p_df_d_f">
+      <data key="colors">df</data>
+      <data key="primary">d</data>
+      <data key="secondary">f</data>
+    </node>
+    <edge source="p_df_d_f" target="d_1">
+      <data key="color">d</data>
+      <data key="line">d2</data>
+    </edge>
+    <edge source="d_1" target="p_bd_b_d">
+      <data key="color">d</data>
+      <data key="line">d0</data>
+    </edge>
+    <edge source="p_bd_b_d" target="p_bde_e_d">
+      <data key="color">d</data>
+      <data key="line">d0</data>
+    </edge>
+    <edge source="p_bde_e_d" target="p_abde_a_d">
+      <data key="color">d</data>
+      <data key="line">d0</data>
+    </edge>
+    <edge source="p_abde_a_d" target="p_abdef_f_d">
+      <data key="color">d</data>
+      <data key="line">d0</data>
+    </edge>
+    <edge source="p_abdef_f_d" target="p_abcdef_c_d">
+      <data key="color">d</data>
+      <data key="line">d0</data>
+    </edge>
+    <node id="d_2">
+      <data key="colors">ad</data>
+      <data key="primary">d</data>
+      <data key="secondary">d</data>
+    </node>
+    <node id="d_0">
+      <data key="colors">bdf</data>
+      <data key="primary">d</data>
+      <data key="secondary">d</data>
+    </node>
+    <node id="d_1">
+      <data key="colors">d</data>
+      <data key="primary">d</data>
+      <data key="secondary">d</data>
+    </node>
+    <edge source="p_abcdef_d_e" target="p_abcdef_e_f">
+      <data key="color">e</data>
+      <data key="line">e0</data>
+    </edge>
+    <node id="p_abcdef_e_f">
+      <data key="colors">abcdef</data>
+      <data key="primary">e</data>
+      <data key="secondary">f</data>
+    </node>
+    <edge source="p_abcdef_e_f" target="p_abcde_e_b">
+      <data key="color">e</data>
+      <data key="line">e0</data>
+    </edge>
+    <node id="p_abcde_e_b">
+      <data key="colors">abcde</data>
+      <data key="primary">e</data>
+      <data key="secondary">b</data>
+    </node>
+    <edge source="p_abcde_e_b" target="p_acde_e_d">
+      <data key="color">e</data>
+      <data key="line">e0</data>
+    </edge>
+    <node id="p_acde_e_d">
+      <data key="colors">acde</data>
+      <data key="primary">e</data>
+      <data key="secondary">d</data>
+    </node>
+    <edge source="p_acde_e_d" target="p_ace_e_c">
+      <data key="color">e</data>
+      <data key="line">e0</data>
+    </edge>
+    <node id="p_ace_e_c">
+      <data key="colors">ace</data>
+      <data key="primary">e</data>
+      <data key="secondary">c</data>
+    </node>
+    <edge source="p_ace_e_c" target="p_ae_e_a">
+      <data key="color">e</data>
+      <data key="line">e0</data>
+    </edge>
+    <node id="p_ae_e_a">
+      <data key="colors">ae</data>
+      <data key="primary">e</data>
+      <data key="secondary">a</data>
+    </node>
+    <edge source="p_ae_e_a" target="e_2">
+      <data key="color">e</data>
+      <data key="line">e0</data>
+    </edge>
+    <edge source="e_2" target="p_ce_c_e">
+      <data key="color">e</data>
+      <data key="line">e1</data>
+    </edge>
+    <edge source="p_ce_c_e" target="p_cde_d_e">
+      <data key="color">e</data>
+      <data key="line">e1</data>
+    </edge>
+    <edge source="p_cde_d_e" target="p_bcde_b_e">
+      <data key="color">e</data>
+      <data key="line">e1</data>
+    </edge>
+    <edge source="p_bcde_b_e" target="p_bcdef_f_e">
+      <data key="color">e</data>
+      <data key="line">e1</data>
+    </edge>
+    <edge source="p_bcdef_f_e" target="p_bcdef_e_c">
+      <data key="color">e</data>
+      <data key="line">e1</data>
+    </edge>
+    <node id="p_bcdef_e_c">
+      <data key="colors">bcdef</data>
+      <data key="primary">e</data>
+      <data key="secondary">c</data>
+    </node>
+    <edge source="p_bcdef_e_c" target="p_bdef_e_d">
+      <data key="color">e</data>
+      <data key="line">e1</data>
+    </edge>
+    <node id="p_bdef_e_d">
+      <data key="colors">bdef</data>
+      <data key="primary">e</data>
+      <data key="secondary">d</data>
+    </node>
+    <edge source="p_bdef_e_d" target="p_bef_e_b">
+      <data key="color">e</data>
+      <data key="line">e1</data>
+    </edge>
+    <node id="p_bef_e_b">
+      <data key="colors">bef</data>
+      <data key="primary">e</data>
+      <data key="secondary">b</data>
+    </node>
+    <edge source="p_bef_e_b" target="p_aef_a_e">
+      <data key="color">e</data>
+      <data key="line">e1</data>
+    </edge>
+    <edge source="p_aef_a_e" target="e_0">
+      <data key="color">e</data>
+      <data key="line">e1</data>
+    </edge>
+    <edge source="e_0" target="p_acef_c_e">
+      <data key="color">e</data>
+      <data key="line">e2</data>
+    </edge>
+    <edge source="p_acef_c_e" target="p_acdef_d_e">
+      <data key="color">e</data>
+      <data key="line">e2</data>
+    </edge>
+    <edge source="p_acdef_d_e" target="p_acdef_e_c">
+      <data key="color">e</data>
+      <data key="line">e2</data>
+    </edge>
+    <node id="p_acdef_e_c">
+      <data key="colors">acdef</data>
+      <data key="primary">e</data>
+      <data key="secondary">c</data>
+    </node>
+    <edge source="p_acdef_e_c" target="p_adef_e_a">
+      <data key="color">e</data>
+      <data key="line">e2</data>
+    </edge>
+    <node id="p_adef_e_a">
+      <data key="colors">adef</data>
+      <data key="primary">e</data>
+      <data key="secondary">a</data>
+    </node>
+    <edge source="p_adef_e_a" target="p_def_e_f">
+      <data key="color">e</data>
+      <data key="line">e2</data>
+    </edge>
+    <node id="p_def_e_f">
+      <data key="colors">def</data>
+      <data key="primary">e</data>
+      <data key="secondary">f</data>
+    </node>
+    <edge source="p_def_e_f" target="p_bde_b_e">
+      <data key="color">e</data>
+      <data key="line">e2</data>
+    </edge>
+    <edge source="p_bde_b_e" target="p_bde_e_d">
+      <data key="color">e</data>
+      <data key="line">e2</data>
+    </edge>
+    <node id="p_bde_e_d">
+      <data key="colors">bde</data>
+      <data key="primary">e</data>
+      <data key="secondary">d</data>
+    </node>
+    <edge source="p_bde_e_d" target="e_1">
+      <data key="color">e</data>
+      <data key="line">e2</data>
+    </edge>
+    <edge source="e_1" target="p_bce_c_e">
+      <data key="color">e</data>
+      <data key="line">e0</data>
+    </edge>
+    <edge source="p_bce_c_e" target="p_abce_a_e">
+      <data key="color">e</data>
+      <data key="line">e0</data>
+    </edge>
+    <edge source="p_abce_a_e" target="p_abcef_f_e">
+      <data key="color">e</data>
+      <data key="line">e0</data>
+    </edge>
+    <edge source="p_abcef_f_e" target="p_abcdef_d_e">
+      <data key="color">e</data>
+      <data key="line">e0</data>
+    </edge>
+    <node id="e_2">
+      <data key="colors">e</data>
+      <data key="primary">e</data>
+      <data key="secondary">e</data>
+    </node>
+    <node id="e_0">
+      <data key="colors">aef</data>
+      <data key="primary">e</data>
+      <data key="secondary">e</data>
+    </node>
+    <node id="e_1">
+      <data key="colors">be</data>
+      <data key="primary">e</data>
+      <data key="secondary">e</data>
+    </node>
+    <edge source="p_abcdef_e_f" target="p_abcdef_f_a">
+      <data key="color">f</data>
+      <data key="line">f0</data>
+    </edge>
+    <node id="p_abcdef_f_a">
+      <data key="colors">abcdef</data>
+      <data key="primary">f</data>
+      <data key="secondary">a</data>
+    </node>
+    <edge source="p_abcdef_f_a" target="p_bcdef_f_e">
+      <data key="color">f</data>
+      <data key="line">f0</data>
+    </edge>
+    <node id="p_bcdef_f_e">
+      <data key="colors">bcdef</data>
+      <data key="primary">f</data>
+      <data key="secondary">e</data>
+    </node>
+    <edge source="p_bcdef_f_e" target="p_bcdf_f_b">
+      <data key="color">f</data>
+      <data key="line">f0</data>
+    </edge>
+    <node id="p_bcdf_f_b">
+      <data key="colors">bcdf</data>
+      <data key="primary">f</data>
+      <data key="secondary">b</data>
+    </node>
+    <edge source="p_bcdf_f_b" target="p_cdf_f_d">
+      <data key="color">f</data>
+      <data key="line">f0</data>
+    </edge>
+    <node id="p_cdf_f_d">
+      <data key="colors">cdf</data>
+      <data key="primary">f</data>
+      <data key="secondary">d</data>
+    </node>
+    <edge source="p_cdf_f_d" target="p_cf_f_c">
+      <data key="color">f</data>
+      <data key="line">f0</data>
+    </edge>
+    <node id="p_cf_f_c">
+      <data key="colors">cf</data>
+      <data key="primary">f</data>
+      <data key="secondary">c</data>
+    </node>
+    <edge source="p_cf_f_c" target="f_2">
+      <data key="color">f</data>
+      <data key="line">f0</data>
+    </edge>
+    <edge source="f_2" target="p_df_d_f">
+      <data key="color">f</data>
+      <data key="line">f1</data>
+    </edge>
+    <edge source="p_df_d_f" target="p_def_e_f">
+      <data key="color">f</data>
+      <data key="line">f1</data>
+    </edge>
+    <edge source="p_def_e_f" target="f_0">
+      <data key="color">f</data>
+      <data key="line">f1</data>
+    </edge>
+    <edge source="f_0" target="p_adef_a_f">
+      <data key="color">f</data>
+      <data key="line">f2</data>
+    </edge>
+    <edge source="p_adef_a_f" target="p_abdef_b_f">
+      <data key="color">f</data>
+      <data key="line">f2</data>
+    </edge>
+    <edge source="p_abdef_b_f" target="p_abdef_f_d">
+      <data key="color">f</data>
+      <data key="line">f2</data>
+    </edge>
+    <node id="p_abdef_f_d">
+      <data key="colors">abdef</data>
+      <data key="primary">f</data>
+      <data key="secondary">d</data>
+    </node>
+    <edge source="p_abdef_f_d" target="p_abcef_c_f">
+      <data key="color">f</data>
+      <data key="line">f2</data>
+    </edge>
+    <edge source="p_abcef_c_f" target="p_abcef_f_e">
+      <data key="color">f</data>
+      <data key="line">f2</data>
+    </edge>
+    <node id="p_abcef_f_e">
+      <data key="colors">abcef</data>
+      <data key="primary">f</data>
+      <data key="secondary">e</data>
+    </node>
+    <edge source="p_abcef_f_e" target="p_abcf_f_c">
+      <data key="color">f</data>
+      <data key="line">f2</data>
+    </edge>
+    <node id="p_abcf_f_c">
+      <data key="colors">abcf</data>
+      <data key="primary">f</data>
+      <data key="secondary">c</data>
+    </node>
+    <edge source="p_abcf_f_c" target="f_1">
+      <data key="color">f</data>
+      <data key="line">f2</data>
+    </edge>
+    <edge source="f_1" target="p_abdf_d_f">
+      <data key="color">f</data>
+      <data key="line">f0</data>
+    </edge>
+    <edge source="p_abdf_d_f" target="p_abcdf_c_f">
+      <data key="color">f</data>
+      <data key="line">f0</data>
+    </edge>
+    <edge source="p_abcdf_c_f" target="p_abcdef_e_f">
+      <data key="color">f</data>
+      <data key="line">f0</data>
+    </edge>
+    <node id="f_2">
+      <data key="colors">f</data>
+      <data key="primary">f</data>
+      <data key="secondary">f</data>
+    </node>
+    <node id="f_0">
+      <data key="colors">abf</data>
+      <data key="primary">f</data>
+      <data key="secondary">f</data>
+    </node>
+    <node id="f_1">
+      <data key="colors">def</data>
+      <data key="primary">f</data>
+      <data key="secondary">f</data>
+    </node>
+  </graph>
+</graphml>

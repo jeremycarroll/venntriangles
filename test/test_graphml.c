@@ -73,7 +73,6 @@ void tearDown(void)
   engineResume((PREDICATE[]){&FAILPredicate});
 }
 
-/* Global variables */
 static int SolutionCount = 0;
 
 static void endCountVariations(void)
@@ -398,6 +397,56 @@ static void backwardVariant14188(void)
 FORWARD_BACKWARD_PREDICATE_STATIC(Variant14188, NULL, forwardVariant14188,
                                   backwardVariant14188)
 
+static bool forwardVariant1319(void)
+{
+  /* Run the program with  -d 555444 -m 64 -k 63
+  then inspect the following file to see the graphml being tested.
+   555444-64/27/005.xml
+   To convert the file name to variant number user bc
+   > ibase=16
+   > 5 * 100 + 27
+   */
+  compileRegex(&internalEdgeRegex,
+               "<edge source=\"([a-f])_([0-2])\" target=\"([^\"]*)\"");
+  return true;
+}
+
+static char* knownSolutionCorners[6][3] = {
+    // "A" triangle corners:
+    {"p_ab_b_a", "p_ace_e_a", "p_acf_c_a"},
+    // "B" triangle corners:
+    {"p_bc_c_b", "p_bde_d_b", "p_abd_a_b"},
+    // "C" triangle corners:
+    {"p_ce_e_c", "p_cdf_d_c", "p_abcf_f_c"},
+    // "D" triangle corners:
+    {"p_def_f_d", "p_ad_a_d", "p_acd_a_d"},
+    // "E" triangle corners:
+    {"p_ef_f_e", "p_abe_b_e", "e_0"},
+    // "F" triangle corners:
+    {"p_df_d_f", "p_bcf_c_f", "p_bdef_d_f"}};
+
+static void backwardVariant1319(void)
+{
+  char nextFace[30];
+  int color;
+  int cornerIndex;
+  outputBufferPtr = outputBuffer;
+  for (int i = 0; i < 18; i++) {
+    matchRegex(&internalEdgeRegex);
+    snprintf(nextFace, sizeof(nextFace), "%.*s",
+             (int)(offsets[3].rm_eo - offsets[3].rm_so),
+             offsetBase + offsets[3].rm_so);
+    color = offsetBase[offsets[1].rm_so] - 'a';
+    cornerIndex = offsetBase[offsets[2].rm_so] - '0';
+    TEST_ASSERT_EQUAL_STRING(knownSolutionCorners[color][cornerIndex],
+                             nextFace);
+  }
+  TEST_ASSERT_EQUAL(REG_NOMATCH,
+                    regexec(&internalEdgeRegex, outputBufferPtr, 0, NULL, 0));
+}
+FORWARD_BACKWARD_PREDICATE_STATIC(Variant1319, NULL, forwardVariant1319,
+                                  backwardVariant1319)
+
 static bool testVariationEstimate()
 {
   TEST_ASSERT_EQUAL(128, searchCountVariations(NULL));
@@ -447,6 +496,7 @@ static void run(void)
 
 #define RUN_645534(program) RUN_SEARCH_TEST(645534, __LINE__, program)
 #define RUN_654444(program) RUN_SEARCH_TEST(654444, __LINE__, program)
+#define RUN_KNOWN(program) RUN_SEARCH_TEST(Known, __LINE__, program)
 
 FORWARD_BACKWARD_PREDICATE_STATIC(Gate, gate, NULL, NULL)
 FORWARD_BACKWARD_PREDICATE_STATIC(VariationCount, testVariationEstimate, NULL,
@@ -473,6 +523,10 @@ static PREDICATE Variant14188[] = {
     &InitializePredicate, &Variant14188Predicate, &CheckGraphMLPredicate,
     &InnerFacePredicate,  &VennPredicate,         &GatePredicate,
     &CornersPredicate,    &GraphMLPredicate,      &FAILPredicate};
+static PREDICATE Variant1319[] = {
+    &InitializePredicate, &Variant1319Predicate, &CheckGraphMLPredicate,
+    &InnerFacePredicate,  &VennPredicate,        &GatePredicate,
+    &CornersPredicate,    &GraphMLPredicate,     &FAILPredicate};
 static PREDICATE CornerCount[] = {&InitializePredicate, &InnerFacePredicate,
                                   &VennPredicate, &GatePredicate,
                                   &CornerCountPredicate};
@@ -492,6 +546,7 @@ static void setup645534()
   initializeFaceDegree(6, 4, 5, 5, 3, 4);
   MaxVariantsPerSolutionFlag = 1;
   IgnoreFirstVariantsPerSolution = 0;
+  LevelsIPC = 1;
   ExpectedSignature =
       "McDpAzHcCtAgAyKaNnAwEiCxAeClCyDxBwFnAyJzBqFwAzEvBvAxAsCwAaBwKjEuNfKcBdDe"
       "BhAfAoCxDeBdEhEdAuBiDvCwBdDgBcEnAoDhApFyAcAtAdFzCvBpKoPd";
@@ -505,6 +560,7 @@ static void setup654444()
   initializeFaceDegree(6, 5, 4, 4, 4, 4);
   MaxVariantsPerSolutionFlag = 10;
   IgnoreFirstVariantsPerSolution = 9;
+  LevelsIPC = 2;
   // From 654444-26.txt (this may change)
   ExpectedSignature =
       "OrCgChKeDtAoAwFhDxAcArEmDyBfDcEaAwAxBhFkBnBhAxEsEuDpBtFeBkBtFrEuLqBiBaDa"
@@ -512,6 +568,20 @@ static void setup654444()
   ClassSignature =
       "PdJeIgKbAcEhAdDwDqAcDbBeElAdEhBbNsFbEnCwAlFkAcCxEzDkDaDtFsDlElDsErDnDlEo"
       "BqFwAzEvEsAxFkBhFnBwFwBqEkDaEfCxAsDbCsEyDiHhDbDsDpMcIiOi";
+}
+
+static void setupKnown()
+{
+  initializeFaceDegree(5, 5, 5, 4, 4, 4);
+  LevelsIPC = 2;
+  MaxVariantsPerSolutionFlag = 1319;
+  IgnoreFirstVariantsPerSolution = MaxVariantsPerSolutionFlag - 1;
+  ExpectedSignature =
+      "LtBtFxIwCfAuEgCyFtBkDoFrAhBkFdFrGqArEgGeCkAvEmCzDfAqDeEdAgBtFuEuGxAxDmDn"
+      "AfBhFkHwJgBwDpEuAeBnDlEoJcAwDaDbAeBnDbDqEfAtEnFzAnBzIgPd";
+  ClassSignature =
+      "PdJeBzAhBaEhAtDeDqEhEoFfGsElDdDfEoFcBnAeArDbCeAfEzFjEzFjAqDaHmFcHiFxBxBp"
+      "AtDgAsGrCzDgDjKgEbDhDcGgFiDmAwAxBwJfBqCqErDnDiEtBqKeFrMw";
 }
 
 #define RUN_CORNER_COUNT(color, expected)                       \
@@ -534,6 +604,8 @@ int main(void)
   RUN_645534(EstimateCount);
   RUN_645534(ExactCount);
   RUN_645534(CheckGraphML);
+  RUN_KNOWN(Basic);
+  RUN_KNOWN(Variant1319);
   RUN_CORNER_COUNT(0, 8);
   RUN_CORNER_COUNT(1, 1);
   RUN_CORNER_COUNT(2, 2);

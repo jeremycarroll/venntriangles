@@ -155,7 +155,7 @@ static void validateVertexInitialization(VERTEX vertex, EDGE incomingEdge,
 static uint32_t getIncomingEdgeSlot(EDGE incomingEdge, COLOR othercolor,
                                     COLORSET faceColors)
 {
-  if (IS_PRIMARY_EDGE(incomingEdge)) {
+  if (IS_CLOCKWISE_EDGE(incomingEdge)) {
     return COLORSET_HAS_MEMBER(othercolor, faceColors) ? 0 : 3;
   } else {
     return COLORSET_HAS_MEMBER(othercolor, faceColors) ? 2 : 1;

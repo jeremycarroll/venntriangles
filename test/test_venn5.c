@@ -64,7 +64,7 @@ static struct predicateResult invertSolution()
       s6SignatureToString(maxSignature));
   TEST_ASSERT_EQUAL_STRING(
       " |abcde|: "
-      "(abcde) "  // center
+      "(abcde) "  // outer
       "(aecdb) "  // A
       "(aedcb) "  // B
       "(abde) "   // AB
@@ -218,7 +218,6 @@ static void testSearch54434()
   TEST_ASSERT_EQUAL(5, CanonicalCount);
 }
 
-/// @brief
 static void testInvert()
 {
   dynamicFaceSetupCentral(intArray(5, 4, 4, 3, 4));

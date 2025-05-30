@@ -11,7 +11,7 @@
 /* Global variables - globally scoped */
 struct face Faces[NFACES];
 static uint64 FaceSumOfFaceDegree[NCOLORS + 1];
-static uint64 CycleForcedCounter = 0;
+uint64 CycleForcedCounter = 0;
 static uint64 CycleSetReducedCounter = 0;
 
 /* Declaration of file scoped static functions */
@@ -444,7 +444,7 @@ static FAILURE checkLengthOfCycleOfFaces(FACE face)
 static void countEdge(EDGE edge)
 {
   uint_trail* edgeCountPtr =
-      &EdgeColorCountState[IS_PRIMARY_EDGE(edge)][edge->color];
+      &EdgeColorCountState[IS_CLOCKWISE_EDGE(edge)][edge->color];
   trailSetInt(edgeCountPtr, (*edgeCountPtr) + 1);
 }
 

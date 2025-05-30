@@ -65,7 +65,7 @@ extern EDGE edgeOnCentralFace(COLOR a);
 extern FAILURE edgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
 extern void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4);
 
-#define IS_PRIMARY_EDGE(edge) \
+#define IS_CLOCKWISE_EDGE(edge) \
   (COLORSET_HAS_MEMBER((edge)->color, (edge)->colors))
 
 extern COLORSET ColorCompletedState;
