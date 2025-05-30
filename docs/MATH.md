@@ -141,6 +141,8 @@ We discard duplicates where the full sequence of 64 face degrees is non-maximal.
 
 There is a small confusion since the definition of facial cycle signature assumes that the outermost face has facial cycle (a, b, c, d, e, f), which usually requires a relabelling.
 
+The only aspects of the theory of pseudolines that appears in the code are the output files, and the prohibition on pseudoline segments intersecting more than once.
+
 # References
 
 [Bultena, Bette, Branko Grünbaum, and Frank Ruskey. "Convex drawings of intersecting families of simple closed curves." CCCG. 1999.](https://www.cccg.ca/proceedings/1999/c14.pdf)
