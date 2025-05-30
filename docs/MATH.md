@@ -146,6 +146,9 @@ The only aspects of the theory of pseudolines that appears in the code are the o
 # References
 
 [Bultena, Bette, Branko Grünbaum, and Frank Ruskey. "Convex drawings of intersecting families of simple closed curves." CCCG. 1999.](https://www.cccg.ca/proceedings/1999/c14.pdf)
+
 [Carroll, Jeremy J. "Drawing Venn triangles." HP LABORATORIES TECHNICAL REPORT HPL 73 (2000).](https://shiftleft.com/mirrors/www.hpl.hp.com/techreports/2000/HPL-2000-73.pdf)
+
 Grünbaum, Branko. "The importance of being straight." In Proc. 12th Biannual Intern. Seminar of the Canadian Math. Congress (Vancouver 1969), pp. 243-254. 1970.
+
 [Felsner, Stefan, and Jacob E. Goodman. "Pseudoline arrangements." In Handbook of Discrete and Computational Geometry, pp. 125-157. Chapman and Hall/CRC, 2017.](https://www.csun.edu/~ctoth/Handbook/chap5.pdf)
