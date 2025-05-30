@@ -191,9 +191,7 @@ We relabel the published solution:
 
 <img src="../images/carroll2000.jpg" alt="A 6-Venn Diagram" width="900"/>
 
-to have the inner face have cycle `(a b c d e f)`
-
-ublished solution:
+to have the inner face have cycle `(a b c d e f)`:
 
 <img src="../images/carroll2000bis.jpg" alt="A 6-Venn Diagram" width="900"/>
 
