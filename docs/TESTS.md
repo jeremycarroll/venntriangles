@@ -40,16 +40,24 @@ There are several tests such as [testOuterFace](https://github.com/jeremycarroll
 ### Edge & Vertex Tests
 
 There are four tests to verify the vertices for the 3-Venn case. While we know the color of the 8 faces, we don't know
-the nature of the vertices. As becomes more important in the 6-Venn case, during initialization, we memoize the relationships between all the _possible_ vertices and the _possible_ edges and the (2<sup>N</sup>) faces before we start. A possible vertex is [characterized](https://github.com/jeremycarroll/venntriangles/blob/35aa3295bea54def786dde3af6080e3e9a31df57/vertex.c#L135) by the colors of the outermost face adjacent to the vertex and the two colors of the edges passing through the vertex (neither of which is a face color). For N=3, this gives us 2^(3-2) × 3 × (3-1) = 2 × 3 × 2 = 12 possible vertices. The two edges passing through the vertex are [distinguishable](https://github.com/jeremycarroll/venntriangles/blob/35aa3295bea54def786dde3af6080e3e9a31df57/vertex.h#L24-L26). One edge, the primary edge, passes from inside the curve of the other edge, the secondary edge, to outside. The secondary edge, conversely, passes from outside the curve of the primary edge, to inside. Thus we have 2<sup>N - 2</sup> × N x (N-1) different possibly vertices. For 3-Venn diagrams, that is 12 possible vertices, i.e. those found in the diagrams _ABC_ and _ACB_ above. In each of the two actual solutions, we use 6 of them because each vertex must be used exactly once, and a 3-Venn diagram has exactly 6 vertices (two for each pair of curves intersecting).
+the nature of the vertices. As becomes more important in the 6-Venn case, during initialization, we memoize the relationships between all the _possible_ vertices and the _possible_ edges 
+and the (2<sup>N</sup>) faces before we start. A possible vertex is 
+[characterized](https://github.com/jeremycarroll/venntriangles/blob/35aa3295bea54def786dde3af6080e3e9a31df57/vertex.c#L135) by the colors of the outermost face adjacent to the vertex 
+and the two colors of the edges passing through the vertex (neither of which is a face color). For N=3, this gives us 2^(3-2) × 3 × (3-1) = 2 × 3 × 2 = 12 possible vertices. 
+The two edges passing through the vertex are [distinguishable](https://github.com/jeremycarroll/venntriangles/blob/35aa3295bea54def786dde3af6080e3e9a31df57/vertex.h#L24-L26). 
+One edge, the primary edge, passes from inside the curve of the other edge, the secondary edge, to outside. The secondary edge, conversely, passes from 
+outside the curve of the primary edge, to inside. Thus we have 2<sup>N - 2</sup> × N x (N-1) different possibly vertices. For 3-Venn diagrams, that is 12 possible vertices, 
+i.e. those found in the diagrams _ABC_ and _ACB_ above. In each of the two actual solutions, we use 6 of them because each vertex must be used exactly once, and a 3-Venn diagram has exactly 6 vertices 
+(two for each pair of curves intersecting).
 
 With 6 colors, the number of possible vertices is a fairly modest 480, compared with the 14,446 vertices found in the actual 233 solutions. Each possible vertex appears in multiple solutions. In any of the actual solutions we only use 62 of the 480 possible vertices.
 
 The format, and the body, of the four face and edge tests are the same. Each tests selects one of the faces (the 
-[A face](https://github.com/jeremycarroll/venntriangles/blob/35aa3295bea54def786dde3af6080e3e9a31df57/test/test_venn3.c#L134), 
-the [AB face](https://github.com/jeremycarroll/venntriangles/blob/35aa3295bea54def786dde3af6080e3e9a31df57/test/test_venn3.c#L144) 
-and the [ABC face](https://github.com/jeremycarroll/venntriangles/blob/35aa3295bea54def786dde3af6080e3e9a31df57/test/test_venn3.c#L154)
+[A face](https://github.com/jeremycarroll/venntriangles/blob/35aa3295bea54def786dde3af6080e3e9a31df57/test/test_venn3.c#L129), 
+the [AB face](https://github.com/jeremycarroll/venntriangles/blob/35aa3295bea54def786dde3af6080e3e9a31df57/test/test_venn3.c#L136) 
+and the [ABC face](https://github.com/jeremycarroll/venntriangles/blob/35aa3295bea54def786dde3af6080e3e9a31df57/test/test_venn3.c#L143)
 and the
-[outer face](https://github.com/jeremycarroll/venntriangles/blob/35aa3295bea54def786dde3af6080e3e9a31df57/test/test_venn3.c#L124))
+[outer face](https://github.com/jeremycarroll/venntriangles/blob/35aa3295bea54def786dde3af6080e3e9a31df57/test/test_venn3.c#L122))
 and finds the A edge on that face and the possible vertex 
 with the B edge, where the A edge and B edge meet. The direction 
 of the edge is clockwise (counterclockwise for the outer face),
