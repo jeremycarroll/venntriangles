@@ -73,7 +73,6 @@ void tearDown(void)
   engineResume((PREDICATE[]){&FAILPredicate});
 }
 
-/* Global variables */
 static int SolutionCount = 0;
 
 static void endCountVariations(void)
@@ -409,7 +408,6 @@ static bool forwardVariant1319(void)
    */
   compileRegex(&internalEdgeRegex,
                "<edge source=\"([a-f])_([0-2])\" target=\"([^\"]*)\"");
-  // "<edge source=\"\\([a-f]\\)_\\([0-2]\\)\" target=\"\\([^\"]*\\)\">");
   return true;
 }
 
@@ -548,6 +546,7 @@ static void setup645534()
   initializeFaceDegree(6, 4, 5, 5, 3, 4);
   MaxVariantsPerSolutionFlag = 1;
   IgnoreFirstVariantsPerSolution = 0;
+  LevelsIPC = 1;
   ExpectedSignature =
       "McDpAzHcCtAgAyKaNnAwEiCxAeClCyDxBwFnAyJzBqFwAzEvBvAxAsCwAaBwKjEuNfKcBdDe"
       "BhAfAoCxDeBdEhEdAuBiDvCwBdDgBcEnAoDhApFyAcAtAdFzCvBpKoPd";
@@ -561,6 +560,7 @@ static void setup654444()
   initializeFaceDegree(6, 5, 4, 4, 4, 4);
   MaxVariantsPerSolutionFlag = 10;
   IgnoreFirstVariantsPerSolution = 9;
+  LevelsIPC = 2;
   // From 654444-26.txt (this may change)
   ExpectedSignature =
       "OrCgChKeDtAoAwFhDxAcArEmDyBfDcEaAwAxBhFkBnBhAxEsEuDpBtFeBkBtFrEuLqBiBaDa"
@@ -573,6 +573,7 @@ static void setup654444()
 static void setupKnown()
 {
   initializeFaceDegree(5, 5, 5, 4, 4, 4);
+  LevelsIPC = 2;
   MaxVariantsPerSolutionFlag = 1319;
   IgnoreFirstVariantsPerSolution = MaxVariantsPerSolutionFlag - 1;
   ExpectedSignature =

@@ -200,7 +200,9 @@ adds some or all of these facial cycles to the solution recorded in the `Faces` 
 
 ## test_graphml.c
 
-This test suite verifies the GraphML output format.
+This test suite verifies the GraphML output format of a few specific runs.
+
+One is [the XML](./555444-64-27-005.xml) corresponding to the known solution above, tested here.
 
 
 ## References

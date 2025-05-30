@@ -96,20 +96,29 @@ format, and needs further processing ... in particular it hopefully contains an
 arrangement of 18 pseudoline segments which needs to be stretched to give a Venn diagram
 of six triangles.
 
+An [example output file](./docs/555444-64-27-005.xml) has a pseudoline segment arrangement
+that can be stretched to:
+
+<img src="./images/carroll2000bis.jpg" alt="A 6-Venn Diagram" width="900"/>
 
 ## Documentation
 
 ### Mathematical Foundations
+
 See [MATH.md](docs/MATH.md) for mathematical concepts, conjectures, and references.
 
 ### System Design
+
 See [DESIGN.md](docs/DESIGN.md) for implementation details and design decisions.
 
 ### Results
+
 See [RESULTS.md](docs/RESULTS.md) for a summary of the solutions found.
 
 ### Test Cases
+
 See [TEST_IMAGES.md](docs/TEST_IMAGES.md) for visual documentation of a few test cases.
 
 ## References
+
 See [MATH.md](docs/MATH.md#references).
