@@ -119,7 +119,7 @@ See [RESULTS.md](docs/RESULTS.md) for a summary of the solutions found.
 
 ### Test Cases
 
-See [TEST_IMAGES.md](docs/TEST_IMAGES.md) for visual documentation of a few test cases.
+See [TESTS.md](docs/TESTS.md) for visual documentation of some of the test cases.
 
 ## References
 
