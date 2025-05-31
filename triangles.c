@@ -13,7 +13,6 @@ typedef struct {
   bool linesAreCrossed;
 } LineCrossingData;
 
-
 static int edgeIsCorner(EDGE edge, EDGE (*corners)[3])
 {
   int count = 0;
@@ -24,7 +23,6 @@ static int edgeIsCorner(EDGE edge, EDGE (*corners)[3])
   }
   return count;
 }
-
 
 static void checkRegularEdge(void *data, EDGE current, int line)
 {
@@ -75,7 +73,6 @@ static void checkAllCorners(void *data, EDGE current, int line)
   lcd->linesCrossed = 0;
 }
 
-
 bool triangleLinesNotCrossed(COLOR color, EDGE (*corners)[3])
 {
   LineCrossingData lcd = {0, 0, false};
@@ -96,12 +93,14 @@ bool triangleLinesNotCrossed(COLOR color, EDGE (*corners)[3])
 }
 
 /**
- * Traverses a triangle's perimeter, invoking appropriate callbacks based on corner detection.
+ * Traverses a triangle's perimeter, invoking appropriate callbacks based on
+ * corner detection.
  *
- * This function walks through the path around the central face of a given color,
- * tracking corners and line numbers. At each step, it invokes the appropriate callback
- * based on how many corners are at the current position (0, 1, 2, or 3 corners).
- * The line parameter (0, 1, or 2) is tracked and updated as corners are encountered.
+ * This function walks through the path around the central face of a given
+ * color, tracking corners and line numbers. At each step, it invokes the
+ * appropriate callback based on how many corners are at the current position
+ * (0, 1, 2, or 3 corners). The line parameter (0, 1, or 2) is tracked and
+ * updated as corners are encountered.
  */
 void triangleTraverse(COLOR color, EDGE (*corners)[3],
                       TriangleTraversalCallbacks *callbacks, void *data)
@@ -151,4 +150,3 @@ void triangleTraverse(COLOR color, EDGE (*corners)[3],
 
   assert(line == 0);
 }
-

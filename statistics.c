@@ -16,8 +16,8 @@ static int SecondsBetweenLogs = 10;
 static int CheckCountDown = 0;
 static FILE* LogFile = NULL;
 
-
-static void formatElapsedTimeHMS(time_t elapsed, char* buffer, size_t bufferSize)
+static void formatElapsedTimeHMS(time_t elapsed, char* buffer,
+                                 size_t bufferSize)
 {
   snprintf(buffer, bufferSize, "%ld:%02ld:%02ld", elapsed / 3600,
            (elapsed % 3600) / 60, elapsed % 60);
@@ -231,4 +231,3 @@ void statisticPrintFull(void)
   fprintf(LogFile, "\n");
   updateLoggingState(now);
 }
-

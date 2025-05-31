@@ -28,7 +28,7 @@ int searchCountVariations(void)
   int pLength;
   char* currentPos = currentVariationMultiplication;
   currentPos[0] = '\0';
-  
+
   for (COLOR a = 0; a < NCOLORS; a++) {
     vertexAlignCorners(a, corners);
     for (int i = 0; i < 3; i++) {

@@ -25,15 +25,14 @@ static int edgeArrayLength(EDGE* edges)
   return count;
 }
 
-
 static void dyanmicPossibleCorners(EDGE* possibilitiesReturn, COLOR color,
                                    EDGE from, EDGE to)
 {
   if (from == NULL) {
     EDGE edge = vertexGetCentralEdge(color);
     dynamicEdgePathAndLength(edge->reversed,
-                         edgeFollowBackwards(edge->reversed),
-                         possibilitiesReturn);
+                             edgeFollowBackwards(edge->reversed),
+                             possibilitiesReturn);
   } else {
     dynamicEdgePathAndLength(from->reversed, to, possibilitiesReturn);
   }

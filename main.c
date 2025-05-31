@@ -41,7 +41,7 @@ static void setFaceDegrees(const char *programName, const char *faceDegrees)
 }
 
 static int parsePositiveArgument(const char *programName, const char *arg,
-                                char flag, bool allowZero)
+                                 char flag, bool allowZero)
 {
   char *endptr;
   char errorMessage[100];

@@ -15,97 +15,7 @@ uint64 GlobalSolutionsFoundIPC = 0;
 
 static FACE facesInOrderOfChoice[NFACES];
 
-/* Declaration of file scoped static functions */
-static void setFaceCycleSetToSingleton(FACE face, uint64 cycleId);
-static FAILURE checkFacePoints(FACE face, CYCLE cycle, int depth);
-static FAILURE checkEdgeCurvesAndCorners(FACE face, CYCLE cycle, int depth);
-static FAILURE propagateFaceChoices(FACE face, CYCLE cycle, int depth);
-static FAILURE propagateRestrictionsToNonAdjacentFaces(FACE face, CYCLE cycle,
-                                                       int depth);
-static FAILURE propagateRestrictionsToNonVertexAdjacentFaces(FACE face,
-                                                             CYCLE cycle,
-                                                             int depth);
-
-/* Externally linked functions */
-FAILURE dynamicFaceChoice(FACE face, int depth)
-{
-  CYCLE cycle = face->cycle;
-  uint64 cycleId = cycle - Cycles;
-  FAILURE failure;
-  /* equality in the following assertion is achieved in the Venn 3 case, where a
-  single choice in any face determines all the faces. */
-
-  assert(depth <= NFACES);
-
-  CHECK_FAILURE(checkFacePoints(face, cycle, depth));
-  CHECK_FAILURE(checkEdgeCurvesAndCorners(face, cycle, depth));
-  CHECK_FAILURE(propagateFaceChoices(face, cycle, depth));
-  CHECK_FAILURE(propagateRestrictionsToNonAdjacentFaces(face, cycle, depth));
-
-  if (face->colors == 0 || face->colors == (NFACES - 1)) {
-    TRAIL_SET_POINTER(&face->next, face);
-    TRAIL_SET_POINTER(&face->previous, face);
-  } else {
-    TRAIL_SET_POINTER(&face->next, face->nextByCycleId[cycleId]);
-    TRAIL_SET_POINTER(&face->previous, face->previousByCycleId[cycleId]);
-  }
-
-  if (face->colors != 0 && face->colors != (NFACES - 1)) {
-    assert(face->next != Faces);
-    assert(face->previous != Faces);
-  }
-
-  CHECK_FAILURE(
-      propagateRestrictionsToNonVertexAdjacentFaces(face, cycle, depth));
-
-  return NULL;
-}
-
-FAILURE dynamicFaceBacktrackableChoice(FACE face)
-{
-  FAILURE failure;
-  COLOR completedColor;
-  uint64 cycleId;
-  CycleGuessCounterIPC++;
-  ColorCompletedState = 0;
-  assert(face->cycle != NULL);
-  cycleId = face->cycle - Cycles;
-  assert(cycleId < NCYCLES);
-  assert(cycleSetMember(cycleId, face->possibleCycles));
-  setFaceCycleSetToSingleton(face, cycleId);
-
-  failure = dynamicFaceChoice(face, 0);
-  if (failure != NULL) {
-    return failure;
-  }
-  if (ColorCompletedState) {
-    for (completedColor = 0; completedColor < NCOLORS; completedColor++) {
-      if (COLORSET_HAS_MEMBER(completedColor, ColorCompletedState)) {
-        if (!dynamicColorRemoveFromSearch(completedColor)) {
-          return failureDisconnectedCurve(0);
-        }
-      }
-    }
-  }
-  return NULL;
-}
-
-FACE searchChooseNextFace(void)
-{
-  FACE face = NULL;
-  int64_t min = NCYCLES + 1;
-  int i;
-  for (i = 0; i < NFACES; i++) {
-    if ((int64_t)Faces[i].cycleSetSize < min && Faces[i].cycle == NULL) {
-      min = (int64_t)Faces[i].cycleSetSize;
-      face = Faces + i;
-    }
-  }
-  return face;
-}
-
-/* File scoped static functions */
-static void setFaceCycleSetToSingleton(FACE face, uint64 cycleId)
+static void dynamicSetFaceCycleSetToSingleton(FACE face, uint64 cycleId)
 {
   CYCLESET_DECLARE cycleSet;
   uint64 i;
@@ -196,7 +106,6 @@ static FAILURE propagateRestrictionsToNonVertexAdjacentFaces(FACE face,
           CycleSetOmittingColorPair[i][j], depth));
     }
   }
-
   return NULL;
 }
 
@@ -242,6 +151,81 @@ static struct predicateResult retryFace(int round, int choice)
     return PredicateSuccessSamePredicate;
   }
   return PredicateFail;
+}
+
+FAILURE dynamicFaceChoice(FACE face, int depth)
+{
+  CYCLE cycle = face->cycle;
+  uint64 cycleId = cycle - Cycles;
+  FAILURE failure;
+
+  assert(depth <= NFACES);
+
+  CHECK_FAILURE(checkFacePoints(face, cycle, depth));
+  CHECK_FAILURE(checkEdgeCurvesAndCorners(face, cycle, depth));
+  CHECK_FAILURE(propagateFaceChoices(face, cycle, depth));
+  CHECK_FAILURE(propagateRestrictionsToNonAdjacentFaces(face, cycle, depth));
+
+  if (face->colors == 0 || face->colors == (NFACES - 1)) {
+    TRAIL_SET_POINTER(&face->next, face);
+    TRAIL_SET_POINTER(&face->previous, face);
+  } else {
+    TRAIL_SET_POINTER(&face->next, face->nextByCycleId[cycleId]);
+    TRAIL_SET_POINTER(&face->previous, face->previousByCycleId[cycleId]);
+  }
+
+  if (face->colors != 0 && face->colors != (NFACES - 1)) {
+    assert(face->next != Faces);
+    assert(face->previous != Faces);
+  }
+
+  CHECK_FAILURE(
+      propagateRestrictionsToNonVertexAdjacentFaces(face, cycle, depth));
+
+  return NULL;
+}
+
+FAILURE dynamicFaceBacktrackableChoice(FACE face)
+{
+  FAILURE failure;
+  COLOR completedColor;
+  uint64 cycleId;
+  CycleGuessCounterIPC++;
+  ColorCompletedState = 0;
+  assert(face->cycle != NULL);
+  cycleId = face->cycle - Cycles;
+  assert(cycleId < NCYCLES);
+  assert(cycleSetMember(cycleId, face->possibleCycles));
+  dynamicSetFaceCycleSetToSingleton(face, cycleId);
+
+  failure = dynamicFaceChoice(face, 0);
+  if (failure != NULL) {
+    return failure;
+  }
+  if (ColorCompletedState) {
+    for (completedColor = 0; completedColor < NCOLORS; completedColor++) {
+      if (COLORSET_HAS_MEMBER(completedColor, ColorCompletedState)) {
+        if (!dynamicColorRemoveFromSearch(completedColor)) {
+          return failureDisconnectedCurve(0);
+        }
+      }
+    }
+  }
+  return NULL;
+}
+
+FACE searchChooseNextFace(void)
+{
+  FACE face = NULL;
+  int64_t min = NCYCLES + 1;
+  int i;
+  for (i = 0; i < NFACES; i++) {
+    if ((int64_t)Faces[i].cycleSetSize < min && Faces[i].cycle == NULL) {
+      min = (int64_t)Faces[i].cycleSetSize;
+      face = Faces + i;
+    }
+  }
+  return face;
 }
 
 struct predicate VennPredicate = {"Venn", tryFace, retryFace};
