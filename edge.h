@@ -60,8 +60,6 @@ extern FAILURE edgeCurveChecks(EDGE edge, int depth);
  */
 extern int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn);
 
-extern EDGE edgeOnCentralFace(COLOR a);
-
 extern FAILURE edgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
 extern void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4);
 

@@ -76,7 +76,7 @@ char* vertexToString(VERTEX up)
 #pragma GCC diagnostic ignored "-Wunused-function"
 #endif
 
-FAILURE dynamicEdgeCornerCheck(EDGE start, int depth)
+FAILURE vertexCornerCheck(EDGE start, int depth)
 {
 #if NCOLORS <= 4
   /* test_venn[34].c do not like the normal code - not an issue. */
@@ -85,13 +85,13 @@ FAILURE dynamicEdgeCornerCheck(EDGE start, int depth)
   EDGE ignore[MAX_CORNERS * 100];
   if (start->reversed->to != NULL) {
     // we have a complete curve.
-    start = edgeOnCentralFace(start->color);
+    start = vertexGetCentralEdge(start->color);
   }
   return findCornersByTraversal(start, depth, ignore);
 #endif
 }
 
-EDGE edgeOnCentralFace(COLOR a)
+EDGE vertexGetCentralEdge(COLOR a)
 {
   COLOR primary = a;
   COLOR secondary = (a + 1) % NCOLORS;
@@ -99,15 +99,15 @@ EDGE edgeOnCentralFace(COLOR a)
   return uVertex->incomingEdges[0];
 }
 
-void edgeFindAndAlignCorners(COLOR a, EDGE result[3][2])
+void vertexAlignCorners(COLOR a, EDGE result[3][2])
 {
   int i, j;
   EDGE clockWiseCorners[MAX_CORNERS];
   EDGE counterClockWiseCorners[MAX_CORNERS];
   FAILURE failure =
-      findCornersByTraversal(edgeOnCentralFace(a), 0, clockWiseCorners);
+      findCornersByTraversal(vertexGetCentralEdge(a), 0, clockWiseCorners);
   assert(failure == NULL);
-  failure = findCornersByTraversal(edgeOnCentralFace(a)->reversed, 0,
+  failure = findCornersByTraversal(vertexGetCentralEdge(a)->reversed, 0,
                                    counterClockWiseCorners);
   assert(failure == NULL);
   assert((clockWiseCorners[2] == NULL) == (counterClockWiseCorners[2] == NULL));

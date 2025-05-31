@@ -22,6 +22,7 @@ extern PERMUTATION s6Automorphism(CYCLE_ID cycleId);
 extern CYCLE_ID s6PermuteCycleId(CYCLE_ID originalCycleId,
                                  PERMUTATION permutation);
 extern char *s6SignatureToLongString(SIGNATURE signature);
+extern int searchCountVariations(char* variationMultiplication);
 
 extern bool trailBacktrackTo(TRAIL backtrackPoint);
 extern CYCLESET_DECLARE CycleSetPairs[NCOLORS][NCOLORS];

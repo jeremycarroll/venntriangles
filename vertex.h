@@ -57,8 +57,9 @@ extern VERTEX initializeVertexIncomingEdge(COLORSET colorsOfFace,
                                            EDGE incomingEdge, COLOR othercolor);
 extern char* vertexToString(VERTEX up);
 extern char* vertexToColorSetString(VERTEX up);
-extern FAILURE dynamicEdgeCornerCheck(EDGE start, int depth);
-extern void edgeFindAndAlignCorners(COLOR a, EDGE result[3][2]);
+extern FAILURE vertexCornerCheck(EDGE start, int depth);
+extern void vertexAlignCorners(COLOR a, EDGE result[3][2]);
+extern EDGE vertexGetCentralEdge(COLOR a);
 
 struct face {
   // cycle must be null if cycleSetSize is not 1.

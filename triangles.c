@@ -54,7 +54,7 @@ void triangleTraverse(COLOR color, EDGE (*corners)[3],
   int ix;
 
   /* Get the path around the central face for this color */
-  edge = edgeOnCentralFace(color);
+  edge = vertexGetCentralEdge(color);
   getPath(path, edge, edgeFollowBackwards(edge));
 
   int line = 0;

@@ -31,6 +31,5 @@ struct graphmlFileIO {
 };
 extern struct graphmlFileIO GraphmlFileOps;
 extern int numberOfLevels(int expectedVariations);
-extern int searchCountVariations(char* variationMultiplication);
 
 #endif  // COMMON_H

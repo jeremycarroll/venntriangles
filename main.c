@@ -13,23 +13,61 @@
 #include <string.h>
 
 char *TargetFolderFlag = NULL;
-int MaxVariantsPerSolutionFlag = INT_MAX;  // Maximum value means unlimited
-int GlobalMaxSolutionsFlag = INT_MAX;      // Global maximum solutions
-int PerFaceDegreeMaxSolutionsFlag =
-    INT_MAX;                             // Per face degree maximum solutions
-int GlobalSkipSolutionsFlag = 0;         // Global solutions to skip
-int PerFaceDegreeSkipSolutionsFlag = 0;  // Per face degree solutions to skip
-int IgnoreFirstVariantsPerSolution = 0;  // Default to not ignoring any variants
-FACE_DEGREE CentralFaceDegreesFlag[NCOLORS] = {0};  // Initialize all to 0
-bool VerboseModeFlag = false;  // Controls verbose output mode
-bool TracingFlag = false;      // Controls tracing output mode
+int MaxVariantsPerSolutionFlag = INT_MAX;
+int GlobalMaxSolutionsFlag = INT_MAX;
+int PerFaceDegreeMaxSolutionsFlag = INT_MAX;
+int GlobalSkipSolutionsFlag = 0;
+int PerFaceDegreeSkipSolutionsFlag = 0;
+int IgnoreFirstVariantsPerSolution = 0;
+FACE_DEGREE CentralFaceDegreesFlag[NCOLORS] = {0};
+bool VerboseModeFlag = false;
+bool TracingFlag = false;
 
-static void initializeOutputFolder(void);
-static void setFaceDegrees(const char *programName, const char *faceDegrees);
+static void setFaceDegrees(const char *programName, const char *faceDegrees)
+{
+  if (strlen(faceDegrees) != NCOLORS) {
+    disaster(programName,
+             "Central face degrees string must be exactly " STRINGIFY(
+                 NCOLORS) " digits");
+  }
+  for (int i = 0; i < NCOLORS; i++) {
+    char c = faceDegrees[i];
+    if (c < '3' || c > '6') {
+      disaster(programName,
+               "Each digit in central face degrees must be between 3 and 6\n");
+    }
+    CentralFaceDegreesFlag[i] = c - '0';
+  }
+}
+
 static int parsePostiveArgument(const char *programName, const char *arg,
-                                char flag, bool allowZero);
+                                char flag, bool allowZero)
+{
+  char *endptr;
+  char errorMessage[100];
+  sprintf(errorMessage, "-%c must be a %s integer.", flag,
+          allowZero ? "non-negative" : "positive");
+  int value = strtol(arg, &endptr, 10);
+  if (value <= 0) {
+    disaster(programName, errorMessage);
+  }
+  if (endptr == arg) {
+    disaster(programName, errorMessage);
+  }
+  if (value == 0 && !allowZero) {
+    disaster(programName, errorMessage);
+  }
+  if (*endptr != '\0') {
+    disaster(programName, errorMessage);
+  }
+  return value;
+}
 
-/* Externally linked functions */
+static void initializeOutputFolder()
+{
+  initializeFolder(TargetFolderFlag);
+}
+
 int dynamicMain0(int argc, char *argv[])
 {
   int opt;
@@ -96,49 +134,4 @@ int dynamicMain0(int argc, char *argv[])
 
   statisticPrintFull();
   return 0;
-}
-
-static void setFaceDegrees(const char *programName, const char *faceDegrees)
-{
-  if (strlen(faceDegrees) != NCOLORS) {
-    disaster(programName,
-             "Central face degrees string must be exactly " STRINGIFY(
-                 NCOLORS) " digits");
-  }
-  for (int i = 0; i < NCOLORS; i++) {
-    char c = faceDegrees[i];
-    if (c < '3' || c > '6') {
-      disaster(programName,
-               "Each digit in central face degrees must be between 3 and 6\n");
-    }
-    CentralFaceDegreesFlag[i] = c - '0';
-  }
-}
-
-static int parsePostiveArgument(const char *programName, const char *arg,
-                                char flag, bool allowZero)
-{
-  char *endptr;
-  char errorMessage[100];
-  sprintf(errorMessage, "-%c must be a %s integer.", flag,
-          allowZero ? "non-negative" : "positive");
-  int value = strtol(arg, &endptr, 10);
-  if (value <= 0) {
-    disaster(programName, errorMessage);
-  }
-  if (endptr == arg) {
-    disaster(programName, errorMessage);
-  }
-  if (value == 0 && !allowZero) {
-    disaster(programName, errorMessage);
-  }
-  if (*endptr != '\0') {
-    disaster(programName, errorMessage);
-  }
-  return value;
-}
-
-static void initializeOutputFolder()
-{
-  initializeFolder(TargetFolderFlag);
 }

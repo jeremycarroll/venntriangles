@@ -11,8 +11,6 @@
 
 EDGE SelectedCornersIPC[NCOLORS][3];
 static EDGE PossibleCorners[NCOLORS][3][NFACES];
-static void possibleCorners(EDGE* possibilities, COLOR color, EDGE from,
-                            EDGE to);
 
 static int edgeArrayLength(EDGE* edges)
 {
@@ -21,6 +19,28 @@ static int edgeArrayLength(EDGE* edges)
     count++;
   }
   return count;
+}
+
+static void getPath(EDGE* path, EDGE from, EDGE to)
+{
+  int length = edgePathLength(from, to, path);
+#if DEBUG
+  printf("getPath: %c %x -> %x %d\n", 'A' + from->color, from, to, length);
+#endif
+  assert(length > 0);
+  assert(length == 1 || path[0] != path[length - 1]);
+  TRAIL_SET_POINTER(path + length, NULL);
+}
+
+static void possibleCorners(EDGE* possibilities, COLOR color, EDGE from,
+                            EDGE to)
+{
+  if (from == NULL) {
+    EDGE edge = vertexGetCentralEdge(color);
+    getPath(possibilities, edge->reversed, edgeFollowBackwards(edge->reversed));
+  } else {
+    getPath(possibilities, from->reversed, to);
+  }
 }
 
 static struct predicateResult tryCorners(int round)
@@ -42,7 +62,7 @@ static struct predicateResult tryCorners(int round)
   if (colorIndex >= NCOLORS) {
     return PredicateSuccessNextPredicate;
   }
-  edgeFindAndAlignCorners(colorIndex, cornerPairs);
+  vertexAlignCorners(colorIndex, cornerPairs);
   possibleCorners(PossibleCorners[colorIndex][cornerIndex], colorIndex,
                   cornerPairs[cornerIndex][0], cornerPairs[cornerIndex][1]);
   return predicateChoices(
@@ -60,25 +80,3 @@ static struct predicateResult retryCorners(int round, int choice)
 
 /* The predicates array for corner handling */
 struct predicate CornersPredicate = {"Corners", tryCorners, retryCorners};
-/* Path and corner functions */
-static void getPath(EDGE* path, EDGE from, EDGE to)
-{
-  int length = edgePathLength(from, to, path);
-#if DEBUG
-  printf("getPath: %c %x -> %x %d\n", 'A' + from->color, from, to, length);
-#endif
-  assert(length > 0);
-  assert(length == 1 || path[0] != path[length - 1]);
-  TRAIL_SET_POINTER(path + length, NULL);
-}
-
-static void possibleCorners(EDGE* possibilities, COLOR color, EDGE from,
-                            EDGE to)
-{
-  if (from == NULL) {
-    EDGE edge = edgeOnCentralFace(color);
-    getPath(possibilities, edge->reversed, edgeFollowBackwards(edge->reversed));
-  } else {
-    getPath(possibilities, from->reversed, to);
-  }
-}

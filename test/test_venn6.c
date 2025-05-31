@@ -40,7 +40,7 @@ static void testCentralFaceEdge(void)
   dynamicFaceSetupCentral(intArray(0, 0, 0, 0, 0, 0));
   for (a = 0; a < NCOLORS; a++) {
     EDGE edge = &Faces[NFACES - 1].edges[a];
-    EDGE edge2 = edgeOnCentralFace(a);
+    EDGE edge2 = vertexGetCentralEdge(a);
     TEST_ASSERT_EQUAL(edge, edge2);
   }
 }

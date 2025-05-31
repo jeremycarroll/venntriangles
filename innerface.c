@@ -4,13 +4,13 @@
 #include "predicates.h"
 #include "s6.h"
 
-/* Global variables - file scoped */
-/* Lemma: In a simple Venn diagram of convex curves, the faces inside k curves
+/**
+ * In a simple Venn diagram of convex curves, the faces inside k curves
  * have total face degree being 2 * nCk + nC(k-1), where nCk is the binomial
  * coefficient "n choose k". For n = 6 and k = 5, this equals 2 * 6 + 15 = 27.
- * This lemma is part of an ongoing proof about the structure of Venn diagrams.
  */
 #define TOTAL_5FACE_DEGREE 27
+
 extern FACE_DEGREE CurrentFaceDegrees[NCOLORS];
 FACE_DEGREE CurrentFaceDegrees[NCOLORS];
 

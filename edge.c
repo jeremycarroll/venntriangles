@@ -1,23 +1,19 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
-
-#include "edge.h"
-
-#include "trail.h"
-
-/* Global variables - globally scoped */
-uint64 EdgeColorCountState[2][NCOLORS];
-COLORSET ColorCompletedState;
-
-/* Global variables - file scoped */
-#define MAX_ONE_WAY_CURVE_CROSSINGS 3
-#define MAX_CORNERS 3
-static uint64 EdgeCrossingCounts[NCOLORS][NCOLORS];
-static uint64 EdgeCurvesComplete[NCOLORS];
-
 /*
 This file is responsible for checking that a set of edges can make a triangle,
 and for outputting solutions.
 */
+#include "edge.h"
+
+#include "trail.h"
+
+uint64 EdgeColorCountState[2][NCOLORS];
+COLORSET ColorCompletedState;
+
+#define MAX_ONE_WAY_CURVE_CROSSINGS 3
+#define MAX_CORNERS 3
+static uint64 EdgeCrossingCounts[NCOLORS][NCOLORS];
+static uint64 EdgeCurvesComplete[NCOLORS];
 
 /* Declaration of file scoped static functions */
 static uint_trail curveLength(EDGE edge);
