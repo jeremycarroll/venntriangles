@@ -7,24 +7,74 @@
 #include "utils.h"
 #include "vertex.h"
 
-/* Structure to hold data for line crossing check */
 typedef struct {
   uint64 linesCrossed;
   uint64 initialLinesCrossed;
   bool linesAreCrossed;
 } LineCrossingData;
 
-/* Forward declarations of file scoped static functions */
-static void getPath(EDGE *path, EDGE from, EDGE to);
-static int edgeIsCorner(EDGE edge, EDGE (*corners)[3]);
-static void checkRegularEdge(void *data, EDGE current, int line);
-static void checkSingleCorner(void *data, EDGE current, int line);
-static void checkAdjacentCorners(void *data, EDGE current, int line);
-static void checkAllCorners(void *data, EDGE current, int line);
 
-/* Externally linked functions */
+static int edgeIsCorner(EDGE edge, EDGE (*corners)[3])
+{
+  int count = 0;
+  for (int ix = 0; ix < 3; ix++) {
+    if ((*corners)[ix] == edge) {
+      count++;
+    }
+  }
+  return count;
+}
 
-/* Other functions (in alphabetical order) */
+
+static void checkRegularEdge(void *data, EDGE current, int line)
+{
+  LineCrossingData *lcd = (LineCrossingData *)data;
+  VERTEX vertex = current->to->vertex;
+
+  if (vertex->lineId == 0) {
+    trailSetInt(&vertex->lineId, 1 + current->color * 3 + line);
+  } else {
+    uint64 crossedLineAsBit = 1l << vertex->lineId;
+    if (lcd->linesCrossed & crossedLineAsBit) {
+      lcd->linesAreCrossed = true;
+    } else {
+      lcd->linesCrossed |= crossedLineAsBit;
+    }
+  }
+}
+
+static void checkSingleCorner(void *data, EDGE current, int line)
+{
+  LineCrossingData *lcd = (LineCrossingData *)data;
+  if (line == 0) {
+    lcd->initialLinesCrossed = lcd->linesCrossed;
+  }
+  line = (line + 1) % 3;
+  lcd->linesCrossed = 0;
+  checkRegularEdge(data, current, line);
+}
+
+static void checkAdjacentCorners(void *data, EDGE current, int line)
+{
+  LineCrossingData *lcd = (LineCrossingData *)data;
+  if (line == 0) {
+    lcd->initialLinesCrossed = lcd->linesCrossed;
+  }
+  line = (line + 2) % 3;
+  lcd->linesCrossed = 0;
+  checkRegularEdge(data, current, line);
+}
+
+static void checkAllCorners(void *data, EDGE current, int line)
+{
+  (void)current;
+  LineCrossingData *lcd = (LineCrossingData *)data;
+  if (line == 0) {
+    lcd->initialLinesCrossed = lcd->linesCrossed;
+  }
+  lcd->linesCrossed = 0;
+}
+
 
 bool triangleLinesNotCrossed(COLOR color, EDGE (*corners)[3])
 {
@@ -45,6 +95,14 @@ bool triangleLinesNotCrossed(COLOR color, EDGE (*corners)[3])
   return !lcd.linesAreCrossed;
 }
 
+/**
+ * Traverses a triangle's perimeter, invoking appropriate callbacks based on corner detection.
+ *
+ * This function walks through the path around the central face of a given color,
+ * tracking corners and line numbers. At each step, it invokes the appropriate callback
+ * based on how many corners are at the current position (0, 1, 2, or 3 corners).
+ * The line parameter (0, 1, or 2) is tracked and updated as corners are encountered.
+ */
 void triangleTraverse(COLOR color, EDGE (*corners)[3],
                       TriangleTraversalCallbacks *callbacks, void *data)
 {
@@ -53,126 +111,44 @@ void triangleTraverse(COLOR color, EDGE (*corners)[3],
   EDGE current;
   int ix;
 
-  /* Get the path around the central face for this color */
   edge = vertexGetCentralEdge(color);
-  getPath(path, edge, edgeFollowBackwards(edge));
+  edgePathLength(edge, edgeFollowBackwards(edge), path);
 
   int line = 0;
   for (ix = 0; path[ix] != NULL; ix++) {
     current = path[ix];
     int cornerCount = edgeIsCorner(current->reversed, corners);
 
-    /* Process the edge based on corner count */
     switch (cornerCount) {
-      case 0: /* No corners - just a regular edge */
+      case 0:
         if (callbacks->processRegularEdge) {
           callbacks->processRegularEdge(data, current, line);
         }
         break;
-      case 1: /* Single corner */
+      case 1:
         if (callbacks->processSingleCorner) {
           callbacks->processSingleCorner(data, current, line);
         }
         line = (line + 1) % 3;
         break;
-      case 2: /* Two adjacent corners */
+      case 2:
         if (callbacks->processAdjacentCorners) {
           callbacks->processAdjacentCorners(data, current, line);
         }
         line = (line + 2) % 3;
         break;
-      case 3: /* All three corners at once */
+      case 3:
         if (callbacks->processAllCorners) {
           callbacks->processAllCorners(data, current, line);
         }
         break;
     }
 
-    /* Process the vertex if callback exists */
     if (callbacks->processVertex) {
       callbacks->processVertex(data, current->to->vertex, color);
     }
   }
 
-  /* Verify we processed all three corners */
   assert(line == 0);
 }
 
-/* File scoped static functions */
-
-/* Helper function to count corners in an edge */
-static int edgeIsCorner(EDGE edge, EDGE (*corners)[3])
-{
-  int count = 0;
-  for (int ix = 0; ix < 3; ix++) {
-    if ((*corners)[ix] == edge) {
-      count++;
-    }
-  }
-  return count;
-}
-
-/* Get path between two edges */
-static void getPath(EDGE *path, EDGE from, EDGE to)
-{
-  int length = edgePathLength(from, to, path);
-#if DEBUG
-  printf("getPath: %c %x -> %x %d\n", 'A' + from->color, from, to, length);
-#endif
-  assert(length > 0);
-  assert(length == 1 || path[0] != path[length - 1]);
-  path[length] = NULL;
-}
-
-/* Callback for processing a regular edge in line crossing check */
-static void checkRegularEdge(void *data, EDGE current, int line)
-{
-  LineCrossingData *lcd = (LineCrossingData *)data;
-  VERTEX vertex = current->to->vertex;
-
-  if (vertex->lineId == 0) {
-    trailSetInt(&vertex->lineId, 1 + current->color * 3 + line);
-  } else {
-    uint64 crossedLineAsBit = 1l << vertex->lineId;
-    if (lcd->linesCrossed & crossedLineAsBit) {
-      lcd->linesAreCrossed = true;
-    } else {
-      lcd->linesCrossed |= crossedLineAsBit;
-    }
-  }
-}
-
-/* Callback for processing a single corner in line crossing check */
-static void checkSingleCorner(void *data, EDGE current, int line)
-{
-  LineCrossingData *lcd = (LineCrossingData *)data;
-  if (line == 0) {
-    lcd->initialLinesCrossed = lcd->linesCrossed;
-  }
-  line = (line + 1) % 3;
-  lcd->linesCrossed = 0;
-  checkRegularEdge(data, current, line);
-}
-
-/* Callback for processing adjacent corners in line crossing check */
-static void checkAdjacentCorners(void *data, EDGE current, int line)
-{
-  LineCrossingData *lcd = (LineCrossingData *)data;
-  if (line == 0) {
-    lcd->initialLinesCrossed = lcd->linesCrossed;
-  }
-  line = (line + 2) % 3;
-  lcd->linesCrossed = 0;
-  checkRegularEdge(data, current, line);
-}
-
-/* Callback for processing all corners in line crossing check */
-static void checkAllCorners(void *data, EDGE current, int line)
-{
-  (void)current;
-  LineCrossingData *lcd = (LineCrossingData *)data;
-  if (line == 0) {
-    lcd->initialLinesCrossed = lcd->linesCrossed;
-  }
-  lcd->linesCrossed = 0;
-}

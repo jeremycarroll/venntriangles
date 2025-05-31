@@ -25,39 +25,29 @@ static int edgeArrayLength(EDGE* edges)
   return count;
 }
 
-/**
- * Gets null-terminated path between two edges and store on the trail
- */
-static void dynamicGetPath(EDGE* pathReturn, EDGE from, EDGE to)
-{
-  int length = dynamicEdgePathAndLength(from, to, pathReturn);
-#if DEBUG
-  printf("getPath: %c %x -> %x %d\n", 'A' + from->color, from, to, length);
-#endif
-  assert(length > 0);
-  assert(length == 1 || pathReturn[0] != pathReturn[length - 1]);
-  TRAIL_SET_POINTER(pathReturn + length, NULL);
-}
 
-static void dyanmicPossibleCorners(EDGE* possibilitiesReturn, COLOR color, EDGE from,
-                            EDGE to)
+static void dyanmicPossibleCorners(EDGE* possibilitiesReturn, COLOR color,
+                                   EDGE from, EDGE to)
 {
   if (from == NULL) {
     EDGE edge = vertexGetCentralEdge(color);
-    dynamicGetPath(possibilitiesReturn, edge->reversed, edgeFollowBackwards(edge->reversed));
+    dynamicEdgePathAndLength(edge->reversed,
+                         edgeFollowBackwards(edge->reversed),
+                         possibilitiesReturn);
   } else {
-    dynamicGetPath(possibilitiesReturn, from->reversed, to);
+    dynamicEdgePathAndLength(from->reversed, to, possibilitiesReturn);
   }
 }
 
 /**
  * Predicate entry function for selecting corners.
  *
- * For rounds 3, 6, 9, 12, 15 and 18 - we verify the previous colors corner assignment,
- * On round 18 then we simply succeed - we are now done.
- * For rounds 0 -> 17 we set up choosing between the possible corners.
+ * For rounds 3, 6, 9, 12, 15 and 18 - we verify the previous colors corner
+ * assignment, On round 18 then we simply succeed - we are now done. For rounds
+ * 0 -> 17 we set up choosing between the possible corners.
  *
- * @param round Incrementing number encoding color and corner index , from 0 to 18 inclusive.
+ * @param round Incrementing number encoding color and corner index , from 0 to
+ * 18 inclusive.
  */
 static struct predicateResult dyanmicTryCorners(int round)
 {
@@ -80,7 +70,8 @@ static struct predicateResult dyanmicTryCorners(int round)
   }
   vertexAlignCorners(colorIndex, cornerPairs);
   dyanmicPossibleCorners(PossibleCorners[colorIndex][cornerIndex], colorIndex,
-                  cornerPairs[cornerIndex][0], cornerPairs[cornerIndex][1]);
+                         cornerPairs[cornerIndex][0],
+                         cornerPairs[cornerIndex][1]);
   return predicateChoices(
       edgeArrayLength(PossibleCorners[colorIndex][cornerIndex]));
 }
@@ -97,4 +88,5 @@ static struct predicateResult dynamicRetryCorners(int round, int choice)
   return PredicateSuccessSamePredicate;
 }
 
-struct predicate CornersPredicate = {"Corners", dyanmicTryCorners, dynamicRetryCorners};
+struct predicate CornersPredicate = {"Corners", dyanmicTryCorners,
+                                     dynamicRetryCorners};

@@ -116,6 +116,7 @@ static int edgePathAndLength(EDGE from, EDGE to, EDGE* pathReturn,
     assert(i < NFACES);
     handler(pathReturn, i++, from);
   }
+  handler(pathReturn, i, NULL);
   return i;
 }
 
