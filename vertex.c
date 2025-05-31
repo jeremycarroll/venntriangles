@@ -10,8 +10,8 @@ static int NextUVertexId = 0;
 static struct Vertex* AllUPointPointers[NFACES][NCOLORS][NCOLORS];
 
 /* Forward declarations of file scoped static functions */
-static FAILURE dynamicFindCornersByTraversal(EDGE start, int depth,
-                                             EDGE* cornersReturn);
+static FAILURE findCornersByTraversal(EDGE start, int depth,
+                                      EDGE* cornersReturn);
 static VERTEX getOrInitializeVertex(COLORSET colorsOfFace, COLOR primary,
                                     COLOR secondary);
 static void validateVertexInitialization(VERTEX vertex, EDGE incomingEdge,
@@ -87,7 +87,7 @@ FAILURE dynamicVertexCornerCheck(EDGE start, int depth)
     // we have a complete curve.
     start = vertexGetCentralEdge(start->color);
   }
-  return dynamicFindCornersByTraversal(start, depth, ignore);
+  return findCornersByTraversal(start, depth, ignore);
 #endif
 }
 
@@ -104,11 +104,11 @@ void vertexAlignCorners(COLOR a, EDGE result[3][2])
   int i, j;
   EDGE clockWiseCorners[MAX_CORNERS];
   EDGE counterClockWiseCorners[MAX_CORNERS];
-  FAILURE failure = dynamicFindCornersByTraversal(vertexGetCentralEdge(a), 0,
-                                                  clockWiseCorners);
+  FAILURE failure =
+      findCornersByTraversal(vertexGetCentralEdge(a), 0, clockWiseCorners);
   assert(failure == NULL);
-  failure = dynamicFindCornersByTraversal(vertexGetCentralEdge(a)->reversed, 0,
-                                          counterClockWiseCorners);
+  failure = findCornersByTraversal(vertexGetCentralEdge(a)->reversed, 0,
+                                   counterClockWiseCorners);
   assert(failure == NULL);
   assert((clockWiseCorners[2] == NULL) == (counterClockWiseCorners[2] == NULL));
   assert((clockWiseCorners[1] != NULL));
@@ -182,8 +182,8 @@ static bool detectCornerAndUpdateCrossingSets(COLORSET other, COLORSET* outside,
   return false;
 }
 
-static FAILURE dynamicFindCornersByTraversal(EDGE start, int depth,
-                                             EDGE* cornersReturn)
+static FAILURE findCornersByTraversal(EDGE start, int depth,
+                                      EDGE* cornersReturn)
 {
   EDGE current = start;
   COLORSET notMyColor = ~(1u << start->color),
