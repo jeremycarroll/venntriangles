@@ -54,7 +54,8 @@ extern FAILURE dynamicEdgeCurveChecks(EDGE edge, int depth);
 extern int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn);
 
 /**
- * @brief Find the path length between two edges and store the path using the trail.
+ * @brief Find the path length between two edges and store the path using the
+ * trail.
  * @return int The number of edges in the path.
  */
 extern int dynamicEdgePathAndLength(EDGE from, EDGE to, EDGE* pathReturn);

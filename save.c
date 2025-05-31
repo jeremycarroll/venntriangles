@@ -33,9 +33,9 @@ int searchCountVariations(char* variationMultiplication)
     for (int i = 0; i < 3; i++) {
       if (corners[i][0] == NULL) {
         EDGE edge = vertexGetCentralEdge(a);
-        pLength = edgePathLength(edge, edgeFollowBackwards(edge), NULL);
+        pLength = edgePathLengthOnly(edge, edgeFollowBackwards(edge));
       } else {
-        pLength = edgePathLength(corners[i][0]->reversed, corners[i][1], NULL);
+        pLength = edgePathLengthOnly(corners[i][0]->reversed, corners[i][1]);
       }
       numberOfVariations *= pLength;
       if (variationMultiplication != NULL && pLength > 1) {

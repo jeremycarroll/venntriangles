@@ -153,7 +153,7 @@ static FAILURE propagateFaceChoices(FACE face, CYCLE cycle, int depth)
 
   for (i = 0; i < cycle->length; i++) {
     CHECK_FAILURE(
-        facePropogateChoice(face, &face->edges[cycle->curves[i]], depth));
+        facePropagateChoice(face, &face->edges[cycle->curves[i]], depth));
   }
 
   return NULL;
@@ -169,7 +169,7 @@ static FAILURE propagateRestrictionsToNonAdjacentFaces(FACE face, CYCLE cycle,
     if (COLORSET_HAS_MEMBER(i, cycle->colors)) {
       continue;
     }
-    CHECK_FAILURE(faceRestrictAndPropogateCycles(
+    CHECK_FAILURE(faceRestrictAndPropagateCycles(
         face->adjacentFaces[i], CycleSetOmittingOneColor[i], depth));
   }
 
@@ -191,7 +191,7 @@ static FAILURE propagateRestrictionsToNonVertexAdjacentFaces(FACE face,
           continue;
         }
       }
-      CHECK_FAILURE(faceRestrictAndPropogateCycles(
+      CHECK_FAILURE(faceRestrictAndPropagateCycles(
           face->adjacentFaces[i]->adjacentFaces[j],
           CycleSetOmittingColorPair[i][j], depth));
     }

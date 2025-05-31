@@ -30,8 +30,7 @@ static uint_trail curveLength(EDGE edge)
   }
   return result;
 }
-/*
- */
+
 static FAILURE dynamicCheckForDisconnectedCurve(EDGE edge, int depth)
 {
   uint_trail length;
@@ -90,12 +89,12 @@ EDGE edgeFollowBackwards(EDGE edge)
 
 static void dynamicSetEdge(EDGE* array, int index, EDGE value)
 {
-    TRAIL_SET_POINTER(array + index, value);
+  TRAIL_SET_POINTER(array + index, value);
 }
 
 static void setEdge(EDGE* array, int index, EDGE value)
 {
-    array[index] = value;
+  array[index] = value;
 }
 
 static void noopSetEdge(EDGE* array, int index, EDGE value)
@@ -122,11 +121,13 @@ static int edgePathAndLength(EDGE from, EDGE to, EDGE* pathReturn,
 
 int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn)
 {
+  assert(pathReturn != NULL);
   return edgePathAndLength(from, to, pathReturn, setEdge);
 }
 
 int dynamicEdgePathAndLength(EDGE from, EDGE to, EDGE* pathReturn)
 {
+  assert(pathReturn != NULL);
   return edgePathAndLength(from, to, pathReturn, dynamicSetEdge);
 }
 

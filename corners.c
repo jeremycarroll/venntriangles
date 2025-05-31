@@ -23,7 +23,7 @@ static int edgeArrayLength(EDGE* edges)
 
 static void getPath(EDGE* path, EDGE from, EDGE to)
 {
-  int length = edgePathLength(from, to, path);
+  int length = dynamicEdgePathAndLength(from, to, path);
 #if DEBUG
   printf("getPath: %c %x -> %x %d\n", 'A' + from->color, from, to, length);
 #endif

@@ -145,7 +145,7 @@ bool dynamicColorRemoveFromSearch(COLOR color)
     if (f->cycle == NULL) {
       /* Discard failure, we will report a different one. */
       if (f->edges[color].to == NULL &&
-          faceRestrictAndPropogateCycles(f, CycleSetOmittingOneColor[color],
+          faceRestrictAndPropagateCycles(f, CycleSetOmittingOneColor[color],
                                          0) != NULL) {
         return false;
       }
@@ -203,7 +203,7 @@ void facePrintSelected(void)
   }
 }
 
-FAILURE facePropogateChoice(FACE face, EDGE edge, int depth)
+FAILURE facePropagateChoice(FACE face, EDGE edge, int depth)
 {
   FAILURE failure;
   VERTEX vertex = edge->to->vertex;
@@ -216,14 +216,14 @@ FAILURE facePropogateChoice(FACE face, EDGE edge, int depth)
   uint32_t index = cycleIndexOfColor(face->cycle, aColor);
   assert(abFace == face->adjacentFaces[bColor]->adjacentFaces[aColor]);
   assert(abFace != face);
-  CHECK_FAILURE(faceRestrictAndPropogateCycles(
+  CHECK_FAILURE(faceRestrictAndPropagateCycles(
       abFace, face->cycle->sameDirection[index], depth));
-  CHECK_FAILURE(faceRestrictAndPropogateCycles(
+  CHECK_FAILURE(faceRestrictAndPropagateCycles(
       aFace, face->cycle->oppositeDirection[index], depth));
   return NULL;
 }
 
-FAILURE faceRestrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
+FAILURE faceRestrictAndPropagateCycles(FACE face, CYCLESET onlyCycleSet,
                                        int depth)
 {
   /* check for conflict or no-op. */
