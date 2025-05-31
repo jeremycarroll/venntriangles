@@ -40,7 +40,7 @@ static void setFaceDegrees(const char *programName, const char *faceDegrees)
   }
 }
 
-static int parsePostiveArgument(const char *programName, const char *arg,
+static int parsePositiveArgument(const char *programName, const char *arg,
                                 char flag, bool allowZero)
 {
   char *endptr;
@@ -88,19 +88,19 @@ int dynamicMain0(int argc, char *argv[])
         break;
       case 'm':
         localMaxSolutions =
-            parsePostiveArgument(programName, optarg, 'm', false);
+            parsePositiveArgument(programName, optarg, 'm', false);
         break;
       case 'n':
         MaxVariantsPerSolutionFlag =
-            parsePostiveArgument(programName, optarg, 'n', false);
+            parsePositiveArgument(programName, optarg, 'n', false);
         break;
       case 'k':
         localSkipSolutions =
-            parsePostiveArgument(programName, optarg, 'k', true);
+            parsePositiveArgument(programName, optarg, 'k', true);
         break;
       case 'j':
         IgnoreFirstVariantsPerSolution =
-            parsePostiveArgument(programName, optarg, 'j', true);
+            parsePositiveArgument(programName, optarg, 'j', true);
         break;
       case 'v':
         VerboseModeFlag = true;
