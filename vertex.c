@@ -11,17 +11,9 @@ static MEMO struct Vertex* AllUPointPointers[NFACES][NCOLORS][NCOLORS];
 
 /**
  * Determines which slot in the vertex's incomingEdges array to use for an edge.
- * 
- * In a vertex, there are 4 incoming edges: 2 for the primary color and 2 for the secondary color.
- * This function maps an edge to its appropriate slot (0-3) based on:
- * - Whether it's a clockwise edge or not
- * - Whether the other color is a member of the face colors
  *
- * Returns:
- * 0: Primary clockwise edge, when other color contains face
- * 1: Primary counterclockwise edge, when other color excludes face
- * 2: Secondary counterclockwise edge, when other color contains face
- * 3: Secondary clockwise edge, when other color excludes face
+ * See docs/DESIGN.md "Vertex Structure and Edge Organization" for detailed
+ * documentation.
  */
 static uint32_t getIncomingEdgeSlot(EDGE incomingEdge, COLOR othercolor,
                                     COLORSET faceColors)
@@ -56,6 +48,12 @@ static void validateVertexInitialization(VERTEX vertex, EDGE incomingEdge,
   assert(vertex->colors == ((1u << primary) | (1u << secondary)));
 }
 
+/**
+ * Core part of the corner detection algorithm that updates the crossing sets.
+ *
+ * See docs/DESIGN.md "Corner Detection Algorithm" for the algorithm details.
+ * Returns true if a corner is detected.
+ */
 static bool detectCornerAndUpdateCrossingSets(COLORSET other, COLORSET* outside,
                                               COLORSET* passed)
 {
@@ -77,9 +75,9 @@ static bool detectCornerAndUpdateCrossingSets(COLORSET other, COLORSET* outside,
 /**
  * Links two edges of the same color that share a vertex with a third edge.
  *
- * This function connects edge1 and edge2 (same color) so they form a proper path
- * when traversing through the vertex. Edge3 provides the color of the other
- * curve crossing at this vertex.
+ * This function connects edge1 and edge2 (same color) so they form a proper
+ * path when traversing through the vertex. Edge3 provides the color of the
+ * other curve crossing at this vertex.
  */
 static void initializeEdgeLink(EDGE edge1, EDGE edge2, EDGE edge3)
 {
@@ -93,6 +91,12 @@ static void initializeEdgeLink(EDGE edge1, EDGE edge2, EDGE edge3)
   edge2->possiblyTo[other].next = edge1->reversed;
 }
 
+/**
+ * Finds corners by traversing edges from a starting point.
+ *
+ * Implements the corner detection algorithm described in docs/DESIGN.md
+ * under "Corner Detection Algorithm".
+ */
 static FAILURE findCornersByTraversal(EDGE start, int depth,
                                       EDGE* cornersReturn)
 {
@@ -229,8 +233,10 @@ void initializePoints(void)
   if (VertexAllUVertices[0].incomingEdges[0]->possiblyTo[1].next == NULL) {
     for (i = 0; i < NPOINTS; i++) {
       VERTEX p = VertexAllUVertices + i;
-      initializeEdgeLink(p->incomingEdges[0], p->incomingEdges[1], p->incomingEdges[2]);
-      initializeEdgeLink(p->incomingEdges[2], p->incomingEdges[3], p->incomingEdges[0]);
+      initializeEdgeLink(p->incomingEdges[0], p->incomingEdges[1],
+                         p->incomingEdges[2]);
+      initializeEdgeLink(p->incomingEdges[2], p->incomingEdges[3],
+                         p->incomingEdges[0]);
     }
     for (i = 0; i < NFACES; i++) {
       FACE f = Faces + i;
