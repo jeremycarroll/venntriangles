@@ -7,20 +7,96 @@
 
 static struct Vertex VertexAllUVertices[NPOINTS];
 static int NextUVertexId = 0;
-static struct Vertex* AllUPointPointers[NFACES][NCOLORS][NCOLORS];
+static MEMO struct Vertex* AllUPointPointers[NFACES][NCOLORS][NCOLORS];
 
-/* Forward declarations of file scoped static functions */
-static FAILURE findCornersByTraversal(EDGE start, int depth,
-                                      EDGE* cornersReturn);
-static VERTEX getOrInitializeVertex(COLORSET colorsOfFace, COLOR primary,
-                                    COLOR secondary);
-static void validateVertexInitialization(VERTEX vertex, EDGE incomingEdge,
-                                         COLOR primary, COLOR secondary,
-                                         int ix);
 static uint32_t getIncomingEdgeSlot(EDGE incomingEdge, COLOR othercolor,
-                                    COLORSET faceColors);
+                                    COLORSET faceColors)
+{
+  if (IS_CLOCKWISE_EDGE(incomingEdge)) {
+    return COLORSET_HAS_MEMBER(othercolor, faceColors) ? 0 : 3;
+  } else {
+    return COLORSET_HAS_MEMBER(othercolor, faceColors) ? 2 : 1;
+  }
+}
+
+static VERTEX getOrInitializeVertex(COLORSET colorsOfFace, COLOR primary,
+                                    COLOR secondary)
+{
+  COLORSET outsideColor = colorsOfFace & ~(1u << primary) & ~(1u << secondary);
+  if (AllUPointPointers[outsideColor][primary][secondary] == NULL) {
+    AllUPointPointers[outsideColor][primary][secondary] =
+        &VertexAllUVertices[NextUVertexId];
+    VertexAllUVertices[NextUVertexId].primary = primary;
+    VertexAllUVertices[NextUVertexId].secondary = secondary;
+    VertexAllUVertices[NextUVertexId].colors = 1u << primary | 1u << secondary;
+    NextUVertexId++;
+  }
+  return AllUPointPointers[outsideColor][primary][secondary];
+}
+
+static void validateVertexInitialization(VERTEX vertex, EDGE incomingEdge,
+                                         COLOR primary, COLOR secondary, int ix)
+{
+  assert(vertex->incomingEdges[ix] == NULL);
+  assert(incomingEdge->color == (ix < 2 ? primary : secondary));
+  assert(vertex->colors == ((1u << primary) | (1u << secondary)));
+}
+
 static bool detectCornerAndUpdateCrossingSets(COLORSET other, COLORSET* outside,
-                                              COLORSET* passed);
+                                              COLORSET* passed)
+{
+  if (other & *outside) {
+    *outside &= ~other;
+
+    if (other & *passed) {
+      *passed = 0;
+      return true;
+    }
+  } else {
+    *passed |= other;
+    *outside |= other;
+  }
+
+  return false;
+}
+
+static void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3)
+{
+  COLOR other = edge3->color;
+
+  assert(edge1->color == edge2->color);
+  assert(edge1->possiblyTo[other].next == NULL);
+  assert(edge2->possiblyTo[other].next == NULL);
+  assert(edge1->possiblyTo[other].vertex == edge2->possiblyTo[other].vertex);
+  edge1->possiblyTo[other].next = edge2->reversed;
+  edge2->possiblyTo[other].next = edge1->reversed;
+}
+
+static FAILURE findCornersByTraversal(EDGE start, int depth,
+                                      EDGE* cornersReturn)
+{
+  EDGE current = start;
+  COLORSET notMyColor = ~(1u << start->color), passed = 0,
+           outside = ~start->colors;
+  int counter = 0;
+  assert(start->reversed->to == NULL ||
+         (start->colors & notMyColor) == ((NFACES - 1) & notMyColor));
+  do {
+    CURVELINK p = current->to;
+    if (detectCornerAndUpdateCrossingSets(p->vertex->colors & notMyColor,
+                                          &outside, &passed)) {
+      if (counter >= MAX_CORNERS) {
+        return failureTooManyCorners(depth);
+      }
+      cornersReturn[counter++] = current;
+    }
+    current = p->next;
+  } while (current->to != NULL && current != start);
+  while (counter < MAX_CORNERS) {
+    cornersReturn[counter++] = NULL;
+  }
+  return NULL;
+}
 
 VERTEX initializeVertexIncomingEdge(COLORSET colors, EDGE incomingEdge,
                                     COLOR othercolor)
@@ -32,13 +108,13 @@ VERTEX initializeVertexIncomingEdge(COLORSET colors, EDGE incomingEdge,
       getIncomingEdgeSlot(incomingEdge, othercolor, colors);
 
   switch (incomingEdgeSlot) {
-    case 0: /* Primary edge, other color contains face */
-    case 1: /* Secondary edge, other color excludes face */
+    case 0:
+    case 1:
       primary = incomingEdge->color;
       secondary = othercolor;
       break;
-    case 2: /* Secondary edge, other color contains face */
-    case 3: /* Primary edge, other color excludes face */
+    case 2:
+    case 3:
       primary = othercolor;
       secondary = incomingEdge->color;
       break;
@@ -79,12 +155,10 @@ char* vertexToString(VERTEX up)
 FAILURE dynamicVertexCornerCheck(EDGE start, int depth)
 {
 #if NCOLORS <= 4
-  /* test_venn[34].c do not like the normal code - not an issue. */
   return NULL;
 #else
   EDGE ignore[MAX_CORNERS * 100];
   if (start->reversed->to != NULL) {
-    // we have a complete curve.
     start = vertexGetCentralEdge(start->color);
   }
   return findCornersByTraversal(start, depth, ignore);
@@ -126,101 +200,6 @@ void vertexAlignCorners(COLOR a, EDGE result[3][2])
     assert(i - 1 - j < 3);
     result[i - 1 - j][1] = counterClockWiseCorners[j];
   }
-}
-
-/* File scoped static functions */
-static VERTEX getOrInitializeVertex(COLORSET colorsOfFace, COLOR primary,
-                                    COLOR secondary)
-{
-  COLORSET outsideColor = colorsOfFace & ~(1u << primary) & ~(1u << secondary);
-  if (AllUPointPointers[outsideColor][primary][secondary] == NULL) {
-    AllUPointPointers[outsideColor][primary][secondary] =
-        &VertexAllUVertices[NextUVertexId];
-    VertexAllUVertices[NextUVertexId].primary = primary;
-    VertexAllUVertices[NextUVertexId].secondary = secondary;
-    VertexAllUVertices[NextUVertexId].colors = 1u << primary | 1u << secondary;
-    NextUVertexId++;
-  }
-  return AllUPointPointers[outsideColor][primary][secondary];
-}
-
-static void validateVertexInitialization(VERTEX vertex, EDGE incomingEdge,
-                                         COLOR primary, COLOR secondary, int ix)
-{
-  assert(vertex->incomingEdges[ix] == NULL);
-  assert(incomingEdge->color == (ix < 2 ? primary : secondary));
-  assert(vertex->colors == ((1u << primary) | (1u << secondary)));
-}
-
-static uint32_t getIncomingEdgeSlot(EDGE incomingEdge, COLOR othercolor,
-                                    COLORSET faceColors)
-{
-  if (IS_CLOCKWISE_EDGE(incomingEdge)) {
-    return COLORSET_HAS_MEMBER(othercolor, faceColors) ? 0 : 3;
-  } else {
-    return COLORSET_HAS_MEMBER(othercolor, faceColors) ? 2 : 1;
-  }
-}
-
-static bool detectCornerAndUpdateCrossingSets(COLORSET other, COLORSET* outside,
-                                              COLORSET* passed)
-{
-  if (other & *outside) {
-    // We're crossing back inside some curves
-    *outside &= ~other;
-
-    if (other & *passed) {
-      *passed = 0;
-      return true;
-    }
-  } else {
-    // We're crossing to the outside of these curves
-    *passed |= other;
-    *outside |= other;
-  }
-
-  return false;
-}
-
-static FAILURE findCornersByTraversal(EDGE start, int depth,
-                                      EDGE* cornersReturn)
-{
-  EDGE current = start;
-  COLORSET notMyColor = ~(1u << start->color),
-           /* the curves we have crossed outside of since the last corner. */
-      passed = 0,
-           /* the curves we are currently outside. */
-      outside = ~start->colors;
-  int counter = 0;
-  assert(start->reversed->to == NULL ||
-         (start->colors & notMyColor) == ((NFACES - 1) & notMyColor));
-  do {
-    CURVELINK p = current->to;
-    if (detectCornerAndUpdateCrossingSets(p->vertex->colors & notMyColor,
-                                          &outside, &passed)) {
-      if (counter >= MAX_CORNERS) {
-        return failureTooManyCorners(depth);
-      }
-      cornersReturn[counter++] = current;
-    }
-    current = p->next;
-  } while (current->to != NULL && current != start);
-  while (counter < MAX_CORNERS) {
-    cornersReturn[counter++] = NULL;
-  }
-  return NULL;
-}
-
-static void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3)
-{
-  COLOR other = edge3->color;
-
-  assert(edge1->color == edge2->color);
-  assert(edge1->possiblyTo[other].next == NULL);
-  assert(edge2->possiblyTo[other].next == NULL);
-  assert(edge1->possiblyTo[other].vertex == edge2->possiblyTo[other].vertex);
-  edge1->possiblyTo[other].next = edge2->reversed;
-  edge2->possiblyTo[other].next = edge1->reversed;
 }
 
 void initializePoints(void)
