@@ -58,7 +58,6 @@ void initializeFacesAndEdges(void)
         face->adjacentFaces[color] = adjacent;
         edge = &face->edges[color];
         edge->colors = face->colors;
-        edge->level = __builtin_popcount(face->colors);
         edge->color = color;
         edge->reversed = &adjacent->edges[color];
       }
@@ -126,7 +125,7 @@ FAILURE dynamicFaceIncludeVertex(FACE face, COLOR aColor, COLOR bColor,
 
   vertex = face->edges[aColor].possiblyTo[bColor].vertex;
   CHECK_FAILURE(
-      edgeCheckCrossingLimit(vertex->primary, vertex->secondary, depth));
+      dynamicEdgeCheckCrossingLimit(vertex->primary, vertex->secondary, depth));
   setupColors(vertex, colors);
 
   for (int incomingEdgeSlot = 0; incomingEdgeSlot < 4; incomingEdgeSlot++) {

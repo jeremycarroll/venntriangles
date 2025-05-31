@@ -138,7 +138,8 @@ static FAILURE checkEdgeCurvesAndCorners(FACE face, CYCLE cycle, int depth)
   FAILURE failure;
 
   for (i = 0; i < cycle->length; i++) {
-    CHECK_FAILURE(edgeCurveChecks(&face->edges[cycle->curves[i]], depth));
+    CHECK_FAILURE(
+        dynamicEdgeCurveChecks(&face->edges[cycle->curves[i]], depth));
     CHECK_FAILURE(vertexCornerCheck(&face->edges[cycle->curves[i]], depth));
   }
 

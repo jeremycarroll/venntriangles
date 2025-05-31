@@ -57,7 +57,7 @@ void trailSetInt(uint_trail* ptr, uint_trail value)
   *ptr = value;
 }
 
-bool trailBacktrackTo(TRAIL backtrackPoint)
+bool trailRewindTo(TRAIL backtrackPoint)
 {
   uint64 trailSize = Trail - TrailArray;
   if (trailSize > MaxTrailSize) {
@@ -172,7 +172,7 @@ static void retryPort(void)
 
   switch (result.code) {
     case PREDICATE_FAIL:
-      trailBacktrackTo(stackTop->trail);
+      trailRewindTo(stackTop->trail);
       break;
 
     case PREDICATE_SUCCESS_NEXT_PREDICATE:
@@ -191,7 +191,7 @@ static bool engineLoop(void)
 {
   while (true) {
     freeAll();
-    trailBacktrackTo(stackTop->trail);
+    trailRewindTo(stackTop->trail);
     if (!stackTop->inChoiceMode) {
       trace("call");
       if (!callPort()) {

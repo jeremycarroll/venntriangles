@@ -1,8 +1,5 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
-/*
-This file is responsible for checking that a set of edges can make a triangle,
-and for outputting solutions.
-*/
+
 #include "edge.h"
 
 #include "trail.h"
@@ -15,87 +12,12 @@ COLORSET ColorCompletedState;
 static uint64 EdgeCrossingCounts[NCOLORS][NCOLORS];
 static uint64 EdgeCurvesComplete[NCOLORS];
 
-/* Declaration of file scoped static functions */
-static uint_trail curveLength(EDGE edge);
-static FAILURE checkForDisconnectedCurve(EDGE edge, int depth);
-static EDGE findStartOfCurve(EDGE edge);
-static EDGE edgeFollowForwards(EDGE edge);
-
-/* Externally linked functions - edge... */
-FAILURE edgeCheckCrossingLimit(COLOR a, COLOR b, int depth)
-{
-  uint_trail* crossing = &EdgeCrossingCounts[a][b];
-  if (*crossing + 1 > MAX_ONE_WAY_CURVE_CROSSINGS) {
-    return failureCrossingLimit(depth);
-  }
-  trailSetInt(crossing, *crossing + 1);
-  return NULL;
-}
-
-FAILURE edgeCurveChecks(EDGE edge, int depth)
-{
-  if (EdgeCurvesComplete[edge->color]) {
-    return NULL;
-  }
-  EDGE start = findStartOfCurve(edge);
-  return checkForDisconnectedCurve(start, depth);
-}
-
-EDGE edgeFollowBackwards(EDGE edge)
-{
-  EDGE reversedNext = edgeFollowForwards(edge->reversed);
-  return reversedNext == NULL ? NULL : reversedNext->reversed;
-}
-
-EDGE edgeFollowForwards(EDGE edge)
+static EDGE edgeFollowForwards(EDGE edge)
 {
   if (edge->to == NULL) {
     return NULL;
   }
   return edge->to->next;
-}
-
-void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4)
-{
-  COLOR other = edge3->color;
-  uint32_t level1 = edge1->level;
-  uint32_t level2 = edge2->level;
-  uint32_t level3 = edge3->reversed->level;
-  uint32_t level4 = edge4->reversed->level;
-
-  assert(edge1->color == edge2->color);
-  assert(edge1->possiblyTo[other].next == NULL);
-  assert(edge2->possiblyTo[other].next == NULL);
-  assert(edge1->possiblyTo[other].vertex == edge2->possiblyTo[other].vertex);
-  edge1->possiblyTo[other].next = edge2->reversed;
-  edge2->possiblyTo[other].next = edge1->reversed;
-  if (level1 == level3) {
-    assert(level2 == level4);
-  } else {
-    assert(level1 == level4);
-    assert(level2 == level3);
-  }
-}
-
-static void trailSetArrayMemberIfNotNull(EDGE* array, int index, EDGE value)
-{
-  if (array != NULL) {
-    TRAIL_SET_POINTER(array + index, value);
-  }
-}
-
-int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn)
-{
-  int i = 0;
-  trailSetArrayMemberIfNotNull(pathReturn, i++, from);
-  while (from != to) {
-    from = edgeFollowForwards(from);
-    assert(from != to->reversed);
-    assert(from != NULL);
-    assert(i < NFACES);
-    trailSetArrayMemberIfNotNull(pathReturn, i++, from);
-  }
-  return i;
 }
 
 static uint_trail curveLength(EDGE edge)
@@ -108,11 +30,11 @@ static uint_trail curveLength(EDGE edge)
   }
   return result;
 }
-
-static FAILURE checkForDisconnectedCurve(EDGE edge, int depth)
+/*
+ */
+static FAILURE dynamicCheckForDisconnectedCurve(EDGE edge, int depth)
 {
   uint_trail length;
-  // TODO: needs named macro!
   if (edge->reversed->to != NULL) {
     // We have a colored cycle in the FISC.
     length = curveLength(edge);
@@ -139,4 +61,76 @@ static EDGE findStartOfCurve(EDGE edge)
     current = next;
   }
   return edge;
+}
+
+FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth)
+{
+  uint_trail* crossing = &EdgeCrossingCounts[a][b];
+  if (*crossing + 1 > MAX_ONE_WAY_CURVE_CROSSINGS) {
+    return failureCrossingLimit(depth);
+  }
+  trailSetInt(crossing, *crossing + 1);
+  return NULL;
+}
+
+FAILURE dynamicEdgeCurveChecks(EDGE edge, int depth)
+{
+  if (EdgeCurvesComplete[edge->color]) {
+    return NULL;
+  }
+  EDGE start = findStartOfCurve(edge);
+  return dynamicCheckForDisconnectedCurve(start, depth);
+}
+
+EDGE edgeFollowBackwards(EDGE edge)
+{
+  EDGE reversedNext = edgeFollowForwards(edge->reversed);
+  return reversedNext == NULL ? NULL : reversedNext->reversed;
+}
+
+static void dynamicSetEdge(EDGE* array, int index, EDGE value)
+{
+    TRAIL_SET_POINTER(array + index, value);
+}
+
+static void setEdge(EDGE* array, int index, EDGE value)
+{
+    array[index] = value;
+}
+
+static void noopSetEdge(EDGE* array, int index, EDGE value)
+{
+  (void)array;
+  (void)index;
+  (void)value;
+}
+
+static int edgePathAndLength(EDGE from, EDGE to, EDGE* pathReturn,
+                             void (*handler)(EDGE*, int, EDGE))
+{
+  int i = 0;
+  handler(pathReturn, i++, from);
+  while (from != to) {
+    from = edgeFollowForwards(from);
+    assert(from != to->reversed);
+    assert(from != NULL);
+    assert(i < NFACES);
+    handler(pathReturn, i++, from);
+  }
+  return i;
+}
+
+int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn)
+{
+  return edgePathAndLength(from, to, pathReturn, setEdge);
+}
+
+int dynamicEdgePathAndLength(EDGE from, EDGE to, EDGE* pathReturn)
+{
+  return edgePathAndLength(from, to, pathReturn, dynamicSetEdge);
+}
+
+int edgePathLengthOnly(EDGE from, EDGE to)
+{
+  return edgePathAndLength(from, to, NULL, noopSetEdge);
 }

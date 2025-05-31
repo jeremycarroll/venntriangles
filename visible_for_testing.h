@@ -24,7 +24,7 @@ extern CYCLE_ID s6PermuteCycleId(CYCLE_ID originalCycleId,
 extern char *s6SignatureToLongString(SIGNATURE signature);
 extern int searchCountVariations(char* variationMultiplication);
 
-extern bool trailBacktrackTo(TRAIL backtrackPoint);
+extern bool trailRewindTo(TRAIL backtrackPoint);
 extern CYCLESET_DECLARE CycleSetPairs[NCOLORS][NCOLORS];
 extern CYCLESET_DECLARE CycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
 extern uint64  CycleForcedCounter;

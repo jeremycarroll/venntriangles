@@ -164,7 +164,7 @@ static void testChoosingAndBacktracking()
     // Having selected one face, all of the other faces are determined.
     verifyFaceSize(1);
     TEST_ASSERT_EQUAL(7, CycleForcedCounter);
-    trailBacktrackTo(startTrail);
+    trailRewindTo(startTrail);
     face->cycle = NULL;
   }
   // There are 8 faces, so 8 guesses.

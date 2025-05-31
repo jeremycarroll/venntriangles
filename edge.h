@@ -34,8 +34,6 @@ struct edge {
   (j, color) is in the facial cycle of outer.
   */
   DYNAMIC CURVELINK to;
-  /* A value between 0 and NCOLORS, being the cardinality of face. */
-  MEMO uint64 level;
   /* This vertex at the end of this edge may cross one of the other colors.
   We have all 5 pre-initialized in this array, with the color-th entry
   being all NULL.
@@ -44,28 +42,28 @@ struct edge {
 };
 
 extern uint64 EdgeColorCountState[2][NCOLORS];
+extern COLORSET ColorCompletedState;
 
 extern EDGE edgeFollowBackwards(EDGE edge);
-extern FAILURE edgeCurveChecks(EDGE edge, int depth);
+extern FAILURE dynamicEdgeCurveChecks(EDGE edge, int depth);
+
 /**
- * @brief Find the path length between two edges.
- *
- * Normally, call this twice, first with pathReturn NULL, then with
- * pathReturn set to a large enough array to store the path.
- *
- * @param from The starting edge.
- * @param to The ending edge.
- * @param pathReturn An array to store the path, can be NULL.
+ * @brief Find the path length between two edges and store the path.
  * @return int The number of edges in the path.
  */
 extern int edgePathLength(EDGE from, EDGE to, EDGE* pathReturn);
 
-extern FAILURE edgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
-extern void edgeLink(EDGE edge1, EDGE edge2, EDGE edge3, EDGE edge4);
+/**
+ * @brief Find the path length between two edges and store the path using the trail.
+ * @return int The number of edges in the path.
+ */
+extern int dynamicEdgePathAndLength(EDGE from, EDGE to, EDGE* pathReturn);
+
+extern int edgePathLengthOnly(EDGE from, EDGE to);
+
+extern FAILURE dynamicEdgeCheckCrossingLimit(COLOR a, COLOR b, int depth);
 
 #define IS_CLOCKWISE_EDGE(edge) \
   (COLORSET_HAS_MEMBER((edge)->color, (edge)->colors))
-
-extern COLORSET ColorCompletedState;
 
 #endif  // EDGE_H

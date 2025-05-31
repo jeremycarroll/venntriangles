@@ -311,7 +311,7 @@ void setUp(void)
 
 void tearDown(void)
 {
-  trailBacktrackTo(trail);
+  trailRewindTo(trail);
   CycleGuessCounterIPC = 0;
 }
 
