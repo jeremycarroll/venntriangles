@@ -27,7 +27,7 @@ static void dynamicSetFaceCycleSetToSingleton(FACE face, uint64 cycleId)
   trailMaybeSetInt(&face->cycleSetSize, 1);
 }
 
-static FAILURE checkFacePoints(FACE face, CYCLE cycle, int depth)
+static FAILURE dynamicCheckFacePoints(FACE face, CYCLE cycle, int depth)
 {
   uint32_t i;
   FAILURE failure;
@@ -42,7 +42,8 @@ static FAILURE checkFacePoints(FACE face, CYCLE cycle, int depth)
   return NULL;
 }
 
-static FAILURE checkEdgeCurvesAndCorners(FACE face, CYCLE cycle, int depth)
+static FAILURE dynamicCheckEdgeCurvesAndCorners(FACE face, CYCLE cycle,
+                                                int depth)
 {
   uint32_t i;
   FAILURE failure;
@@ -50,27 +51,29 @@ static FAILURE checkEdgeCurvesAndCorners(FACE face, CYCLE cycle, int depth)
   for (i = 0; i < cycle->length; i++) {
     CHECK_FAILURE(
         dynamicEdgeCurveChecks(&face->edges[cycle->curves[i]], depth));
-    CHECK_FAILURE(vertexCornerCheck(&face->edges[cycle->curves[i]], depth));
+    CHECK_FAILURE(
+        dynamicVertexCornerCheck(&face->edges[cycle->curves[i]], depth));
   }
 
   return NULL;
 }
 
-static FAILURE propagateFaceChoices(FACE face, CYCLE cycle, int depth)
+static FAILURE dynamicPropagateFaceChoices(FACE face, CYCLE cycle, int depth)
 {
   uint32_t i;
   FAILURE failure;
 
   for (i = 0; i < cycle->length; i++) {
-    CHECK_FAILURE(
-        facePropagateChoice(face, &face->edges[cycle->curves[i]], depth));
+    CHECK_FAILURE(dynamicFacePropagateChoice(
+        face, &face->edges[cycle->curves[i]], depth));
   }
 
   return NULL;
 }
 
-static FAILURE propagateRestrictionsToNonAdjacentFaces(FACE face, CYCLE cycle,
-                                                       int depth)
+static FAILURE dynamicPropagateRestrictionsToNonAdjacentFaces(FACE face,
+                                                              CYCLE cycle,
+                                                              int depth)
 {
   uint32_t i;
   FAILURE failure;
@@ -79,16 +82,16 @@ static FAILURE propagateRestrictionsToNonAdjacentFaces(FACE face, CYCLE cycle,
     if (COLORSET_HAS_MEMBER(i, cycle->colors)) {
       continue;
     }
-    CHECK_FAILURE(faceRestrictAndPropagateCycles(
+    CHECK_FAILURE(dynamicFaceRestrictAndPropagateCycles(
         face->adjacentFaces[i], CycleSetOmittingOneColor[i], depth));
   }
 
   return NULL;
 }
 
-static FAILURE propagateRestrictionsToNonVertexAdjacentFaces(FACE face,
-                                                             CYCLE cycle,
-                                                             int depth)
+static FAILURE dynamicPropagateRestrictionsToNonVertexAdjacentFaces(FACE face,
+                                                                    CYCLE cycle,
+                                                                    int depth)
 {
   uint32_t i, j;
   FAILURE failure;
@@ -101,7 +104,7 @@ static FAILURE propagateRestrictionsToNonVertexAdjacentFaces(FACE face,
           continue;
         }
       }
-      CHECK_FAILURE(faceRestrictAndPropagateCycles(
+      CHECK_FAILURE(dynamicFaceRestrictAndPropagateCycles(
           face->adjacentFaces[i]->adjacentFaces[j],
           CycleSetOmittingColorPair[i][j], depth));
     }
@@ -127,7 +130,7 @@ static struct predicateResult tryFace(int round)
   }
   facesInOrderOfChoice[round] = searchChooseNextFace();
   if (facesInOrderOfChoice[round] == NULL) {
-    if (faceFinalCorrectnessChecks() == NULL) {
+    if (dynamicFaceFinalCorrectnessChecks() == NULL) {
       GlobalSolutionsFoundIPC++;
       PerFaceDegreeSolutionNumberIPC++;
       return PredicateSuccessNextPredicate;
@@ -138,7 +141,7 @@ static struct predicateResult tryFace(int round)
   return predicateChoices(facesInOrderOfChoice[round]->cycleSetSize + 1);
 }
 
-static struct predicateResult retryFace(int round, int choice)
+static struct predicateResult dynamicRetryFace(int round, int choice)
 {
   (void)choice;
   FACE face = facesInOrderOfChoice[round];
@@ -161,10 +164,11 @@ FAILURE dynamicFaceChoice(FACE face, int depth)
 
   assert(depth <= NFACES);
 
-  CHECK_FAILURE(checkFacePoints(face, cycle, depth));
-  CHECK_FAILURE(checkEdgeCurvesAndCorners(face, cycle, depth));
-  CHECK_FAILURE(propagateFaceChoices(face, cycle, depth));
-  CHECK_FAILURE(propagateRestrictionsToNonAdjacentFaces(face, cycle, depth));
+  CHECK_FAILURE(dynamicCheckFacePoints(face, cycle, depth));
+  CHECK_FAILURE(dynamicCheckEdgeCurvesAndCorners(face, cycle, depth));
+  CHECK_FAILURE(dynamicPropagateFaceChoices(face, cycle, depth));
+  CHECK_FAILURE(
+      dynamicPropagateRestrictionsToNonAdjacentFaces(face, cycle, depth));
 
   if (face->colors == 0 || face->colors == (NFACES - 1)) {
     TRAIL_SET_POINTER(&face->next, face);
@@ -180,7 +184,7 @@ FAILURE dynamicFaceChoice(FACE face, int depth)
   }
 
   CHECK_FAILURE(
-      propagateRestrictionsToNonVertexAdjacentFaces(face, cycle, depth));
+      dynamicPropagateRestrictionsToNonVertexAdjacentFaces(face, cycle, depth));
 
   return NULL;
 }
@@ -228,4 +232,4 @@ FACE searchChooseNextFace(void)
   return face;
 }
 
-struct predicate VennPredicate = {"Venn", tryFace, retryFace};
+struct predicate VennPredicate = {"Venn", tryFace, dynamicRetryFace};

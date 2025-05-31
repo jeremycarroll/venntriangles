@@ -57,7 +57,7 @@ extern VERTEX initializeVertexIncomingEdge(COLORSET colorsOfFace,
                                            EDGE incomingEdge, COLOR othercolor);
 extern char* vertexToString(VERTEX up);
 extern char* vertexToColorSetString(VERTEX up);
-extern FAILURE vertexCornerCheck(EDGE start, int depth);
+extern FAILURE dynamicVertexCornerCheck(EDGE start, int depth);
 extern void vertexAlignCorners(COLOR a, EDGE result[3][2]);
 extern EDGE vertexGetCentralEdge(COLOR a);
 

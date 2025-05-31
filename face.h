@@ -10,7 +10,7 @@
 extern FAILURE dynamicFaceBacktrackableChoice(FACE face);
 extern FAILURE dynamicFaceChoice(FACE face, int depth);
 
-extern FAILURE faceFinalCorrectnessChecks(void);
+extern FAILURE dynamicFaceFinalCorrectnessChecks(void);
 extern void dynamicFaceSetupCentral(FACE_DEGREE *faceDegrees);
 extern FAILURE dynamicFaceIncludeVertex(FACE face, COLOR aColor, COLOR bColor,
                                         int depth);
@@ -19,8 +19,9 @@ extern bool dynamicColorRemoveFromSearch(COLOR color);
 extern char *faceToString(FACE face);
 
 extern void initializeFacesAndEdges(void);
-extern FAILURE faceRestrictAndPropagateCycles(FACE face, CYCLESET onlyCycleSet,
-                                              int depth);
-extern FAILURE facePropagateChoice(FACE face, EDGE edge, int depth);
+extern FAILURE dynamicFaceRestrictAndPropagateCycles(FACE face,
+                                                     CYCLESET onlyCycleSet,
+                                                     int depth);
+extern FAILURE dynamicFacePropagateChoice(FACE face, EDGE edge, int depth);
 
 #endif  // FACE_H
