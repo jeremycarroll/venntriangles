@@ -20,14 +20,15 @@ static FILE* currentFile;
 static int currentNumberOfVariations;
 static char currentVariationMultiplication[128];
 
-int searchCountVariations(char* variationMultiplication)
+/* Count variations and build multiplication string for display */
+int searchCountVariations(void)
 {
   EDGE corners[3][2];
   int numberOfVariations = 1;
   int pLength;
-  if (variationMultiplication != NULL) {
-    variationMultiplication[0] = '\0';
-  }
+  char* currentPos = currentVariationMultiplication;
+  currentPos[0] = '\0';
+  
   for (COLOR a = 0; a < NCOLORS; a++) {
     vertexAlignCorners(a, corners);
     for (int i = 0; i < 3; i++) {
@@ -38,9 +39,8 @@ int searchCountVariations(char* variationMultiplication)
         pLength = edgePathLengthOnly(corners[i][0]->reversed, corners[i][1]);
       }
       numberOfVariations *= pLength;
-      if (variationMultiplication != NULL && pLength > 1) {
-        variationMultiplication +=
-            sprintf(variationMultiplication, "*%d", pLength);
+      if (pLength > 1) {
+        currentPos += sprintf(currentPos, "*%d", pLength);
       }
     }
   }
@@ -114,8 +114,7 @@ static bool beforeVariantsSave(void)
   solutionPrint(currentFile);
   CurrentPrefixIPC[strlen(CurrentPrefixIPC) - 4] = '\0';
   GraphmlFileOps.initializeFolder(CurrentPrefixIPC);
-  currentNumberOfVariations =
-      searchCountVariations(currentVariationMultiplication);
+  currentNumberOfVariations = searchCountVariations();
   LevelsIPC = numberOfLevels(currentNumberOfVariations);
   fprintf(currentFile, "\nSolution signature %s\nClass signature %s\n",
           s6SignatureToString(s6SignatureFromFaces()),

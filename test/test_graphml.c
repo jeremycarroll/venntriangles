@@ -447,9 +447,11 @@ static void backwardVariant1319(void)
 FORWARD_BACKWARD_PREDICATE_STATIC(Variant1319, NULL, forwardVariant1319,
                                   backwardVariant1319)
 
+extern int searchCountVariations(void);
+
 static bool testVariationEstimate()
 {
-  TEST_ASSERT_EQUAL(128, searchCountVariations(NULL));
+  TEST_ASSERT_EQUAL(128, searchCountVariations());
   return false;
 }
 
