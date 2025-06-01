@@ -3,25 +3,33 @@
 #ifndef FACE_H
 #define FACE_H
 
-#include "trail.h"
-#include "vertex.h"
+#include "dynamicface.h"
+
+/* Core face structure */
+struct face {
+  MEMO COLORSET colors;
+  MEMO FACE adjacentFaces[NCOLORS];
+  MEMO struct edge edges[NCOLORS];
+  DYNAMIC CYCLE cycle;
+  DYNAMIC FACE next;
+  DYNAMIC FACE previous;
+  MEMO FACE nextByCycleId[NCYCLES];
+  MEMO FACE previousByCycleId[NCYCLES];
+  MEMO CYCLESET possibleCycles;
+  DYNAMIC uint64 cycleSetSize;
+};
+
+/* Global face array */
+extern struct face Faces[NFACES];
 
 /* These next two functions are actually defined in search.c */
 extern FAILURE dynamicFaceBacktrackableChoice(FACE face);
 extern FAILURE dynamicFaceChoice(FACE face, int depth);
 
-extern FAILURE dynamicFaceFinalCorrectnessChecks(void);
-extern void dynamicFaceSetupCentral(FACE_DEGREE *faceDegrees);
-extern FAILURE dynamicFaceIncludeVertex(FACE face, COLOR aColor, COLOR bColor,
-                                        int depth);
-extern bool dynamicColorRemoveFromSearch(COLOR color);
-
-extern char *faceToString(FACE face);
-
+/* Core face structure and initialization functions */
 extern void initializeFacesAndEdges(void);
-extern FAILURE dynamicFaceRestrictAndPropagateCycles(FACE face,
-                                                     CYCLESET onlyCycleSet,
-                                                     int depth);
-extern FAILURE dynamicFacePropagateChoice(FACE face, EDGE edge, int depth);
+extern char* faceToString(FACE face);
+extern FACE faceFromColors(char* colors);
+extern void facePrintSelected(void);
 
 #endif  // FACE_H
