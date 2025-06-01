@@ -5,12 +5,22 @@
 
 #include "engine.h"
 
-extern struct predicate InitializePredicate;
-extern struct predicate InnerFacePredicate;
-extern struct predicate LogPredicate;
-extern struct predicate VennPredicate;
-extern struct predicate SavePredicate;
-extern struct predicate CornersPredicate;
-extern struct predicate GraphMLPredicate;
+/**
+ * Predicates used by the non-deterministic search engine.
+ * Each predicate represents a phase in the search algorithm.
+ */
 
-#endif /* PREDICATES_H */ 
+/* Setup phase - initialize all data structures */
+extern struct predicate InitializePredicate;
+
+/* Search phases - find valid Venn diagrams */
+extern struct predicate InnerFacePredicate;  /* Select face degrees */
+extern struct predicate VennPredicate;       /* Assign cycles to faces */
+
+/* Output phases - save and display results */
+extern struct predicate LogPredicate;        /* Log progress */
+extern struct predicate SavePredicate;       /* Save solutions */
+extern struct predicate CornersPredicate;    /* Place diagram corners */
+extern struct predicate GraphMLPredicate;    /* Export to GraphML format */
+
+#endif  /* PREDICATES_H */
