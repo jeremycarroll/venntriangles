@@ -14,14 +14,6 @@ CYCLESET_DECLARE CycleSetOmittingColorPair[NCOLORS][NCOLORS];
 static int NextSetOfCycleSets = 0;
 static CYCLESET CycleSetSets[NCYCLE_ENTRIES * 2];
 
-static void initializeSameDirection(void);
-static void initializeOppositeDirection(void);
-static void initializeOmittingCycleSets(void);
-static void memoizeCyclePairs(void);
-static void memoizeCycleTriples(void);
-static void initializeOmittingOneColor(void);
-static void initializeOmittingColorPairs(void);
-
 #define FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET \
   ((1ul << (NCYCLES % BITS_PER_WORD)) - 1ul)
 
