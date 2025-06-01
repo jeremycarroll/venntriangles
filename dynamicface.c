@@ -275,4 +275,3 @@ FAILURE dynamicHandleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
   }
   return NULL;
 }
-

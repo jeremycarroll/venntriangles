@@ -37,4 +37,3 @@ extern uint64 CycleForcedCounter;
 extern uint64 CycleSetReducedCounter;
 
 #endif  // DYNAMICFACE_H
-
