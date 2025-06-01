@@ -23,7 +23,6 @@ void tearDown(void)
   engineResume((PREDICATE[]){&FAILPredicate});
 }
 
-/* Global variables */
 static int SolutionCount = 0;
 
 static struct predicateResult foundSolution()
@@ -32,7 +31,6 @@ static struct predicateResult foundSolution()
   return PredicateFail;
 }
 
-/* Test functions */
 static void testSearch()
 {
   engineResume((PREDICATE[]){
@@ -67,7 +65,6 @@ static void testSearch4433()
   TEST_ASSERT_EQUAL(1, SolutionCount);
 }
 
-/* Main test runner */
 int main(int argc, char *argv[])
 {
   if (argc > 1 && strcmp(argv[1], "-t") == 0) {

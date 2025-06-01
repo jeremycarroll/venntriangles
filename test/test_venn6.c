@@ -22,10 +22,8 @@ void tearDown(void)
 {
   engineResume((PREDICATE[]){&FAILPredicate});
 }
-/* Global variables */
 static int SolutionCount = 0;
 
-/* Predicate functions */
 static struct predicateResult countSolutions(int round)
 {
   (void)round;  // Mark parameter as intentionally unused
@@ -33,7 +31,6 @@ static struct predicateResult countSolutions(int round)
   return PredicateFail;
 }
 
-/* Test functions */
 static void testCentralFaceEdge(void)
 {
   COLOR a;
@@ -86,7 +83,6 @@ static void testFullSearch(void)
   TEST_ASSERT_EQUAL(233, SolutionCount);
 }
 
-/* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();

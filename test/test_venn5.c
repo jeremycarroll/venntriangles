@@ -22,7 +22,6 @@ void tearDown(void)
   engineResume((PREDICATE[]){&FAILPredicate});
 }
 
-/* Global variables */
 static int SolutionCount = 0;
 static int EquivocalCount = 0;
 static int CanonicalCount = 0;
@@ -100,7 +99,6 @@ static struct predicateResult invertSolution()
   return PredicateFail;
 }
 
-/* Callback functions */
 static struct predicateResult foundSolution()
 {
   SolutionCount++;
@@ -132,7 +130,6 @@ static struct predicateResult foundSolution()
   return PredicateFail;
 }
 
-/* Test functions */
 static void testSearchAbcde()
 {
   SolutionCount = 0;
@@ -225,7 +222,6 @@ static void testInvert()
   engineResume((PREDICATE[]){
       &VennPredicate, &(struct predicate){"Found", invertSolution, NULL}});
 }
-/* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();
