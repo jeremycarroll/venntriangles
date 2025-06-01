@@ -7,8 +7,6 @@
 
 #include <stdarg.h>
 #include <unity.h>
-
-/* Helper functions */
 FACE dynamicFaceAddSpecific(char* colors, char* cycle)
 {
   FAILURE failure;
@@ -46,7 +44,6 @@ FACE_DEGREE* intArray(int a, ...)
   return result;
 }
 
-/* Debug functions */
 bool dynamicCycleSetPrint(CYCLESET cycleSet)
 {
   uint32_t lastBit = (NCYCLES - 1) % BITS_PER_WORD;
