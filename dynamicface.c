@@ -72,15 +72,16 @@ FAILURE dynamicHandleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
 
 /*
  * Processes an incoming edge at a vertex intersection of two curves.
- * 
- * The incomingEdgeSlot parameter encodes both the edge and its relationship to colors:
+ *
+ * The incomingEdgeSlot parameter encodes both the edge and its relationship to
+ * colors:
  * - Slots 0,1 correspond to the primary color (colors[0])
  * - Slots 2,3 correspond to the secondary color (colors[1])
- * 
+ *
  * The bit operation (incomingEdgeSlot & 2) >> 1 extracts the color index:
  * - For slots 0,1: (0 & 2) >> 1 = 0 → colors[0] (primary)
  * - For slots 2,3: (2 & 2) >> 1 = 1 → colors[1] (secondary)
- * 
+ *
  * The edge's destination is always set to the other color's possiblyTo entry
  * to establish the correct connections between faces.
  */
@@ -88,13 +89,14 @@ FAILURE dynamicProcessIncomingEdge(EDGE edge, COLOR colors[2],
                                    int incomingEdgeSlot, int depth)
 {
   // Determine which color this edge corresponds to based on the slot
-  int colorIndex = (incomingEdgeSlot & 2) >> 1;  // 0 for slots 0,1; 1 for slots 2,3
-  int otherColorIndex = 1 - colorIndex;          // The other color index (0 or 1)
-  
+  int colorIndex =
+      (incomingEdgeSlot & 2) >> 1;       // 0 for slots 0,1; 1 for slots 2,3
+  int otherColorIndex = 1 - colorIndex;  // The other color index (0 or 1)
+
   // Verify edge's color matches the appropriate slot's color
   assert(edge->color == colors[colorIndex]);
   assert(edge->color != colors[otherColorIndex]);
-  
+
   if (edge->to != NULL) {
     // If the edge already has a destination, ensure it's consistent
     if (edge->to != &edge->possiblyTo[colors[colorIndex]]) {
@@ -103,9 +105,7 @@ FAILURE dynamicProcessIncomingEdge(EDGE edge, COLOR colors[2],
     assert(edge->to == &edge->possiblyTo[colors[otherColorIndex]]);
   } else {
     // Set the edge's destination to connect to the other color
-    TRAIL_SET_POINTER(
-        &edge->to,
-        &edge->possiblyTo[colors[otherColorIndex]]);
+    TRAIL_SET_POINTER(&edge->to, &edge->possiblyTo[colors[otherColorIndex]]);
   }
 
   assert(edge->to != &edge->possiblyTo[edge->color]);
