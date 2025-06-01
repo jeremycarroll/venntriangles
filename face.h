@@ -5,19 +5,20 @@
 
 #include "dynamicface.h"
 
-/* Global face array
- * The face structure is defined in vertex.h
- */
+/* Global variables */
+
+/* Global face array - each entry represents a face with a specific color set
+ * The face structure is defined in vertex.h */
 extern struct face Faces[NFACES];
 
-/* Face degree calculation array */
+/* Array used to calculate expected cycle lengths for faces based on color count */
 extern uint64 FaceSumOfFaceDegree[NCOLORS + 1];
 
-/* These next two functions are actually defined in search.c */
+/* Dynamic search functions - used in the solving algorithm */
 extern FAILURE dynamicFaceBacktrackableChoice(FACE face);
 extern FAILURE dynamicFaceChoice(FACE face, int depth);
 
-/* Core face structure and initialization functions */
+/* Core face operations */
 extern void initializeFacesAndEdges(void);
 extern char* faceToString(FACE face);
 extern FACE faceFromColors(char* colors);
