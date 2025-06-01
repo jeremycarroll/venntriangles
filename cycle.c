@@ -6,11 +6,9 @@
 
 #include <string.h>
 
-/* Global variables */
 struct facialCycle Cycles[NCYCLES];
 static int NextCycle = 0;
 
-/* Function declarations */
 static void addCycle(int length, COLOR* colors);
 static void initializeCyclesWithLengthArrayAndMaxValue(uint32_t length,
                                                        uint32_t position,
@@ -18,7 +16,6 @@ static void initializeCyclesWithLengthArrayAndMaxValue(uint32_t length,
 static void initializeCyclesWithLengthAndMaxValue(uint32_t length, COLOR color);
 static void initializeCyclesWithMaxValue(COLOR color);
 
-/* Static function implementations */
 static void addCycle(int length, COLOR* colors)
 {
   uint32_t color;

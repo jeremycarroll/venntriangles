@@ -4,7 +4,6 @@
 #define CYCLE_H
 
 #include "color.h"  // For COLOR and COLORSET
-#include "core.h"
 
 // Forward declaration for CYCLESET from cycleset.h
 typedef uint64 *CYCLESET;

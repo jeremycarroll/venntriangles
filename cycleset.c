@@ -2,19 +2,15 @@
 
 #include "cycleset.h"
 
-#include "color.h"
-#include "cycle.h"
 #include "trail.h"
 
 #include <string.h>
 
-/* Global variables - globally scoped */
 CYCLESET_DECLARE CycleSetPairs[NCOLORS][NCOLORS];
 CYCLESET_DECLARE CycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
 CYCLESET_DECLARE CycleSetOmittingOneColor[NCOLORS];
 CYCLESET_DECLARE CycleSetOmittingColorPair[NCOLORS][NCOLORS];
 
-/* Global variables - file scoped */
 static int NextSetOfCycleSets = 0;
 static CYCLESET CycleSetSets[NCYCLE_ENTRIES * 2];
 
@@ -100,7 +96,6 @@ void initializeCycleSetUniversal(CYCLESET cycleSet)
   cycleSet[i] = FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET;
 }
 
-/* Main initialization function */
 void initializeCycleSets(void)
 {
   if (Cycles[0].length == 0) {
@@ -114,7 +109,6 @@ void initializeCycleSets(void)
   }
 }
 
-/* File scoped static functions */
 static void initializeSameDirection(void)
 {
   uint32_t i, j;

@@ -3,8 +3,7 @@
 #ifndef CYCLESET_H
 #define CYCLESET_H
 
-#include "core.h"
-#include "cycle.h"  // For CYCLE and CYCLE_ID
+#include "cycle.h"
 
 typedef uint64 *CYCLESET;
 typedef uint64 CYCLESET_DECLARE[CYCLESET_LENGTH];
