@@ -15,15 +15,11 @@
 #define TOTAL_SEQUENCE_STORAGE 100
 #define DEBUG 0
 
-/* SequenceOrder provides a canonical ordering of the faces to help detect
-   symmetries. InverseSequenceOrder maps back from the canonical order to the
-   original order. */
+/* Canonical face ordering and its inverse mapping */
 static COLORSET SequenceOrder[NFACES];
 static COLORSET InverseSequenceOrder[NFACES];
 
-/* Generators of the dihedral group D_n where n = NCOLORS:
-   - Rotations: (0,1,2,...,n-1), (1,2,3,...,n-1,0), etc.
-   - Reflections: (n-1,n-2,...,1,0), (n-2,n-3,...,0,n-1), etc. */
+/* Dihedral group D_n generators (rotations and reflections) */
 static int dihedralGroup[2 * NCOLORS][NCOLORS] = {
 #if NCOLORS == 6
     {0, 1, 2, 3, 4, 5},
@@ -84,14 +80,12 @@ static COLORSET colorSetPermute(COLORSET colorSet, PERMUTATION permutation)
   return result;
 }
 
-/* Byte-for-byte comparison of face degree sequences */
 static bool faceDegreesEqual(FACE_DEGREE_SEQUENCE faceDegrees,
                              FACE_DEGREE_SEQUENCE other)
 {
   return memcmp(faceDegrees, other, sizeof(faceDegrees[0])) == 0;
 }
 
-/* Verifies the initialization of S6 data structures */
 static void verifyS6Initialization(uint64 done, uint64 ix)
 {
   uint64 i;
@@ -107,12 +101,6 @@ static void verifyS6Initialization(uint64 done, uint64 ix)
   }
 }
 
-/*
- * Converts a cycle to its automorphism representation.
- *
- * This builds a permutation that maps each color to its position in the cycle,
- * which is useful for transforming diagrams to their canonical forms.
- */
 PERMUTATION s6Automorphism(CYCLE_ID cycleId)
 {
   CYCLE cycle = Cycles + cycleId;
@@ -124,13 +112,6 @@ PERMUTATION s6Automorphism(CYCLE_ID cycleId)
   return result;
 }
 
-/*
- * Applies a color permutation to a cycle and normalizes its representation.
- *
- * This transforms a cycle by applying a permutation to all its colors, then
- * finds the canonical representation by selecting the cyclic shift that
- * starts with the smallest color value.
- */
 CYCLE_ID s6PermuteCycleId(CYCLE_ID originalCycleId, PERMUTATION permutation)
 {
   COLOR permuted[NCOLORS * 2];
@@ -155,7 +136,6 @@ CYCLE_ID s6PermuteCycleId(CYCLE_ID originalCycleId, PERMUTATION permutation)
   return getCycleId(permuted + minIndex, cycle->length);
 }
 
-/* Maps face data into canonical sequence for symmetry detection */
 static FACE_DEGREE_SEQUENCE getFaceDegreesInCanonicalOrder()
 {
   FACE_DEGREE_SEQUENCE faceDegrees = NEW(FACE_DEGREE_SEQUENCE);
@@ -191,13 +171,7 @@ static FACE_DEGREE_SEQUENCE sortPermutationsOfSequence(
   return sequences;
 }
 
-/*
- * Tests if a sequence is canonical (maximal) under the dihedral group.
- *
- * This is the core algorithm for detecting if a diagram is in canonical form,
- * by checking if the given sequence is the lexicographically largest
- * under all dihedral transformations.
- */
+/* Is sequence lexicographically maximal under dihedral symmetry? */
 static SYMMETRY_TYPE isCanonicalUnderDihedralGroup(
     const int count, const FACE_DEGREE_SEQUENCE faceDegreesInSequenceOrder, ...)
 {
@@ -215,18 +189,13 @@ static SYMMETRY_TYPE isCanonicalUnderDihedralGroup(
   return CANONICAL;
 }
 
-/* Wrapper for canonicity testing of a complete face degree sequence */
-static SYMMETRY_TYPE testFullSequenceCanonicity(
+static SYMMETRY_TYPE getFullSequenceCanonicity(
     const FACE_DEGREE_SEQUENCE sizes)
 {
   return isCanonicalUnderDihedralGroup(1, sizes);
 }
 
-/*
- * Adapts canonicity testing for a sequence with fewer than NFACES elements.
- * Used for partial sequences like those surrounding a central face.
- */
-static SYMMETRY_TYPE testPartialSequenceCanonicity(int n,
+static SYMMETRY_TYPE getPartialSequenceCanonicity(int n,
                                                    FACE_DEGREE_SEQUENCE args)
 {
   FACE_DEGREE_SEQUENCE sizes = NEW(FACE_DEGREE_SEQUENCE);
@@ -234,10 +203,10 @@ static SYMMETRY_TYPE testPartialSequenceCanonicity(int n,
   for (int i = 0; i < n; i++) {
     sizes->faceDegrees[i] = args->faceDegrees[i];
   }
-  return testFullSequenceCanonicity(sizes);
+  return getFullSequenceCanonicity(sizes);
 }
 
-/* Reflects a signature by reversing the direction of all cycles */
+/* Creates mirror image by reversing cycle orientations */
 static SIGNATURE s6SignatureReflected(SIGNATURE sequence)
 {
   SIGNATURE result = NEW(SIGNATURE);
@@ -250,7 +219,6 @@ static SIGNATURE s6SignatureReflected(SIGNATURE sequence)
   return result;
 }
 
-/* Permutes a signature according to the given permutation */
 static SIGNATURE s6SignaturePermuted(SIGNATURE sequence,
                                      PERMUTATION permutation)
 {
@@ -264,7 +232,7 @@ static SIGNATURE s6SignaturePermuted(SIGNATURE sequence,
   return result;
 }
 
-/* Recenters a signature around a different face */
+/* Shifts reference frame to make 'center' the new central face */
 static SIGNATURE s6SignatureRecentered(SIGNATURE sequence, COLORSET center)
 {
   SIGNATURE result = NEW(SIGNATURE);
@@ -277,7 +245,7 @@ static SIGNATURE s6SignatureRecentered(SIGNATURE sequence, COLORSET center)
   return result;
 }
 
-/* Computes the maximum signature under cyclic permutations */
+/* Finds maximum signature under all cyclic color permutations */
 static SIGNATURE maxSpunSignature(SIGNATURE onCurrentFace)
 {
   int counter;
@@ -296,15 +264,7 @@ static SIGNATURE maxSpunSignature(SIGNATURE onCurrentFace)
   return best;
 }
 
-/*
- * Initializes the S6 module with a canonical ordering of faces.
- *
- * The ordering prioritizes:
- * 1. Faces with single colors
- * 2. Face with colors 0 and NCOLORS-1
- * 3. Faces with consecutive colors
- * 4. Other faces in arbitrary order
- */
+/* Priority order: single-color faces, then faces with colors 0 and NCOLORS-1, then consecutive colors */
 #define ADD_TO_SEQUENCE_ORDER(colors)               \
   do {                                              \
     SequenceOrder[ix++] = (NFACES - 1) & ~(colors); \
@@ -335,7 +295,6 @@ void initializeS6(void)
   verifyS6Initialization(done, ix);
 }
 
-/* Creates a signature from the current face configuration */
 SIGNATURE s6SignatureFromFaces(void)
 {
   SIGNATURE result = NEW(SIGNATURE);
@@ -347,18 +306,7 @@ SIGNATURE s6SignatureFromFaces(void)
   return result;
 }
 
-/*
- * Finds the canonical signature for the current diagram under all symmetries.
- *
- * This is a key function in the library that finds the canonical representation
- * of a Venn diagram by:
- * 1. Trying each face as the central face
- * 2. Computing signatures for both orientations (regular and reflected)
- * 3. Finding the lexicographically maximum signature across all possibilities
- *
- * The canonical signature uniquely identifies isomorphic Venn diagrams
- * regardless of their drawing or labeling.
- */
+/* Computes diagram's canonical representation across all symmetries and face centrings */
 SIGNATURE s6MaxSignature(void)
 {
   int resultsIndex = 0;
@@ -385,39 +333,18 @@ SIGNATURE s6MaxSignature(void)
   return results[0];
 }
 
-/*
- * Tests if the current diagram is in canonical form under the dihedral group.
- *
- * Returns one of:
- * - CANONICAL: the current diagram is the canonical representative
- * - NON_CANONICAL: another view of this diagram would be canonical
- * - EQUIVOCAL: multiple views yield the same canonical form (diagram has
- * symmetry)
- */
 SYMMETRY_TYPE s6FacesSymmetryType(void)
 {
-  return testFullSequenceCanonicity(getFaceDegreesInCanonicalOrder());
+  return getFullSequenceCanonicity(getFaceDegreesInCanonicalOrder());
 }
 
-/*
- * Tests if a sequence of 6 face degrees is canonical.
- *
- * This function is primarily used for testing sequences around central faces
- * to determine if they form valid Venn diagrams.
- */
 SYMMETRY_TYPE s6SymmetryType6(FACE_DEGREE *args)
 {
   struct faceDegreeSequence argsAsSequence = {
       {args[0], args[1], args[2], args[3], args[4], args[5]}};
-  return testPartialSequenceCanonicity(6, &argsAsSequence);
+  return getPartialSequenceCanonicity(6, &argsAsSequence);
 }
 
-/*
- * Generates a simple string signature of face degrees for the current diagram.
- *
- * This provides a compact representation of the diagram's structure
- * that can be used for identification and comparison.
- */
 char *s6FaceDegreeSignature(void)
 {
   static char Result[NCOLORS + 1];
@@ -429,10 +356,6 @@ char *s6FaceDegreeSignature(void)
   return Result;
 }
 
-/*
- * Encodes a signature as a base-26×26 string, with each cycle ID
- * represented by a two-character sequence.
- */
 char *s6SignatureToString(SIGNATURE signature)
 {
   char *result = getBuffer();
@@ -445,12 +368,7 @@ char *s6SignatureToString(SIGNATURE signature)
   return usingBuffer(result);
 }
 
-/*
- * Provides a human-readable description of a signature, including:
- * - Whether the signature is reflected (marked with '!')
- * - The offset (central face)
- * - The full cycle representation for each face
- */
+/* Produces human-readable signature with reflection flag, central face, and full cycle details */
 char *s6SignatureToLongString(SIGNATURE signature)
 {
   char *result = tempMalloc(1024);
