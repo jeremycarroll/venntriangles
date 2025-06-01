@@ -210,6 +210,7 @@ bool dynamicColorRemoveFromSearch(COLOR color)
   uint32_t i;
   for (i = 0, f = Faces; i < NFACES; i++, f++) {
     if (f->cycle == NULL) {
+      /* Discard failure, we will report a different one. */
       if (f->edges[color].to == NULL &&
           dynamicFaceRestrictAndPropagateCycles(
               f, CycleSetOmittingOneColor[color], 0) != NULL) {
