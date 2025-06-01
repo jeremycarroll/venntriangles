@@ -173,6 +173,7 @@ CYCLE_ID getCycleId(COLOR* cycle, uint32_t length)
   assert(NULL == "Unreachable");
 }
 
+/* Reverses e.g. 1,2,3 to 1,3,2 i.e. the mirror image of the cycle. */
 CYCLE_ID cycleIdReverseDirection(CYCLE_ID forwardCycleId)
 {
   COLOR reversed[NCOLORS];

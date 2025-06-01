@@ -102,18 +102,39 @@ CYCLE cycleSetFirst(CYCLESET cycleSet)
   return cycleSetNext(cycleSet, NULL);
 }
 
+/**
+ * Finds the next cycle in a cycle set, starting from the given cycle.
+ * 
+ * This is a performance-critical function that efficiently iterates through the
+ * bits in a cycle set by using bitwise operations:
+ * 
+ * 1. If cycle is NULL, starts from the beginning. Otherwise, starts from the
+ *    cycle after the given one.
+ * 2. Creates a bitmask that only considers bits at or after the starting position
+ *    within the current word.
+ * 3. Find the first non-zero word in the remaining cycle set.
+ * 4. For that word, finds the first set bit using GCC's
+ *    __builtin_ctzll (Count Trailing Zeros) instruction.
+ * 5. Returns the corresponding cycle, or NULL if no more cycles are found.
+ *
+ * The __builtin_ctzll intrinsic counts trailing zeros in a 64-bit word,
+ * effectively finding the index of the lowest set bit.
+ */
 CYCLE cycleSetNext(CYCLESET cycleSet, CYCLE cycle)
 {
   uint64 i;
   int64_t j;
   uint64 cycleId = cycle == NULL ? 0 : cycle - Cycles + 1;
+  // Create a mask where bits before cycleId are 0 and bits after are 1
   uint64 mask = ~((1ull << (cycleId % BITS_PER_WORD)) - 1);
   for (i = cycleId / BITS_PER_WORD; i < CYCLESET_LENGTH; i++) {
     if (mask & cycleSet[i]) {
+      // Find the index of the lowest set bit in the masked word and convert to cycle ID
       j = i * BITS_PER_WORD + __builtin_ctzll(mask & cycleSet[i]);
       assert(j < NCYCLES);
       return &Cycles[j];
     }
+    // After the first word, consider all bits in subsequent words
     mask = ~0ull;
   }
   return NULL;
