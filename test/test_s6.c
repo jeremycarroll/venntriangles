@@ -12,8 +12,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unity.h>
-
-/* Test setup and teardown */
 void setUp(void)
 {
   initializeS6();
@@ -22,13 +20,11 @@ void setUp(void)
 
 void tearDown(void)
 {
-  // Tear down code if needed
+  /* Nothing to tear down */
 }
 
-/* Global variables */
 static int count6;
 
-/* Callback functions */
 static struct predicateResult countSolutions(int round)
 {
   (void)round;
@@ -36,7 +32,6 @@ static struct predicateResult countSolutions(int round)
   return PredicateFail;
 }
 
-/* Test functions */
 static void testCanonical6()
 {
   TEST_ASSERT_EQUAL(NON_CANONICAL, s6SymmetryType6(intArray(5, 5, 4, 4, 4, 5)));
@@ -44,7 +39,6 @@ static void testCanonical6()
   TEST_ASSERT_EQUAL(EQUIVOCAL, s6SymmetryType6(intArray(5, 5, 5, 4, 4, 4)));
 }
 
-/* The test program - just initialization and face degrees */
 static struct predicate countSolutionsPredicate = {"Count", countSolutions,
                                                    NULL};
 static struct predicate* testProgram[] = {
@@ -57,7 +51,6 @@ static void testCallback()
   TEST_ASSERT_EQUAL(56, count6);
 }
 
-/* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();
