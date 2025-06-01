@@ -9,7 +9,7 @@
 
 /* Global variables */
 struct face Faces[NFACES];
-static uint64 FaceSumOfFaceDegree[NCOLORS + 1];
+uint64 FaceSumOfFaceDegree[NCOLORS + 1];
 
 /* Static function declarations */
 static void initializePossiblyTo(void);

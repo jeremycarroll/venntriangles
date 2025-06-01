@@ -5,10 +5,13 @@
 
 #include "dynamicface.h"
 
-/* Global face array 
+/* Global face array
  * The face structure is defined in vertex.h
  */
 extern struct face Faces[NFACES];
+
+/* Face degree calculation array */
+extern uint64 FaceSumOfFaceDegree[NCOLORS + 1];
 
 /* These next two functions are actually defined in search.c */
 extern FAILURE dynamicFaceBacktrackableChoice(FACE face);
@@ -21,4 +24,3 @@ extern FACE faceFromColors(char* colors);
 extern void facePrintSelected(void);
 
 #endif  // FACE_H
-
