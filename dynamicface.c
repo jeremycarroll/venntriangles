@@ -70,21 +70,42 @@ FAILURE dynamicHandleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
   return NULL;
 }
 
+/*
+ * Processes an incoming edge at a vertex intersection of two curves.
+ * 
+ * The incomingEdgeSlot parameter encodes both the edge and its relationship to colors:
+ * - Slots 0,1 correspond to the primary color (colors[0])
+ * - Slots 2,3 correspond to the secondary color (colors[1])
+ * 
+ * The bit operation (incomingEdgeSlot & 2) >> 1 extracts the color index:
+ * - For slots 0,1: (0 & 2) >> 1 = 0 → colors[0] (primary)
+ * - For slots 2,3: (2 & 2) >> 1 = 1 → colors[1] (secondary)
+ * 
+ * The edge's destination is always set to the other color's possiblyTo entry
+ * to establish the correct connections between faces.
+ */
 FAILURE dynamicProcessIncomingEdge(EDGE edge, COLOR colors[2],
                                    int incomingEdgeSlot, int depth)
 {
-  assert(edge->color == colors[(incomingEdgeSlot & 2) >> 1]);
-  assert(edge->color != colors[1 - ((incomingEdgeSlot & 2) >> 1)]);
+  // Determine which color this edge corresponds to based on the slot
+  int colorIndex = (incomingEdgeSlot & 2) >> 1;  // 0 for slots 0,1; 1 for slots 2,3
+  int otherColorIndex = 1 - colorIndex;          // The other color index (0 or 1)
+  
+  // Verify edge's color matches the appropriate slot's color
+  assert(edge->color == colors[colorIndex]);
+  assert(edge->color != colors[otherColorIndex]);
+  
   if (edge->to != NULL) {
-    if (edge->to != &edge->possiblyTo[colors[(incomingEdgeSlot & 2) >> 1]]) {
+    // If the edge already has a destination, ensure it's consistent
+    if (edge->to != &edge->possiblyTo[colors[colorIndex]]) {
       return failureVertexConflict(depth);
     }
-    assert(edge->to ==
-           &edge->possiblyTo[colors[1 - ((incomingEdgeSlot & 2) >> 1)]]);
+    assert(edge->to == &edge->possiblyTo[colors[otherColorIndex]]);
   } else {
+    // Set the edge's destination to connect to the other color
     TRAIL_SET_POINTER(
         &edge->to,
-        &edge->possiblyTo[colors[1 - ((incomingEdgeSlot & 2) >> 1)]]);
+        &edge->possiblyTo[colors[otherColorIndex]]);
   }
 
   assert(edge->to != &edge->possiblyTo[edge->color]);
@@ -153,26 +174,13 @@ FAILURE dynamicFaceRestrictAndPropagateCycles(FACE face, CYCLESET onlyCycleSet,
 
 void dynamicFaceSetupCentral(FACE_DEGREE* faceDegrees)
 {
-  CYCLE cycle;
   uint64 i;
   FACE centralFace = Faces + (NFACES - 1);
   for (i = 0; i < NCOLORS; i++) {
     dynamicFaceSetCycleLength(~(1 << i), faceDegrees[i]);
   }
-  for (cycle = Cycles;; cycle++) {
-    if (cycle->length != NCOLORS) {
-      continue;
-    }
-    for (i = 1; i < NCOLORS; i++) {
-      if (cycle->curves[i] != i) {
-        goto NextCycle;
-      }
-    }
-    centralFace->cycle = cycle;
-    break;
-  NextCycle:
-    continue;
-  }
+  // The cycle (a b c d e f) is the last one.
+  centralFace->cycle = &Cycles[NCYCLES - 1];
   dynamicFaceBacktrackableChoice(centralFace);
 }
 
