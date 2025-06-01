@@ -2,19 +2,15 @@
 
 #include "cycle.h"
 
-#include "color.h"
-#include "cycleset.h"
 #include "visible_for_testing.h"
 
 #include <string.h>
 
-/* Global variables - globally scoped */
+/* Global variables */
 struct facialCycle Cycles[NCYCLES];
-
-/* Global variables - file scoped */
 static int NextCycle = 0;
 
-/* File scoped static functions */
+/* Function declarations */
 static void addCycle(int length, COLOR* colors);
 static void initializeCyclesWithLengthArrayAndMaxValue(uint32_t length,
                                                        uint32_t position,
@@ -22,7 +18,70 @@ static void initializeCyclesWithLengthArrayAndMaxValue(uint32_t length,
 static void initializeCyclesWithLengthAndMaxValue(uint32_t length, COLOR color);
 static void initializeCyclesWithMaxValue(COLOR color);
 
-/* Cycle operations */
+/* Static function implementations */
+static void addCycle(int length, COLOR* colors)
+{
+  uint32_t color;
+  CYCLE cycle = &Cycles[NextCycle++];
+  int ix = 0;
+  cycle->colors = 0;
+  cycle->length = length;
+  for (ix = 0; ix < length; ix++) {
+    color = colors[ix];
+    cycle->curves[ix] = color;
+    cycle->colors |= 1u << color;
+  }
+}
+
+static void initializeCyclesWithLengthArrayAndMaxValue(uint32_t length,
+                                                       uint32_t position,
+                                                       COLOR* colors)
+{
+  uint32_t nextColor, i;
+  COLOR swap;
+  if (position == length) {
+    for (i = 1; i < length; i++) {
+      addCycle(length, colors);
+      swap = colors[i];
+      colors[i] = colors[i + 1];
+      colors[i + 1] = swap;
+    }
+    for (; i > 1; i--) {
+      swap = colors[i];
+      colors[i] = colors[i - 1];
+      colors[i - 1] = swap;
+    }
+  } else {
+    for (nextColor = colors[1] - 1; nextColor > colors[0]; nextColor--) {
+      for (i = 0; i < position; i++) {
+        if (colors[i] == nextColor) goto skip;
+      }
+      colors[position] = nextColor;
+      initializeCyclesWithLengthArrayAndMaxValue(length, position + 1, colors);
+    skip:;
+    }
+  }
+}
+
+static void initializeCyclesWithLengthAndMaxValue(uint32_t length, COLOR color)
+{
+  int c1;
+  COLOR colors[NCOLORS + 1];
+  for (c1 = color - 1; c1 >= 0; c1--) {
+    colors[0] = c1;
+    colors[1] = color;
+    initializeCyclesWithLengthArrayAndMaxValue(length, 2, colors);
+  }
+}
+
+static void initializeCyclesWithMaxValue(COLOR color)
+{
+  for (uint32_t length = 3; length <= color + 1; length++) {
+    initializeCyclesWithLengthAndMaxValue(length, color);
+  }
+}
+
+/* Public function implementations */
 bool cycleContainsAthenB(CYCLE cycle, uint32_t i, uint32_t j)
 {
   uint64 ix;
@@ -118,7 +177,6 @@ uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color)
   assert(NULL == "Unreachable");
 }
 
-/* Cycle initialization */
 void initializeCycles(void)
 {
   assert(NextCycle == 0);
@@ -128,66 +186,4 @@ void initializeCycles(void)
   }
 
   assert(NextCycle == ARRAY_LEN(Cycles));
-}
-
-static void addCycle(int length, COLOR* colors)
-{
-  uint32_t color;
-  CYCLE cycle = &Cycles[NextCycle++];
-  int ix = 0;
-  cycle->colors = 0;
-  cycle->length = length;
-  for (ix = 0; ix < length; ix++) {
-    color = colors[ix];
-    cycle->curves[ix] = color;
-    cycle->colors |= 1u << color;
-  }
-}
-
-static void initializeCyclesWithLengthArrayAndMaxValue(uint32_t length,
-                                                       uint32_t position,
-                                                       COLOR* colors)
-{
-  uint32_t nextColor, i;
-  COLOR swap;
-  if (position == length) {
-    for (i = 1; i < length; i++) {
-      addCycle(length, colors);
-      swap = colors[i];
-      colors[i] = colors[i + 1];
-      colors[i + 1] = swap;
-    }
-    for (; i > 1; i--) {
-      swap = colors[i];
-      colors[i] = colors[i - 1];
-      colors[i - 1] = swap;
-    }
-  } else {
-    for (nextColor = colors[1] - 1; nextColor > colors[0]; nextColor--) {
-      for (i = 0; i < position; i++) {
-        if (colors[i] == nextColor) goto skip;
-      }
-      colors[position] = nextColor;
-      initializeCyclesWithLengthArrayAndMaxValue(length, position + 1, colors);
-    skip:;
-    }
-  }
-}
-
-static void initializeCyclesWithLengthAndMaxValue(uint32_t length, COLOR color)
-{
-  int c1;
-  COLOR colors[NCOLORS + 1];
-  for (c1 = color - 1; c1 >= 0; c1--) {
-    colors[0] = c1;
-    colors[1] = color;
-    initializeCyclesWithLengthArrayAndMaxValue(length, 2, colors);
-  }
-}
-
-static void initializeCyclesWithMaxValue(COLOR color)
-{
-  for (uint32_t length = 3; length <= color + 1; length++) {
-    initializeCyclesWithLengthAndMaxValue(length, color);
-  }
 }
