@@ -3,6 +3,7 @@
 #ifndef VERTEX_H
 #define VERTEX_H
 
+#include "cycleset.h"
 #include "edge.h"
 #include "trail.h"
 

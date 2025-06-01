@@ -3,7 +3,7 @@
 #ifndef S6_H
 #define S6_H
 
-#include "color.h"
+#include "cycle.h"
 
 typedef enum {
   CANONICAL,

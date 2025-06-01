@@ -7,6 +7,7 @@
 #include "trail.h"
 #include "s6.h"
 #include "color.h"
+#include "cycleset.h"
 
 /* Internal declarations that should be visible to test files will go here */
 extern FACE searchChooseNextFace(void);

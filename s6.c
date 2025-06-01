@@ -189,14 +189,13 @@ static SYMMETRY_TYPE isCanonicalUnderDihedralGroup(
   return CANONICAL;
 }
 
-static SYMMETRY_TYPE getFullSequenceCanonicity(
-    const FACE_DEGREE_SEQUENCE sizes)
+static SYMMETRY_TYPE getFullSequenceCanonicity(const FACE_DEGREE_SEQUENCE sizes)
 {
   return isCanonicalUnderDihedralGroup(1, sizes);
 }
 
 static SYMMETRY_TYPE getPartialSequenceCanonicity(int n,
-                                                   FACE_DEGREE_SEQUENCE args)
+                                                  FACE_DEGREE_SEQUENCE args)
 {
   FACE_DEGREE_SEQUENCE sizes = NEW(FACE_DEGREE_SEQUENCE);
   memset(sizes, 0, sizeof(*sizes));
@@ -264,7 +263,8 @@ static SIGNATURE maxSpunSignature(SIGNATURE onCurrentFace)
   return best;
 }
 
-/* Priority order: single-color faces, then faces with colors 0 and NCOLORS-1, then consecutive colors */
+/* Priority order: single-color faces, then faces with colors 0 and NCOLORS-1,
+ * then consecutive colors */
 #define ADD_TO_SEQUENCE_ORDER(colors)               \
   do {                                              \
     SequenceOrder[ix++] = (NFACES - 1) & ~(colors); \
@@ -306,7 +306,8 @@ SIGNATURE s6SignatureFromFaces(void)
   return result;
 }
 
-/* Computes diagram's canonical representation across all symmetries and face centrings */
+/* Computes diagram's canonical representation across all symmetries and face
+ * centrings */
 SIGNATURE s6MaxSignature(void)
 {
   int resultsIndex = 0;
@@ -368,7 +369,8 @@ char *s6SignatureToString(SIGNATURE signature)
   return usingBuffer(result);
 }
 
-/* Produces human-readable signature with reflection flag, central face, and full cycle details */
+/* Produces human-readable signature with reflection flag, central face, and
+ * full cycle details */
 char *s6SignatureToLongString(SIGNATURE signature)
 {
   char *result = tempMalloc(1024);
