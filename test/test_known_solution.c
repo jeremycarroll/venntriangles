@@ -13,21 +13,7 @@
 #include <string.h>
 #include <unity.h>
 
-/* Function declarations */
-static void addFacesFromTestData(char* testData[][2], int length);
-static bool findFace(char* colors, FACE* face, char** cyclePtr,
-                     char* testData[][2], int length);
-static FACE addFaceFromTestData(char* colors);
-static void testFaceFromColors(void);
-static void test3456(void);
-static void test4356(void);
-static void test6543(void);
-static void test5364(void);
-static void testInOrder(void);
-static void testDE1(void);
-static void testDE2(void);
 
-/* Test data */
 static char* testData3[][2] = {
     {
         "ac",
@@ -297,7 +283,6 @@ static char* testData6[][2] = {
 };
 
 static TRAIL trail = NULL;
-/* Test setup and teardown */
 void setUp(void)
 {
   FACE_DEGREE args[] = {5, 5, 5, 4, 4, 4};
@@ -316,7 +301,6 @@ void tearDown(void)
   CycleGuessCounterIPC = 0;
 }
 
-/* Helper functions */
 static void addFacesFromTestData(char* testData[][2], int length)
 {
   int i;
@@ -372,7 +356,6 @@ static FACE addFaceFromTestData(char* colors)
   return dynamicFaceAddSpecific(colors, cycle);
 }
 
-/* Test functions */
 static void testFaceFromColors()
 {
   TEST_ASSERT_EQUAL(Faces, faceFromColors(""));
@@ -467,7 +450,6 @@ static void testDE2(void)
   TEST_ASSERT_TRUE(cycleSetMember(cycleId, ab->possibleCycles));
 }
 
-/* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();

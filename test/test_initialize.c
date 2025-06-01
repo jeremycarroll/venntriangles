@@ -7,16 +7,13 @@
 
 #include <unity.h>
 
-/* External declarations */
 extern CYCLESET_DECLARE CycleSetPairs[NCOLORS][NCOLORS];
 extern CYCLESET_DECLARE CycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
 
-/* Test setup and teardown */
 void setUp(void) {}
 
 void tearDown(void) {}
 
-/* Test functions */
 static void testInitialize(void)
 {
   uint32_t j;
@@ -28,7 +25,6 @@ static void testInitialize(void)
   }
 }
 
-/* Tightly coupled with the order of generation. */
 static void testLastCycles(void)
 {
   initialize();
@@ -199,7 +195,6 @@ static void testNextCycle(void)
   TEST_ASSERT_EQUAL(120 + 1, counter);
 }
 
-/* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();

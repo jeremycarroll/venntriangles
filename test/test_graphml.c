@@ -59,7 +59,6 @@ static FILE* mockFopen(const char* filename, const char* mode)
 }
 #pragma GCC diagnostic warning "-Wunused-parameter"
 
-/* Test setup and teardown */
 void setUp(void)
 {
   initializeStatisticLogging("/dev/null", 1000, 1000);  // Reduce logging
@@ -68,8 +67,7 @@ void setUp(void)
 }
 
 void tearDown(void)
-{ /* This is needed after a test failure, when unity uses a long jump out of the
-     engine. */
+{ /* Handle failure case when unity uses long jump out of the engine */
   engineResume((PREDICATE[]){&FAILPredicate});
 }
 
@@ -202,7 +200,6 @@ static void firstNodeMatch(regmatch_t* nodeIdOffsets)
   char nodeColors[8];
   char message[100];
   entry = findNode(nodeIdOffsets);
-  // printf("Added node %s\n", entry->id);
   TEST_ASSERT_NOT_NULL(entry);
   sprintf(message, "Added node %s", entry->id);
   TEST_ASSERT_EQUAL_INT_MESSAGE(0, entry->node, message);
@@ -365,21 +362,11 @@ FORWARD_BACKWARD_PREDICATE_STATIC(CheckGraphML, NULL, forwardGraphML,
                                   backwardGraphML)
 
 static regex_t internalEdgeRegex;
-/* This test exercises the code for dealing with two corners in the same face.
-The specific result picked out is 654444-26/6c/037.xml which includes three
-lots of such corner pairs.
-*/
 static bool forwardVariant14188(void)
 {
   compileRegex(&internalEdgeRegex,
                "<edge source=\"[a-f]_[0-2]\" target=\"[a-f]_[0-2]\">");
-  /* Run the program with -d 654444
-  then inspect the following file to see the graphml being tested.
-   654444-26/6c/037.xml
-   To convert the file name to variant number user bc
-   > ibase=16
-   > 37 * 100 + 6C
-   */
+  /* Test output: 654444-26/6c/037.xml (variant 14188 = 0x37*0x100+0x6C) */
   MaxVariantsPerSolutionFlag = 14188;
   IgnoreFirstVariantsPerSolution = MaxVariantsPerSolutionFlag - 1;
   return true;
@@ -399,13 +386,7 @@ FORWARD_BACKWARD_PREDICATE_STATIC(Variant14188, NULL, forwardVariant14188,
 
 static bool forwardVariant1319(void)
 {
-  /* Run the program with  -d 555444 -m 64 -k 63
-  then inspect the following file to see the graphml being tested.
-   555444-64/27/005.xml
-   To convert the file name to variant number user bc
-   > ibase=16
-   > 5 * 100 + 27
-   */
+  /* Test output: 555444-64/27/005.xml (variant 1319 = 0x5*0x100+0x27) */
   compileRegex(&internalEdgeRegex,
                "<edge source=\"([a-f])_([0-2])\" target=\"([^\"]*)\"");
   return true;
@@ -596,7 +577,6 @@ static void setupKnown()
     UnityDefaultTestRun(run, "645534-Color-" #color, __LINE__); \
   };
 
-/* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();
