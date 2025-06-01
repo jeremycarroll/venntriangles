@@ -24,13 +24,6 @@ extern FAILURE dynamicFaceRestrictAndPropagateCycles(FACE face,
                                                      int depth);
 extern FAILURE dynamicFacePropagateChoice(FACE face, EDGE edge, int depth);
 extern void dynamicRecomputeCountOfChoices(FACE face);
-extern void dynamicRestrictCycles(FACE face, CYCLESET cycleSet);
-extern FAILURE dynamicCheckLengthOfCycleOfFaces(FACE face);
-extern FAILURE dynamicProcessIncomingEdge(EDGE edge, COLOR colors[2],
-                                          int incomingEdgeSlot, int depth);
-extern FAILURE dynamicHandleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
-                                         int depth);
-extern void dynamicCountEdge(EDGE edge);
 
 /* Global counters */
 extern uint64 CycleForcedCounter;

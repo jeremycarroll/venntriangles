@@ -28,7 +28,7 @@ void dynamicRecomputeCountOfChoices(FACE face)
   trailSetInt(&face->cycleSetSize, cycleSetSize(face->possibleCycles));
 }
 
-void dynamicRestrictCycles(FACE face, CYCLESET cycleSet)
+static void dynamicRestrictCycles(FACE face, CYCLESET cycleSet)
 {
   uint32_t i;
   uint_trail toBeCleared;
@@ -49,14 +49,14 @@ void dynamicRestrictCycles(FACE face, CYCLESET cycleSet)
   }
 }
 
-void dynamicCountEdge(EDGE edge)
+static void dynamicCountEdge(EDGE edge)
 {
   uint_trail* edgeCountPtr =
       &EdgeColorCountState[IS_CLOCKWISE_EDGE(edge)][edge->color];
   trailSetInt(edgeCountPtr, (*edgeCountPtr) + 1);
 }
 
-FAILURE dynamicHandleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
+static FAILURE dynamicHandleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
                                   int depth)
 {
   if (face->edges[aColor].to != NULL) {
@@ -85,7 +85,7 @@ FAILURE dynamicHandleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
  * The edge's destination is always set to the other color's possiblyTo entry
  * to establish the correct connections between faces.
  */
-FAILURE dynamicProcessIncomingEdge(EDGE edge, COLOR colors[2],
+static FAILURE dynamicProcessIncomingEdge(EDGE edge, COLOR colors[2],
                                    int incomingEdgeSlot, int depth)
 {
   // Determine which color this edge corresponds to based on the slot
@@ -112,7 +112,7 @@ FAILURE dynamicProcessIncomingEdge(EDGE edge, COLOR colors[2],
   return NULL;
 }
 
-FAILURE dynamicCheckLengthOfCycleOfFaces(FACE face)
+static FAILURE dynamicCheckLengthOfCycleOfFaces(FACE face)
 {
   uint32_t i = 0,
            expected = FaceSumOfFaceDegree[__builtin_popcount(face->colors)];
