@@ -14,7 +14,6 @@ CYCLESET_DECLARE CycleSetOmittingColorPair[NCOLORS][NCOLORS];
 static int NextSetOfCycleSets = 0;
 static CYCLESET CycleSetSets[NCYCLE_ENTRIES * 2];
 
-/* Function declarations */
 static void initializeSameDirection(void);
 static void initializeOppositeDirection(void);
 static void initializeOmittingCycleSets(void);
@@ -23,7 +22,9 @@ static void memoizeCycleTriples(void);
 static void initializeOmittingOneColor(void);
 static void initializeOmittingColorPairs(void);
 
-/* Externally linked functions - cycleset operations */
+#define FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET \
+  ((1ul << (NCYCLES % BITS_PER_WORD)) - 1ul)
+
 void cycleSetAdd(CYCLE_ID cycleId, CYCLESET cycleSet)
 {
   assert(cycleId < NCYCLES);
@@ -40,6 +41,68 @@ void cycleSetRemove(CYCLE_ID cycleId, CYCLESET cycleSet)
 {
   assert(cycleId < NCYCLES);
   cycleSet[cycleId / BITS_PER_WORD] &= ~(1ul << (cycleId % BITS_PER_WORD));
+}
+
+static void memoizeCyclePairs(void)
+{
+  uint32_t i, j, cycleId;
+  for (i = 0; i < NCOLORS; i++) {
+    for (j = 0; j < NCOLORS; j++) {
+      for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
+        if (cycleContainsAthenB(&Cycles[cycleId], i, j)) {
+          cycleSetAdd(cycleId, CycleSetPairs[i][j]);
+        }
+      }
+    }
+  }
+}
+
+static void memoizeCycleTriples(void)
+{
+  uint32_t i, j, k, cycleId;
+  for (i = 0; i < NCOLORS; i++) {
+    for (j = 0; j < NCOLORS; j++) {
+      for (k = 0; k < NCOLORS; k++) {
+        for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
+          if (cycleContainsAthenBthenC(&Cycles[cycleId], i, j, k)) {
+            cycleSetAdd(cycleId, CycleSetTriples[i][j][k]);
+          }
+        }
+      }
+    }
+  }
+}
+
+static void initializeOmittingOneColor(void)
+{
+  uint32_t i, cycleId;
+  for (i = 0; i < NCOLORS; i++) {
+    for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
+      if (!COLORSET_HAS_MEMBER(i, Cycles[cycleId].colors)) {
+        cycleSetAdd(cycleId, CycleSetOmittingOneColor[i]);
+      }
+    }
+  }
+}
+
+static void initializeOmittingColorPairs(void)
+{
+  uint32_t i, j, cycleId;
+  for (i = 0; i < NCOLORS; i++) {
+    for (j = i + 1; j < NCOLORS; j++) {
+      for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
+        if (!cycleContainsAthenB(&Cycles[cycleId], i, j)) {
+          cycleSetAdd(cycleId, CycleSetOmittingColorPair[i][j]);
+        }
+      }
+    }
+  }
+}
+
+static void initializeOmittingCycleSets(void)
+{
+  initializeOmittingOneColor();
+  initializeOmittingColorPairs();
 }
 
 CYCLE cycleSetFirst(CYCLESET cycleSet)
@@ -64,7 +127,6 @@ CYCLE cycleSetNext(CYCLESET cycleSet, CYCLE cycle)
   return NULL;
 }
 
-/* See https://en.wikichip.org/wiki/population_count#Software_support */
 uint32_t cycleSetSize(CYCLESET cycleSet)
 {
   uint32_t size = 0;
@@ -82,9 +144,6 @@ void dynamicCycleSetRemoveCycle(CYCLESET cycleSet, uint32_t cycleId)
       cycleSet[cycleId / BITS_PER_WORD] & ~(1ul << (cycleId % BITS_PER_WORD)));
 }
 
-#define FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET \
-  ((1ul << (NCYCLES % BITS_PER_WORD)) - 1ul)
-
 void initializeCycleSetUniversal(CYCLESET cycleSet)
 {
   uint32_t i = 0;
@@ -94,19 +153,6 @@ void initializeCycleSetUniversal(CYCLESET cycleSet)
   }
 #endif
   cycleSet[i] = FINAL_ENTRIES_IN_UNIVERSAL_CYCLE_SET;
-}
-
-void initializeCycleSets(void)
-{
-  if (Cycles[0].length == 0) {
-    // Initialize cycles first if they haven't been initialized
-    initializeCycles();
-    memoizeCyclePairs();
-    memoizeCycleTriples();
-    initializeSameDirection();
-    initializeOppositeDirection();
-    initializeOmittingCycleSets();
-  }
 }
 
 static void initializeSameDirection(void)
@@ -150,64 +196,15 @@ static void initializeOppositeDirection(void)
   assert(NextSetOfCycleSets == 2 * NCYCLE_ENTRIES);
 }
 
-static void initializeOmittingCycleSets(void)
+void initializeCycleSets(void)
 {
-  initializeOmittingOneColor();
-  initializeOmittingColorPairs();
-}
-
-static void initializeOmittingOneColor(void)
-{
-  uint32_t i, cycleId;
-  for (i = 0; i < NCOLORS; i++) {
-    for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-      if (!COLORSET_HAS_MEMBER(i, Cycles[cycleId].colors)) {
-        cycleSetAdd(cycleId, CycleSetOmittingOneColor[i]);
-      }
-    }
-  }
-}
-
-static void initializeOmittingColorPairs(void)
-{
-  uint32_t i, j, cycleId;
-  for (i = 0; i < NCOLORS; i++) {
-    for (j = i + 1; j < NCOLORS; j++) {
-      for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-        if (!cycleContainsAthenB(&Cycles[cycleId], i, j)) {
-          cycleSetAdd(cycleId, CycleSetOmittingColorPair[i][j]);
-        }
-      }
-    }
-  }
-}
-
-static void memoizeCyclePairs(void)
-{
-  uint32_t i, j, cycleId;
-  for (i = 0; i < NCOLORS; i++) {
-    for (j = 0; j < NCOLORS; j++) {
-      for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-        if (cycleContainsAthenB(&Cycles[cycleId], i, j)) {
-          cycleSetAdd(cycleId, CycleSetPairs[i][j]);
-        }
-      }
-    }
-  }
-}
-
-static void memoizeCycleTriples(void)
-{
-  uint32_t i, j, k, cycleId;
-  for (i = 0; i < NCOLORS; i++) {
-    for (j = 0; j < NCOLORS; j++) {
-      for (k = 0; k < NCOLORS; k++) {
-        for (cycleId = 0; cycleId < NCYCLES; cycleId++) {
-          if (cycleContainsAthenBthenC(&Cycles[cycleId], i, j, k)) {
-            cycleSetAdd(cycleId, CycleSetTriples[i][j][k]);
-          }
-        }
-      }
-    }
+  if (Cycles[0].length == 0) {
+    // Initialize cycles first if they haven't been initialized
+    initializeCycles();
+    memoizeCyclePairs();
+    memoizeCycleTriples();
+    initializeSameDirection();
+    initializeOppositeDirection();
+    initializeOmittingCycleSets();
   }
 }
