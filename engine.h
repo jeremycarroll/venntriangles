@@ -113,8 +113,15 @@ extern void engineResume(PREDICATE* predicates);
 
 /**
  * Creates a predicate with forward and backward execution paths.
- * These macros simplify the creation of predicates that follow the
- * standard pattern of forward execution followed by backward execution.
+ * These macros simplify the creation of predicates that follow a
+ * standard pattern of forward execution followed by the other predicates
+ * and then backward execution.
+ * - the optional gate can return false to completely fail the predicate
+ *   (omitting the backward call).
+ * - the optional forward can return false to not proceed to the
+ *   other predicates but to fail to the backward call.
+ * - the optional backward is void, and is executed while backtracking
+ *   to the previous predicate.
  */
 
 #define FORWARD_BACKWARD_PREDICATE_SCOPE(scope, name, gate, forward, backward) \

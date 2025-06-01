@@ -5,7 +5,15 @@
 
 #include "edge.h"
 
-/* Structure to hold callbacks for triangle traversal */
+/**
+ * Triangle handling functions for Venn diagram traversal and verification.
+ * Provides a callback-based API for triangle perimeter traversal.
+ */
+
+/**
+ * Structure to hold callbacks for triangle traversal.
+ * Each function is called for a specific edge configuration.
+ */
 typedef struct {
   /* Callback for processing an edge with no corners */
   void (*processRegularEdge)(void *data, EDGE current, int line);
@@ -23,11 +31,24 @@ typedef struct {
   void (*processVertex)(void *data, VERTEX vertex, COLOR color);
 } TriangleTraversalCallbacks;
 
-/* Traverse a triangle's perimeter, calling appropriate callbacks */
+/**
+ * Traverse a triangle's perimeter, calling appropriate callbacks.
+ * 
+ * @param color Color of the triangle to traverse
+ * @param corners Array of edges forming the triangle corners
+ * @param callbacks Set of functions to call during traversal
+ * @param data User data passed to callbacks
+ */
 void triangleTraverse(COLOR color, EDGE (*corners)[3],
                       TriangleTraversalCallbacks *callbacks, void *data);
 
-/* Check if any lines cross in a triangle */
+/**
+ * Check if any lines cross within a triangle.
+ * 
+ * @param color Color of the triangle to check
+ * @param corners Array of edges forming the triangle corners
+ * @return true if no lines cross, false otherwise
+ */
 bool triangleLinesNotCrossed(COLOR color, EDGE (*corners)[3]);
 
-#endif /* TRIANGLES_H */
+#endif  /* TRIANGLES_H */
