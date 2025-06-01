@@ -13,7 +13,6 @@
 #include <string.h>
 #include <unity.h>
 
-
 static char* testData3[][2] = {
     {
         "ac",
