@@ -21,7 +21,7 @@ extern bool cycleSetMember(CYCLE_ID cycleId, CYCLESET cycleSet);
 extern CYCLE cycleSetFirst(CYCLESET cycleSet);
 extern CYCLE cycleSetNext(CYCLESET cycleSet, CYCLE cycle);
 extern uint32_t cycleSetSize(CYCLESET cycleSet);
-extern void cycleSetRemoveCycleWithTrail(CYCLESET cycleSet, uint32_t cycleId);
+extern void dynamicCycleSetRemoveCycle(CYCLESET cycleSet, uint32_t cycleId);
 extern void initializeCycleSetUniversal(CYCLESET cycleSet);
 
 // Main initialization function

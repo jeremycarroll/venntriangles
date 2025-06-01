@@ -74,7 +74,7 @@ uint32_t cycleSetSize(CYCLESET cycleSet)
   return size;
 }
 
-void cycleSetRemoveCycleWithTrail(CYCLESET cycleSet, uint32_t cycleId)
+void dynamicCycleSetRemoveCycle(CYCLESET cycleSet, uint32_t cycleId)
 {
   assert(cycleId < NCYCLES);
   trailSetInt(
