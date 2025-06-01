@@ -59,7 +59,7 @@ void dynamicFaceSetupCentral(FACE_DEGREE* faceDegrees)
 }
 
 FAILURE dynamicFaceIncludeVertex(FACE face, COLOR aColor, COLOR bColor,
-                               int depth)
+                                 int depth)
 {
   FAILURE failure;
   VERTEX vertex;
@@ -148,7 +148,7 @@ FAILURE dynamicFacePropagateChoice(FACE face, EDGE edge, int depth)
 }
 
 FAILURE dynamicFaceRestrictAndPropagateCycles(FACE face, CYCLESET onlyCycleSet,
-                                            int depth)
+                                              int depth)
 {
   /* check for conflict or no-op. */
   if (face->cycleSetSize == 1 || face->cycle != NULL) {
@@ -235,7 +235,7 @@ static void setupColors(VERTEX vertex, COLOR colors[2])
 }
 
 FAILURE dynamicProcessIncomingEdge(EDGE edge, COLOR colors[2],
-                                 int incomingEdgeSlot, int depth)
+                                   int incomingEdgeSlot, int depth)
 {
   assert(edge->color == colors[(incomingEdgeSlot & 2) >> 1]);
   assert(edge->color != colors[1 - ((incomingEdgeSlot & 2) >> 1)]);
@@ -263,7 +263,7 @@ static void validateIncomingEdges(VERTEX vertex)
 }
 
 FAILURE dynamicHandleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
-                                int depth)
+                                  int depth)
 {
   if (face->edges[aColor].to != NULL) {
     assert(face->edges[aColor].to != &face->edges[aColor].possiblyTo[aColor]);
@@ -275,3 +275,4 @@ FAILURE dynamicHandleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
   }
   return NULL;
 }
+

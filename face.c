@@ -1,6 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #include "face.h"
+
 #include "failure.h"
 #include "s6.h"
 #include "utils.h"
@@ -15,11 +16,11 @@ static void applyMonotonicity(void);
 static void initializeLengthOfCycleOfFaces(void);
 static bool isCycleValidForFace(CYCLE cycle, COLORSET faceColors);
 static bool isEdgeTransition(COLOR curve1, COLOR curve2, COLORSET faceColors,
-                           COLORSET* previousFaceColors,
-                           COLORSET* nextFaceColors);
+                             COLORSET* previousFaceColors,
+                             COLORSET* nextFaceColors);
 static bool exactlyTwoEdgeTransitions(CYCLE cycle, COLORSET faceColors,
-                                    COLORSET* previousFaceColors,
-                                    COLORSET* nextFaceColors);
+                                      COLORSET* previousFaceColors,
+                                      COLORSET* nextFaceColors);
 static void facePrint(FACE face);
 
 /* Core face initialization */
@@ -124,8 +125,8 @@ static bool isCycleValidForFace(CYCLE cycle, COLORSET faceColors)
 }
 
 static bool isEdgeTransition(COLOR curve1, COLOR curve2, COLORSET faceColors,
-                           COLORSET* previousFaceColors,
-                           COLORSET* nextFaceColors)
+                             COLORSET* previousFaceColors,
+                             COLORSET* nextFaceColors)
 {
   uint64 currentXor = (1ll << curve1) | (1ll << curve2);
   if (__builtin_popcountll(currentXor & faceColors) != 1) {
@@ -143,22 +144,22 @@ static bool isEdgeTransition(COLOR curve1, COLOR curve2, COLORSET faceColors,
 }
 
 static bool exactlyTwoEdgeTransitions(CYCLE cycle, COLORSET faceColors,
-                                    COLORSET* previousFaceColors,
-                                    COLORSET* nextFaceColors)
+                                      COLORSET* previousFaceColors,
+                                      COLORSET* nextFaceColors)
 {
   uint32_t count = 0;
   COLORSET dummy = 0;
 
   // Check transition from last to first curve
   if (isEdgeTransition(cycle->curves[cycle->length - 1], cycle->curves[0],
-                     faceColors, previousFaceColors, nextFaceColors)) {
+                       faceColors, previousFaceColors, nextFaceColors)) {
     count++;
   }
 
   // Check transitions between consecutive curves
   for (uint32_t i = 1; i < cycle->length; i++) {
     if (isEdgeTransition(cycle->curves[i - 1], cycle->curves[i], faceColors,
-                       previousFaceColors, nextFaceColors)) {
+                         previousFaceColors, nextFaceColors)) {
       count++;
       switch (count) {
         case 2:
@@ -224,3 +225,4 @@ static void initializeLengthOfCycleOfFaces(void)
         FaceSumOfFaceDegree[i] * (NCOLORS - i) / (i + 1);
   }
 }
+
