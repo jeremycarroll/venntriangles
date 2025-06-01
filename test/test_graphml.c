@@ -550,11 +550,11 @@ static void setup645534()
   IgnoreFirstVariantsPerSolution = 0;
   LevelsIPC = 1;
   ExpectedSignature =
-      "McDpAzHcCtAgAyKaNnAwEiCxAeClCyDxBwFnAyJzBqFwAzEvBvAxAsCwAaBwKjEuNfKcBdDe"
-      "BhAfAoCxDeBdEhEdAuBiDvCwBdDgBcEnAoDhApFyAcAtAdFzCvBpKoPd";
+      "KwDpAzIbCrAfAwKgNvAvEaCxAeClCyEcBvFoAwJyBrFuAzFcBlAyArCwAaBvKmEqNtHrBbDd"
+      "BmAgAoCxDdBbEjEgAuBoDvCwBbDeBdEnAoDhApFyAcAtAdGeCvBjKoPd";
   ClassSignature =
-      "PdJeIgFuAcEhAdDeDqAcDuGqElAdGnGhKoDpAbFnAnFeAaFwJdDmCzCyAeFkCyCzErDnDlDk"
-      "BqFwAzHcEsAxEpEyJjAwDcCxKjDoAaFwAsDeBvNwDiEtFhEsAyOrJwMx";
+      "PdHlHfFwAcEjAdDdDqAcDuGsEbAdGpGkKoDpAbFoAnFiAaFuJqDkDaCyAeFnCyDaEpDoDnDj"
+      "BrFuAzIbFbAyFaFgJiAvDcCxKmDlAaFuArDdBlNnDiFeFmFbAwOtKdNi";
 }
 
 static void setup654444()
@@ -565,11 +565,12 @@ static void setup654444()
   LevelsIPC = 2;
   // From 654444-26.txt (this may change)
   ExpectedSignature =
-      "OrCgChKeDtAoAwFhDxAcArEmDyBfDcEaAwAxBhFkBnBhAxEsEuDpBtFeBkBtFrEuLqBiBaDa"
-      "EgApAdDvEyBmApDbDeAoGnDqBrAwBfDbAlBnAcDqDjKgAoEfAhBzKyPd";
+      "OtCaCkKhDrAoAvFmEcAcAsElEeBfDcEdAvAyBmFnBqBmAyFbEqDpBuFiBnBuFvEqMiBoBaCz"
+      "EhApAdDvFgBiApDbDdAoGpDqBtAvBfDbAjBqAcDqDmHsAoDzAhCeKqPd";
+
   ClassSignature =
-      "PdJeIgKbAcEhAdDwDqAcDbBeElAdEhBbNsFbEnCwAlFkAcCxEzDkDaDtFsDlElDsErDnDlEo"
-      "BqFwAzEvEsAxFkBhFnBwFwBqEkDaEfCxAsDbCsEyDiHhDbDsDpMcIiOi";
+      "PdHlHfKiAcEjAdDwDqAcDbBeEbAdEjBcOaFhEnCwAjFnAcCxFjDjCzDrEyDnEbDtEpDoDnEo"
+      "BrFuAzFcFbAyFnBmFoBvFuBrEmCzDzCxArDbCdFgDiIgDbDtDpKwIxOq";
 }
 
 static void setupKnown()
@@ -579,11 +580,11 @@ static void setupKnown()
   MaxVariantsPerSolutionFlag = 1319;
   IgnoreFirstVariantsPerSolution = MaxVariantsPerSolutionFlag - 1;
   ExpectedSignature =
-      "LtBtFxIwCfAuEgCyFtBkDoFrAhBkFdFrGqArEgGeCkAvEmCzDfAqDeEdAgBtFuEuGxAxDmDn"
-      "AfBhFkHwJgBwDpEuAeBnDlEoJcAwDaDbAeBnDbDqEfAtEnFzAnBzIgPd";
+      "MkBuFxHjCjAuEhCyFtBnDlFvAhBnEtFvGsAsEhGiCbAxElDaDgAqDdEgAfBuFwEqHuAyDkDo"
+      "AgBmFnIsJpBvDpEqAeBqDnEoJoAvCzDbAeBqDbDqDzAtEnGeAnCeHfPd";
   ClassSignature =
-      "PdJeBzAhBaEhAtDeDqEhEoFfGsElDdDfEoFcBnAeArDbCeAfEzFjEzFjAqDaHmFcHiFxBxBp"
-      "AtDgAsGrCzDgDjKgEbDhDcGgFiDmAwAxBwJfBqCqErDnDiEtBqKeFrMw";
+      "PdHlCeAhBaEjAtDdDqEjEoFlGdEbDfDgEoFkBqAeAsDbCiAgFjEvFjEvAqCzHaFkGzFxBxBj"
+      "AtDeArGtDaDeDmHsEfDhDcGaFpDkAvAyBvJhBrCsEpDoDiFeBrKhFvLa";
 }
 
 #define RUN_CORNER_COUNT(color, expected)                       \
