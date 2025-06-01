@@ -6,13 +6,15 @@
 #include "cycle.h"
 
 /* Type definitions */
-/* Pointer to an array of 64-bit words that represent a set of cycles as a bitmap */
+/* Pointer to an array of 64-bit words that represent a set of cycles as a
+ * bitmap */
 typedef uint64 *CYCLESET;
 /* Array declaration for a cycleset with predefined length from core.h */
 typedef uint64 CYCLESET_DECLARE[CYCLESET_LENGTH];
 
 /* Global cycle set caches - used to optimize lookups */
-/* Cycles that contain two colors in sequence (e.g., color1 followed by color2) */
+/* Cycles that contain two colors in sequence (e.g., color1 followed by color2)
+ */
 extern CYCLESET_DECLARE CycleSetPairs[NCOLORS][NCOLORS];
 /* Cycles that contain three colors in sequence */
 extern CYCLESET_DECLARE CycleSetTriples[NCOLORS][NCOLORS][NCOLORS];

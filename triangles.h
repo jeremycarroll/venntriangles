@@ -33,7 +33,7 @@ typedef struct {
 
 /**
  * Traverse a triangle's perimeter, calling appropriate callbacks.
- * 
+ *
  * @param color Color of the triangle to traverse
  * @param corners Array of edges forming the triangle corners
  * @param callbacks Set of functions to call during traversal
@@ -44,11 +44,11 @@ void triangleTraverse(COLOR color, EDGE (*corners)[3],
 
 /**
  * Check if any lines cross within a triangle.
- * 
+ *
  * @param color Color of the triangle to check
  * @param corners Array of edges forming the triangle corners
  * @return true if no lines cross, false otherwise
  */
 bool triangleLinesNotCrossed(COLOR color, EDGE (*corners)[3]);
 
-#endif  /* TRIANGLES_H */
+#endif /* TRIANGLES_H */

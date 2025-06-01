@@ -11,7 +11,8 @@
  * The face structure is defined in vertex.h */
 extern struct face Faces[NFACES];
 
-/* Array used to calculate expected cycle lengths for faces based on color count */
+/* Array used to calculate expected cycle lengths for faces based on color count
+ */
 extern uint64 FaceSumOfFaceDegree[NCOLORS + 1];
 
 /* Dynamic search functions - used in the solving algorithm */

@@ -12,13 +12,13 @@
  */
 
 /* Memory allocation functions */
-extern void initializeMemory(void);             /* Initialize memory system */
-extern void *tempMalloc(size_t size);           /* Allocate temporary memory */
-extern void freeAll(void);                      /* Free all temporary allocations */
+extern void initializeMemory(void);   /* Initialize memory system */
+extern void *tempMalloc(size_t size); /* Allocate temporary memory */
+extern void freeAll(void);            /* Free all temporary allocations */
 
 /* String buffer functions */
-extern char *getBuffer(void);                   /* Get a temporary string buffer */
-extern char *usingBuffer(char *buffer);         /* Mark buffer as in-use */
+extern char *getBuffer(void);           /* Get a temporary string buffer */
+extern char *usingBuffer(char *buffer); /* Mark buffer as in-use */
 
 /* Convenience macros for allocation */
 #define NEW(type) ((type)tempMalloc(sizeof(((type)NULL)[0])))

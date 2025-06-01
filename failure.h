@@ -12,9 +12,9 @@
 
 /* Structure for tracking failures */
 struct failure {
-  char *label;           /* Full descriptive label */
-  char *shortLabel;      /* Abbreviated label for concise output */
-  uint64 count[NFACES];  /* Counter for failures at each face index */
+  char *label;          /* Full descriptive label */
+  char *shortLabel;     /* Abbreviated label for concise output */
+  uint64 count[NFACES]; /* Counter for failures at each face index */
 };
 
 typedef struct failure Failure, *FAILURE;
@@ -22,7 +22,7 @@ typedef struct failure Failure, *FAILURE;
 /**
  * Convenience macro for handling failures in search functions.
  * Usage: CHECK_FAILURE(someCall());
- * 
+ *
  * Note: Can only be used when there is an appropriate local variable 'failure'
  * in scope.
  */

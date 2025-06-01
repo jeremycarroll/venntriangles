@@ -24,17 +24,18 @@
 
 /* Possible result codes from predicate execution */
 typedef enum {
-  PREDICATE_FAIL,                  /* Backtrack to previous predicate */
+  PREDICATE_FAIL,                   /* Backtrack to previous predicate */
   PREDICATE_SUCCESS_NEXT_PREDICATE, /* Continue to next predicate */
-  PREDICATE_SUCCESS_SAME_PREDICATE, /* Continue with same predicate, next round */
-  PREDICATE_CHOICES,                /* Predicate has multiple choices to explore */
-  PREDICATE_SUSPEND                 /* Pause execution, can be resumed later */
+  PREDICATE_SUCCESS_SAME_PREDICATE, /* Continue with same predicate, next round
+                                     */
+  PREDICATE_CHOICES, /* Predicate has multiple choices to explore */
+  PREDICATE_SUSPEND  /* Pause execution, can be resumed later */
 } PredicateResultCode;
 
 /* Result structure returned by predicates */
 typedef struct predicateResult {
-  PredicateResultCode code;   /* Result type */
-  int numberOfChoices;        /* When code is PREDICATE_CHOICES, number of options */
+  PredicateResultCode code; /* Result type */
+  int numberOfChoices; /* When code is PREDICATE_CHOICES, number of options */
 } PredicateResult;
 
 /* Predefined predicate results */
@@ -66,13 +67,14 @@ struct predicateResult predicateChoices(int numberOfChoices);
  * multiple times.
  */
 typedef struct predicate {
-  const char* name;                      /* Name for debugging */
-  PredicateResult (*try)(int round);     /* Initial attempt function */
-  PredicateResult (*retry)(int round, int choice); /* Function for trying alternatives */
+  const char* name;                  /* Name for debugging */
+  PredicateResult (*try)(int round); /* Initial attempt function */
+  PredicateResult (*retry)(int round,
+                           int choice); /* Function for trying alternatives */
 }* PREDICATE;
 
 /* Predefined predicates for ending search sequences */
-extern struct predicate FAILPredicate;   /* Always forces backtracking */
+extern struct predicate FAILPredicate;    /* Always forces backtracking */
 extern struct predicate SUSPENDPredicate; /* Pauses execution */
 
 /*--------------------------------------
@@ -81,9 +83,9 @@ extern struct predicate SUSPENDPredicate; /* Pauses execution */
 
 /* Stack entry for the engine's backtracking stack */
 struct stackEntry {
-  bool inChoiceMode;              /* Whether we're exploring alternatives */
-  struct predicate* predicate;    /* Current predicate being executed */
-  struct predicate** predicates;  /* Full predicate sequence */
+  bool inChoiceMode;             /* Whether we're exploring alternatives */
+  struct predicate* predicate;   /* Current predicate being executed */
+  struct predicate** predicates; /* Full predicate sequence */
   int currentChoice;             /* Current alternative being tried */
   int round;                     /* Current round in this predicate */
   TRAIL trail;                   /* Backtracking trail */
@@ -165,4 +167,4 @@ extern void engineResume(PREDICATE* predicates);
 #define FORWARD_BACKWARD_PREDICATE_STATIC(name, gate, forward, backward) \
   FORWARD_BACKWARD_PREDICATE_SCOPE(static, name, gate, forward, backward)
 
-#endif  /* ENGINE_H */
+#endif /* ENGINE_H */

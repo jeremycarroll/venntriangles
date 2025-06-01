@@ -3,7 +3,7 @@
 #ifndef CYCLE_H
 #define CYCLE_H
 
-#include "color.h"  /* For COLOR and COLORSET */
+#include "color.h" /* For COLOR and COLORSET */
 
 /* Forward declaration for CYCLESET from cycleset.h */
 typedef uint64 *CYCLESET;
@@ -17,22 +17,23 @@ typedef struct facialCycle *CYCLE;
  * in the Venn diagram.
  */
 struct facialCycle {
-  uint32_t length;            /* Number of colors in the cycle */
-  COLORSET colors;            /* Bit set of colors in this cycle */
-  
+  uint32_t length; /* Number of colors in the cycle */
+  COLORSET colors; /* Bit set of colors in this cycle */
+
   /* Arrays used for optimized lookups during cycle matching */
-  
+
   /* Pointer to an array of cyclesets, one for each edge in the cycle.
-   * sameDirection[i] refers to cycles containing colors[i] followed by colors[i+1] */
+   * sameDirection[i] refers to cycles containing colors[i] followed by
+   * colors[i+1] */
   CYCLESET *sameDirection;
-  
+
   /* Pointer to an array of cyclesets, one for each vertex in the cycle.
    * oppositeDirection[i] refers to cycles containing the triplet:
    * colors[i-1], colors[i], colors[i+1] */
   CYCLESET *oppositeDirection;
-  
+
   /* The actual sequence of colors in the cycle */
-  COLOR curves[NCOLORS];    
+  COLOR curves[NCOLORS];
 };
 
 /* Global variables */
@@ -43,12 +44,14 @@ extern struct facialCycle Cycles[NCYCLES];
 /* Check if a cycle contains color a followed by color b */
 extern bool cycleContainsAthenB(CYCLE cycle, uint32_t a, uint32_t b);
 /* Check if a cycle contains the sequence of colors i, j, k */
-extern bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t i, uint32_t j, uint32_t k);
+extern bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t i, uint32_t j,
+                                     uint32_t k);
 /* Find the position of a color in a cycle */
 extern uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color);
 
 /* Cycle manipulation functions */
-/* Get the ID of a cycle with reversed direction (keeping first element fixed) */
+/* Get the ID of a cycle with reversed direction (keeping first element fixed)
+ */
 extern CYCLE_ID cycleIdReverseDirection(CYCLE_ID cycleId);
 /* Get the cycle ID for a given color sequence */
 extern CYCLE_ID getCycleId(COLOR *cycle, uint32_t length);

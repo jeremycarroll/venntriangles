@@ -17,4 +17,4 @@
  */
 extern struct predicate* NonDeterministicProgram[];
 
-#endif  /* NONDETERMINISM_H */
+#endif /* NONDETERMINISM_H */

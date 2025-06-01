@@ -26,11 +26,12 @@ struct statistic {
 typedef struct statistic Statistic;
 
 /* Initialization and configuration */
-extern void initializeStatisticLogging(char *filename, int frequency, int seconds);
+extern void initializeStatisticLogging(char *filename, int frequency,
+                                       int seconds);
 
 /* Counter registration */
 extern void statisticIncludeInteger(uint64 *counter, char *shortName,
-                                  char *name, bool verboseOnly);
+                                    char *name, bool verboseOnly);
 extern void statisticIncludeFailure(FAILURE failure);
 
 /* Output and reporting */
