@@ -1,10 +1,10 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #include "face.h"
+#include "helper_for_tests.h"
 #include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
-#include "test_helpers.h"
 #include "utils.h"
 
 #include <stdio.h>

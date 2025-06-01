@@ -1,9 +1,10 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
+#include "common.h"
 #include "face.h"
+#include "helper_for_tests.h"
 #include "s6.h"
 #include "statistics.h"
-#include "test_helpers.h"
 #include "utils.h"
 #include "visible_for_testing.h"
 

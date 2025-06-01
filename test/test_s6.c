@@ -2,10 +2,10 @@
 
 #include "engine.h"
 #include "face.h"
+#include "helper_for_tests.h"
 #include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
-#include "test_helpers.h"
 #include "utils.h"
 
 #include <stdio.h>

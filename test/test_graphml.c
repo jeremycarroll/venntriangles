@@ -3,11 +3,11 @@
 #define _GNU_SOURCE
 #include "common.h"
 #include "face.h"
+#include "helper_for_tests.h"
 #include "main.h"
 #include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
-#include "test_helpers.h"
 #include "utils.h"
 
 #include <regex.h>

@@ -1,6 +1,6 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "test_helpers.h"
+#include "helper_for_tests.h"
 
 #include "face.h"
 #include "utils.h"

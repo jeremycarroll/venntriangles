@@ -1,5 +1,6 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
+#include "common.h"
 #include "face.h"
 #include "main.h"
 #include "predicates.h"
