@@ -6,15 +6,21 @@
 #include <assert.h>
 #include <stddef.h>
 
-// External interface
-extern void *tempMalloc(size_t size);
-extern void freeAll(void);
-extern void initializeMemory(void);
+/**
+ * Memory management system for temporary allocations.
+ * Provides a simple arena allocator that can be bulk-freed.
+ */
 
-extern char *getBuffer(void);
-extern char *usingBuffer(char *buffer);
+/* Memory allocation functions */
+extern void initializeMemory(void);             /* Initialize memory system */
+extern void *tempMalloc(size_t size);           /* Allocate temporary memory */
+extern void freeAll(void);                      /* Free all temporary allocations */
 
-// Convenience macros for allocation
+/* String buffer functions */
+extern char *getBuffer(void);                   /* Get a temporary string buffer */
+extern char *usingBuffer(char *buffer);         /* Mark buffer as in-use */
+
+/* Convenience macros for allocation */
 #define NEW(type) ((type)tempMalloc(sizeof(((type)NULL)[0])))
 #define NEW_ARRAY(type, size) \
   ((type)tempMalloc((size) * sizeof(((type)NULL)[0])))
