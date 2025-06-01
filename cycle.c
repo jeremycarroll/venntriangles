@@ -9,13 +9,6 @@
 struct facialCycle Cycles[NCYCLES];
 static int NextCycle = 0;
 
-static void addCycle(int length, COLOR* colors);
-static void initializeCyclesWithLengthArrayAndMaxValue(uint32_t length,
-                                                       uint32_t position,
-                                                       COLOR* colors);
-static void initializeCyclesWithLengthAndMaxValue(uint32_t length, COLOR color);
-static void initializeCyclesWithMaxValue(COLOR color);
-
 static void addCycle(int length, COLOR* colors)
 {
   uint32_t color;
@@ -29,56 +22,84 @@ static void addCycle(int length, COLOR* colors)
     cycle->colors |= 1u << color;
   }
 }
-
-static void initializeCyclesWithLengthArrayAndMaxValue(uint32_t length,
-                                                       uint32_t position,
-                                                       COLOR* colors)
+static bool isCycleValid(int length, COLOR max, COLOR* cycle)
 {
-  uint32_t nextColor, i;
-  COLOR swap;
-  if (position == length) {
-    for (i = 1; i < length; i++) {
-      addCycle(length, colors);
-      swap = colors[i];
-      colors[i] = colors[i + 1];
-      colors[i + 1] = swap;
+  bool hasMax = false;
+
+  // Duplicates prohibited.
+  bool used[NCOLORS] = {false};
+
+  for (int i = 0; i < length; i++) {
+    // Check if max color is present
+    if (cycle[i] == max) {
+      hasMax = true;
     }
-    for (; i > 1; i--) {
-      swap = colors[i];
-      colors[i] = colors[i - 1];
-      colors[i - 1] = swap;
+
+    if (used[cycle[i]]) {
+      return false;
     }
-  } else {
-    for (nextColor = colors[1] - 1; nextColor > colors[0]; nextColor--) {
-      for (i = 0; i < position; i++) {
-        if (colors[i] == nextColor) goto skip;
+    used[cycle[i]] = true;
+    // First element must be lowest
+    if (i > 0 && cycle[i] < cycle[0]) {
+      return false;
+    }
+  }
+
+  return hasMax;
+}
+
+static void initializeCyclesWithMaxAndLength(int length, COLOR max)
+{
+  COLOR current[NCOLORS];
+
+  // Start with the maximum sequence
+  for (int i = 0; i < length; i++) {
+    current[i] = max;
+  }
+
+  // Generate all possible sequences with this length in reverse
+  // lexicographic order
+  bool hasMoreSequences = true;
+  while (hasMoreSequences) {
+    if (isCycleValid(length, max, current)) {
+      addCycle(length, current);
+    }
+    // Find the rightmost element that can be decremented
+    int pos = length - 1;
+    while (pos >= 0) {
+      if (current[pos] > 0) {
+        current[pos]--;
+        break;
       }
-      colors[position] = nextColor;
-      initializeCyclesWithLengthArrayAndMaxValue(length, position + 1, colors);
-    skip:;
+      pos--;
+    }
+
+    // If we couldn't decrement any position, we're done with this length
+    if (pos < 0) {
+      hasMoreSequences = false;
+    } else {
+      // Reset all positions to the right to max
+      for (int i = pos + 1; i < length; i++) {
+        current[i] = max;
+      }
+    }
+  }
+}
+/**
+ * We initialize the cycles ensuring
+ * that the cycles including k come after all the cycles
+ * from 0, ... k-1; and come in increasing order of length.
+ * We also require that 0,1,2,3... k-1 is last.
+ */
+static void initializeAllCycles(void)
+{
+  for (COLOR max = 2; max < NCOLORS; max++) {
+    for (unsigned length = 3; length <= max + 1; length++) {
+      initializeCyclesWithMaxAndLength(length, max);
     }
   }
 }
 
-static void initializeCyclesWithLengthAndMaxValue(uint32_t length, COLOR color)
-{
-  int c1;
-  COLOR colors[NCOLORS + 1];
-  for (c1 = color - 1; c1 >= 0; c1--) {
-    colors[0] = c1;
-    colors[1] = color;
-    initializeCyclesWithLengthArrayAndMaxValue(length, 2, colors);
-  }
-}
-
-static void initializeCyclesWithMaxValue(COLOR color)
-{
-  for (uint32_t length = 3; length <= color + 1; length++) {
-    initializeCyclesWithLengthAndMaxValue(length, color);
-  }
-}
-
-/* Public function implementations */
 bool cycleContainsAthenB(CYCLE cycle, uint32_t i, uint32_t j)
 {
   uint64 ix;
@@ -177,10 +198,6 @@ uint32_t cycleIndexOfColor(CYCLE cycle, COLOR color)
 void initializeCycles(void)
 {
   assert(NextCycle == 0);
-  uint32_t c1;
-  for (c1 = 2; c1 < NCOLORS; c1++) {
-    initializeCyclesWithMaxValue(c1);
-  }
-
+  initializeAllCycles();
   assert(NextCycle == ARRAY_LEN(Cycles));
 }

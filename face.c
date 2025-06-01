@@ -86,7 +86,8 @@ static bool exactlyTwoEdgeTransitions(CYCLE cycle, COLORSET faceColors,
           nextFaceColorsReturn = &dummy;
           break;
         case 3:
-          // More than two transitions cannot happen for a cycle around a face in a monotone diagram.
+          // More than two transitions cannot happen for a cycle around a face
+          // in a monotone diagram.
           return false;
       }
     }

@@ -57,10 +57,10 @@ static struct predicateResult invertSolution()
   SIGNATURE maxSignature = s6MaxSignature();
   TEST_ASSERT_EQUAL(NCYCLES - 1, cycleId);
   TEST_ASSERT_EQUAL_STRING(
-      "CoCnBdBeAfAlAoBbAdAqAcArAiAhCvBjCjBgBcApAeAfApAoAcBfAdBaAnAiByCv",
+      "CcCpBbBeAgAjAoBcAdAqAcAsAiAhCvBhCnBgBdApAeAgApAoAcBfAdBaAnAiByCv",
       s6SignatureToString(signature));
   TEST_ASSERT_EQUAL_STRING(
-      "CvCgByBuBaBcBfAqAoAcApBeApAdAoBbAuBiAvAuArBdAqArBhAfBnBhChAmCqCh",
+      "CvCaByBwBaBdBfAqAoAcApBeApAdAoBcAuBoAxAuAsBbAqAsBmAgBqBmCkAmCsCk",
       s6SignatureToString(maxSignature));
   TEST_ASSERT_EQUAL_STRING(
       " |abcde|: "
@@ -108,7 +108,7 @@ static struct predicateResult foundSolution()
   SIGNATURE signature = s6MaxSignature();
   if (strcmp(
           s6SignatureToString(signature),
-          "CvCgByBuBaBcBfAqAoAcApBeApAdAoBbAuBiAvAuArBdAqArBhAfBnBhChAmCqCh") ==
+          "CvCaByBwBaBdBfAqAoAcApBeApAdAoBcAuBoAxAuAsBbAqAsBmAgBqBmCkAmCsCk") ==
       0) {
     MatchingSolutions++;
     switch (signature->offset) {
