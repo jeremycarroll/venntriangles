@@ -57,7 +57,7 @@ static void dynamicCountEdge(EDGE edge)
 }
 
 static FAILURE dynamicHandleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
-                                  int depth)
+                                         int depth)
 {
   if (face->edges[aColor].to != NULL) {
     assert(face->edges[aColor].to != &face->edges[aColor].possiblyTo[aColor]);
@@ -86,7 +86,7 @@ static FAILURE dynamicHandleExistingEdge(FACE face, COLOR aColor, COLOR bColor,
  * to establish the correct connections between faces.
  */
 static FAILURE dynamicProcessIncomingEdge(EDGE edge, COLOR colors[2],
-                                   int incomingEdgeSlot, int depth)
+                                          int incomingEdgeSlot, int depth)
 {
   // Determine which color this edge corresponds to based on the slot
   int colorIndex =
