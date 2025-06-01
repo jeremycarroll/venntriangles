@@ -85,8 +85,8 @@ static COLORSET colorSetPermute(COLORSET colorSet, PERMUTATION permutation)
 }
 
 /* Byte-for-byte comparison of face degree sequences */
-static bool areDegreesEqual(FACE_DEGREE_SEQUENCE faceDegrees,
-                            FACE_DEGREE_SEQUENCE other)
+static bool faceDegreesEqual(FACE_DEGREE_SEQUENCE faceDegrees,
+                             FACE_DEGREE_SEQUENCE other)
 {
   return memcmp(faceDegrees, other, sizeof(faceDegrees[0])) == 0;
 }
@@ -206,10 +206,10 @@ static SYMMETRY_TYPE isCanonicalUnderDihedralGroup(
   va_start(args, faceDegreesInSequenceOrder);
   sorted = sortPermutationsOfSequence(count, faceDegreesInSequenceOrder, args);
   va_end(args);
-  if (!areDegreesEqual(sorted, faceDegreesInSequenceOrder)) {
+  if (!faceDegreesEqual(sorted, faceDegreesInSequenceOrder)) {
     return NON_CANONICAL;
   }
-  if (areDegreesEqual(sorted, sorted + 1)) {
+  if (faceDegreesEqual(sorted, sorted + 1)) {
     return EQUIVOCAL;
   }
   return CANONICAL;
