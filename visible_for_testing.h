@@ -1,4 +1,3 @@
-
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #ifndef VISIBLE_FOR_TESTING_H
@@ -9,27 +8,25 @@
 #include "color.h"
 #include "cycleset.h"
 
-/* Internal declarations that should be visible to test files will go here */
-extern FACE searchChooseNextFace(void);
-extern uint64 CycleGuessCounterIPC ;
-extern CYCLE_ID cycleIdFromColors(char *colors);
-extern bool cycleContainsAthenBthenC(CYCLE cycle, uint32_t a, uint32_t b,
-                                     uint32_t c);
-extern FACE dynamicFaceAddSpecific(char *colors, char *cycle);
-extern void facePrintSelected(void);
-extern bool dynamicFaceSetCycleLength(uint32_t faceColors, FACE_DEGREE length);
-extern FACE faceFromColors(char *colors);
-extern PERMUTATION s6Automorphism(CYCLE_ID cycleId);
-extern CYCLE_ID s6PermuteCycleId(CYCLE_ID originalCycleId,
-                                 PERMUTATION permutation);
-extern char *s6SignatureToLongString(SIGNATURE signature);
-extern int searchCountVariations(void);
+/**
+ * This header exposes internal functions and variables for testing purposes.
+ * These declarations should not be used in production code and are only
+ * made available to enable comprehensive unit testing.
+ */
 
-extern bool trailRewindTo(TRAIL backtrackPoint);
-extern CYCLESET_DECLARE CycleSetPairs[NCOLORS][NCOLORS];
-extern CYCLESET_DECLARE CycleSetTriples[NCOLORS][NCOLORS][NCOLORS];
-extern uint64  CycleForcedCounter;
+/* Search algorithm internals */
+extern FACE searchChooseNextFace(void);         /* Face selection algorithm */
+extern int searchCountVariations(void);         /* Count available variations */
 
-extern TRAIL Trail;
+/* S6 signature functions */
+extern PERMUTATION s6Automorphism(CYCLE_ID cycleId); /* Get automorphism for cycle */
+extern CYCLE_ID s6PermuteCycleId(CYCLE_ID originalCycleId, PERMUTATION permutation); /* Apply permutation */
+extern char *s6SignatureToLongString(SIGNATURE signature); /* Convert to detailed string */
 
-#endif  // VISIBLE_FOR_TESTING_H 
+/* These cycle sets are already declared in cycleset.h but needed for tests */
+
+/* Trail system */
+extern TRAIL Trail; /* Global trail for backtracking */
+extern bool trailRewindTo(TRAIL backtrackPoint); /* Rewind trail to point */
+
+#endif  /* VISIBLE_FOR_TESTING_H */
