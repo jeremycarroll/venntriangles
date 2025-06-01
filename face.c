@@ -26,57 +26,71 @@ static bool isCycleValidForFace(CYCLE cycle, COLORSET faceColors)
          (cycle->colors & ~faceColors) != 0;
 }
 
+/*
+ * Compare direction of two edges in the dual graph: return true
+ * if they are different, and set one of the return values, chosen
+ * by direction of first edge.
+ */
 static bool isEdgeTransition(COLOR curve1, COLOR curve2, COLORSET faceColors,
-                             COLORSET* previousFaceColors,
-                             COLORSET* nextFaceColors)
+                             COLORSET* previousFaceColorsReturn,
+                             COLORSET* nextFaceColorsReturn)
 {
   uint64 currentXor = (1ll << curve1) | (1ll << curve2);
-  if (__builtin_popcountll(currentXor & faceColors) != 1) {
+  bool isOutbound1 = COLORSET_HAS_MEMBER(curve1, faceColors);
+  bool isOutbound2 = COLORSET_HAS_MEMBER(curve2, faceColors);
+  if (isOutbound1 == isOutbound2) {
     return false;
   }
-
-  if ((1 << curve1) & faceColors) {
-    assert(*nextFaceColors == 0);
-    *nextFaceColors = faceColors ^ currentXor;
+  if (isOutbound1) {
+    assert((1 << curve1) & faceColors);
+    assert(*nextFaceColorsReturn == 0);
+    *nextFaceColorsReturn = faceColors ^ currentXor;
   } else {
-    assert(*previousFaceColors == 0);
-    *previousFaceColors = faceColors ^ currentXor;
+    assert(!((1 << curve1) & faceColors));
+    assert(*previousFaceColorsReturn == 0);
+    *previousFaceColorsReturn = faceColors ^ currentXor;
   }
   return true;
 }
 
+/*
+ * Does a cycle, in the dual graph, have exactly two edge transitions
+ * from incoming to outgoing or vice versa.
+ */
 static bool exactlyTwoEdgeTransitions(CYCLE cycle, COLORSET faceColors,
-                                      COLORSET* previousFaceColors,
-                                      COLORSET* nextFaceColors)
+                                      COLORSET* previousFaceColorsReturn,
+                                      COLORSET* nextFaceColorsReturn)
 {
   uint32_t count = 0;
   COLORSET dummy = 0;
 
-  // Check transition from last to first curve
+  // Check transition from last to first curve (wrap-around case)
   if (isEdgeTransition(cycle->curves[cycle->length - 1], cycle->curves[0],
-                       faceColors, previousFaceColors, nextFaceColors)) {
+                       faceColors, previousFaceColorsReturn,
+                       nextFaceColorsReturn)) {
     count++;
   }
 
   // Check transitions between consecutive curves
   for (uint32_t i = 1; i < cycle->length; i++) {
     if (isEdgeTransition(cycle->curves[i - 1], cycle->curves[i], faceColors,
-                         previousFaceColors, nextFaceColors)) {
+                         previousFaceColorsReturn, nextFaceColorsReturn)) {
       count++;
       switch (count) {
         case 2:
-          // Both *previousFaceColors and *nextFaceColors have been set,
-          // Change them to preserve invariants expected by further calls to
-          // isEdgeTransition.
-          previousFaceColors = &dummy;
-          nextFaceColors = &dummy;
+          // After finding two transitions, we've identified both the previous
+          // and next faces. Redirect the pointers to a dummy variable to avoid
+          // overwriting these values while still allowing us to check for
+          // additional transitions.
+          previousFaceColorsReturn = &dummy;
+          nextFaceColorsReturn = &dummy;
           break;
         case 3:
+          // More than two transitions cannot happen for a cycle around a face in a monotone diagram.
           return false;
       }
     }
   }
-
   return count == 2;
 }
 
