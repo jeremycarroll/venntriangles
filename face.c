@@ -7,115 +7,16 @@
 #include "statistics.h"
 #include "utils.h"
 
-/* Global variables */
 struct face Faces[NFACES];
 uint64 FaceSumOfFaceDegree[NCOLORS + 1];
 
-/* Static function declarations */
-static void initializePossiblyTo(void);
-static void applyMonotonicity(void);
-static void initializeLengthOfCycleOfFaces(void);
-static bool isCycleValidForFace(CYCLE cycle, COLORSET faceColors);
-static bool isEdgeTransition(COLOR curve1, COLOR curve2, COLORSET faceColors,
-                             COLORSET* previousFaceColors,
-                             COLORSET* nextFaceColors);
-static bool exactlyTwoEdgeTransitions(CYCLE cycle, COLORSET faceColors,
-                                      COLORSET* previousFaceColors,
-                                      COLORSET* nextFaceColors);
-static void facePrint(FACE face);
-
-/* Core face initialization */
-void initializeFacesAndEdges(void)
-{
-  uint32_t facecolors, color;
-  FACE face, adjacent;
-  EDGE edge;
-  if (Faces[1].colors == 0) {
-    statisticIncludeInteger(&CycleForcedCounter, "+", "forced", false);
-    statisticIncludeInteger(&CycleSetReducedCounter, "-", "reduced", true);
-    initializeLengthOfCycleOfFaces();
-    for (facecolors = 0, face = Faces; facecolors < NFACES;
-         facecolors++, face++) {
-      face->colors = facecolors;
-      initializeCycleSetUniversal(face->possibleCycles);
-
-      for (color = 0; color < NCOLORS; color++) {
-        uint32_t colorbit = (1 << color);
-        adjacent = Faces + (facecolors ^ (colorbit));
-        face->adjacentFaces[color] = adjacent;
-        edge = &face->edges[color];
-        edge->colors = face->colors;
-        edge->color = color;
-        edge->reversed = &adjacent->edges[color];
-      }
-    }
-    applyMonotonicity();
-    initializePossiblyTo();
-  }
-}
-
-/* Public utility functions */
-FACE faceFromColors(char* colors)
-{
-  int faceId = 0;
-  while (true) {
-    if (*colors == 0) {
-      break;
-    }
-    faceId |= (1 << (*colors - 'a'));
-    colors++;
-  }
-  return Faces + faceId;
-}
-
-void facePrintSelected(void)
+static void initializeLengthOfCycleOfFaces(void)
 {
   uint32_t i;
-  FACE face;
-  for (i = 0, face = Faces; i < NFACES; i++, face++) {
-    if (face->cycle || face->cycleSetSize < 2) {
-      facePrint(face);
-    }
-  }
-}
-
-char* faceToString(FACE face)
-{
-  char* buffer = getBuffer();
-  char* colorBuf = colorSetToString(face->colors);
-  char* cycleBuf = cycleToString(face->cycle);
-
-  if (face->cycleSetSize > 1) {
-    sprintf(buffer, "%s%s^%llu", colorBuf, cycleBuf, face->cycleSetSize);
-  } else {
-    sprintf(buffer, "%s%s", colorBuf, cycleBuf);
-  }
-  return usingBuffer(buffer);
-}
-
-/* Static helper functions */
-static void facePrint(FACE face)
-{
-  printf("%s\n", faceToString(face));
-}
-
-static void initializePossiblyTo(void)
-{
-  uint32_t facecolors, color, othercolor;
-  FACE face;
-  EDGE edge;
-  for (facecolors = 0, face = Faces; facecolors < NFACES;
-       facecolors++, face++) {
-    for (color = 0; color < NCOLORS; color++) {
-      edge = &face->edges[color];
-      for (othercolor = 0; othercolor < NCOLORS; othercolor++) {
-        if (othercolor == color) {
-          continue;
-        }
-        edge->possiblyTo[othercolor].vertex =
-            initializeVertexIncomingEdge(face->colors, edge, othercolor);
-      }
-    }
+  FaceSumOfFaceDegree[0] = 1;
+  for (i = 0; i < NCOLORS; i++) {
+    FaceSumOfFaceDegree[i + 1] =
+        FaceSumOfFaceDegree[i] * (NCOLORS - i) / (i + 1);
   }
 }
 
@@ -180,9 +81,8 @@ static bool exactlyTwoEdgeTransitions(CYCLE cycle, COLORSET faceColors,
 }
 
 /*
- This is not called "dynamicApplyMonotonicity" because we cannot
- backtrack over it. Instead, it is called from the initialize predicate,
- which calls trailFreeze as its last operation, which disables the backtracking.
+ Called from the initialize predicate which disables backtracking
+ with trailFreeze.
  */
 static void applyMonotonicity(void)
 {
@@ -217,12 +117,94 @@ static void applyMonotonicity(void)
   dynamicFaceSetCycleLength(~0, NCOLORS);
 }
 
-static void initializeLengthOfCycleOfFaces(void)
+static void initializePossiblyTo(void)
+{
+  uint32_t facecolors, color, othercolor;
+  FACE face;
+  EDGE edge;
+  for (facecolors = 0, face = Faces; facecolors < NFACES;
+       facecolors++, face++) {
+    for (color = 0; color < NCOLORS; color++) {
+      edge = &face->edges[color];
+      for (othercolor = 0; othercolor < NCOLORS; othercolor++) {
+        if (othercolor == color) {
+          continue;
+        }
+        edge->possiblyTo[othercolor].vertex =
+            initializeVertexIncomingEdge(face->colors, edge, othercolor);
+      }
+    }
+  }
+}
+
+static void facePrint(FACE face)
+{
+  printf("%s\n", faceToString(face));
+}
+
+char* faceToString(FACE face)
+{
+  char* buffer = getBuffer();
+  char* colorBuf = colorSetToString(face->colors);
+  char* cycleBuf = cycleToString(face->cycle);
+
+  if (face->cycleSetSize > 1) {
+    sprintf(buffer, "%s%s^%llu", colorBuf, cycleBuf, face->cycleSetSize);
+  } else {
+    sprintf(buffer, "%s%s", colorBuf, cycleBuf);
+  }
+  return usingBuffer(buffer);
+}
+
+FACE faceFromColors(char* colors)
+{
+  int faceId = 0;
+  while (true) {
+    if (*colors == 0) {
+      break;
+    }
+    faceId |= (1 << (*colors - 'a'));
+    colors++;
+  }
+  return Faces + faceId;
+}
+
+void facePrintSelected(void)
 {
   uint32_t i;
-  FaceSumOfFaceDegree[0] = 1;
-  for (i = 0; i < NCOLORS; i++) {
-    FaceSumOfFaceDegree[i + 1] =
-        FaceSumOfFaceDegree[i] * (NCOLORS - i) / (i + 1);
+  FACE face;
+  for (i = 0, face = Faces; i < NFACES; i++, face++) {
+    if (face->cycle || face->cycleSetSize < 2) {
+      facePrint(face);
+    }
+  }
+}
+
+void initializeFacesAndEdges(void)
+{
+  uint32_t facecolors, color;
+  FACE face, adjacent;
+  EDGE edge;
+  if (Faces[1].colors == 0) {
+    statisticIncludeInteger(&CycleForcedCounter, "+", "forced", false);
+    statisticIncludeInteger(&CycleSetReducedCounter, "-", "reduced", true);
+    initializeLengthOfCycleOfFaces();
+    for (facecolors = 0, face = Faces; facecolors < NFACES;
+         facecolors++, face++) {
+      face->colors = facecolors;
+      initializeCycleSetUniversal(face->possibleCycles);
+
+      for (color = 0; color < NCOLORS; color++) {
+        uint32_t colorbit = (1 << color);
+        adjacent = Faces + (facecolors ^ (colorbit));
+        face->adjacentFaces[color] = adjacent;
+        edge = &face->edges[color];
+        edge->colors = face->colors;
+        edge->color = color;
+        edge->reversed = &adjacent->edges[color];
+      }
+    }
+    applyMonotonicity();
+    initializePossiblyTo();
   }
 }
