@@ -4,6 +4,7 @@
 
 #include "failure.h"
 #include "s6.h"
+#include "statistics.h"
 #include "utils.h"
 
 /* Global variables */
@@ -225,4 +226,3 @@ static void initializeLengthOfCycleOfFaces(void)
         FaceSumOfFaceDegree[i] * (NCOLORS - i) / (i + 1);
   }
 }
-
