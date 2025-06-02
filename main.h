@@ -30,7 +30,7 @@ extern int
     IgnoreFirstVariantsPerSolution; /* Variants to ignore per solution (-j) */
 
 /* Program entry points */
-extern int dynamicMain0(int argc, char* argv[]); /* Main program entry */
+extern int realMain0(int argc, char* argv[]); /* Main program entry */
 extern struct predicate*
     NonDeterministicProgram[]; /* Search algorithm predicates */
 

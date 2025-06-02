@@ -49,6 +49,6 @@ void triangleTraverse(COLOR color, EDGE (*corners)[3],
  * @param corners Array of edges forming the triangle corners
  * @return true if no lines cross, false otherwise
  */
-bool triangleLinesNotCrossed(COLOR color, EDGE (*corners)[3]);
+bool dynamicTriangleLinesNotCrossed(COLOR color, EDGE (*corners)[3]);
 
 #endif /* TRIANGLES_H */

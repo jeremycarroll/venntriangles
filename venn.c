@@ -51,8 +51,7 @@ static FAILURE dynamicCheckEdgeCurvesAndCorners(FACE face, CYCLE cycle,
   for (i = 0; i < cycle->length; i++) {
     CHECK_FAILURE(
         dynamicEdgeCurveChecks(&face->edges[cycle->curves[i]], depth));
-    CHECK_FAILURE(
-        dynamicVertexCornerCheck(&face->edges[cycle->curves[i]], depth));
+    CHECK_FAILURE(vertexCornerCheck(&face->edges[cycle->curves[i]], depth));
   }
 
   return NULL;
@@ -117,7 +116,7 @@ static CYCLE chooseCycle(FACE face, CYCLE cycle)
   return cycleSetNext(face->possibleCycles, cycle);
 }
 
-static struct predicateResult tryFace(int round)
+static struct predicateResult dynamicTryFace(int round)
 {
   if (round == 0) {
     PerFaceDegreeSolutionNumberIPC = 0;
@@ -232,4 +231,4 @@ FACE searchChooseNextFace(void)
   return face;
 }
 
-struct predicate VennPredicate = {"Venn", tryFace, dynamicRetryFace};
+struct predicate VennPredicate = {"Venn", dynamicTryFace, dynamicRetryFace};

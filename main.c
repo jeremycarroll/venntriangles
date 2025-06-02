@@ -68,7 +68,7 @@ static void initializeOutputFolder()
   initializeFolder(TargetFolderFlag);
 }
 
-int dynamicMain0(int argc, char *argv[])
+int realMain0(int argc, char *argv[])
 {
   int opt;
   TargetFolderFlag = NULL;

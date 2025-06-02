@@ -23,7 +23,7 @@ static int sumFaceDegree(int round)
   return sum;
 }
 
-static struct predicateResult try5FaceDegree(int round)
+static struct predicateResult dynamicTry5FaceDegree(int round)
 {
   if (round == NCOLORS) {
     if (sumFaceDegree(round) != TOTAL_5FACE_DEGREE) {
@@ -62,5 +62,5 @@ static struct predicateResult retry5FaceDegree(int round, int choice)
   return PredicateSuccessSamePredicate;
 }
 
-struct predicate InnerFacePredicate = {"InnerFaces", try5FaceDegree,
+struct predicate InnerFacePredicate = {"InnerFaces", dynamicTry5FaceDegree,
                                        retry5FaceDegree};

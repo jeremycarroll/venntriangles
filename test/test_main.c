@@ -11,7 +11,7 @@
 #include <unity.h>
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-extern int dynamicMain0(int argc, char *argv[]);
+extern int realMain0(int argc, char *argv[]);
 static bool DisasterCalled = false;
 
 void setUp(void)
@@ -35,7 +35,7 @@ static int run(int argc, char *argv[])
   optind = 1;
   oldStdout = stderr;
   stderr = stream;
-  status = dynamicMain0(argc, argv);
+  status = realMain0(argc, argv);
   fflush(stream);
   /* Reset stdout */
   stderr = oldStdout;

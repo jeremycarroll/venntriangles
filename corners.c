@@ -59,8 +59,8 @@ static struct predicateResult dynamicTryCorners(int round)
   }
 
   if (cornerIndex == 0 && colorIndex > 0) {
-    if (!triangleLinesNotCrossed(colorIndex - 1,
-                                 SelectedCornersIPC + colorIndex - 1)) {
+    if (!dynamicTriangleLinesNotCrossed(colorIndex - 1,
+                                        SelectedCornersIPC + colorIndex - 1)) {
       return PredicateFail;
     }
   }

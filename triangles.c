@@ -24,7 +24,7 @@ static int edgeIsCorner(EDGE edge, EDGE (*corners)[3])
   return count;
 }
 
-static void checkRegularEdge(void *data, EDGE current, int line)
+static void dynamicCheckRegularEdge(void *data, EDGE current, int line)
 {
   LineCrossingData *lcd = (LineCrossingData *)data;
   VERTEX vertex = current->to->vertex;
@@ -41,7 +41,7 @@ static void checkRegularEdge(void *data, EDGE current, int line)
   }
 }
 
-static void checkSingleCorner(void *data, EDGE current, int line)
+static void dynamicCheckSingleCorner(void *data, EDGE current, int line)
 {
   LineCrossingData *lcd = (LineCrossingData *)data;
   if (line == 0) {
@@ -49,10 +49,10 @@ static void checkSingleCorner(void *data, EDGE current, int line)
   }
   line = (line + 1) % 3;
   lcd->linesCrossed = 0;
-  checkRegularEdge(data, current, line);
+  dynamicCheckRegularEdge(data, current, line);
 }
 
-static void checkAdjacentCorners(void *data, EDGE current, int line)
+static void dynamicCheckAdjacentCorners(void *data, EDGE current, int line)
 {
   LineCrossingData *lcd = (LineCrossingData *)data;
   if (line == 0) {
@@ -60,7 +60,7 @@ static void checkAdjacentCorners(void *data, EDGE current, int line)
   }
   line = (line + 2) % 3;
   lcd->linesCrossed = 0;
-  checkRegularEdge(data, current, line);
+  dynamicCheckRegularEdge(data, current, line);
 }
 
 static void checkAllCorners(void *data, EDGE current, int line)
@@ -73,17 +73,17 @@ static void checkAllCorners(void *data, EDGE current, int line)
   lcd->linesCrossed = 0;
 }
 
-bool triangleLinesNotCrossed(COLOR color, EDGE (*corners)[3])
+bool dynamicTriangleLinesNotCrossed(COLOR color, EDGE (*corners)[3])
 {
   LineCrossingData lcd = {0, 0, false};
-  TriangleTraversalCallbacks callbacks = {
-      .processRegularEdge = checkRegularEdge,
-      .processSingleCorner = checkSingleCorner,
-      .processAdjacentCorners = checkAdjacentCorners,
+  TriangleTraversalCallbacks dynamicCallbacks = {
+      .processRegularEdge = dynamicCheckRegularEdge,
+      .processSingleCorner = dynamicCheckSingleCorner,
+      .processAdjacentCorners = dynamicCheckAdjacentCorners,
       .processAllCorners = checkAllCorners,
       .processVertex = NULL};
 
-  triangleTraverse(color, corners, &callbacks, &lcd);
+  triangleTraverse(color, corners, &dynamicCallbacks, &lcd);
 
   if (lcd.linesCrossed & lcd.initialLinesCrossed) {
     return false;

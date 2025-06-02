@@ -177,7 +177,7 @@ char* vertexToString(VERTEX up)
 #pragma GCC diagnostic ignored "-Wunused-function"
 #endif
 
-FAILURE dynamicVertexCornerCheck(EDGE start, int depth)
+FAILURE vertexCornerCheck(EDGE start, int depth)
 {
 #if NCOLORS <= 4
   return NULL;

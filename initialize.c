@@ -11,8 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static bool forwardInitialize(void);
-
 void initialize(void)
 {
   /* Architecture-specific assertions */

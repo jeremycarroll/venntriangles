@@ -9,5 +9,5 @@
  */
 int main(int argc, char *argv[])
 {
-  return dynamicMain0(argc, argv);
+  return realMain0(argc, argv);
 }

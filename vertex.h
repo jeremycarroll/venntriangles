@@ -146,7 +146,7 @@ extern char* vertexToColorSetString(VERTEX up);
  * @param depth Current search depth
  * @return Failure object if checks fail, NULL otherwise
  */
-extern FAILURE dynamicVertexCornerCheck(EDGE start, int depth);
+extern FAILURE vertexCornerCheck(EDGE start, int depth);
 
 /**
  * Align corners for a specific color.
