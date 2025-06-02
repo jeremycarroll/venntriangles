@@ -7,8 +7,9 @@
 uint64 EdgeColorCountState[2][NCOLORS];
 COLORSET ColorCompletedState;
 
-#define MAX_ONE_WAY_CURVE_CROSSINGS 3
-#define MAX_CORNERS 3
+/* If we have convex polygons A and B both with N sides, then they can cross
+   each other in at most 2*N different points. For half A crosses outside B. */
+#define MAX_ONE_WAY_CURVE_CROSSINGS MAX_CORNERS
 static uint64 EdgeCrossingCounts[NCOLORS][NCOLORS];
 static uint64 EdgeCurvesComplete[NCOLORS];
 
