@@ -8,138 +8,81 @@
 #include "trail.h"
 #include "visible_for_testing.h"
 
-/* We actually need about 8000, but we use 16384 to avoid
-   reallocating the trail array. */
-#define TRAIL_SIZE 16384
+/**
+ * The engine implements a WAM-like execution model for search.
+ * See docs/DESIGN.md "Non-deterministic Engine, Backtracking, Memory and the
+ * Trail" for detailed documentation.
+ */
 
-/* Trail implementation for backtracking */
+/* We use 16384 which is about twice what we need. */
+#define TRAIL_SIZE 16384
+#define MAX_STACK_SIZE 1000
+
 struct trail {
   void* ptr;
   uint_trail value;
 };
 
-/* Global variables (file scoped static) */
 static struct trail TrailArray[TRAIL_SIZE];
 TRAIL Trail = TrailArray;
 static TRAIL frozenTrail = NULL;
 static uint64 MaxTrailSize = 0;
+static struct stackEntry stack[MAX_STACK_SIZE + 1], *stackTop = stack;
+static int Counter = 0;
 
-void initializeTrail()
-{
-  statisticIncludeInteger(&MaxTrailSize, "$", "MaxTrail", true);
-}
-
-void trailSetPointer(void** ptr, void* value)
-{
-  Trail->ptr = ptr;
-  Trail->value = (uint_trail)*ptr;
-  Trail++;
-  *ptr = value;
-}
-
-void trailMaybeSetInt(uint_trail* ptr, uint_trail value)
-{
-  if (*ptr != value) {
-    trailSetInt(ptr, value);
-  }
-}
-
-void trailFreeze()
-{
-  frozenTrail = Trail;
-}
-
-void trailSetInt(uint_trail* ptr, uint_trail value)
-{
-  Trail->ptr = ptr;
-  Trail->value = *ptr;
-  Trail++;
-  *ptr = value;
-}
-
-bool trailBacktrackTo(TRAIL backtrackPoint)
-{
-  uint64 trailSize = Trail - TrailArray;
-  if (trailSize > MaxTrailSize) {
-    MaxTrailSize = trailSize;
-  }
-  bool result = false;
-  if (backtrackPoint < frozenTrail) {
-    backtrackPoint = frozenTrail;
-  }
-  while (Trail > backtrackPoint) {
-    result = true;
-    Trail--;
-    *(uint_trail*)Trail->ptr = Trail->value;
-  }
-  return result;
-}
-
-/* The engine implements a WAM-like execution model for our search process.
-   Each phase of the search is implemented as a predicate that can:
-   - FAIL (backtrack)
-   - SUCCESS (move to next predicate)
-   - CHOICES (try alternatives)
-
-   The engine maintains the state and controls the flow between predicates.
-   This provides a uniform structure for all phases of the search. */
-
-#define MAX_STACK_SIZE 1000
-
-/* Predefined predicate results */
 const struct predicateResult PredicateFail = {PREDICATE_FAIL, 0};
 const struct predicateResult PredicateSuccessNextPredicate = {
     PREDICATE_SUCCESS_NEXT_PREDICATE, 0};
 const struct predicateResult PredicateSuccessSamePredicate = {
     PREDICATE_SUCCESS_SAME_PREDICATE, 0};
 
-/* Helper function to create a predicate result with choices */
+/**
+ * Helper function to create a predicate result with choices.
+ *
+ * This is used in the Try phase when a predicate offers multiple
+ * choices to explore.
+ */
 struct predicateResult predicateChoices(int numberOfChoices)
 {
   return (struct predicateResult){PREDICATE_CHOICES, numberOfChoices};
 }
 
-static void pushStackEntry(struct stackEntry* entry, PredicateResultCode code);
-static void trace(const char* message);
-static struct stackEntry stack[MAX_STACK_SIZE + 1], *stackTop = stack;
-static int Counter = 0;
-static bool engineLoop(void);
-
-void engine(PREDICATE* predicates)
+static void trace(const char* message)
 {
-  // Initialize first stack entry
-  assert(stackTop == stack);
-  stackTop->inChoiceMode = false;
-  stackTop->predicate = *predicates;
-  stackTop->predicates = predicates;
-  stackTop->currentChoice = -1;
-  stackTop->round = 0;
-  stackTop->trail = Trail;
-  stackTop->counter = Counter++;
-
-  if (!engineLoop() && TracingFlag) {
-    fprintf(stderr, "Engine suspended\n");
+  if (!TracingFlag) return;
+  fprintf(stderr, "%d:%ld:", stackTop->counter, (long)(stackTop - stack));
+  if (stackTop->currentChoice >= 0) {
+    fprintf(stderr, "%s(%d,%d) %s\n", message, stackTop->round,
+            stackTop->currentChoice, stackTop->predicate->name);
   } else {
-    assert(stackTop == stack || stackTop->predicate == &SUSPENDPredicate);
+    fprintf(stderr, "%s(%d) %s\n", message, stackTop->round,
+            stackTop->predicate->name);
   }
 }
 
-/* Continue from the suspension point, with a new set of predicates.
-  When the new predicates complete, we backtrack through
-  the suspension point to resume the previous execution.
-  This is intended for testing.
-*/
-void engineResume(PREDICATE* predicates)
+/**
+ * Initializes a new stack entry after success. .
+ * Maybe for the same, or for the next predicate.
+ */
+static void pushStackEntry(struct stackEntry* entry, PredicateResultCode code)
 {
-  bool successfulRun;
-  pushStackEntry(++stackTop, PREDICATE_SUCCESS_NEXT_PREDICATE);
-  stackTop->predicate = *predicates;
-  stackTop->predicates = predicates;
-  successfulRun = engineLoop();
-  // Suspending twice is not supported.
-  assert(successfulRun);
+  entry->inChoiceMode = false;
+  entry->predicates = entry[-1].predicates;
+  entry->predicates = code == PREDICATE_SUCCESS_NEXT_PREDICATE
+                          ? entry[-1].predicates + 1
+                          : entry[-1].predicates;
+  entry->predicate = *entry->predicates;
+  entry->round =
+      code == PREDICATE_SUCCESS_NEXT_PREDICATE ? 0 : entry[-1].round + 1;
+  entry->currentChoice = -1;
+  entry->trail = Trail;
+  entry->counter = Counter++;
 }
 
+/**
+ * Handles the initial attempt to execute a predicate.
+ * Returns false if execution should be suspended.
+ */
 static bool callPort(void)
 {
   PredicateResult result = stackTop->predicate->try(stackTop->round);
@@ -165,6 +108,9 @@ static bool callPort(void)
   return true;
 }
 
+/**
+ * Handles subsequent attempts to execute a predicate after initial choices.
+ */
 static void retryPort(void)
 {
   PredicateResult result =
@@ -172,7 +118,7 @@ static void retryPort(void)
 
   switch (result.code) {
     case PREDICATE_FAIL:
-      trailBacktrackTo(stackTop->trail);
+      trailRewindTo(stackTop->trail);
       break;
 
     case PREDICATE_SUCCESS_NEXT_PREDICATE:
@@ -187,11 +133,15 @@ static void retryPort(void)
   }
 }
 
+/**
+ * The main execution loop of the engine.
+ * Returns true if execution completed normally, false if suspended.
+ */
 static bool engineLoop(void)
 {
   while (true) {
     freeAll();
-    trailBacktrackTo(stackTop->trail);
+    trailRewindTo(stackTop->trail);
     if (!stackTop->inChoiceMode) {
       trace("call");
       if (!callPort()) {
@@ -215,34 +165,107 @@ static bool engineLoop(void)
   }
 }
 
-static void pushStackEntry(struct stackEntry* entry, PredicateResultCode code)
+void initializeTrail()
 {
-  entry->inChoiceMode = false;
-  entry->predicates = entry[-1].predicates;
-  entry->predicates = code == PREDICATE_SUCCESS_NEXT_PREDICATE
-                          ? entry[-1].predicates + 1
-                          : entry[-1].predicates;
-  entry->predicate = *entry->predicates;
-  entry->round =
-      code == PREDICATE_SUCCESS_NEXT_PREDICATE ? 0 : entry[-1].round + 1;
-  entry->currentChoice = -1;
-  entry->trail = Trail;
-  entry->counter = Counter++;  // Increment counter
+  statisticIncludeInteger(&MaxTrailSize, "$", "MaxTrail", true);
 }
 
-void trace(const char* message)
+void trailSetPointer(void** ptr, void* value)
 {
-  if (!TracingFlag) return;
-  fprintf(stderr, "%d:%ld:", stackTop->counter, (long)(stackTop - stack));
-  if (stackTop->currentChoice >= 0) {
-    fprintf(stderr, "%s(%d,%d) %s\n", message, stackTop->round,
-            stackTop->currentChoice, stackTop->predicate->name);
-  } else {
-    fprintf(stderr, "%s(%d) %s\n", message, stackTop->round,
-            stackTop->predicate->name);
+  Trail->ptr = ptr;
+  Trail->value = (uint_trail)*ptr;
+  Trail++;
+  *ptr = value;
+}
+
+void trailSetInt(uint_trail* ptr, uint_trail value)
+{
+  Trail->ptr = ptr;
+  Trail->value = *ptr;
+  Trail++;
+  *ptr = value;
+}
+
+void trailMaybeSetInt(uint_trail* ptr, uint_trail value)
+{
+  if (*ptr != value) {
+    trailSetInt(ptr, value);
   }
 }
 
+/**
+ * Freezes the trail at its current point. Backtracking won't go beyond this
+ * point.
+ */
+void trailFreeze()
+{
+  frozenTrail = Trail;
+}
+
+/**
+ * Rewinds the trail to a given backtrack point, restoring earlier state.
+ */
+bool trailRewindTo(TRAIL backtrackPoint)
+{
+  uint64 trailSize = Trail - TrailArray;
+  if (trailSize > MaxTrailSize) {
+    MaxTrailSize = trailSize;
+  }
+  bool result = false;
+  if (backtrackPoint < frozenTrail) {
+    backtrackPoint = frozenTrail;
+  }
+  while (Trail > backtrackPoint) {
+    result = true;
+    Trail--;
+    *(uint_trail*)Trail->ptr = Trail->value;
+  }
+  return result;
+}
+
+/**
+ * Runs the non-deterministic program starting with the given predicates.
+ * See docs/DESIGN.md for detailed explanation of the execution model.
+ */
+void engine(PREDICATE* predicates)
+{
+  // Initialize first stack entry
+  assert(stackTop == stack);
+  stackTop->inChoiceMode = false;
+  stackTop->predicate = *predicates;
+  stackTop->predicates = predicates;
+  stackTop->currentChoice = -1;
+  stackTop->round = 0;
+  stackTop->trail = Trail;
+  stackTop->counter = Counter++;
+
+  if (!engineLoop() && TracingFlag) {
+    fprintf(stderr, "Engine suspended\n");
+  } else {
+    assert(stackTop == stack || stackTop->predicate == &SUSPENDPredicate);
+  }
+}
+
+/**
+ * Continue from the suspension point, with a new set of predicates.
+ * When the new predicates complete, we backtrack through
+ * the suspension point to resume the previous execution.
+ * This is intended for testing.
+ */
+void engineResume(PREDICATE* predicates)
+{
+  bool successfulRun;
+  pushStackEntry(++stackTop, PREDICATE_SUCCESS_NEXT_PREDICATE);
+  stackTop->predicate = *predicates;
+  stackTop->predicates = predicates;
+  successfulRun = engineLoop();
+  // Suspending twice is not supported.
+  assert(successfulRun);
+}
+
+/**
+ * Helper macro for defining simple predicates with no retry behavior.
+ */
 #define SIMPLE_PREDICATE(name)                            \
   static struct predicateResult try##name(int round)      \
   {                                                       \
@@ -251,5 +274,14 @@ void trace(const char* message)
   }                                                       \
   struct predicate name##Predicate = {#name, try##name, NULL};
 
+/**
+ * A predicate that always fails, used to force backtracking.
+ * Typically used as the last predicate in a non-deterministic program.
+ */
 SIMPLE_PREDICATE(FAIL)
+
+/**
+ * A predicate that suspends execution, allowing control to return to the
+ * caller. Used for testing.
+ */
 SIMPLE_PREDICATE(SUSPEND)

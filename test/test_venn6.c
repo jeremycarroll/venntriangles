@@ -2,10 +2,10 @@
 
 #include "engine.h"
 #include "face.h"
+#include "helper_for_tests.h"
 #include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
-#include "test_helpers.h"
 #include "utils.h"
 
 #include <stdlib.h>
@@ -22,10 +22,8 @@ void tearDown(void)
 {
   engineResume((PREDICATE[]){&FAILPredicate});
 }
-/* Global variables */
 static int SolutionCount = 0;
 
-/* Predicate functions */
 static struct predicateResult countSolutions(int round)
 {
   (void)round;  // Mark parameter as intentionally unused
@@ -33,14 +31,13 @@ static struct predicateResult countSolutions(int round)
   return PredicateFail;
 }
 
-/* Test functions */
 static void testCentralFaceEdge(void)
 {
   COLOR a;
   dynamicFaceSetupCentral(intArray(0, 0, 0, 0, 0, 0));
   for (a = 0; a < NCOLORS; a++) {
     EDGE edge = &Faces[NFACES - 1].edges[a];
-    EDGE edge2 = edgeOnCentralFace(a);
+    EDGE edge2 = vertexGetCentralEdge(a);
     TEST_ASSERT_EQUAL(edge, edge2);
   }
 }
@@ -86,7 +83,6 @@ static void testFullSearch(void)
   TEST_ASSERT_EQUAL(233, SolutionCount);
 }
 
-/* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();

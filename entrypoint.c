@@ -2,7 +2,12 @@
 
 #include "main.h"
 
+/**
+ * Program entry point that delegates to the main implementation function.
+ * This file is excluded from unity tests, which define their own main
+ * functions.
+ */
 int main(int argc, char *argv[])
 {
-  return dynamicMain0(argc, argv);
+  return realMain0(argc, argv);
 }

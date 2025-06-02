@@ -7,6 +7,7 @@
 #include "s6.h"
 #include "statistics.h"
 #include "utils.h"
+#include "visible_for_testing.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,12 +15,70 @@
 
 int PerFaceDegreeSolutionNumberIPC;
 int VariationCountIPC;
-/* Static variables for solution writing */
 static char* currentFilename;
 static FILE* currentFile;
 static int currentNumberOfVariations;
 static char currentVariationMultiplication[128];
-static void solutionPrint(FILE* fp);
+
+/* Count variations and build multiplication string for display */
+int searchCountVariations(void)
+{
+  EDGE corners[3][2];
+  int numberOfVariations = 1;
+  int pLength;
+  char* currentPos = currentVariationMultiplication;
+  currentPos[0] = '\0';
+
+  for (COLOR a = 0; a < NCOLORS; a++) {
+    vertexAlignCorners(a, corners);
+    for (int i = 0; i < 3; i++) {
+      if (corners[i][0] == NULL) {
+        EDGE edge = vertexGetCentralEdge(a);
+        pLength = edgePathLengthOnly(edge, edgeFollowBackwards(edge));
+      } else {
+        pLength = edgePathLengthOnly(corners[i][0]->reversed, corners[i][1]);
+      }
+      numberOfVariations *= pLength;
+      if (pLength > 1) {
+        currentPos += sprintf(currentPos, "*%d", pLength);
+      }
+    }
+  }
+  return numberOfVariations;
+}
+
+static void solutionPrint(FILE* fp)
+{
+  COLORSET colors = 0;
+  if (fp == NULL) {
+    fp = stdout;
+  }
+
+  while (true) {
+    FACE face = Faces + colors;
+    do {
+      char buffer[1024];
+      FACE next = face->next;
+      COLORSET colorBeingDropped = face->colors & ~next->colors;
+      COLORSET colorBeingAdded = next->colors & ~face->colors;
+      sprintf(buffer, "%s [%c,%c] ", faceToString(face),
+              colorToChar(ffs(colorBeingDropped) - 1),
+              colorToChar(ffs(colorBeingAdded) - 1));
+      if (strchr(buffer, '@')) {
+        fprintf(stderr, "buffer: %s\n", buffer);
+        fprintf(stderr, "faceToString: %s\n", faceToString(face));
+        exit(EXIT_FAILURE);
+      }
+      fputs(buffer, fp);
+      face = next;
+    } while (face->colors != colors);
+    fprintf(fp, "\n");
+    if (colors == (NFACES - 1)) {
+      break;
+    }
+    colors |= (face->previous->colors | 1);
+  }
+}
 
 static bool gateSave(void)
 {
@@ -55,8 +114,7 @@ static bool beforeVariantsSave(void)
   solutionPrint(currentFile);
   CurrentPrefixIPC[strlen(CurrentPrefixIPC) - 4] = '\0';
   GraphmlFileOps.initializeFolder(CurrentPrefixIPC);
-  currentNumberOfVariations =
-      searchCountVariations(currentVariationMultiplication);
+  currentNumberOfVariations = searchCountVariations();
   LevelsIPC = numberOfLevels(currentNumberOfVariations);
   fprintf(currentFile, "\nSolution signature %s\nClass signature %s\n",
           s6SignatureToString(s6SignatureFromFaces()),
@@ -78,36 +136,3 @@ static void afterVariantsSave(void)
 
 FORWARD_BACKWARD_PREDICATE(Save, gateSave, beforeVariantsSave,
                            afterVariantsSave)
-
-static void solutionPrint(FILE* fp)
-{
-  COLORSET colors = 0;
-  if (fp == NULL) {
-    fp = stdout;
-  }
-
-  while (true) {
-    FACE face = Faces + colors;
-    do {
-      char buffer[1024];
-      FACE next = face->next;
-      COLORSET colorBeingDropped = face->colors & ~next->colors;
-      COLORSET colorBeingAdded = next->colors & ~face->colors;
-      sprintf(buffer, "%s [%c,%c] ", faceToString(face),
-              colorToChar(ffs(colorBeingDropped) - 1),
-              colorToChar(ffs(colorBeingAdded) - 1));
-      if (strchr(buffer, '@')) {
-        fprintf(stderr, "buffer: %s\n", buffer);
-        fprintf(stderr, "faceToString: %s\n", faceToString(face));
-        exit(EXIT_FAILURE);
-      }
-      fputs(buffer, fp);
-      face = next;
-    } while (face->colors != colors);
-    fprintf(fp, "\n");
-    if (colors == (NFACES - 1)) {
-      break;
-    }
-    colors |= (face->previous->colors | 1);
-  }
-}

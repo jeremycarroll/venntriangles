@@ -264,6 +264,51 @@ Non-static local variables are in camelCase.
 
 Macros are in UPPER_SNAKE_CASE.
 
+### Vertex Structure and Edge Organization
+
+In a vertex, there are 4 incoming edges: 2 for the primary color and 2 for the secondary color.
+Each edge is mapped to its appropriate slot (0-3) based on:
+- Whether it's a clockwise edge or not
+- Whether the other color is a member of the face colors
+
+The mapping works as follows:
+- Slot 0: Primary clockwise edge, when other color contains face
+- Slot 1: Primary counterclockwise edge, when other color excludes face
+- Slot 2: Secondary counterclockwise edge, when other color contains face
+- Slot 3: Secondary clockwise edge, when other color excludes face
+
+### Corner Detection Algorithm
+
+This is the algorithm as documented by Carroll, 2000.
+
+For each curve C, we start with its edge on the central face, and proceed
+around the curve in one direction.
+We keep track of two sets:
+· a set Out of curves outside of which we lie.
+· a set Passed of curves which we have recently crossed from the inside
+to the outside.
+
+Both sets are initialised to empty. On our walk around C, as we pass the
+vertex v we look at the other curve C' passing through that vertex.
+If C' is in Out then:
+· We remove C' from Out.
+· If C' is in Passed then we set Passed as the empty set and add v to
+the result set. The idea is that there must be a corner between any
+two vertices in the result set.
+Otherwise, C' is not in Out and:
+· We add C' to Out.
+· We add C' to Passed.
+At the end of the walk we look at the cardinality of the result set. This tells
+us the minimum number of corners required on this curve.
+By conducting a similar walk in the opposite direction around the curve we
+get a corresponding result set. We can align these two result sets, and find
+sub-paths along which a corner must lie. For each sub-path one end lies in
+one result set and the other end in the other.
+We arbitrarily choose one edge in each of these subpaths and subdivide it
+with an additional vertex.
+If any curve has fewer than three corners found with this algorithm then
+additional corners are added arbitrarily.
+
 #### Function name prefixes
 
 We use the following naming conventions:

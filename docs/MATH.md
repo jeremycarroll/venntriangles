@@ -38,9 +38,8 @@ We observe the following, some are fairly trivial, some are in the literature, o
 1. Triangles are convex; a 6 Venn triangle diagram is a FISC of convex curves.
 1. Thus, the FISC is monotone.
 1. The dual of monotone FISCs have one source (the inner face), and one sink (the outer face).
-1. (conjecture) In faces other the inner and outer faces, disginguishing outer edges, i.e. labelled with _i_, 
-   where _I_  is part of the label of the face, from inner edges, i.e. labelled with _i_, where _I_ is not 
-   part of the label of the face, we have:
+1. (conjecture) In faces other the inner and outer faces, distinguishing outer edges, (i.e. where in the dual graph 
+   the edge is out-going), from inner edges, i.e.(in-coming in the dual), we have:
     - the facial cycle consists of 1 or more inner edges, followed by 1 or more outer edges.
 1. If _F_ is edge adjacent to _F'_ at _j_, and _i_, _j_, _k_ is part of the facial cycle of _F_ then _k_, _j_, _i_ is 
    part of the facial cycle of _F'_.

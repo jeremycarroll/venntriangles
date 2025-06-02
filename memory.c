@@ -14,13 +14,28 @@ typedef struct AllocationHeader {
 
 // Global pointer to the start of the allocation chain
 static AllocationHeader *chain = NULL;
-/* Constants */
 #define BUFFER_SIZE 256
 
-/* Global variables (file scoped static) */
 static uint64 MaxBufferSize = 0;
 static uint64 CurrentMemory = 0;
 static uint64 MaxMemory = 0;
+
+void initializeMemory()
+{
+  statisticIncludeInteger(&MaxBufferSize, "B", "MaxBuffer", true);
+  statisticIncludeInteger(&CurrentMemory, "C", "CurrentMemory", true);
+  statisticIncludeInteger(&MaxMemory, "M", "MaxMemory", true);
+}
+
+void freeAll(void)
+{
+  while (chain) {
+    AllocationHeader *next = chain->next;
+    free(chain);
+    chain = next;
+  }
+  CurrentMemory = 0;
+}
 
 void *tempMalloc(size_t size)
 {
@@ -39,23 +54,6 @@ void *tempMalloc(size_t size)
     MaxMemory = CurrentMemory;
   }
   return header->data;
-}
-
-void freeAll(void)
-{
-  while (chain) {
-    AllocationHeader *next = chain->next;
-    free(chain);
-    chain = next;
-  }
-  CurrentMemory = 0;
-}
-
-void initializeMemory()
-{
-  statisticIncludeInteger(&MaxBufferSize, "B", "MaxBuffer", true);
-  statisticIncludeInteger(&CurrentMemory, "C", "CurrentMemory", true);
-  statisticIncludeInteger(&MaxMemory, "M", "MaxMemory", true);
 }
 
 char *getBuffer()

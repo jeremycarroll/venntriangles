@@ -1,14 +1,12 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "test_helpers.h"
+#include "helper_for_tests.h"
 
 #include "face.h"
 #include "utils.h"
 
 #include <stdarg.h>
 #include <unity.h>
-
-/* Helper functions */
 FACE dynamicFaceAddSpecific(char* colors, char* cycle)
 {
   FAILURE failure;
@@ -46,7 +44,6 @@ FACE_DEGREE* intArray(int a, ...)
   return result;
 }
 
-/* Debug functions */
 bool dynamicCycleSetPrint(CYCLESET cycleSet)
 {
   uint32_t lastBit = (NCYCLES - 1) % BITS_PER_WORD;

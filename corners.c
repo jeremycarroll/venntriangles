@@ -9,11 +9,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-EDGE SelectedCornersIPC[NCOLORS][3];
-static EDGE PossibleCorners[NCOLORS][3][NFACES];
-static void possibleCorners(EDGE* possibilities, COLOR color, EDGE from,
-                            EDGE to);
+DYNAMIC EDGE SelectedCornersIPC[NCOLORS][3];
 
+static DYNAMIC EDGE PossibleCorners[NCOLORS][3][NFACES];
+
+/**
+ * Count the number of edges in a null-terminated array
+ */
 static int edgeArrayLength(EDGE* edges)
 {
   int count = 0;
@@ -23,7 +25,30 @@ static int edgeArrayLength(EDGE* edges)
   return count;
 }
 
-static struct predicateResult tryCorners(int round)
+static void dynamicPossibleCorners(EDGE* possibilitiesReturn, COLOR color,
+                                   EDGE from, EDGE to)
+{
+  if (from == NULL) {
+    EDGE edge = vertexGetCentralEdge(color);
+    dynamicEdgePathAndLength(edge->reversed,
+                             edgeFollowBackwards(edge->reversed),
+                             possibilitiesReturn);
+  } else {
+    dynamicEdgePathAndLength(from->reversed, to, possibilitiesReturn);
+  }
+}
+
+/**
+ * Predicate entry function for selecting corners.
+ *
+ * For rounds 3, 6, 9, 12, 15 and 18 - we verify the previous colors corner
+ * assignment, On round 18 then we simply succeed - we are now done. For rounds
+ * 0 -> 17 we set up choosing between the possible corners.
+ *
+ * @param round Incrementing number encoding color and corner index, from 0 to
+ * 18 inclusive.
+ */
+static struct predicateResult dynamicTryCorners(int round)
 {
   EDGE cornerPairs[3][2];
   int cornerIndex = round % 3;
@@ -34,22 +59,26 @@ static struct predicateResult tryCorners(int round)
   }
 
   if (cornerIndex == 0 && colorIndex > 0) {
-    if (!triangleLinesNotCrossed(colorIndex - 1,
-                                 SelectedCornersIPC + colorIndex - 1)) {
+    if (!dynamicTriangleLinesNotCrossed(colorIndex - 1,
+                                        SelectedCornersIPC + colorIndex - 1)) {
       return PredicateFail;
     }
   }
   if (colorIndex >= NCOLORS) {
     return PredicateSuccessNextPredicate;
   }
-  edgeFindAndAlignCorners(colorIndex, cornerPairs);
-  possibleCorners(PossibleCorners[colorIndex][cornerIndex], colorIndex,
-                  cornerPairs[cornerIndex][0], cornerPairs[cornerIndex][1]);
+  vertexAlignCorners(colorIndex, cornerPairs);
+  dynamicPossibleCorners(PossibleCorners[colorIndex][cornerIndex], colorIndex,
+                         cornerPairs[cornerIndex][0],
+                         cornerPairs[cornerIndex][1]);
   return predicateChoices(
       edgeArrayLength(PossibleCorners[colorIndex][cornerIndex]));
 }
 
-static struct predicateResult retryCorners(int round, int choice)
+/**
+ * Make a choice of corner as setup in dynamicTryCorners.
+ */
+static struct predicateResult dynamicRetryCorners(int round, int choice)
 {
   int cornerIndex = round % 3;
   int colorIndex = round / 3;
@@ -58,27 +87,5 @@ static struct predicateResult retryCorners(int round, int choice)
   return PredicateSuccessSamePredicate;
 }
 
-/* The predicates array for corner handling */
-struct predicate CornersPredicate = {"Corners", tryCorners, retryCorners};
-/* Path and corner functions */
-static void getPath(EDGE* path, EDGE from, EDGE to)
-{
-  int length = edgePathLength(from, to, path);
-#if DEBUG
-  printf("getPath: %c %x -> %x %d\n", 'A' + from->color, from, to, length);
-#endif
-  assert(length > 0);
-  assert(length == 1 || path[0] != path[length - 1]);
-  TRAIL_SET_POINTER(path + length, NULL);
-}
-
-static void possibleCorners(EDGE* possibilities, COLOR color, EDGE from,
-                            EDGE to)
-{
-  if (from == NULL) {
-    EDGE edge = edgeOnCentralFace(color);
-    getPath(possibilities, edge->reversed, edgeFollowBackwards(edge->reversed));
-  } else {
-    getPath(possibilities, from->reversed, to);
-  }
-}
+struct predicate CornersPredicate = {"Corners", dynamicTryCorners,
+                                     dynamicRetryCorners};

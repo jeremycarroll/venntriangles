@@ -55,3 +55,6 @@ dkms.conf
 .vscode
 .format
 bin
+.idea
+*.iml
+.claude

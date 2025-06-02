@@ -1,5 +1,6 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
+#include "common.h"
 #include "face.h"
 #include "main.h"
 #include "predicates.h"
@@ -32,7 +33,6 @@ void tearDown(void)
   engineResume((PREDICATE[]){&FAILPredicate});
 }
 
-/* Helper functions */
 static void sanityVertex(VERTEX vertex)
 {
   TEST_ASSERT_EQUAL(1u << vertex->primary | 1u << vertex->secondary,
@@ -57,7 +57,6 @@ static void verifyFaceSize(int size)
   }
 }
 
-/* Test functions */
 static void testOuterFace()
 {
   FACE face = Faces;
@@ -94,12 +93,6 @@ static void testAbcFace()
   TEST_ASSERT_EQUAL(face->adjacentFaces[C], Faces + ABbits);
 }
 
-/* We have the A edge of a face. We check the properties
-   of the B vertex that it possibly points to.
-   We are given: whether this edge is primary on its face;
-   whether A is primary at the B vertex;
-   and the colors associated with the A edge on the other side of the B vertex.
- */
 static void checkBVertexOfAEdge(FACE face, EDGE edge, bool primary,
                                 bool primaryAtBVertex, COLORSET nextBcolors)
 {
@@ -164,7 +157,7 @@ static void testChoosingAndBacktracking()
     // Having selected one face, all of the other faces are determined.
     verifyFaceSize(1);
     TEST_ASSERT_EQUAL(7, CycleForcedCounter);
-    trailBacktrackTo(startTrail);
+    trailRewindTo(startTrail);
     face->cycle = NULL;
   }
   // There are 8 faces, so 8 guesses.
@@ -187,7 +180,6 @@ static void testSearch()
   TEST_ASSERT_EQUAL(14, CycleForcedCounter);
 }
 
-/* Main test runner */
 int main(int argc, char *argv[])
 {
   if (argc > 1 && strcmp(argv[1], "-t") == 0) {

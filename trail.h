@@ -5,16 +5,28 @@
 
 #include "core.h"
 
-typedef uint64 uint_trail;
+/**
+ * Trail system for supporting backtracking operations.
+ * Provides a way to set values while remembering previous state.
+ */
 
-extern void trailSetPointer(void **ptr, void *value);
+/* Type definitions */
+typedef uint64 uint_trail;   /* Integer type for trail operations */
+typedef struct trail *TRAIL; /* Opaque pointer to trail structure */
+
+/* Trail initialization */
+extern void initializeTrail(void); /* Initialize the trail system */
+extern void trailFreeze(void);     /* Freeze trail to prevent backtracking */
+
+/* Value setting operations */
+extern void trailSetInt(
+    uint_trail *ptr, uint_trail value); /* Set an integer with backtracking */
+extern void trailMaybeSetInt(
+    uint_trail *ptr, uint_trail value); /* Conditionally set if different */
+extern void trailSetPointer(void **ptr,
+                            void *value); /* Set a pointer with backtracking */
+
+/* Helper macro for type-safe pointer setting */
 #define TRAIL_SET_POINTER(a, b) trailSetPointer((void **)a, b)
-
-extern void trailSetInt(uint_trail *ptr, uint_trail value);
-extern void trailMaybeSetInt(uint_trail *ptr, uint_trail value);
-extern void trailFreeze(void);
-
-extern void initializeTrail(void);
-typedef struct trail *TRAIL;
 
 #endif  // TRAIL_H

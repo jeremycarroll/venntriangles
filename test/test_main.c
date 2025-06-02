@@ -10,23 +10,20 @@
 #include <string.h>
 #include <unity.h>
 
-/* External declarations */
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-extern int dynamicMain0(int argc, char *argv[]);
+extern int realMain0(int argc, char *argv[]);
 static bool DisasterCalled = false;
 
-/* Test setup and teardown */
 void setUp(void)
 {
-  // Set up code if needed
+  /* Nothing to set up */
 }
 
 void tearDown(void)
 {
-  // Tear down code if needed
+  /* Nothing to tear down */
 }
 
-/* Helper functions */
 static int run(int argc, char *argv[])
 {
   FILE *oldStdout = stderr;
@@ -38,14 +35,13 @@ static int run(int argc, char *argv[])
   optind = 1;
   oldStdout = stderr;
   stderr = stream;
-  status = dynamicMain0(argc, argv);
+  status = realMain0(argc, argv);
   fflush(stream);
-  // Reset stdout
+  /* Reset stdout */
   stderr = oldStdout;
   return DisasterCalled ? 1 : status;
 }
 
-/* Test functions */
 static void testMainArguments(void)
 {
   char *argv1[] = {"program", "-f", "foo"};
@@ -61,7 +57,6 @@ static void testMainArguments(void)
   TEST_ASSERT_NOT_EQUAL_INT(0, run(argc5, argv5));
 }
 
-/* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();
@@ -69,7 +64,6 @@ int main(void)
   return UNITY_END();
 }
 
-/* Stub functions for testing */
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 
 char *usingBuffer(char *buffer)

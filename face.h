@@ -3,24 +3,26 @@
 #ifndef FACE_H
 #define FACE_H
 
-#include "trail.h"
-#include "vertex.h"
+#include "dynamicface.h"
 
-/* These next two functions are actually defined in search.c */
+/* Global variables */
+
+/* Global face array - each entry represents a face with a specific color set
+ * The face structure is defined in vertex.h */
+extern struct face Faces[NFACES];
+
+/* Array used to calculate expected cycle lengths for faces based on color count
+ */
+extern uint64 FaceSumOfFaceDegree[NCOLORS + 1];
+
+/* Dynamic search functions - used in the solving algorithm */
 extern FAILURE dynamicFaceBacktrackableChoice(FACE face);
 extern FAILURE dynamicFaceChoice(FACE face, int depth);
 
-extern FAILURE faceFinalCorrectnessChecks(void);
-extern void dynamicFaceSetupCentral(FACE_DEGREE *faceDegrees);
-extern FAILURE dynamicFaceIncludeVertex(FACE face, COLOR aColor, COLOR bColor,
-                                        int depth);
-extern bool dynamicColorRemoveFromSearch(COLOR color);
-
-extern char *faceToString(FACE face);
-
+/* Core face operations */
 extern void initializeFacesAndEdges(void);
-extern FAILURE faceRestrictAndPropogateCycles(FACE face, CYCLESET onlyCycleSet,
-                                              int depth);
-extern FAILURE facePropogateChoice(FACE face, EDGE edge, int depth);
+extern char* faceToString(FACE face);
+extern FACE faceFromColors(char* colors);
+extern void facePrintSelected(void);
 
 #endif  // FACE_H

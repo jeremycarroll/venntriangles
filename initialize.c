@@ -1,5 +1,4 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
-
 #include "common.h"
 #include "face.h"
 #include "main.h"
@@ -12,11 +11,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-void initialize()
+void initialize(void)
 {
-  /* Not true on all architectures, but assumed in our Trail. */
+  /* Architecture-specific assertions */
   assert((sizeof(uint64) == sizeof(void *)));
-  /* Verify uint64 is 64 bits */
   assert(sizeof(uint64) == 8);
 
   initializeCycleSets();

@@ -5,11 +5,9 @@
 #include "statistics.h"
 
 /*
-We run single threaded and have only one active failure at any time;
-hence for each failure we have a single static instance, which records the
-current state of the failure as we backtrack. Each of the static Failures
-also has a counter, which is incremented on every use, so that we can produce
-stats.
+For each failure we have a single static instance, which  has an array of
+counters for stats. We count failures by their depth in the execution,
+this was unnecessary.
 */
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 

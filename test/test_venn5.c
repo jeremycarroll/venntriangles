@@ -1,10 +1,10 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
 #include "face.h"
+#include "helper_for_tests.h"
 #include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
-#include "test_helpers.h"
 #include "utils.h"
 
 #include <stdio.h>
@@ -22,7 +22,6 @@ void tearDown(void)
   engineResume((PREDICATE[]){&FAILPredicate});
 }
 
-/* Global variables */
 static int SolutionCount = 0;
 static int EquivocalCount = 0;
 static int CanonicalCount = 0;
@@ -57,10 +56,10 @@ static struct predicateResult invertSolution()
   SIGNATURE maxSignature = s6MaxSignature();
   TEST_ASSERT_EQUAL(NCYCLES - 1, cycleId);
   TEST_ASSERT_EQUAL_STRING(
-      "CoCnBdBeAfAlAoBbAdAqAcArAiAhCvBjCjBgBcApAeAfApAoAcBfAdBaAnAiByCv",
+      "CcCpBbBeAgAjAoBcAdAqAcAsAiAhCvBhCnBgBdApAeAgApAoAcBfAdBaAnAiByCv",
       s6SignatureToString(signature));
   TEST_ASSERT_EQUAL_STRING(
-      "CvCgByBuBaBcBfAqAoAcApBeApAdAoBbAuBiAvAuArBdAqArBhAfBnBhChAmCqCh",
+      "CvCaByBwBaBdBfAqAoAcApBeApAdAoBcAuBoAxAuAsBbAqAsBmAgBqBmCkAmCsCk",
       s6SignatureToString(maxSignature));
   TEST_ASSERT_EQUAL_STRING(
       " |abcde|: "
@@ -100,7 +99,6 @@ static struct predicateResult invertSolution()
   return PredicateFail;
 }
 
-/* Callback functions */
 static struct predicateResult foundSolution()
 {
   SolutionCount++;
@@ -108,7 +106,7 @@ static struct predicateResult foundSolution()
   SIGNATURE signature = s6MaxSignature();
   if (strcmp(
           s6SignatureToString(signature),
-          "CvCgByBuBaBcBfAqAoAcApBeApAdAoBbAuBiAvAuArBdAqArBhAfBnBhChAmCqCh") ==
+          "CvCaByBwBaBdBfAqAoAcApBeApAdAoBcAuBoAxAuAsBbAqAsBmAgBqBmCkAmCsCk") ==
       0) {
     MatchingSolutions++;
     switch (signature->offset) {
@@ -132,7 +130,6 @@ static struct predicateResult foundSolution()
   return PredicateFail;
 }
 
-/* Test functions */
 static void testSearchAbcde()
 {
   SolutionCount = 0;
@@ -225,7 +222,6 @@ static void testInvert()
   engineResume((PREDICATE[]){
       &VennPredicate, &(struct predicate){"Found", invertSolution, NULL}});
 }
-/* Main test runner */
 int main(void)
 {
   UNITY_BEGIN();

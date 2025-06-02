@@ -12,47 +12,16 @@
 
 /* Global variables */
 uint64_t GlobalVariantCountIPC = 0;
+char CurrentPrefixIPC[1024];
+int VariationNumberIPC = 1;
+int LevelsIPC = 0;
+
+struct graphmlFileIO GraphmlFileOps = {fopen, initializeFolder};
+
 /* GraphML namespace and schema definitions */
 static const char *GRAPHML_NS = "http://graphml.graphdrawing.org/xmlns";
 static const char *GRAPHML_SCHEMA =
     "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd";
-
-/* Forward declarations of file scoped static functions */
-/* GraphML document structure functions */
-static void graphmlBegin(FILE *fp);
-static void graphmlEnd(FILE *fp);
-
-/* Node/vertex functions */
-static void graphmlAddVertex(FILE *fp, VERTEX vertex);
-static void graphmlAddCorner(FILE *fp, EDGE edge, COLOR color, int counter);
-static char *graphmlVertexId(VERTEX vertex);
-static char *cornerId(COLOR color, int counter);
-static void addVertexIfPrimary(FILE *fp, VERTEX vertex, COLOR color);
-static void addCornerNodes(FILE *fp, EDGE (*corners)[3], COLOR color,
-                           int *cornerIds);
-
-/* Edge functions */
-static void addEdge(FILE *fp, COLOR color, int line, char *source,
-                    char *target);
-static void graphmlAddEdge(FILE *fp, EDGE edge, int line);
-static void addEdgeToCorner(FILE *fp, EDGE edge, int corner, int line);
-static void addEdgeBetweenCorners(FILE *fp, COLOR color, int low, int high);
-static void addEdgeFromCorner(FILE *fp, int corner, EDGE edge, int line);
-
-/* Triangle traversal callbacks */
-static void processRegularEdgeGraphML(void *data, EDGE current, int line);
-static void processSingleCornerGraphML(void *data, EDGE current, int line);
-static void processAdjacentCornersGraphML(void *data, EDGE current, int line);
-static void processAllCornersGraphML(void *data, EDGE current, int line);
-static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3]);
-
-/* Variation handling */
-static char *subFilename(void);
-
-/* Global variables */
-char CurrentPrefixIPC[1024];
-int VariationNumberIPC = 1;
-int LevelsIPC = 0;
 
 /* Structure to hold data for GraphML output */
 typedef struct {
@@ -62,10 +31,34 @@ typedef struct {
   COLOR color;
 } GraphMLData;
 
-/* Externally linked functions */
-struct graphmlFileIO GraphmlFileOps = {fopen, initializeFolder};
+/**
+ * Generates a vertex ID for GraphML output.
+ * Uses the format "p_<colorset>_<primary>_<secondary>"
+ */
+static char *graphmlVertexId(VERTEX vertex)
+{
+  char *buffer = getBuffer();
+  sprintf(buffer, "p_%s", vertexToString(vertex));
+  return usingBuffer(buffer);
+}
 
-/* GraphML document structure functions */
+/**
+ * Generates a corner ID for GraphML output.
+ * Uses the format "<color>_<counter>"
+ */
+static char *cornerId(COLOR color, int counter)
+{
+  char *buffer = getBuffer();
+  assert(counter < 3);
+  assert(color >= 0);
+  sprintf(buffer, "%c_%d", colorToChar(color), counter);
+  return usingBuffer(buffer);
+}
+
+/**
+ * Writes the beginning of a GraphML document, including XML declaration,
+ * namespaces, and attribute definitions.
+ */
 static void graphmlBegin(FILE *fp)
 {
   fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -95,13 +88,18 @@ static void graphmlBegin(FILE *fp)
   fprintf(fp, "  <graph id=\"venn_diagram\" edgedefault=\"undirected\">\n");
 }
 
+/**
+ * Writes the end of a GraphML document.
+ */
 static void graphmlEnd(FILE *fp)
 {
   fprintf(fp, "  </graph>\n");
   fprintf(fp, "</graphml>\n");
 }
 
-/* Node/vertex functions */
+/**
+ * Adds a vertex to the GraphML output.
+ */
 static void graphmlAddVertex(FILE *fp, VERTEX vertex)
 {
   char *id = graphmlVertexId(vertex);
@@ -114,6 +112,9 @@ static void graphmlAddVertex(FILE *fp, VERTEX vertex)
   fprintf(fp, "    </node>\n");
 }
 
+/**
+ * Adds a corner node to the GraphML output.
+ */
 static void graphmlAddCorner(FILE *fp, EDGE edge, COLOR color, int counter)
 {
   COLORSET colors = edge->colors | (1ll << color);
@@ -126,22 +127,10 @@ static void graphmlAddCorner(FILE *fp, EDGE edge, COLOR color, int counter)
   fprintf(fp, "    </node>\n");
 }
 
-static char *graphmlVertexId(VERTEX vertex)
-{
-  char *buffer = getBuffer();
-  sprintf(buffer, "p_%s", vertexToString(vertex));
-  return usingBuffer(buffer);
-}
-
-static char *cornerId(COLOR color, int counter)
-{
-  char *buffer = getBuffer();
-  assert(counter < 3);
-  assert(color >= 0);
-  sprintf(buffer, "%c_%d", colorToChar(color), counter);
-  return usingBuffer(buffer);
-}
-
+/**
+ * Adds a vertex to the GraphML output if it's a primary vertex for the given
+ * color.
+ */
 static void addVertexIfPrimary(FILE *fp, VERTEX vertex, COLOR color)
 {
   if (vertex->primary == color) {
@@ -149,6 +138,9 @@ static void addVertexIfPrimary(FILE *fp, VERTEX vertex, COLOR color)
   }
 }
 
+/**
+ * Adds corner nodes to the GraphML output.
+ */
 static void addCornerNodes(FILE *fp, EDGE (*corners)[3], COLOR color,
                            int *cornerIds)
 {
@@ -157,7 +149,9 @@ static void addCornerNodes(FILE *fp, EDGE (*corners)[3], COLOR color,
   }
 }
 
-/* Edge functions */
+/**
+ * Adds an edge to the GraphML output.
+ */
 static void addEdge(FILE *fp, COLOR color, int line, char *source, char *target)
 {
   fprintf(fp, "    <edge source=\"%s\" target=\"%s\">\n", source, target);
@@ -167,6 +161,9 @@ static void addEdge(FILE *fp, COLOR color, int line, char *source, char *target)
   fprintf(fp, "    </edge>\n");
 }
 
+/**
+ * Adds a regular edge to the GraphML output.
+ */
 static void graphmlAddEdge(FILE *fp, EDGE edge, int line)
 {
   /* Use the primary edge for consistent ID generation */
@@ -178,6 +175,9 @@ static void graphmlAddEdge(FILE *fp, EDGE edge, int line)
   addEdge(fp, edge->color, line, source, target);
 }
 
+/**
+ * Adds an edge from a vertex to a corner in the GraphML output.
+ */
 static void addEdgeToCorner(FILE *fp, EDGE edge, int corner, int line)
 {
   char *source = graphmlVertexId(edge->reversed->to->vertex);
@@ -186,6 +186,9 @@ static void addEdgeToCorner(FILE *fp, EDGE edge, int corner, int line)
   addEdge(fp, edge->color, line, source, target);
 }
 
+/**
+ * Adds an edge between two corners in the GraphML output.
+ */
 static void addEdgeBetweenCorners(FILE *fp, COLOR color, int low, int high)
 {
   char *source = cornerId(color, low);
@@ -194,6 +197,9 @@ static void addEdgeBetweenCorners(FILE *fp, COLOR color, int low, int high)
   addEdge(fp, color, line, source, target);
 }
 
+/**
+ * Adds an edge from a corner to a vertex in the GraphML output.
+ */
 static void addEdgeFromCorner(FILE *fp, int corner, EDGE edge, int line)
 {
   char *source = cornerId(edge->color, corner);
@@ -202,7 +208,9 @@ static void addEdgeFromCorner(FILE *fp, int corner, EDGE edge, int line)
   addEdge(fp, edge->color, line, source, target);
 }
 
-/* Triangle traversal callbacks */
+/**
+ * Process regular edges during triangle traversal for GraphML output.
+ */
 static void processRegularEdgeGraphML(void *data, EDGE current, int line)
 {
   GraphMLData *gml = (GraphMLData *)data;
@@ -210,6 +218,9 @@ static void processRegularEdgeGraphML(void *data, EDGE current, int line)
   addVertexIfPrimary(gml->fp, current->to->vertex, gml->color);
 }
 
+/**
+ * Process a single corner during triangle traversal for GraphML output.
+ */
 static void processSingleCornerGraphML(void *data, EDGE current, int line)
 {
   GraphMLData *gml = (GraphMLData *)data;
@@ -221,6 +232,9 @@ static void processSingleCornerGraphML(void *data, EDGE current, int line)
   addVertexIfPrimary(gml->fp, current->to->vertex, gml->color);
 }
 
+/**
+ * Process adjacent corners during triangle traversal for GraphML output.
+ */
 static void processAdjacentCornersGraphML(void *data, EDGE current, int line)
 {
   GraphMLData *gml = (GraphMLData *)data;
@@ -238,6 +252,9 @@ static void processAdjacentCornersGraphML(void *data, EDGE current, int line)
   addVertexIfPrimary(gml->fp, current->to->vertex, gml->color);
 }
 
+/**
+ * Process all corners during triangle traversal for GraphML output.
+ */
 static void processAllCornersGraphML(void *data, EDGE current, int line)
 {
   GraphMLData *gml = (GraphMLData *)data;
@@ -253,6 +270,30 @@ static void processAllCornersGraphML(void *data, EDGE current, int line)
   addVertexIfPrimary(gml->fp, current->to->vertex, gml->color);
 }
 
+/**
+ * Generates a file path for the current variation based on the variation
+ * number.
+ */
+static char *subFilename(void)
+{
+  char *buffer = getBuffer();
+  int levels = LevelsIPC;
+  char *p = buffer;
+  int variationNumber = VariationNumberIPC;
+  p = p + sprintf(p, "%s", CurrentPrefixIPC);
+  while (levels > 1) {
+    p += sprintf(p, "/%2.2x", variationNumber % 256);
+    GraphmlFileOps.initializeFolder(buffer);
+    variationNumber /= 256;
+    levels--;
+  }
+  p += sprintf(p, "/%3.3x.xml", variationNumber);
+  return usingBuffer(buffer);
+}
+
+/**
+ * Saves a triangle to the GraphML output.
+ */
 static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
 {
   GraphMLData gml = {
@@ -274,30 +315,14 @@ static void saveTriangle(FILE *fp, COLOR color, EDGE (*corners)[3])
   addCornerNodes(fp, corners, color, gml.cornerIds);
 }
 
-/* Variation handling */
-static char *subFilename(void)
-{
-  char *buffer = getBuffer();
-  int levels = LevelsIPC;
-  char *p = buffer;
-  int variationNumber = VariationNumberIPC;
-  p = p + sprintf(p, "%s", CurrentPrefixIPC);
-  while (levels > 1) {
-    p += sprintf(p, "/%2.2x", variationNumber % 256);
-    GraphmlFileOps.initializeFolder(buffer);
-    variationNumber /= 256;
-    levels--;
-  }
-  p += sprintf(p, "/%3.3x.xml", variationNumber);
-  return usingBuffer(buffer);
-}
-
+/**
+ * Saves the current variation to a GraphML file.
+ */
 static void saveVariation(EDGE (*corners)[3])
 {
   COLOR a;
   char *filename = subFilename();
   FILE *fp;
-  // assert(VariationNumberIPC <= ExpectedVariations);
   VariationNumberIPC++;
   if (VariationNumberIPC - 1 <= IgnoreFirstVariantsPerSolution) {
     return;
@@ -312,6 +337,9 @@ static void saveVariation(EDGE (*corners)[3])
   fclose(fp);
 }
 
+/**
+ * Calculates the number of directory levels needed for the expected variations.
+ */
 int numberOfLevels(int expectedVariations)
 {
   int result = 1;
@@ -322,6 +350,9 @@ int numberOfLevels(int expectedVariations)
   return result;
 }
 
+/**
+ * Predicate function for saving a variation to GraphML.
+ */
 static struct predicateResult trySaveVariation(int round)
 {
   (void)round;  // Unused parameter
@@ -329,4 +360,5 @@ static struct predicateResult trySaveVariation(int round)
   return PredicateSuccessNextPredicate;
 }
 
+/* GraphML predicate for non-deterministic program */
 struct predicate GraphMLPredicate = {"GraphML", trySaveVariation, NULL};
