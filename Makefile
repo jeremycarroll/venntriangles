@@ -1,6 +1,6 @@
 # Check for the -Wmissing-variable-declarations flag
 GCC_CHECK := $(shell echo | gcc -E -x c - -Wmissing-variable-declarations 2>&1)
-ifeq ($(findstring "unknown argument", $(GCC_CHECK)),)
+ifeq ($(findstring "missing-variable-declarations", $(GCC_CHECK)),)
     CFLAGS += -Wmissing-variable-declarations
 endif
 
