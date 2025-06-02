@@ -11,7 +11,7 @@
 #define DEBUG 0
 
 /* Global variables */
-uint64_t GlobalVariantCountIPC = 0;
+uint64 GlobalVariantCountIPC = 0;
 char CurrentPrefixIPC[1024];
 int VariationNumberIPC = 1;
 int LevelsIPC = 0;
@@ -50,7 +50,6 @@ static char *cornerId(COLOR color, int counter)
 {
   char *buffer = getBuffer();
   assert(counter < 3);
-  assert(color >= 0);
   sprintf(buffer, "%c_%d", colorToChar(color), counter);
   return usingBuffer(buffer);
 }
