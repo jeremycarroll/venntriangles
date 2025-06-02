@@ -54,16 +54,6 @@ git clone git@github.com:jeremycarroll/venntriangles.git
 cd venntriangles
 make
 ```
-If you get this error (gcc version 13 or less):
-```
-gcc: error: unrecognized command-line option ‘-Wmissing-variable-declarations’
-```
-then please upgrade `gcc`:
-```
-gcc --version
-sudo apt install --reinstall gcc-14
-sudo ln -s -f /usr/bin/gcc-14 /usr/bin/gcc
-```
 
 ### Amazon Linux / RedHat
 ```
