@@ -72,9 +72,9 @@ make
 
 ## Usage
 
-There is no need to run this program more than once: it takes about 5 minutes, and 60 GB of disk for all the results.
+There is no need to run this program more than once: it takes less than 10 minutes, and 60 GB of disk for all the results.
 
-A complete run, taking maybe between 5 and 10 minutes, is:
+A complete run is:
 ```
 bin/venn -f ../results
 ```
