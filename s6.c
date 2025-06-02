@@ -11,6 +11,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define TOTAL_SEQUENCE_STORAGE 100
 #define DEBUG 0
