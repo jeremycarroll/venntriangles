@@ -1,5 +1,11 @@
+# Check for the -Wmissing-variable-declarations flag
+GCC_CHECK := $(shell echo | gcc -E -x c - -Wmissing-variable-declarations 2>&1)
+ifeq ($(findstring "unknown argument", $(GCC_CHECK)),)
+    CFLAGS += -Wmissing-variable-declarations
+endif
+
 CC          = gcc
-CFLAGS      = -g -Wall -Wextra -std=c11 -MMD -Wmissing-prototypes -Wmissing-declarations -Wshadow -Wmissing-variable-declarations -fno-common
+CFLAGS      += -g -Wall -Wextra -std=c11 -MMD -Wmissing-prototypes -Wmissing-declarations -Wshadow -fno-common
 UNITY_DIR   = ../Unity
 TEST_CFLAGS = -I$(UNITY_DIR)/src -I.
 TEST_SRC    = test/test_venn3.c test/test_s6.c test/test_initialize.c test/test_known_solution.c test/test_main.c \
