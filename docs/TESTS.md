@@ -28,7 +28,7 @@ There are six ways to label the simple 3-Venn diagram with the six permutations 
 
 ### Face Adjacency Tests
 
-Both of these labelings (ABC and ACB) have the same adjacency relationships between the faces, which are set up during the [initialization](https://github.com/jeremycarroll/venntriangles/blob/89880833bde79e640d6c25026d9b59708afc3177/test/test_venn3.c#L27) phase. In the tests, the initialization does not
+Both of these labelings (ABC and ACB) have the same adjacency relationships between the faces, which are set up during the [initialization](https://github.com/jeremycarroll/venntriangles/blob/89880833bde79e640d6c25026d9b59708afc3177/test/test_venn3.c#L28) phase. In the tests, the initialization does not
 get reversed in the `tearDown` function, instead, the initialization is idempotent. The key difference between these two
 labelings is the orientation. We orient all curves in a clockwise fashion, so that the central face has cycle _abc_ in the first, and _acb_ in the second. This clockwise orientation is an artifact of our approach to the search, and not fundamental to the
 Venn diagram, which does not have the arrows on the curves (or the labels). Conventionally, we read the edges of the outer face counter-clockwise not clockwise. The first picture has the inner face with facial cycle _abc_ and the outer face with facial cycle _acb_. 
