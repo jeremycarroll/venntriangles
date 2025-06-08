@@ -28,5 +28,8 @@ extern char *s6SignatureToLongString(SIGNATURE signature); /* Convert to detaile
 /* Trail system */
 extern TRAIL Trail; /* Global trail for backtracking */
 extern bool trailRewindTo(TRAIL backtrackPoint); /* Rewind trail to point */
+extern uint_trail * getPartialCyclicOrder(int a, int b, int c);
+
+extern int EngineCounter;
 
 #endif  /* VISIBLE_FOR_TESTING_H */

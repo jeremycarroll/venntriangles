@@ -58,3 +58,4 @@ bin
 .idea
 *.iml
 .claude
+compile_commands.json

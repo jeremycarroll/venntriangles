@@ -27,8 +27,7 @@ static struct trail TrailArray[TRAIL_SIZE];
 TRAIL Trail = TrailArray;
 static TRAIL frozenTrail = NULL;
 static uint64 MaxTrailSize = 0;
-static struct stackEntry stack[MAX_STACK_SIZE + 1], *stackTop = stack;
-static int Counter = 0;
+int EngineCounter = 0;
 
 const struct predicateResult PredicateFail = {PREDICATE_FAIL, 0};
 const struct predicateResult PredicateSuccessNextPredicate = {
@@ -47,16 +46,17 @@ struct predicateResult predicateChoices(int numberOfChoices)
   return (struct predicateResult){PREDICATE_CHOICES, numberOfChoices};
 }
 
-static void trace(const char* message)
+static void trace(STACK stack, const char* message)
 {
   if (!TracingFlag) return;
-  fprintf(stderr, "%d:%ld:", stackTop->counter, (long)(stackTop - stack));
-  if (stackTop->currentChoice >= 0) {
-    fprintf(stderr, "%s(%d,%d) %s\n", message, stackTop->round,
-            stackTop->currentChoice, stackTop->predicate->name);
+  fprintf(stderr, "%d:%ld:", stack->stackTop->counter,
+          stack->stackTop - stack->stack);
+  if (stack->stackTop->currentChoice >= 0) {
+    fprintf(stderr, "%s(%d,%d) %s\n", message, stack->stackTop->round,
+            stack->stackTop->currentChoice, stack->stackTop->predicate->name);
   } else {
-    fprintf(stderr, "%s(%d) %s\n", message, stackTop->round,
-            stackTop->predicate->name);
+    fprintf(stderr, "%s(%d) %s\n", message, stack->stackTop->round,
+            stack->stackTop->predicate->name);
   }
 }
 
@@ -76,31 +76,32 @@ static void pushStackEntry(struct stackEntry* entry, PredicateResultCode code)
       code == PREDICATE_SUCCESS_NEXT_PREDICATE ? 0 : entry[-1].round + 1;
   entry->currentChoice = -1;
   entry->trail = Trail;
-  entry->counter = Counter++;
+  entry->counter = EngineCounter++;
 }
 
 /**
  * Handles the initial attempt to execute a predicate.
  * Returns false if execution should be suspended.
  */
-static bool callPort(void)
+static bool callPort(STACK stack)
 {
-  PredicateResult result = stackTop->predicate->try(stackTop->round);
+  PredicateResult result =
+      stack->stackTop->predicate->try(stack->stackTop->round);
 
   switch (result.code) {
     case PREDICATE_SUCCESS_NEXT_PREDICATE:
     case PREDICATE_SUCCESS_SAME_PREDICATE:
-      pushStackEntry(++stackTop, result.code);
-      assert(stackTop < stack + MAX_STACK_SIZE);
+      pushStackEntry(++stack->stackTop, result.code);
+      assert(stack->stackTop < stack->stack + MAX_STACK_SIZE);
       break;
 
     case PREDICATE_FAIL: /* 0 choices */
     case PREDICATE_CHOICES:
       // Start trying choice
-      stackTop->inChoiceMode = true;
-      stackTop->currentChoice = 0;
-      stackTop->numberOfChoices = result.numberOfChoices;
-      stackTop->trail = Trail;
+      stack->stackTop->inChoiceMode = true;
+      stack->stackTop->currentChoice = 0;
+      stack->stackTop->numberOfChoices = result.numberOfChoices;
+      stack->stackTop->trail = Trail;
       break;
     case PREDICATE_SUSPEND:
       return false;
@@ -111,20 +112,20 @@ static bool callPort(void)
 /**
  * Handles subsequent attempts to execute a predicate after initial choices.
  */
-static void retryPort(void)
+static void retryPort(STACK stack)
 {
-  PredicateResult result =
-      stackTop->predicate->retry(stackTop->round, stackTop->currentChoice++);
+  PredicateResult result = stack->stackTop->predicate->retry(
+      stack->stackTop->round, stack->stackTop->currentChoice++);
 
   switch (result.code) {
     case PREDICATE_FAIL:
-      trailRewindTo(stackTop->trail);
+      trailRewindTo(stack->stackTop->trail);
       break;
 
     case PREDICATE_SUCCESS_NEXT_PREDICATE:
     case PREDICATE_SUCCESS_SAME_PREDICATE:
-      pushStackEntry(++stackTop, result.code);
-      assert(stackTop < stack + MAX_STACK_SIZE);
+      pushStackEntry(++stack->stackTop, result.code);
+      assert(stack->stackTop < stack->stack + MAX_STACK_SIZE);
       break;
     case PREDICATE_CHOICES:
     case PREDICATE_SUSPEND:
@@ -137,30 +138,30 @@ static void retryPort(void)
  * The main execution loop of the engine.
  * Returns true if execution completed normally, false if suspended.
  */
-static bool engineLoop(void)
+static bool engineLoop(STACK stack)
 {
   while (true) {
     freeAll();
-    trailRewindTo(stackTop->trail);
-    if (!stackTop->inChoiceMode) {
-      trace("call");
-      if (!callPort()) {
+    trailRewindTo(stack->stackTop->trail);
+    if (!stack->stackTop->inChoiceMode) {
+      trace(stack, "call");
+      if (!callPort(stack)) {
         return false;
       }
     } else {
-      if (stackTop->currentChoice >= stackTop->numberOfChoices) {
+      if (stack->stackTop->currentChoice >= stack->stackTop->numberOfChoices) {
         /* backtrack */
         do {
-          trace("fail");
-          if (stackTop == stack) {
+          trace(stack, "fail");
+          if (stack->stackTop == stack->stack) {
             return true;  // All done
           }
-          stackTop--;
-        } while (!stackTop->inChoiceMode);
+          stack->stackTop--;
+        } while (!stack->stackTop->inChoiceMode);
         continue;
       }
-      trace("retry");
-      retryPort();
+      trace(stack, "retry");
+      retryPort(stack);
     }
   }
 }
@@ -186,11 +187,13 @@ void trailSetInt(uint_trail* ptr, uint_trail value)
   *ptr = value;
 }
 
-void trailMaybeSetInt(uint_trail* ptr, uint_trail value)
+bool trailMaybeSetInt(uint_trail* ptr, uint_trail value)
 {
   if (*ptr != value) {
     trailSetInt(ptr, value);
+    return true;
   }
+  return false;
 }
 
 /**
@@ -227,23 +230,28 @@ bool trailRewindTo(TRAIL backtrackPoint)
  * Runs the non-deterministic program starting with the given predicates.
  * See docs/DESIGN.md for detailed explanation of the execution model.
  */
-void engine(PREDICATE* predicates)
+bool engine(STACK stack, PREDICATE* predicates)
 {
-  // Initialize first stack entry
-  assert(stackTop == stack);
-  stackTop->inChoiceMode = false;
-  stackTop->predicate = *predicates;
-  stackTop->predicates = predicates;
-  stackTop->currentChoice = -1;
-  stackTop->round = 0;
-  stackTop->trail = Trail;
-  stackTop->counter = Counter++;
+  bool result;
+  stack->stackTop = stack->stack;
+  stack->stackTop->inChoiceMode = false;
+  stack->stackTop->predicate = *predicates;
+  stack->stackTop->predicates = predicates;
+  stack->stackTop->currentChoice = -1;
+  stack->stackTop->round = 0;
+  stack->stackTop->trail = Trail;
+  stack->stackTop->counter = EngineCounter++;
+  result = engineLoop(stack);
 
-  if (!engineLoop() && TracingFlag) {
-    fprintf(stderr, "Engine suspended\n");
+  if (!result) {
+    if (TracingFlag) {
+      fprintf(stderr, "Engine suspended\n");
+    }
+    assert(stack->stackTop->predicate == &SUSPENDPredicate);
   } else {
-    assert(stackTop == stack || stackTop->predicate == &SUSPENDPredicate);
+    assert(stack->stackTop == stack->stack);
   }
+  return result;
 }
 
 /**
@@ -252,17 +260,21 @@ void engine(PREDICATE* predicates)
  * the suspension point to resume the previous execution.
  * This is intended for testing.
  */
-void engineResume(PREDICATE* predicates)
+void engineResume(STACK stack, PREDICATE* predicates)
 {
   bool successfulRun;
-  pushStackEntry(++stackTop, PREDICATE_SUCCESS_NEXT_PREDICATE);
-  stackTop->predicate = *predicates;
-  stackTop->predicates = predicates;
-  successfulRun = engineLoop();
+  pushStackEntry(++stack->stackTop, PREDICATE_SUCCESS_NEXT_PREDICATE);
+  stack->stackTop->predicate = *predicates;
+  stack->stackTop->predicates = predicates;
+  successfulRun = engineLoop(stack);
   // Suspending twice is not supported.
   assert(successfulRun);
 }
 
+void engineClear(STACK stack)
+{
+  trailRewindTo(stack->stackTop->trail);
+}
 /**
  * Helper macro for defining simple predicates with no retry behavior.
  */

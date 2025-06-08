@@ -96,8 +96,8 @@ void searchSolutionWrite(const char *buffer)
 }
 
 struct predicate *NonDeterministicProgram[] = {/* stub for testing. */};
-
-void engine(struct predicate *predicates[])
+#pragma GCC diagnostic ignored "-Wvisibility"
+void engine(struct stack *stack, struct predicate *predicates[])
 {
   /* stub for testing. */
 }
