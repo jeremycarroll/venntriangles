@@ -343,7 +343,12 @@ SYMMETRY_TYPE s6FacesSymmetryType(void)
 SYMMETRY_TYPE s6SymmetryType6(FACE_DEGREE *args)
 {
   struct faceDegreeSequence argsAsSequence = {
-      {args[0], args[1], args[2], args[3], args[4], args[5]}};
+#if NCOLORS <= 2
+      {args[0]}
+#else
+      {args[0], args[1], args[2], args[3], args[4], args[5]}
+#endif
+  };
   return getPartialSequenceCanonicity(6, &argsAsSequence);
 }
 
