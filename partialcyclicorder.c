@@ -18,7 +18,7 @@ static bool dynamicSetRawEntry(uint_trail* entry)
 {
   int roundedDownIx;
   assert(entry >= RawPartialCyclicOrder);
-  assert(entry < RawPartialCyclicOrder + PCO_TRIPLES);
+  assert(entry < RawPartialCyclicOrder + PCO_TRIPLES * 2);
   if (!trailMaybeSetInt(entry, true)) {
     return true;
   }
@@ -119,6 +119,6 @@ bool dynamicPCOComplete(void)
   if (failed) {
     return false;
   }
-  // engineClear(&pcoStack);
+  engineClear(&pcoStack);
   return true;
 }
