@@ -83,7 +83,7 @@ static void convexPolygon(const int number, const int a, ...)
     triangle(0, sides[index], sides[index + 1], sides[index + 2]);
   }
 }
-#define P printf("l %d\n", __LINE__)
+#define P  // printf("l %d\n", __LINE__)
 static void testV4(int a, int b, int c, int d, int e, int f, int g, int h,
                    int i, int j, int k, int l)
 {
@@ -129,9 +129,6 @@ static void testV4(int a, int b, int c, int d, int e, int f, int g, int h,
 
   convexPolygon(4, b, c, k, l);
   P;
-  printf("********\n");
-  dump();
-  printf("********\n");
 
   TEST_ASSERT_EQUAL(true, dynamicPCOClosure());
 
@@ -143,9 +140,6 @@ static void testV4(int a, int b, int c, int d, int e, int f, int g, int h,
   triangle(0, d, h, f);
 
   TEST_ASSERT_EQUAL(true, dynamicPCOClosure());
-  printf("********\n");
-  dump();
-  printf("********\n");
   int counter = EngineCounter;
   TEST_ASSERT_TRUE_MESSAGE(dynamicPCOComplete(), "extendable");
   printf("Engine counter = %d\n", EngineCounter - counter);
@@ -154,7 +148,6 @@ static void testV4(int a, int b, int c, int d, int e, int f, int g, int h,
 static void runTestVenn4(void)
 {
   testV4(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
-  dump();
 }
 
 int main(void)
