@@ -6,8 +6,8 @@
 #include "trail.h"
 #include "s6.h"
 #include "color.h"
-#include "cycleset.h"
 
+typedef struct _alternatingPredicate * AlternatingPredicate;
 /**
  * This header exposes internal functions and variables for testing purposes.
  * These declarations should not be used in production code and are only
@@ -28,7 +28,7 @@ extern char *s6SignatureToLongString(SIGNATURE signature); /* Convert to detaile
 /* Trail system */
 extern TRAIL Trail; /* Global trail for backtracking */
 extern bool trailRewindTo(TRAIL backtrackPoint); /* Rewind trail to point */
-extern uint_trail * getPartialCyclicOrder(int a, int b, int c);
+extern uint_trail * getAlternating(AlternatingPredicate ap, int a, int b, int c);
 
 extern int EngineCounter;
 

@@ -130,7 +130,7 @@ static void testV4(int a, int b, int c, int d, int e, int f, int g, int h,
   convexPolygon(4, b, c, k, l);
   P;
 
-  TEST_ASSERT_EQUAL(true, dynamicPCOClosure());
+  TEST_ASSERT_EQUAL(true, dynamicAlternatingClosure(PartialCyclicOrder));
 
   TEST_ASSERT_FALSE(*getPartialCyclicOrder(g, h, f));
   TEST_ASSERT_FALSE(*getPartialCyclicOrder(g, f, h));
@@ -139,9 +139,10 @@ static void testV4(int a, int b, int c, int d, int e, int f, int g, int h,
   TEST_ASSERT_FALSE(*getPartialCyclicOrder(d, f, h));
   triangle(0, d, h, f);
 
-  TEST_ASSERT_EQUAL(true, dynamicPCOClosure());
+  TEST_ASSERT_EQUAL(true, dynamicAlternatingClosure(PartialCyclicOrder));
   int counter = EngineCounter;
-  TEST_ASSERT_TRUE_MESSAGE(dynamicPCOComplete(), "extendable");
+  TEST_ASSERT_TRUE_MESSAGE(dynamicAlternatingComplete(PartialCyclicOrder),
+                           "extendable");
   printf("Engine counter = %d\n", EngineCounter - counter);
 }
 

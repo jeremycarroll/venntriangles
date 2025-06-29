@@ -50,7 +50,7 @@ static void testClosure(void)
   TEST_ASSERT_EQUAL(true, dynamicPCOSet(0, 1, 2));
   TEST_ASSERT_EQUAL(true, dynamicPCOSet(0, 2, 3));
   TEST_ASSERT_EQUAL(true, dynamicPCOSet(0, 3, 1));
-  TEST_ASSERT_FALSE(dynamicPCOClosure());
+  TEST_ASSERT_FALSE(dynamicAlternatingClosure(PartialCyclicOrder));
 }
 
 int main(void)

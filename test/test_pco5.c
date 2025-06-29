@@ -1,10 +1,7 @@
-#include "../partialcyclicorder.h"
 #include "helper_for_tests.h"
 #include "partialcyclicorder.h"
-#include "visible_for_testing.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <unity.h>
 
 void setUp(void)
@@ -42,10 +39,11 @@ static void testMegiddo(int a, int b, int c, int d, int e, int f, int g, int h,
   TEST_ASSERT_EQUAL(true, dynamicPCOSet(m, b, c));
   TEST_ASSERT_EQUAL(true, dynamicPCOSet(h, c, m));
   TEST_ASSERT_EQUAL(true, dynamicPCOSet(b, h, m));
-  TEST_ASSERT_EQUAL(true, dynamicPCOClosure());
+  TEST_ASSERT_EQUAL(true, dynamicAlternatingClosure(PartialCyclicOrder));
   int counter = EngineCounter;
-  TEST_ASSERT_FALSE_MESSAGE(dynamicPCOComplete(), "not extendable");
+  bool result = dynamicAlternatingComplete(PartialCyclicOrder);
   printf("Engine counter = %d\n", EngineCounter - counter);
+  TEST_ASSERT_FALSE_MESSAGE(result, "not extendable");
 }
 
 static void runTestMegiddoA(void)
@@ -71,9 +69,9 @@ int main(void)
   RUN_TEST(testPartialExampleA);
   RUN_TEST(testPartialExampleB);
   RUN_TEST(testPartialExampleC);
-  RUN_TEST(runTestMegiddoA);
   RUN_TEST(runTestMegiddoB);
   RUN_TEST(runTestMegiddoC);
   RUN_TEST(runTestMegiddoD);
+  RUN_TEST(runTestMegiddoA);
   return UNITY_END();
 }

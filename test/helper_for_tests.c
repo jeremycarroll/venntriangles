@@ -14,7 +14,7 @@ FACE dynamicFaceAddSpecific(char* colors, char* cycle)
 {
   FAILURE failure;
   FACE face = faceFromColors(colors);
-  uint32_t cycleId = cycleIdFromColors(cycle);
+  CYCLE_ID cycleId = cycleIdFromColors(cycle);
   TEST_ASSERT_TRUE(cycleSetMember(cycleId, face->possibleCycles));
   if (face->cycleSetSize == 1) {
     TEST_ASSERT_EQUAL(face->cycle, cycleSetFirst(face->possibleCycles));
@@ -59,7 +59,7 @@ bool dynamicCycleSetPrint(CYCLESET cycleSet)
   for (i = 0; i < CYCLESET_LENGTH; i++) {
     if (cycleSet[i]) {
       for (j = 0; j < 64; j++) {
-        if (cycleSet[i] & (1ul << j)) {
+        if (cycleSet[i] & (1uL << j)) {
           putchar(' ');
           for (uint64 k = 0; k < Cycles[i * BITS_PER_WORD + j].length; k++) {
             putchar('a' + Cycles[i * BITS_PER_WORD + j].curves[k]);
@@ -71,6 +71,11 @@ bool dynamicCycleSetPrint(CYCLESET cycleSet)
   }
   printf(" }\n");
   return true;
+}
+
+uint_trail* getPartialCyclicOrder(int i, int j, int k)
+{
+  return getAlternating(PartialCyclicOrder, i, j, k);
 }
 
 void verifyPartialCyclicOrderAxioms(void)
@@ -105,6 +110,11 @@ void verifyPartialCyclicOrderAxioms(void)
       }
 }
 
+bool dynamicPCOSet(int i, int j, int k)
+{
+  return dynamicAlternatingSet(PartialCyclicOrder, i, j, k);
+}
+
 void clearPartialCyclicOrder(void)
 {
   memset(getPartialCyclicOrder(0, 1, 2), 0, sizeof(uint_trail) * PCO_TRIPLES);
@@ -116,14 +126,13 @@ static void setupPartialExample(int a, int b, int c, int d, int e, int f)
   TEST_ASSERT_EQUAL(true, dynamicPCOSet(a, c, d));
   TEST_ASSERT_EQUAL(true, dynamicPCOSet(d, e, a));
   TEST_ASSERT_EQUAL(true, dynamicPCOSet(d, f, a));
-  TEST_ASSERT_EQUAL(true, dynamicPCOClosure());
+  TEST_ASSERT_EQUAL(true, dynamicAlternatingClosure(PartialCyclicOrder));
 }
 
 static void testPartialExample(int a, int b, int c, int d, int e, int f)
 {
   int count = 0;
   setupPartialExample(a, b, c, d, e, f);
-  ;
   verifyPartialCyclicOrderAxioms();
   uint_trail* value = getPartialCyclicOrder(0, 1, 2);
   for (int i = 0; i < PCO_TRIPLES / 2; i++, value += 2) {
@@ -133,7 +142,7 @@ static void testPartialExample(int a, int b, int c, int d, int e, int f)
     }
   }
   TEST_ASSERT_EQUAL_INT(12, count);
-  TEST_ASSERT_TRUE(dynamicPCOComplete());
+  TEST_ASSERT_TRUE(dynamicAlternatingComplete(PartialCyclicOrder));
 }
 
 void testPartialExampleA()

@@ -4,78 +4,104 @@
 
 #include "engine.h"
 #include "visible_for_testing.h"
-/* Storage for PCO relationships
+/* Storage for Alternating relationships
  * For NCOLORS*MAX_CORNERS = 18 lines, we need to store
  * 18*17*16/3 = 816 relationships (where each relationship involves
  * 3 lines in order, these come in pairs) */
 
-static uint_trail RawPartialCyclicOrder[PCO_TRIPLES];
-static int DynamicPCOCompleteChoicePoints[PCO_TRIPLES / 2];
-static uint_trail* PartialCyclicOrder[PCO_LINES][PCO_LINES][PCO_LINES];
+/* Instance of AlternatingPredicate for the PCO */
+AlternatingPredicate PartialCyclicOrder =
+    CREATE_CYCLIC_PARTIAL_ORDER(PCO_LINES);
 
 /* Sets the value, returning false if it breaks invariants. */
-static bool dynamicSetRawEntry(uint_trail* entry)
+static bool dynamicSetRawEntry(AlternatingPredicate ap, uint_trail* entry)
 {
   int roundedDownIx;
-  assert(entry >= RawPartialCyclicOrder);
-  assert(entry < RawPartialCyclicOrder + PCO_TRIPLES * 2);
+  // fprintf(stderr, "%p <= %p < %p:  n:%d\n", ap->rawStorage, entry,
+  //         ap->rawStorage + ap->n * 2, ap->n);
+  assert(entry >= ap->rawStorage);
+  assert(entry < ap->rawStorage + SIGNED_TRIPLES(ap->n) * 2);
   if (!trailMaybeSetInt(entry, true)) {
     return true;
   }
-  roundedDownIx = ((entry - RawPartialCyclicOrder) / 2) * 2;
-  return !(RawPartialCyclicOrder[roundedDownIx] &&
-           RawPartialCyclicOrder[roundedDownIx + 1]);
+  roundedDownIx = ((entry - ap->rawStorage) / 2) * 2;
+  return !(ap->rawStorage[roundedDownIx] && ap->rawStorage[roundedDownIx + 1]);
 }
 
 void initializePartialCyclicOrder(void)
 {
+  initializeAlternating(PartialCyclicOrder);
+}
+
+static int entryPointerIndex(AlternatingPredicate ap, int i, int j, int k)
+{
+  return (i * ap->n + j) * ap->n + k;
+}
+
+void initializeAlternating(AlternatingPredicate ap)
+{
   int i, j, k;
-  uint_trail* entry = RawPartialCyclicOrder;
-  for (i = 0; i < PCO_LINES; i++) {
-    for (j = i + 1; j < PCO_LINES; j++) {
-      for (k = j + 1; k < PCO_LINES; k++) {
-        PartialCyclicOrder[i][j][k] = PartialCyclicOrder[j][k][i] =
-            PartialCyclicOrder[k][i][j] = entry;
+  uint_trail* entry = ap->rawStorage;
+  ;
+  for (i = 0; i < ap->n; i++) {
+    for (j = i + 1; j < ap->n; j++) {
+      for (k = j + 1; k < ap->n; k++) {
+        ap->entryPointers[entryPointerIndex(ap, i, j, k)] =
+            ap->entryPointers[entryPointerIndex(ap, j, k, i)] =
+                ap->entryPointers[entryPointerIndex(ap, k, i, j)] = entry;
         entry++;
-        PartialCyclicOrder[i][k][j] = PartialCyclicOrder[j][i][k] =
-            PartialCyclicOrder[k][j][i] = entry;
+        ap->entryPointers[entryPointerIndex(ap, i, k, j)] =
+            ap->entryPointers[entryPointerIndex(ap, j, i, k)] =
+                ap->entryPointers[entryPointerIndex(ap, k, j, i)] = entry;
         entry++;
       }
     }
   }
 }
 
-uint_trail* getPartialCyclicOrder(int a, int b, int c)
+uint_trail* getAlternating(AlternatingPredicate ap, int a, int b, int c)
 {
-  return PartialCyclicOrder[a][b][c];
+  return ap->entryPointers[entryPointerIndex(PartialCyclicOrder, a, b, c)];
 }
 
 /* return false if this breaks invariants. */
-bool dynamicPCOSet(int i, int j, int k)
+bool dynamicAlternatingSet(AlternatingPredicate ap, int i, int j, int k)
 {
-  return dynamicSetRawEntry(PartialCyclicOrder[i][j][k]);
+  uint_trail* entry = getAlternating(ap, i, j, k);
+  return dynamicSetRawEntry(ap, entry);
 }
 
+extern bool dynamicCyclicPartialOrderStep(AlternatingPredicate ap, int i, int j,
+                                          int k, int l)
+{
+  if (*getAlternating(ap, i, j, k) && *getAlternating(ap, i, k, l)) {
+    // This uses trailMaybeSetInt which implements the
+    // inequality in the algorithm.
+    if (!dynamicSetRawEntry(ap, getAlternating(ap, i, j, l))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool dynamicChirotopeStep(AlternatingPredicate self, int i, int j, int k, int l)
+{
+  return false;
+}
 /* Return false if invariants are violated. */
-bool dynamicPCOClosure(void)
+bool dynamicAlternatingClosure(AlternatingPredicate ap)
 {
   int i, j, k, l;
-  // extended Roy-Floyr-Warshall
-  for (i = 0; i < PCO_LINES; i++) {
-    for (k = 0; k < PCO_LINES; k++) {
+  // extended Roy-Floyd-Warshall
+  for (i = 0; i < ap->n; i++) {
+    for (k = 0; k < ap->n; k++) {
       if (k != i) {
-        for (j = 0; j < PCO_LINES; j++) {
+        for (j = 0; j < ap->n; j++) {
           if (j != k && j != i) {
-            if (*getPartialCyclicOrder(i, j, k)) {
-              for (l = 0; l < PCO_LINES; l++) {
-                if (l != i && l != k && l != j) {
-                  if (*getPartialCyclicOrder(i, k, l)) {
-                    // This uses trailMaybeSetInt which implements the
-                    // inequality in the algorithm.
-                    if (!dynamicSetRawEntry(getPartialCyclicOrder(i, j, l))) {
-                      return false;
-                    }
-                  }
+            for (l = 0; l < ap->n; l++) {
+              if (l != i && l != k && l != j) {
+                if (!ap->dynamicOneClosureStep(ap, i, j, k, l)) {
+                  return false;
                 }
               }
             }
@@ -87,38 +113,46 @@ bool dynamicPCOClosure(void)
   return true;
 }
 
-static PredicateResult tryPCOComplete(int round)
+static AlternatingPredicate alternatingSearch;
+static int
+    DynamicAlternatingCompleteChoicePoints[SIGNED_TRIPLES((NCOLORS + 1) * 3)];
+static PredicateResult tryAlternatingComplete(int round)
 {
-  for (int i = 0; i < PCO_TRIPLES / 2; i += 2) {
-    if (!(RawPartialCyclicOrder[i] || RawPartialCyclicOrder[i + 1])) {
-      DynamicPCOCompleteChoicePoints[round] = i;
+  for (int i = 0; i < alternatingSearch->n / 2; i += 2) {
+    if (!(alternatingSearch->rawStorage[i] ||
+          alternatingSearch->rawStorage[i + 1])) {
+      DynamicAlternatingCompleteChoicePoints[round] = i;
       return predicateChoices(2);
     }
   }
   return PredicateSuccessNextPredicate;
 }
 
-static PredicateResult dynamicRetryPCOComplete(int round, int choice)
+static PredicateResult dynamicRetryAlternatingComplete(int round, int choice)
 {
-  dynamicSetRawEntry(RawPartialCyclicOrder +
-                     DynamicPCOCompleteChoicePoints[round] + choice);
-  if (dynamicPCOClosure()) {
+  dynamicSetRawEntry(alternatingSearch,
+                     alternatingSearch->rawStorage +
+                         DynamicAlternatingCompleteChoicePoints[round] +
+                         choice);
+  if (dynamicAlternatingClosure(alternatingSearch)) {
     return PredicateSuccessSamePredicate;
   } else {
     return PredicateFail;
   }
 }
-static struct predicate complete = {"CompletePCO", tryPCOComplete,
-                                    dynamicRetryPCOComplete};
+static struct predicate complete = {"CompleteAlternating",
+                                    tryAlternatingComplete,
+                                    dynamicRetryAlternatingComplete};
 
-static PREDICATE pcoPredicates[] = {&complete, &SUSPENDPredicate};
-bool dynamicPCOComplete(void)
+static PREDICATE alternatingPredicates[] = {&complete, &SUSPENDPredicate};
+bool dynamicAlternatingComplete(AlternatingPredicate ap)
 {
-  struct stack pcoStack;
-  bool failed = engine(&pcoStack, pcoPredicates);
+  struct stack alternatingStack;
+  alternatingSearch = ap;
+  bool failed = engine(&alternatingStack, alternatingPredicates);
+  engineClear(&alternatingStack);
   if (failed) {
     return false;
   }
-  engineClear(&pcoStack);
   return true;
 }
