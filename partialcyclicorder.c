@@ -118,7 +118,7 @@ static int
     DynamicAlternatingCompleteChoicePoints[SIGNED_TRIPLES((NCOLORS + 1) * 3)];
 static PredicateResult tryAlternatingComplete(int round)
 {
-  for (int i = 0; i < alternatingSearch->n / 2; i += 2) {
+  for (int i = 0; i < SIGNED_TRIPLES(alternatingSearch->n) / 2; i += 2) {
     if (!(alternatingSearch->rawStorage[i] ||
           alternatingSearch->rawStorage[i + 1])) {
       DynamicAlternatingCompleteChoicePoints[round] = i;
