@@ -1,6 +1,6 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#include "partialcyclicorder.h"
+#include "alternating.h"
 
 #include "engine.h"
 #include "visible_for_testing.h"
@@ -24,7 +24,7 @@ static bool dynamicSetRawEntry(AlternatingPredicate ap, uint_trail* entry)
   if (!trailMaybeSetInt(entry, true)) {
     return true;
   }
-  //roundedDownIx = ((entry - ap->rawStorage) / 2) * 2;
+  roundedDownIx = ((entry - ap->rawStorage) / 2) * 2;
   return !(ap->rawStorage[roundedDownIx] && ap->rawStorage[roundedDownIx + 1]);
 }
 
@@ -84,14 +84,73 @@ extern bool dynamicCyclicPartialOrderStep(AlternatingPredicate ap, int i, int j,
   return true;
 }
 
-bool dynamicChirotopeStep(AlternatingPredicate self, int a, int b, int c, int d)
+/**
+ * (𝜒(a,b,x) & 𝜒(c,d,x)) | (𝜒(b,a,x) & 𝜒(d,c,x))
+ */
+static bool sameOrder(AlternatingPredicate self, int a, int b, int c, int d,
+                      int x)
 {
-  for (int x = 0; x<self->n; x++) {
-;
+  if (*getAlternating(self, a, b, x) && *getAlternating(self, c, d, x)) {
+    return true;
+  }
+  if (*getAlternating(self, b, a, x) && *getAlternating(self, d, c, x)) {
+    return true;
   }
   return false;
 }
 
+/*
+ * We use the 3 term Grassmann-Plücker axiomatization of chirotopes,
+ * adjusted for uniform oriented matroids only.
+ * Checks if the chirotope conditions are met for indices a,b,c,d,x.
+ * Returns true if any of the four rules indicates 𝜒(a,b,x) should be set.
+ */
+static bool chirotopeCondition(AlternatingPredicate self, int a, int b, int c,
+                               int d, int x)
+{
+  /* x must be different from all other indices */
+  if (x == a || x == b || x == c || x == d) {
+    return false;
+  }
+
+  /* Match one of these four rules.
+
+𝜒(c,d,x), 𝜒(a,c,x), 𝜒(a,d,x), 𝜒(b,d,x), 𝜒(c,b,x)  ⇒ 𝜒(a,b,x) [1]
+𝜒(c,d,x), 𝜒(a,c,x), 𝜒(b,c,x), 𝜒(b,d,x), 𝜒(d,a,x)  ⇒ 𝜒(a,b,x) [2]
+𝜒(c,d,x), 𝜒(a,d,x), 𝜒(c,a,x), 𝜒(c,b,x), 𝜒(d,b,x)  ⇒ 𝜒(a,b,x) [3]
+𝜒(c,d,x), 𝜒(b,c,x), 𝜒(c,a,x), 𝜒(d,a,x), 𝜒(d,b,x)  ⇒ 𝜒(a,b,x) [4]
+  */
+
+  /* Common condition: 𝜒(c,d,x) must be true for all rules */
+  if (!*getAlternating(self, c, d, x)) {
+    return false;
+  }
+
+  /*
+   * [1] and [2] have 𝜒(a,c,x),𝜒(b,d,x)
+   * [3] and [4] have 𝜒(c,a,x),𝜒(d,b,x)
+   */
+  if (!sameOrder(self, a, c, b, d, x)) {
+    return false;
+  }
+  /*
+   * [1] and [3] have 𝜒(a,d,x),𝜒(c,b,x)
+   * [2] and [4] have 𝜒(d,a,x),𝜒(b,c,x)
+   */
+  return sameOrder(self, a, d, c, b, x);
+}
+
+bool dynamicChirotopeStep(AlternatingPredicate self, int a, int b, int c, int d)
+{
+  for (int x = 0; x < self->n; x++) {
+    if (chirotopeCondition(self, a, b, c, d, x)) {
+      if (!dynamicSetRawEntry(self, getAlternating(self, a, b, x))) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
 /* Return false if invariants are violated. */
 bool dynamicAlternatingClosure(AlternatingPredicate ap)

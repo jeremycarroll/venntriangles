@@ -8,18 +8,18 @@ CC          = gcc
 CFLAGS      += -g -Wall -Wextra -std=c11 -MMD -Wmissing-prototypes -Wmissing-declarations -Wshadow -fno-common
 UNITY_DIR   = ../Unity
 TEST_CFLAGS = -I$(UNITY_DIR)/src -I.
-TEST_SRC    = test/test_pco4.c test/test_pco5.c # test/test_pco2.c test/test_venn3.c test/test_s6.c test/test_initialize.c  \
+TEST_SRC    = test/test_pco4.c test/test_pco5.c test/test_pco2.c test/test_venn3.c test/test_s6.c test/test_initialize.c  \
               test/test_graphml.c test/test_venn4.c test/test_venn5.c test/test_venn6.c test/test_known_solution.c \
               test/test_main.c
 TEST_BIN    = $(TEST_SRC:test/%.c=bin/%)
 # Do not include entrypoint.c in the test builds, it contains the main function, which is also in the test files.
 SRC         = main.c failure.c color.c cycle.c cycleset.c edge.c log.c vertex.c statistics.c s6.c face.c \
               dynamicface.c utils.c memory.c graphml.c triangles.c engine.c corners.c initialize.c nondeterminism.c \
-              innerface.c venn.c save.c partialcyclicorder.c
+              innerface.c venn.c save.c alternating.c
 TEST_HELPERS = test/helper_for_tests.c
 XSRC        = entrypoint.c
 HDR         = color.h cycle.h cycleset.h dynamicface.h edge.h statistics.h core.h face.h main.h trail.h \
-              s6.h failure.h vertex.h memory.h common.h triangles.h engine.h nondeterminism.h partialcyclicorder.h
+              s6.h failure.h vertex.h memory.h common.h triangles.h engine.h nondeterminism.h alternating.h
 OBJ2        = $(SRC:%.c=objs2/%.o) $(TEST_HELPERS:test/%.c=objs2/%.o)
 OBJ3        = $(SRC:%.c=objs3/%.o) $(TEST_HELPERS:test/%.c=objs3/%.o)
 OBJ4        = $(SRC:%.c=objs4/%.o) $(TEST_HELPERS:test/%.c=objs4/%.o)

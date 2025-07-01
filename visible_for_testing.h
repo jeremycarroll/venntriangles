@@ -7,7 +7,6 @@
 #include "s6.h"
 #include "color.h"
 
-typedef struct _alternatingPredicate * AlternatingPredicate;
 /**
  * This header exposes internal functions and variables for testing purposes.
  * These declarations should not be used in production code and are only

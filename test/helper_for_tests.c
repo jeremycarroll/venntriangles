@@ -2,8 +2,8 @@
 
 #include "helper_for_tests.h"
 
+#include "alternating.h"
 #include "face.h"
-#include "partialcyclicorder.h"
 
 #include <stdarg.h>
 #include <unity.h>

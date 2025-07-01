@@ -1,5 +1,5 @@
+#include "alternating.h"
 #include "helper_for_tests.h"
-#include "partialcyclicorder.h"
 
 #include <stdio.h>
 #include <unity.h>

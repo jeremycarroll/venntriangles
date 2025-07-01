@@ -1,7 +1,7 @@
 /* Copyright (C) 2025 Jeremy J. Carroll. See LICENSE for details. */
 
-#ifndef PARTIALCYCLICORDER_H
-#define PARTIALCYCLICORDER_H
+#ifndef ALTERNATING_H
+#define ALTERNATING_H
 
 #include "trail.h"
 
@@ -21,20 +21,19 @@
 /* The number of signed triples for the partial cyclic order of the lines. */
 #define PCO_TRIPLES SIGNED_TRIPLES(PCO_LINES)
 
-typedef struct _alternatingPredicate* AlternatingPredicate;
-struct _alternatingPredicate {
+struct alternatingPredicate {
   int n;
   /* Extend the predicate as in Roy-Floyd-Warshall, using the trail,
    * and returning false on failure.
    */
-  bool (*dynamicOneClosureStep)(struct _alternatingPredicate* self, int i, int j, int k, int l);
+  bool (*dynamicOneClosureStep)(AlternatingPredicate self, int i, int j, int k, int l);
   uint_trail* rawStorage;
   uint_trail** entryPointers;
 };
 
 // The {0}'s initialize the arrays to zero.
 #define CREATE_ALTERNATING_PREDICATE(number, closure)            \
-  &((struct _alternatingPredicate){                              \
+  &((struct alternatingPredicate){                               \
       .n = number,                                               \
       .dynamicOneClosureStep = closure,                          \
       .rawStorage = (uint_trail[SIGNED_TRIPLES(number) * 2]){0}, \
@@ -58,4 +57,4 @@ extern uint_trail* alternatingGetEntry(AlternatingPredicate ap, int i, int j, in
 extern bool dynamicAlternatingClosure(AlternatingPredicate ap);
 extern bool dynamicAlternatingComplete(AlternatingPredicate ap);
 
-#endif /* PARTIALCYCLICORDER_H */
+#endif /* ALTERNATING_H */
