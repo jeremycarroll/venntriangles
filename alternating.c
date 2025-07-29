@@ -20,7 +20,7 @@ static bool dynamicSetRawEntry(AlternatingPredicate ap, uint_trail* entry)
   // fprintf(stderr, "%p <= %p < %p:  n:%d\n", ap->rawStorage, entry,
   //         ap->rawStorage + ap->n * 2, ap->n);
   assert(entry >= ap->rawStorage);
-  assert(entry < ap->rawStorage + SIGNED_TRIPLES(ap->n) * 2);
+  assert(entry < ap->rawStorage + SIGNED_TRIPLES(ap->n));
   if (!trailMaybeSetInt(entry, true)) {
     return true;
   }
@@ -42,7 +42,7 @@ void initializeAlternating(AlternatingPredicate ap)
 {
   int i, j, k;
   uint_trail* entry = ap->rawStorage;
-  ;
+
   for (i = 0; i < ap->n; i++) {
     for (j = i + 1; j < ap->n; j++) {
       for (k = j + 1; k < ap->n; k++) {
@@ -57,11 +57,12 @@ void initializeAlternating(AlternatingPredicate ap)
       }
     }
   }
+  assert(entry == ap->rawStorage + SIGNED_TRIPLES(ap->n));
 }
 
 uint_trail* getAlternating(AlternatingPredicate ap, int a, int b, int c)
 {
-  return ap->entryPointers[entryPointerIndex(PartialCyclicOrder, a, b, c)];
+  return ap->entryPointers[entryPointerIndex(ap, a, b, c)];
 }
 
 /* return false if this breaks invariants. */
@@ -77,7 +78,7 @@ extern bool dynamicCyclicPartialOrderStep(AlternatingPredicate ap, int i, int j,
   if (*getAlternating(ap, i, j, k) && *getAlternating(ap, i, k, l)) {
     // This uses trailMaybeSetInt which implements the
     // inequality in the algorithm.
-    if (!dynamicSetRawEntry(ap, getAlternating(ap, i, j, l))) {
+    if (!dynamicAlternatingSet(ap, i, j, l)) {
       return false;
     }
   }
@@ -144,7 +145,8 @@ bool dynamicChirotopeStep(AlternatingPredicate self, int a, int b, int c, int d)
 {
   for (int x = 0; x < self->n; x++) {
     if (chirotopeCondition(self, a, b, c, d, x)) {
-      if (!dynamicSetRawEntry(self, getAlternating(self, a, b, x))) {
+      // printf("Checking %d %d %d\n", a, b, x);
+      if (!dynamicAlternatingSet(self, a, b, x)) {
         return false;
       }
     }
@@ -182,7 +184,7 @@ static int
     DynamicAlternatingCompleteChoicePoints[SIGNED_TRIPLES((NCOLORS + 1) * 3)];
 static PredicateResult tryAlternatingComplete(int round)
 {
-  for (int i = 0; i < SIGNED_TRIPLES(alternatingSearch->n) / 2; i += 2) {
+  for (int i = 0; i < SIGNED_TRIPLES(alternatingSearch->n); i += 2) {
     if (!(alternatingSearch->rawStorage[i] ||
           alternatingSearch->rawStorage[i + 1])) {
       DynamicAlternatingCompleteChoicePoints[round] = i;

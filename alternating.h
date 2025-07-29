@@ -32,11 +32,11 @@ struct alternatingPredicate {
 };
 
 // The {0}'s initialize the arrays to zero.
-#define CREATE_ALTERNATING_PREDICATE(number, closure)            \
-  &((struct alternatingPredicate){                               \
-      .n = number,                                               \
-      .dynamicOneClosureStep = closure,                          \
-      .rawStorage = (uint_trail[SIGNED_TRIPLES(number) * 2]){0}, \
+#define CREATE_ALTERNATING_PREDICATE(number, closure)        \
+  &((struct alternatingPredicate){                           \
+      .n = number,                                           \
+      .dynamicOneClosureStep = closure,                      \
+      .rawStorage = (uint_trail[SIGNED_TRIPLES(number)]){0}, \
       .entryPointers = (uint_trail * [(number) * (number) * (number)]){0}})
 
 extern bool dynamicCyclicPartialOrderStep(AlternatingPredicate self, int i, int j, int k, int l);
@@ -44,6 +44,13 @@ extern bool dynamicChirotopeStep(AlternatingPredicate self, int i, int j, int k,
 
 #define CREATE_CYCLIC_PARTIAL_ORDER(n) \
   CREATE_ALTERNATING_PREDICATE(n, dynamicCyclicPartialOrderStep)
+
+/*
+ * Our chirotopes unusually are:
+ * - partial: ? is a legal value meaning unknown/undefined
+ * - uniform: 0 is not a legal value
+ **/
+
 #define CREATE_CHIROTOPE(n) CREATE_ALTERNATING_PREDICATE(n, dynamicChirotopeStep)
 
 extern void initializePartialCyclicOrder(void);

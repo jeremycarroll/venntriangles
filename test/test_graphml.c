@@ -8,7 +8,6 @@
 #include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
-#include "utils.h"
 
 #include <regex.h>
 #include <search.h>
