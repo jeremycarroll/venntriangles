@@ -60,7 +60,7 @@ extern AlternatingPredicate PartialCyclicOrder;
 
 extern bool dynamicAlternatingSet(AlternatingPredicate ap, int i, int j, int k);
 // Returns NULL if i == j or i == k or j == k, else pointer to true or false.
-extern uint_trail* alternatingGetEntry(AlternatingPredicate ap, int i, int j, int k);
+extern uint_trail* getAlternating(AlternatingPredicate ap, int i, int j, int k);
 extern bool dynamicAlternatingClosure(AlternatingPredicate ap);
 extern bool dynamicAlternatingComplete(AlternatingPredicate ap);
 

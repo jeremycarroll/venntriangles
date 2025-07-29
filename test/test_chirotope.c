@@ -38,6 +38,8 @@ static void runTest(AlternatingPredicate chirotope, char *chirotopeString,
   for (int i = 0; i < chirotope->n; i++) {
     for (int j = i + 1; j < chirotope->n; j++) {
       for (int k = j + 1; k < chirotope->n; k++) {
+        TEST_ASSERT_EQUAL(pos * 2, getAlternating(chirotope, i, j, k) -
+                                       chirotope->rawStorage);
         switch (chirotopeString[pos++]) {
           case '+':
             // printf("Setting %d %d %d\n", i, j, k);
