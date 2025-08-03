@@ -13,9 +13,6 @@
 AlternatingPredicate PartialCyclicOrder =
     CREATE_CYCLIC_PARTIAL_ORDER(PCO_LINES);
 
-bool AlternatingDebug = false;
-static int MinimumEntrySet;
-
 /* Sets the value, returning false if it breaks invariants. */
 static bool dynamicSetRawEntry(AlternatingPredicate ap, uint_trail* entry)
 {
@@ -24,11 +21,6 @@ static bool dynamicSetRawEntry(AlternatingPredicate ap, uint_trail* entry)
   //         ap->rawStorage + ap->n * 2, ap->n);
   assert(entry >= ap->rawStorage);
   assert(entry < ap->rawStorage + SIGNED_TRIPLES(ap->n));
-  if (MinimumEntrySet) {
-    if (entry - ap->rawStorage < MinimumEntrySet) {
-      MinimumEntrySet = entry - ap->rawStorage;
-    }
-  }
   if (!trailMaybeSetInt(entry, true)) {
     return true;
   }
@@ -86,17 +78,8 @@ extern bool dynamicCyclicPartialOrderStep(AlternatingPredicate ap, int i, int j,
   if (*getAlternating(ap, i, j, k) && *getAlternating(ap, i, k, l)) {
     // This uses trailMaybeSetInt which implements the
     // inequality in the algorithm.
-    TRAIL entry = Trail;
     if (!dynamicAlternatingSet(ap, i, j, l)) {
-      if (AlternatingDebug) {
-        printf("F: %d %d (%d) %d\n", i, j, k, l);
-      }
       return false;
-    }
-    if (entry != Trail) {
-      if (AlternatingDebug) {
-        printf("S: %d %d (%d) %d\n", i, j, k, l);
-      }
     }
   }
   return true;
@@ -270,140 +253,4 @@ bool dynamicAlternatingComplete(AlternatingPredicate ap)
     return false;
   }
   return true;
-}
-typedef struct _extensibility {
-  bool skip;
-  bool skipPositive;
-  bool skipNegative;
-  bool positiveOK;
-  bool negativeOK;
-  int entryChoice;
-}* Extensibility;
-
-static struct _extensibility
-    ExtensibilityByRound[SIGNED_TRIPLES((NCOLORS + 1) * 3)];
-static uint_trail ExtensibilityMaxGuess;
-static AlternatingPredicate extensibilitySearch;
-#define EXTENSIBILITY_CASES 5
-
-static PredicateResult tryExtensibility(int round)
-{
-  return predicateChoices(SIGNED_TRIPLES(extensibilitySearch->n) / 2 *
-                          EXTENSIBILITY_CASES);
-}
-
-static PredicateResult dynamicRetryExtensibility(int round, int choice)
-{
-  int entryChoice = choice / EXTENSIBILITY_CASES;
-  int caseChoice = choice % EXTENSIBILITY_CASES;
-  Extensibility extensibility = &ExtensibilityByRound[round];
-  assert(caseChoice == 0 ||
-         extensibility->entryChoice == choice / EXTENSIBILITY_CASES);
-  switch (caseChoice) {
-    case 0:
-      extensibility->entryChoice = choice / EXTENSIBILITY_CASES;
-      extensibility->skip =
-          extensibilitySearch->rawStorage[entryChoice * 2] ||
-          extensibilitySearch->rawStorage[entryChoice * 2 + 1];
-      if (extensibility->skip) {
-        //   printf("Skipping %d %d\n", round, entryChoice);
-      }
-      return PredicateFail;
-    case 1:
-      if (!extensibility->skip) {
-        uint_trail maxEarlierGuess = ExtensibilityMaxGuess;
-        MinimumEntrySet = maxEarlierGuess;
-        bool setOK = dynamicSetRawEntry(
-            extensibilitySearch,
-            &extensibilitySearch->rawStorage[entryChoice * 2]);
-        assert(setOK);
-        extensibility->positiveOK =
-            dynamicAlternatingClosure(extensibilitySearch);
-        extensibility->skipPositive =
-            MinimumEntrySet < maxEarlierGuess || !extensibility->positiveOK;
-      }
-      return PredicateFail;
-    case 2:
-      if (!extensibility->skip) {
-        uint_trail maxEarlierGuess = ExtensibilityMaxGuess;
-        MinimumEntrySet = maxEarlierGuess;
-        bool setOK = dynamicSetRawEntry(
-            extensibilitySearch,
-            &extensibilitySearch->rawStorage[entryChoice * 2 + 1]);
-        assert(setOK);
-        extensibility->negativeOK =
-            dynamicAlternatingClosure(extensibilitySearch);
-        extensibility->skipNegative =
-            MinimumEntrySet < maxEarlierGuess || !extensibility->negativeOK;
-        if (extensibility->negativeOK) {
-          //    printf("%d: Negative: %d\n", round, entryChoice * 2 + 1);
-        }
-        MinimumEntrySet = 0;
-      }
-      return PredicateFail;
-    case 3:
-      if (!extensibility->skip) {
-        if (!(extensibility->negativeOK || extensibility->positiveOK)) {
-          // Can't extend here.
-          char* inextensible = alternatingToString(extensibilitySearch);
-          inextensible[entryChoice] = '*';
-          printf("Inextensible: %s\n", inextensible);
-        }
-        extensibility->skip = entryChoice < ExtensibilityMaxGuess;
-      }
-      if (extensibility->skip || extensibility->skipPositive) {
-        return PredicateFail;
-      }
-      break;
-    case 4:
-      if (extensibility->skip || extensibility->skipNegative) {
-        return PredicateFail;
-      }
-      break;
-    default:
-      assert(0);
-  }
-  // caseChoice is 3 or 4; positive or negative.
-  int sign = caseChoice - 3;  // 0 for positive, 1 for negative.
-  int entry = entryChoice * 2 + sign;
-  trailSetInt(&ExtensibilityMaxGuess, entryChoice * 2);
-
-  // printf("%d: Setting: %d\n", round, entry);
-
-  dynamicSetRawEntry(extensibilitySearch,
-                     extensibilitySearch->rawStorage + entry);
-  bool shouldBeOk = dynamicAlternatingClosure(extensibilitySearch);
-  assert(shouldBeOk);
-  return PredicateSuccessSamePredicate;
-}
-static struct predicate extensibilityPredicate = {
-    "Extensibility", tryExtensibility, dynamicRetryExtensibility};
-
-static PREDICATE extensibilityPredicates[] = {&extensibilityPredicate};
-/*
- * Output is printed on stdout :(
- */
-void dynamicAlternatingExtensibility(AlternatingPredicate ap)
-{
-  struct stack alternatingStack;
-  extensibilitySearch = ap;
-  bool failed = engine(&alternatingStack, extensibilityPredicates);
-  assert(failed);
-}
-
-char* alternatingToString(AlternatingPredicate ap)
-{
-  char* result = tempMalloc(SIGNED_TRIPLES(ap->n) / 2 + 1);
-  int i;
-  for (i = 0; i < SIGNED_TRIPLES(ap->n); i += 2) {
-    if (ap->rawStorage[i]) {
-      result[i / 2] = '+';
-    } else if (ap->rawStorage[i + 1]) {
-      result[i / 2] = '-';
-    } else {
-      result[i / 2] = '?';
-    }
-  }
-  result[i / 2] = 0;
-  return result;
 }
