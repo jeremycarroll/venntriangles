@@ -28,7 +28,7 @@ extern char *s6SignatureToLongString(SIGNATURE signature); /* Convert to detaile
 extern TRAIL Trail; /* Global trail for backtracking */
 extern bool trailRewindTo(TRAIL backtrackPoint); /* Rewind trail to point */
 extern uint_trail * getAlternating(AlternatingPredicate ap, int a, int b, int c);
-
+extern void debugAlternating(AlternatingPredicate chirotope);
 extern int EngineCounter;
 
 #endif  /* VISIBLE_FOR_TESTING_H */

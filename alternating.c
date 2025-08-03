@@ -146,6 +146,13 @@ bool dynamicChirotopeStep(AlternatingPredicate self, int a, int b, int c, int d)
   for (int x = 0; x < self->n; x++) {
     if (chirotopeCondition(self, a, b, c, d, x)) {
       // printf("Checking %d %d %d\n", a, b, x);
+      if (a * b * x == 0 && (a - 2) * (b - 2) * (c - 2) == 0) {
+        printf(">> %d %d %d %d %d\n", a, b, c, d, x);
+        printf("sameOrder(self, a, c, b, d, x) = %d\n",
+               sameOrder(self, a, c, b, d, x));
+        printf("sameOrder(self, a, d, c, b, x) = %d\n",
+               sameOrder(self, a, d, c, b, x));
+      }
       if (!dynamicAlternatingSet(self, a, b, x)) {
         return false;
       }
@@ -197,11 +204,16 @@ void debugAlternating(AlternatingPredicate chirotope)
   for (int i = 0; i < chirotope->n; i++) {
     for (int j = i + 1; j < chirotope->n; j++) {
       for (int k = j + 1; k < chirotope->n; k++) {
-        if (*getAlternating(chirotope, i, j, k)) {
+        bool positive = *getAlternating(chirotope, i, j, k);
+        bool negative = *getAlternating(chirotope, i, k, j);
+        if (positive && negative) {
+          printf("*** ");
+        }
+        if (positive) {
           printf("%d %d %d\n", i, j, k);
         }
 
-        if (*getAlternating(chirotope, i, k, j)) {
+        if (negative) {
           printf("%d %d %d\n", i, k, j);
         }
       }

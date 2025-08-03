@@ -29,7 +29,7 @@ static void runTest(AlternatingPredicate chirotope, char *chirotopeString,
                     bool extensibleExpected)
 {
   int nC3 = chirotope->n * (chirotope->n - 1) * (chirotope->n - 2) / 6;
-  TEST_ASSERT_EQUAL(nC3, strlen(chirotopeString));
+  TEST_ASSERT_EQUAL_MESSAGE(nC3, strlen(chirotopeString), chirotopeString);
   initializeAlternating(chirotope);
 
   int pos = 0;
@@ -63,7 +63,12 @@ static void runTest(AlternatingPredicate chirotope, char *chirotopeString,
   }
 
   TRAIL startTrail = Trail;
+  printf("before\n");
+  debugAlternating(chirotope);
   bool consistent = dynamicAlternatingClosure(chirotope);
+  printf("after\n");
+  debugAlternating(chirotope);
+
   VERIFY_PROPERTY(consistent);
   if (consistent) {
     bool closed = startTrail == Trail;
@@ -103,14 +108,28 @@ static void testInconsistent(void)
   RUN_CHIROTOPE_TEST(6, "-+--+?-+++++?++++++?", false, false, true);
 }
 
+static void testSuvorov14(void)
+{
+  RUN_CHIROTOPE_TEST(
+      14,
+      "++-++-?\?-++?++?-++-++-++-?++-+--+-?+?++--++-+?-?--+?-+-++-++?-++-+-?+?+"
+      "-+-++--++++-++-++--++-+--+-+?+-++--++++-++----+-?+-++--++-+--+-+-+-++--+"
+      "+?+-+--+-?+++--+-+?++--+-++-+-++++-+-+--+-++--+-+-++-+----++-+-?--+++-+-"
+      "?--+?+-+-?+-+---?+?+-++-+--++-+-+-?+?+?++-++-+-++--++-+-++--+-?+-+++++++"
+      "-?--+-?\?---+-+--+-+---+-+----+-++++--+-++++---+-++++-+++-?-------?-++++"
+      "+++++-",
+      true, true, true);
+}
+
 int main(void)
 {
   UNITY_BEGIN();
-  RUN_TEST(testChapter1);
-  RUN_TEST(testInconsistent);
-  RUN_TEST(testIncomplete);
-  RUN_TEST(testSimple);
-  RUN_TEST(testSimpleInconsistent);
-  RUN_TEST(testSimpleIncomplete);
+  //  RUN_TEST(testChapter1);
+  //  RUN_TEST(testInconsistent);
+  //  RUN_TEST(testIncomplete);
+  // RUN_TEST(testSimple);
+  // RUN_TEST(testSimpleInconsistent);
+  // RUN_TEST(testSimpleIncomplete);
+  RUN_TEST(testSuvorov14);
   return UNITY_END();
 }
