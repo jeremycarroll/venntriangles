@@ -159,3 +159,19 @@ void testPartialExampleC()
 {
   testPartialExample(1, 2, 4, 3, 0, 5);
 }
+//
+// void debugAlternating(AlternatingPredicate chirotope)
+// {
+//   for (int i = 0; i < chirotope->n; i++) {
+//     for (int j = i + 1; j < chirotope->n; j++) {
+//       for (int k = j + 1; k < chirotope->n; k++) {
+//         if (*getAlternating(chirotope, i, j, k)) {
+//           printf("%d %d %d\n", i, j, k);
+//         }
+//
+//         if (*getAlternating(chirotope, i, k, j)) {
+//           printf("%d %d %d\n", i, k, j);
+//         }
+//       }
+//     }
+//   }

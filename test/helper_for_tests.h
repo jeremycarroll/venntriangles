@@ -42,5 +42,5 @@ extern void testPartialExampleC(void);
 
 extern bool dynamicPCOSet(int i, int j, int k);
 extern uint_trail* getPartialCyclicOrder(int i, int j, int k);
-
+extern void debugAlternating(AlternatingPredicate chirotope);
 #endif /* TEST_HELPERS_H */ 

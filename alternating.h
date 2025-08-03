@@ -63,5 +63,7 @@ extern bool dynamicAlternatingSet(AlternatingPredicate ap, int i, int j, int k);
 extern uint_trail* getAlternating(AlternatingPredicate ap, int i, int j, int k);
 extern bool dynamicAlternatingClosure(AlternatingPredicate ap);
 extern bool dynamicAlternatingComplete(AlternatingPredicate ap);
+extern void dynamicAlternatingExtensibility(AlternatingPredicate ap);
+extern char* alternatingToString(AlternatingPredicate ap);
 
 #endif /* ALTERNATING_H */
