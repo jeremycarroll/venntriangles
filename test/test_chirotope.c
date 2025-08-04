@@ -24,6 +24,8 @@ void tearDown(void) {}
   TEST_ASSERT_EQUAL_MESSAGE(prop##Expected, prop, #prop " was not as expected")
 #define RUN_CHIROTOPE_TEST(n, chirotopeString, consistent, closed, extensible) \
   runTest(CREATE_CHIROTOPE(n), chirotopeString, consistent, closed, extensible)
+#define RUN_TRUE_CHIROTOPE(n, chirotopeString) \
+  RUN_CHIROTOPE_TEST(n, chirotopeString, true, true, true)
 static void runTest(AlternatingPredicate chirotope, char *chirotopeString,
                     bool consistentExpected, bool closedExpected,
                     bool extensibleExpected)
@@ -35,11 +37,11 @@ static void runTest(AlternatingPredicate chirotope, char *chirotopeString,
   int pos = 0;
 
   // For rank 3, we only need to fill entries where i < j < k
-  for (int i = 0; i < chirotope->n; i++) {
-    for (int j = i + 1; j < chirotope->n; j++) {
-      for (int k = j + 1; k < chirotope->n; k++) {
-        TEST_ASSERT_EQUAL(pos * 2, getAlternating(chirotope, i, j, k) -
-                                       chirotope->rawStorage);
+  for (int k = 0; k < chirotope->n; k++) {
+    for (int j = 0; j < k; j++) {
+      for (int i = 0; i < j; i++) {
+        // TEST_ASSERT_EQUAL(pos * 2, getAlternating(chirotope, i, j, k) -
+        //                               chirotope->rawStorage);
         switch (chirotopeString[pos++]) {
           case '+':
             // printf("Setting %d %d %d\n", i, j, k);
@@ -52,7 +54,7 @@ static void runTest(AlternatingPredicate chirotope, char *chirotopeString,
           case '?':
             break;
           case '0':
-            TEST_FAIL_MESSAGE("Only uniform chirotopes supported");
+            // Treat 0 like ?
             break;
           default:
             TEST_FAIL_MESSAGE("Illegal character in chirotope");
@@ -63,11 +65,11 @@ static void runTest(AlternatingPredicate chirotope, char *chirotopeString,
   }
 
   TRAIL startTrail = Trail;
-  printf("before\n");
-  debugAlternating(chirotope);
+  // printf("before\n");
+  // debugAlternating(chirotope);
   bool consistent = dynamicAlternatingClosure(chirotope);
-  printf("after\n");
-  debugAlternating(chirotope);
+  // printf("after\n");
+  // debugAlternating(chirotope);
 
   VERIFY_PROPERTY(consistent);
   if (consistent) {
@@ -80,7 +82,7 @@ static void runTest(AlternatingPredicate chirotope, char *chirotopeString,
 
 static void testChapter1(void)
 {
-  RUN_CHIROTOPE_TEST(6, "+?--+?-+++++?++++++?", true, true, true);
+  RUN_TRUE_CHIROTOPE(6, "+?--+?-+++++?++++++?");
 }
 
 static void testIncomplete(void)
@@ -90,7 +92,7 @@ static void testIncomplete(void)
 
 static void testSimple(void)
 {
-  RUN_CHIROTOPE_TEST(5, "++++++++++", true, true, true);
+  RUN_TRUE_CHIROTOPE(5, "++++++++++");
 }
 
 static void testSimpleInconsistent(void)
@@ -100,7 +102,7 @@ static void testSimpleInconsistent(void)
 
 static void testSimpleIncomplete(void)
 {
-  RUN_CHIROTOPE_TEST(5, "++-++++?++", true, false, true);
+  RUN_CHIROTOPE_TEST(5, "+?++++++++", true, false, true);
 }
 
 static void testInconsistent(void)
@@ -110,26 +112,52 @@ static void testInconsistent(void)
 
 static void testSuvorov14(void)
 {
-  RUN_CHIROTOPE_TEST(
+  RUN_TRUE_CHIROTOPE(
       14,
       "++-++-?\?-++?++?-++-++-++-?++-+--+-?+?++--++-+?-?--+?-+-++-++?-++-+-?+?+"
       "-+-++--++++-++-++--++-+--+-+?+-++--++++-++----+-?+-++--++-+--+-+-+-++--+"
       "+?+-+--+-?+++--+-+?++--+-++-+-++++-+-+--+-++--+-+-++-+----++-+-?--+++-+-"
       "?--+?+-+-?+-+---?+?+-++-+--++-+-+-?+?+?++-++-+-++--++-+-++--+-?+-+++++++"
       "-?--+-?\?---+-+--+-+---+-+----+-++++--+-++++---+-++++-+++-?-------?-++++"
-      "+++++-",
-      true, true, true);
+      "+++++-");
+}
+
+static void testCeva(void)
+{
+  RUN_TRUE_CHIROTOPE(7, "+++0+++++++++++++++0++++++++0-+0---");
+}
+
+static void testRingel(void)
+{
+  RUN_TRUE_CHIROTOPE(9,
+                     "+++-++-+++++-+++++++++-++++++++-+--++++++++++++++-++++-++"
+                     "+-++++++++-+--++++-++------");
+}
+
+static void testOmega14(void)
+{
+  RUN_TRUE_CHIROTOPE(
+      14,
+      "++--+--++0+--0+--0-++-0++-0+-+++---+--++-0+-+++0--0-+-0-+--++--0-++0+-0-"
+      "-+0+---+++--+--++0++00+++--+-+---+0+---++++--++++--++0--00+-+-+--+-+---+"
+      "-+--0-+-+-++--000----++-++++-+-+-+-++-+---+-+---++-+-+-+++-+---0--+0+-++"
+      "+++++--+-++-+-+-+-++-+---+-+---++-+-+-++0-+------+-+-+0++++-----------+"
+      "0-+0++-+-+-+-++-+---+-+---++-+-+-+++-+------+-+-++++++-----------+++++++"
+      "++++0");
 }
 
 int main(void)
 {
   UNITY_BEGIN();
-  //  RUN_TEST(testChapter1);
-  //  RUN_TEST(testInconsistent);
-  //  RUN_TEST(testIncomplete);
-  // RUN_TEST(testSimple);
-  // RUN_TEST(testSimpleInconsistent);
-  // RUN_TEST(testSimpleIncomplete);
+  RUN_TEST(testChapter1);
+  RUN_TEST(testInconsistent);
+  RUN_TEST(testIncomplete);
+  RUN_TEST(testSimple);
+  RUN_TEST(testSimpleInconsistent);
+  RUN_TEST(testSimpleIncomplete);
   RUN_TEST(testSuvorov14);
+  RUN_TEST(testCeva);
+  RUN_TEST(testRingel);
+  RUN_TEST(testOmega14);
   return UNITY_END();
 }

@@ -105,6 +105,19 @@ static bool sameOrder(AlternatingPredicate self, int a, int b, int c, int d,
  * adjusted for uniform oriented matroids only.
  * Checks if the chirotope conditions are met for indices a,b,c,d,x.
  * Returns true if any of the four rules indicates 𝜒(a,b,x) should be set.
+ *
+ * From the bible p138, with r = 3.
+ * For any x₁ [a] x₂ [b] x₃ [x] y₁ [c] y₂ [d]
+ * if 𝜒(y₁,x₂,x₃) ⋅ 𝜒(x₁,y₂,x₃) ≥ 0
+ * and 𝜒(y₂,x₂,x₃) ⋅ 𝜒(y₁,x₁,x₃) ≥ 0
+ * then (x₁,x₂,x₃) ⋅ 𝜒(y₁,y₂,x₃) ≥ 0
+
+ * i.e.
+ * if 𝜒(c,b,x) ⋅ 𝜒(a,d,x) ≥ 0
+ * and 𝜒(d,b,x) ⋅ 𝜒(c,a,x) ≥ 0
+ * then 𝜒(a,b,x) ⋅ 𝜒(c,d,x) ≥ 0
+
+ * Looking at uniform case only, ignore 0, then
  */
 static bool chirotopeCondition(AlternatingPredicate self, int a, int b, int c,
                                int d, int x)
@@ -146,7 +159,9 @@ bool dynamicChirotopeStep(AlternatingPredicate self, int a, int b, int c, int d)
   for (int x = 0; x < self->n; x++) {
     if (chirotopeCondition(self, a, b, c, d, x)) {
       // printf("Checking %d %d %d\n", a, b, x);
-      if (a * b * x == 0 && (a - 2) * (b - 2) * (c - 2) == 0) {
+      if (false && (a - 6) * (b - 6) * (x - 6) == 0 &&
+          (a - 4) * (b - 4) * (x - 4) == 0 &&
+          (a - 2) * (b - 2) * (x - 2) == 0) {
         printf(">> %d %d %d %d %d\n", a, b, c, d, x);
         printf("sameOrder(self, a, c, b, d, x) = %d\n",
                sameOrder(self, a, c, b, d, x));
