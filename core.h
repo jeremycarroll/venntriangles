@@ -131,6 +131,7 @@ typedef unsigned long long uint64;
 /* Forward declarations for key data structures */
 typedef struct edge *EDGE;
 typedef struct face *FACE;
+typedef struct alternatingPredicate *AlternatingPredicate;
 
 /* Type aliases for semantic clarity */
 typedef uint64 FACE_DEGREE; /* Degree (number of edges) of a face */

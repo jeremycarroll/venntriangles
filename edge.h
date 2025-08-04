@@ -5,6 +5,7 @@
 
 #include "color.h"
 #include "failure.h"
+#include "trail.h"
 
 /**
  * Edge system for representing curve edges in Venn diagrams.
@@ -61,6 +62,14 @@ struct edge {
    * being all NULL.
    */
   MEMO struct curveLink possiblyTo[NCOLORS];
+
+  /* Both this edge and its reverse point to the same uint_trail value,
+   * which is initialized as UNSET_LINE_ID (2^64 - 1; all 1s; -1; ~0).
+   * When we know which line it is on, we set this.
+   * lineId is one of 3*color, 3*color+1, 3*color+2.
+   * For edges on the central face lineId is 3*color.
+   */
+  uint_trail* lineId;
 };
 
 /*--------------------------------------

@@ -2,10 +2,10 @@
 
 #ifndef TEST_HELPERS_H
 #define TEST_HELPERS_H
-
+#include "engine.h"
 #include "visible_for_testing.h"
 
-/* Helper functions for testing */
+extern struct stack TestStack;
 
 /**
  * Creates a face with a specific cycle and tests validity.
@@ -30,4 +30,17 @@ FACE_DEGREE* intArray(int a, ...);
  */
 bool dynamicCycleSetPrint(CYCLESET cycleSet);
 
+void verifyPartialCyclicOrderAxioms(void);
+
+void clearPartialCyclicOrder(void);
+
+extern void testPartialExampleA(void);
+
+extern void testPartialExampleB(void);
+
+extern void testPartialExampleC(void);
+
+extern bool dynamicPCOSet(int i, int j, int k);
+extern uint_trail* getPartialCyclicOrder(int i, int j, int k);
+extern void debugAlternating(AlternatingPredicate chirotope);
 #endif /* TEST_HELPERS_H */ 

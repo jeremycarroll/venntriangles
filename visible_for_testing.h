@@ -6,7 +6,6 @@
 #include "trail.h"
 #include "s6.h"
 #include "color.h"
-#include "cycleset.h"
 
 /**
  * This header exposes internal functions and variables for testing purposes.
@@ -28,5 +27,9 @@ extern char *s6SignatureToLongString(SIGNATURE signature); /* Convert to detaile
 /* Trail system */
 extern TRAIL Trail; /* Global trail for backtracking */
 extern bool trailRewindTo(TRAIL backtrackPoint); /* Rewind trail to point */
+extern uint_trail * getAlternating(AlternatingPredicate ap, int a, int b, int c);
+
+extern int EngineCounter;
+extern bool AlternatingDebug;
 
 #endif  /* VISIBLE_FOR_TESTING_H */

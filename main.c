@@ -76,6 +76,7 @@ int realMain0(int argc, char *argv[])
   int localMaxSolutions = INT_MAX;
   int localSkipSolutions = 0;
   char *programName = argv[0];
+  struct stack mainStack;
 
   while ((opt = getopt(argc, argv, "f:d:m:n:k:j:vt")) != -1) {
     switch (opt) {
@@ -130,7 +131,7 @@ int realMain0(int argc, char *argv[])
   initializeOutputFolder();
   initializeStatisticLogging("/dev/stdout", 200, 10);
 
-  engine(NonDeterministicProgram);
+  engine(&mainStack, NonDeterministicProgram);
 
   statisticPrintFull();
   return 0;

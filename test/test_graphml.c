@@ -8,7 +8,6 @@
 #include "predicates.h"
 #include "s6.h"
 #include "statistics.h"
-#include "utils.h"
 
 #include <regex.h>
 #include <search.h>
@@ -68,7 +67,7 @@ void setUp(void)
 
 void tearDown(void)
 { /* Handle failure case when unity uses long jump out of the engine */
-  engineResume((PREDICATE[]){&FAILPredicate});
+  engineClear(&TestStack);
 }
 
 static int SolutionCount = 0;
@@ -468,7 +467,7 @@ static void run(void)
   SolutionCount = 0;
   FopenCount = 0;
   SetupSearchTest();
-  engine(TestProgram);
+  engine(&TestStack, TestProgram);
   TEST_ASSERT_EQUAL(1, SolutionCount);
 }
 
