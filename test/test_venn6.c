@@ -15,12 +15,12 @@
 void setUp(void)
 {
   initializeStatisticLogging(NULL, 4, 20);
-  engine((PREDICATE[]){&InitializePredicate, &SUSPENDPredicate});
+  engine(&TestStack, (PREDICATE[]){&InitializePredicate, &SUSPENDPredicate});
 }
 
 void tearDown(void)
 {
-  engineResume((PREDICATE[]){&FAILPredicate});
+  engineClear(&TestStack);
 }
 static int SolutionCount = 0;
 
@@ -46,8 +46,9 @@ static void testSearchForBestSolution()
 {
   SolutionCount = 0;
   dynamicFaceSetupCentral(intArray(5, 5, 5, 4, 4, 4));
-  engineResume((PREDICATE[]){
-      &VennPredicate, &(struct predicate){"Found", countSolutions, NULL}});
+  engineResume(&TestStack, (PREDICATE[]){&VennPredicate,
+                                         &(struct predicate){
+                                             "Found", countSolutions, NULL}});
   TEST_ASSERT_EQUAL(80, SolutionCount);
 }
 
@@ -67,8 +68,9 @@ static void testSearchForTwoSolutions()
   dynamicFaceAddSpecific("b", "abcf");
   dynamicFaceAddSpecific("f", "aefdc");
   */
-  engineResume((PREDICATE[]){
-      &VennPredicate, &(struct predicate){"Found", countSolutions, NULL}});
+  engineResume(&TestStack, (PREDICATE[]){&VennPredicate,
+                                         &(struct predicate){
+                                             "Found", countSolutions, NULL}});
 
   TEST_ASSERT_EQUAL(2, SolutionCount);
 }
@@ -78,6 +80,7 @@ static void testFullSearch(void)
   /* dynamicSearchFull includes initialization, so we undo our own setUp. */
   SolutionCount = 0;
   engineResume(
+      &TestStack,
       (PREDICATE[]){&InnerFacePredicate, &LogPredicate, &VennPredicate,
                     &(struct predicate){"Found", countSolutions, NULL}});
   TEST_ASSERT_EQUAL(233, SolutionCount);

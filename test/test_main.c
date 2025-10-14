@@ -7,7 +7,6 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unity.h>
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -96,8 +95,8 @@ void searchSolutionWrite(const char *buffer)
 }
 
 struct predicate *NonDeterministicProgram[] = {/* stub for testing. */};
-
-void engine(struct predicate *predicates[])
+#pragma GCC diagnostic ignored "-Wvisibility"
+void engine(struct stack *stack, struct predicate *predicates[])
 {
   /* stub for testing. */
 }

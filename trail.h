@@ -21,8 +21,9 @@ extern void trailFreeze(void);     /* Freeze trail to prevent backtracking */
 /* Value setting operations */
 extern void trailSetInt(
     uint_trail *ptr, uint_trail value); /* Set an integer with backtracking */
-extern void trailMaybeSetInt(
-    uint_trail *ptr, uint_trail value); /* Conditionally set if different */
+
+/* Return false if value is already correct, else set it and return true. */
+extern bool trailMaybeSetInt(uint_trail *ptr, uint_trail value);
 extern void trailSetPointer(void **ptr,
                             void *value); /* Set a pointer with backtracking */
 

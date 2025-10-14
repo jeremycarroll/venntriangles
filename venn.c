@@ -137,7 +137,9 @@ static struct predicateResult dynamicTryFace(int round)
       return PredicateFail;
     }
   }
-  return predicateChoices(facesInOrderOfChoice[round]->cycleSetSize + 1);
+  // Add to trail so value is cleared when backtracking.
+  TRAIL_SET_POINTER(&facesInOrderOfChoice[round]->cycle, NULL);
+  return predicateChoices(facesInOrderOfChoice[round]->cycleSetSize);
 }
 
 static struct predicateResult dynamicRetryFace(int round, int choice)
@@ -146,9 +148,7 @@ static struct predicateResult dynamicRetryFace(int round, int choice)
   FACE face = facesInOrderOfChoice[round];
   // Not on trail, otherwise it would get unset before the next retry.
   face->cycle = chooseCycle(face, face->cycle);
-  if (face->cycle == NULL) {
-    return PredicateFail;
-  }
+  assert(face->cycle != NULL);
   if (dynamicFaceBacktrackableChoice(face) == NULL) {
     return PredicateSuccessSamePredicate;
   }

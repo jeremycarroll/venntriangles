@@ -2,10 +2,10 @@
 
 #include "common.h"
 #include "face.h"
+#include "helper_for_tests.h"
 #include "main.h"
 #include "predicates.h"
 #include "statistics.h"
-#include "utils.h"
 #include "visible_for_testing.h"
 
 #include <unity.h>
@@ -25,12 +25,12 @@ void setUp(void)
 {
   initializeStatisticLogging(NULL, 4, 1);
   CycleForcedCounter = 0;
-  engine((PREDICATE[]){&InitializePredicate, &SUSPENDPredicate});
+  engine(&TestStack, (PREDICATE[]){&InitializePredicate, &SUSPENDPredicate});
 }
 
 void tearDown(void)
 {
-  engineResume((PREDICATE[]){&FAILPredicate});
+  engineClear(&TestStack);
 }
 
 static void sanityVertex(VERTEX vertex)
@@ -174,8 +174,9 @@ static struct predicateResult foundSolution()
 
 static void testSearch()
 {
-  engineResume((PREDICATE[]){
-      &VennPredicate, &(struct predicate){"Found", foundSolution, NULL}});
+  engineResume(&TestStack, (PREDICATE[]){&VennPredicate,
+                                         &(struct predicate){
+                                             "Found", foundSolution, NULL}});
   TEST_ASSERT_EQUAL(2, SolutionCount);
   TEST_ASSERT_EQUAL(14, CycleForcedCounter);
 }

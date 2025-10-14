@@ -73,15 +73,6 @@ typedef struct predicate {
                            int choice); /* Function for trying alternatives */
 }* PREDICATE;
 
-/* Predefined predicates for ending search sequences */
-extern struct predicate FAILPredicate;    /* Always forces backtracking */
-extern struct predicate SUSPENDPredicate; /* Pauses execution */
-
-/*--------------------------------------
- * Engine Internal Structures
- *--------------------------------------*/
-
-/* Stack entry for the engine's backtracking stack */
 struct stackEntry {
   bool inChoiceMode;             /* Whether we're exploring alternatives */
   struct predicate* predicate;   /* Current predicate being executed */
@@ -93,6 +84,16 @@ struct stackEntry {
   int numberOfChoices;           /* Total alternatives in this predicate */
 };
 
+#define MAX_STACK_SIZE 1000
+
+typedef struct stack {
+  struct stackEntry* stackTop;
+  struct stackEntry stack[MAX_STACK_SIZE + 1];
+}* STACK;
+/* Predefined predicates for ending search sequences */
+extern struct predicate FAILPredicate;    /* Always forces backtracking */
+extern struct predicate SUSPENDPredicate; /* Pauses execution */
+
 /*--------------------------------------
  * Engine API
  *--------------------------------------*/
@@ -102,12 +103,14 @@ struct stackEntry {
  * a predicate that never succeeds with PREDICATE_SUCCESS_NEXT_PREDICATE,
  * typically FAILPredicate or SUSPENDPredicate.
  */
-extern void engine(PREDICATE* predicates);
+extern bool engine(STACK stack, PREDICATE* predicates);
 
 /**
  * Resumes execution from a previously suspended state.
  */
-extern void engineResume(PREDICATE* predicates);
+extern void engineResume(STACK stack, PREDICATE* predicates);
+
+extern void engineClear(STACK stack);
 
 /*--------------------------------------
  * Predicate Definition Macros
